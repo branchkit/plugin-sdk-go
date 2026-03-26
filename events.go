@@ -44,6 +44,11 @@ func (p *PlatformClient) SubscribeEvents(topics []string, handler func(PluginEve
 	sub := &EventSubscription{cancel: cancel}
 
 	socketPath := os.Getenv("BRANCHKIT_SOCKET")
+	if socketPath == "" {
+		fmt.Fprintln(os.Stderr, "[events] BRANCHKIT_SOCKET not set — SSE subscription disabled")
+		cancel()
+		return sub
+	}
 
 	// Dedicated HTTP client for SSE — no timeout, separate from the request/response client.
 	sseClient := &http.Client{
@@ -60,6 +65,16 @@ func (p *PlatformClient) SubscribeEvents(topics []string, handler func(PluginEve
 		url += "?topic=" + strings.Join(topics, ",")
 	}
 
+	// Wrap handler with panic recovery so a bad handler doesn't kill the SSE goroutine.
+	safeHandler := func(msg PluginEventMessage) {
+		defer func() {
+			if r := recover(); r != nil {
+				fmt.Fprintf(os.Stderr, "[events] handler panic for %s: %v\n", msg.EventType, r)
+			}
+		}()
+		handler(msg)
+	}
+
 	sub.wg.Add(1)
 	go func() {
 		defer sub.wg.Done()
@@ -70,7 +85,7 @@ func (p *PlatformClient) SubscribeEvents(topics []string, handler func(PluginEve
 				return
 			}
 
-			err := readSSE(ctx, sseClient, url, p.token, handler)
+			err := readSSE(ctx, sseClient, url, p.token, safeHandler)
 			if ctx.Err() != nil {
 				return
 			}
