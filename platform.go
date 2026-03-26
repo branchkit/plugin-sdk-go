@@ -22,10 +22,3 @@ type ApplescriptResult struct {
 	Stderr   string `json:"stderr"`
 	ExitCode int    `json:"exit_code"`
 }
-
-// AlphabetEntry describes a single phonetic codeword.
-type AlphabetEntry struct {
-	Letter   string `json:"letter"`
-	Codeword string `json:"codeword"`
-	Code     uint16 `json:"code"`
-}
