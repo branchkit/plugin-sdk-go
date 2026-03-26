@@ -8,6 +8,7 @@ const (
 	EventAppFocused = "_platform.app.focused"
 	EventCommandMatched = "_platform.command.matched"
 	EventDisplayChanged = "_platform.display.changed"
+	EventKeyboardLayoutChanged = "_platform.keyboard.layout_changed"
 	EventModeChanged = "_platform.mode.changed"
 	EventPluginDisabled = "_platform.plugin.disabled"
 	EventPluginEnabled = "_platform.plugin.enabled"
