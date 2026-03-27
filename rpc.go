@@ -75,6 +75,7 @@ type Plugin struct {
 }
 
 // NewPlugin creates a new Plugin that communicates via stdin/stdout.
+// The read loop starts immediately — Call() works from this point.
 func NewPlugin() *Plugin {
 	pluginID := os.Getenv("BRANCHKIT_PLUGIN_ID")
 	if pluginID == "" {
@@ -85,7 +86,7 @@ func NewPlugin() *Plugin {
 	// Allow up to 1MB per line for large payloads (settings HTML, HUD content)
 	scanner.Buffer(make([]byte, 0, 64*1024), 1024*1024)
 
-	return &Plugin{
+	p := &Plugin{
 		pluginID:  pluginID,
 		writer:    json.NewEncoder(os.Stdout),
 		scanner:   scanner,
@@ -94,18 +95,34 @@ func NewPlugin() *Plugin {
 		pending:   make(map[uint64]*pendingCall),
 		closed:    make(chan struct{}),
 	}
+
+	// Handle SIGTERM gracefully
+	sigCh := make(chan os.Signal, 1)
+	signal.Notify(sigCh, syscall.SIGTERM, syscall.SIGINT)
+	go func() {
+		select {
+		case <-sigCh:
+			Log(pluginID, "shutting down (signal)")
+			p.closeOnce.Do(func() { close(p.closed) })
+		case <-p.closed:
+		}
+		signal.Stop(sigCh)
+	}()
+
+	Log(pluginID, "started (JSON-RPC over stdio)")
+	go p.readLoop()
+
+	return p
 }
 
 // Handle registers a handler for actuator→plugin requests.
 // The handler receives the params and returns a result (serialized as JSON) or an error.
-// Must be called before Run().
 func (p *Plugin) Handle(method string, fn HandlerFunc) {
 	p.handlers[method] = fn
 }
 
 // On registers a listener for actuator→plugin notifications (fire-and-forget).
 // Multiple listeners can be registered for the same method.
-// Must be called before Run().
 func (p *Plugin) On(method string, fn ListenerFunc) {
 	p.listeners[method] = append(p.listeners[method], fn)
 }
@@ -193,24 +210,14 @@ func (p *Plugin) Notify(method string, params any) error {
 	})
 }
 
-// Run starts the message read loop. Blocks until stdin closes or SIGTERM.
+// Run blocks until the plugin shuts down (stdin closes or SIGTERM).
+// The read loop is already running — started by NewPlugin(). Call() works
+// before Run() is called.
 func (p *Plugin) Run() {
-	// Handle SIGTERM gracefully
-	sigCh := make(chan os.Signal, 1)
-	signal.Notify(sigCh, syscall.SIGTERM, syscall.SIGINT)
-	go func() {
-		select {
-		case <-sigCh:
-			Log(p.pluginID, "shutting down (signal)")
-			p.closeOnce.Do(func() { close(p.closed) })
-		case <-p.closed:
-			// Run() exited first — stop listening for signals
-		}
-		signal.Stop(sigCh)
-	}()
+	<-p.closed
+}
 
-	Log(p.pluginID, "started (JSON-RPC over stdio)")
-
+func (p *Plugin) readLoop() {
 	for p.scanner.Scan() {
 		line := p.scanner.Bytes()
 		if len(line) == 0 {
