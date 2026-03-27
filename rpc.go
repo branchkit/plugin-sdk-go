@@ -262,8 +262,9 @@ func (p *Plugin) dispatch(msg rpcMessage) {
 	}
 
 	// Request from actuator — has id + method
+	// Run in goroutine so handlers can call plugin.Call() without blocking the read loop (C1).
 	if msg.ID != nil && msg.Method != "" {
-		p.handleRequest(msg)
+		go p.handleRequest(msg)
 		return
 	}
 
