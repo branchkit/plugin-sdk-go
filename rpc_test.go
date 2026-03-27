@@ -39,6 +39,9 @@ func newTestPlugin() (*Plugin, io.Writer, *bufio.Scanner) {
 	actuatorScanner := bufio.NewScanner(stdoutR)
 	actuatorScanner.Buffer(make([]byte, 0, 64*1024), 1024*1024)
 
+	// Start read loop (matches NewPlugin behavior)
+	go p.readLoop()
+
 	return p, stdinW, actuatorScanner
 }
 
