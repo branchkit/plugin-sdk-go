@@ -72,6 +72,8 @@ type Plugin struct {
 	mu        sync.Mutex // protects writer, pending
 	closed    chan struct{}
 	closeOnce sync.Once
+	ready     chan struct{} // closed when Run() is called, gates incoming requests
+	readyOnce sync.Once
 }
 
 // NewPlugin creates a new Plugin that communicates via stdin/stdout.
@@ -94,6 +96,7 @@ func NewPlugin() *Plugin {
 		listeners: make(map[string][]ListenerFunc),
 		pending:   make(map[uint64]*pendingCall),
 		closed:    make(chan struct{}),
+		ready:     make(chan struct{}),
 	}
 
 	// Handle SIGTERM gracefully
@@ -210,10 +213,13 @@ func (p *Plugin) Notify(method string, params any) error {
 	})
 }
 
-// Run blocks until the plugin shuts down (stdin closes or SIGTERM).
-// The read loop is already running — started by NewPlugin(). Call() works
-// before Run() is called.
+// Run signals that all handlers are registered and blocks until the plugin
+// shuts down (stdin closes or SIGTERM). The read loop is already running —
+// started by NewPlugin(). Call() works before Run() is called. Incoming
+// requests are held until Run() is called to avoid dispatching before
+// handlers are registered.
 func (p *Plugin) Run() {
+	p.readyOnce.Do(func() { close(p.ready) })
 	<-p.closed
 }
 
@@ -283,7 +289,16 @@ func (p *Plugin) dispatch(msg rpcMessage) {
 }
 
 // handleRequest processes an actuator→plugin request and sends a response.
+// Blocks until Run() is called to ensure all handlers are registered.
 func (p *Plugin) handleRequest(msg rpcMessage) {
+	// Wait for handlers to be registered (Run() called) or shutdown.
+	select {
+	case <-p.ready:
+	case <-p.closed:
+		p.sendError(*msg.ID, -1, "plugin shutting down")
+		return
+	}
+
 	handler, ok := p.handlers[msg.Method]
 	if !ok {
 		p.sendError(*msg.ID, -32601, fmt.Sprintf("method not found: %s", msg.Method))

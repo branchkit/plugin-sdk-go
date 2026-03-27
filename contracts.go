@@ -5,6 +5,7 @@ package shared
 
 // RPC method names: plugin → actuator (use with plugin.Call()).
 const (
+	MethodCommandsDiscover = "commands.discover"
 	MethodCommandsHasPartial = "commands.has_partial"
 	MethodCommandsMatch = "commands.match"
 	MethodControlSignal = "control.signal"
@@ -15,6 +16,7 @@ const (
 	MethodKeyNamesSet = "key_names.set"
 	MethodKeybindsRegister = "keybinds.register"
 	MethodListsDelete = "lists.delete"
+	MethodListsGet = "lists.get"
 	MethodListsUpdate = "lists.update"
 	MethodNativeAudioDevices = "native.audio_devices"
 	MethodNativeBatchIsTileable = "native.batch_is_tileable"

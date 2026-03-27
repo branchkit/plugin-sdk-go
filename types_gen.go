@@ -36,6 +36,15 @@ type AudioDevice struct {
 	IsDefaultOutput bool `json:"is_default_output"`
 }
 
+// Command is auto-generated from the OpenRPC spec.
+type Command struct {
+	Phrase string `json:"phrase"`
+	Action json.RawMessage `json:"action"`
+	RequiresTags []string `json:"requires_tags,omitempty"`
+	SetsTags []string `json:"sets_tags,omitempty"`
+	ClearsTags []string `json:"clears_tags,omitempty"`
+}
+
 // DiscoveryResult is auto-generated from the OpenRPC spec.
 type DiscoveryResult struct {
 	Opened bool `json:"opened"`
@@ -102,15 +111,6 @@ type MatchResult struct {
 type Point struct {
 	X int `json:"x"`
 	Y int `json:"y"`
-}
-
-// VoiceCommand is auto-generated from the OpenRPC spec.
-type VoiceCommand struct {
-	Phrase string `json:"phrase"`
-	Action json.RawMessage `json:"action"`
-	RequiresTags []string `json:"requires_tags,omitempty"`
-	SetsTags []string `json:"sets_tags,omitempty"`
-	ClearsTags []string `json:"clears_tags,omitempty"`
 }
 
 // WindowFrame is auto-generated from the OpenRPC spec.
@@ -199,6 +199,30 @@ type CommandsHasPartialResponse struct {
 	NextList *string `json:"next_list,omitempty"`
 }
 
+// CommandsDiscoverRequest is the request type for commands.discover.
+type CommandsDiscoverRequest struct {
+	Words []string `json:"words,omitempty"`
+	RequireTag *string `json:"require_tag,omitempty"`
+	ActiveTags []string `json:"active_tags,omitempty"`
+}
+
+// CommandsDiscoverResponse is the response type for commands.discover.
+type CommandsDiscoverResponse struct {
+	Title string `json:"title"`
+	Items []json.RawMessage `json:"items"`
+}
+
+// ListsGetRequest is the request type for lists.get.
+type ListsGetRequest struct {
+	Name string `json:"name"`
+}
+
+// ListsGetResponse is the response type for lists.get.
+type ListsGetResponse struct {
+	Name *string `json:"name,omitempty"`
+	Entries json.RawMessage `json:"entries,omitempty"`
+}
+
 // ListsUpdateRequest is the request type for lists.update.
 type ListsUpdateRequest struct {
 	Name string `json:"name"`
@@ -225,7 +249,7 @@ type ListsDeleteResponse struct {
 
 // GrammarPushRequest is the request type for grammar.push.
 type GrammarPushRequest struct {
-	Commands []VoiceCommand `json:"commands"`
+	Commands []Command `json:"commands"`
 }
 
 // GrammarPushResponse is the response type for grammar.push.
