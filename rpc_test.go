@@ -34,6 +34,7 @@ func newTestPlugin() (*Plugin, io.Writer, *bufio.Scanner) {
 		listeners: make(map[string][]ListenerFunc),
 		pending:   make(map[uint64]*pendingCall),
 		closed:    make(chan struct{}),
+		ready:     make(chan struct{}),
 	}
 
 	actuatorScanner := bufio.NewScanner(stdoutR)
@@ -95,6 +96,106 @@ func TestHandleRequest(t *testing.T) {
 	}
 
 	// Close stdin to stop Run()
+	actuatorW.(io.Closer).Close()
+	wg.Wait()
+}
+
+// TestReadyGateHoldsRequestsBeforeRun verifies that requests arriving before
+// Run() is called are held (not rejected with -32601). This prevents a race
+// where the actuator sends a request before the plugin has registered handlers.
+func TestReadyGateHoldsRequestsBeforeRun(t *testing.T) {
+	p, actuatorW, actuatorR := newTestPlugin()
+
+	// Register handler AFTER creating plugin (mimics real init sequence)
+	p.Handle("build_command_registry", func(params json.RawMessage) (any, error) {
+		return map[string]string{"status": "ok"}, nil
+	})
+
+	// Send a request BEFORE calling Run() — this should be held, not rejected
+	id := uint64(1)
+	msg := rpcMessage{
+		JSONRPC: "2.0",
+		ID:      &id,
+		Method:  "build_command_registry",
+		Params:  json.RawMessage(`{}`),
+	}
+	data, _ := json.Marshal(msg)
+	actuatorW.Write(append(data, '\n'))
+
+	// Small delay to ensure the request is received by readLoop
+	time.Sleep(50 * time.Millisecond)
+
+	// NOW call Run() — this should ungate the pending request
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		p.Run()
+	}()
+
+	// Read the response — should be a success, not a -32601 error
+	if !actuatorR.Scan() {
+		t.Fatal("expected response")
+	}
+	var resp rpcMessage
+	json.Unmarshal(actuatorR.Bytes(), &resp)
+
+	if resp.Error != nil {
+		t.Fatalf("request before Run() should succeed, got error: %d %s",
+			resp.Error.Code, resp.Error.Message)
+	}
+	if resp.ID == nil || *resp.ID != 1 {
+		t.Fatalf("expected id=1, got %v", resp.ID)
+	}
+
+	var result map[string]string
+	json.Unmarshal(resp.Result, &result)
+	if result["status"] != "ok" {
+		t.Fatalf("expected status=ok, got %v", result)
+	}
+
+	actuatorW.(io.Closer).Close()
+	wg.Wait()
+}
+
+// TestReadyGateRejectsUnknownAfterRun verifies that unknown methods still get
+// -32601 after Run() is called (the gate doesn't suppress legitimate errors).
+func TestReadyGateRejectsUnknownAfterRun(t *testing.T) {
+	p, actuatorW, actuatorR := newTestPlugin()
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		p.Run()
+	}()
+
+	// Small delay to ensure Run() has called readyOnce
+	time.Sleep(50 * time.Millisecond)
+
+	id := uint64(1)
+	msg := rpcMessage{
+		JSONRPC: "2.0",
+		ID:      &id,
+		Method:  "nonexistent_method",
+		Params:  json.RawMessage(`{}`),
+	}
+	data, _ := json.Marshal(msg)
+	actuatorW.Write(append(data, '\n'))
+
+	if !actuatorR.Scan() {
+		t.Fatal("expected response")
+	}
+	var resp rpcMessage
+	json.Unmarshal(actuatorR.Bytes(), &resp)
+
+	if resp.Error == nil {
+		t.Fatal("expected -32601 error for unknown method after Run()")
+	}
+	if resp.Error.Code != -32601 {
+		t.Fatalf("expected code -32601, got %d", resp.Error.Code)
+	}
+
 	actuatorW.(io.Closer).Close()
 	wg.Wait()
 }
