@@ -212,6 +212,46 @@ type CommandsDiscoverResponse struct {
 	Items []json.RawMessage `json:"items"`
 }
 
+// CommandsListResponse is the response type for commands.list.
+type CommandsListResponse struct {
+	Title string `json:"title"`
+	Footer string `json:"footer"`
+	Sections []json.RawMessage `json:"sections"`
+}
+
+// ExecuteRequest is the request type for execute.
+type ExecuteRequest struct {
+	Action json.RawMessage `json:"action"`
+}
+
+// ExecuteResponse is the response type for execute.
+type ExecuteResponse struct {
+	Status *string `json:"status,omitempty"`
+	ShellAction json.RawMessage `json:"shell_action,omitempty"`
+}
+
+// SettingsRulesCreateRequest is the request type for settings.rules_create.
+type SettingsRulesCreateRequest struct {
+	Newrulephrase string `json:"newrulephrase"`
+	Newruleactiontype *string `json:"newruleactiontype,omitempty"`
+}
+
+// SettingsRulesCreateResponse is the response type for settings.rules_create.
+type SettingsRulesCreateResponse struct {
+	Ok bool `json:"ok"`
+}
+
+// SettingsRulesUpdateRequest is the request type for settings.rules_update.
+type SettingsRulesUpdateRequest struct {
+	Canonical string `json:"canonical"`
+	Newrulephrase string `json:"newrulephrase"`
+}
+
+// SettingsRulesUpdateResponse is the response type for settings.rules_update.
+type SettingsRulesUpdateResponse struct {
+	Ok bool `json:"ok"`
+}
+
 // ListsGetRequest is the request type for lists.get.
 type ListsGetRequest struct {
 	Name string `json:"name"`
