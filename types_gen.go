@@ -132,6 +132,7 @@ type WindowInfo struct {
 	Y int `json:"y"`
 	W int `json:"w"`
 	H int `json:"h"`
+	Source *string `json:"source,omitempty"`
 }
 
 // WorldModel is auto-generated from the OpenRPC spec.
@@ -287,6 +288,63 @@ type ListsDeleteResponse struct {
 	Ok bool `json:"ok"`
 }
 
+// HUDPushRequest is the request type for hud.push.
+type HUDPushRequest struct {
+	Channel string `json:"channel"`
+	Fragments []json.RawMessage `json:"fragments"`
+}
+
+// HUDPushResponse is the response type for hud.push.
+type HUDPushResponse struct {
+	Ok bool `json:"ok"`
+}
+
+// HUDCreateChannelRequest is the request type for hud.create_channel.
+type HUDCreateChannelRequest struct {
+	Channel string `json:"channel"`
+	Anchor string `json:"anchor,omitempty"`
+	Width *int `json:"width,omitempty"`
+	MinHeight *int `json:"min_height,omitempty"`
+	AcceptsInput *bool `json:"accepts_input,omitempty"`
+	Description *string `json:"description,omitempty"`
+}
+
+// HUDCreateChannelResponse is the response type for hud.create_channel.
+type HUDCreateChannelResponse struct {
+	Ok bool `json:"ok"`
+	Error *string `json:"error,omitempty"`
+}
+
+// HUDRemoveChannelRequest is the request type for hud.remove_channel.
+type HUDRemoveChannelRequest struct {
+	Channel string `json:"channel"`
+}
+
+// HUDRemoveChannelResponse is the response type for hud.remove_channel.
+type HUDRemoveChannelResponse struct {
+	Ok bool `json:"ok"`
+	Removed *bool `json:"removed,omitempty"`
+}
+
+// SessionEndCleanupResponse is the response type for session.end_cleanup.
+type SessionEndCleanupResponse struct {
+	Ok *bool `json:"ok,omitempty"`
+	ShellAction *string `json:"shell_action,omitempty"`
+	ResetEngine *bool `json:"reset_engine,omitempty"`
+}
+
+// EventsAppendRequest is the request type for events.append.
+type EventsAppendRequest struct {
+	SessionID *string `json:"session_id,omitempty"`
+	EventType string `json:"event_type"`
+	Data json.RawMessage `json:"data,omitempty"`
+}
+
+// EventsAppendResponse is the response type for events.append.
+type EventsAppendResponse struct {
+	Ok bool `json:"ok"`
+}
+
 // GrammarPushRequest is the request type for grammar.push.
 type GrammarPushRequest struct {
 	Commands []Command `json:"commands"`
@@ -309,6 +367,35 @@ type SelectionSetResponse struct {
 	Ok bool `json:"ok"`
 }
 
+// SelectionPickRequest is the request type for selection.pick.
+type SelectionPickRequest struct {
+	Index int `json:"index"`
+}
+
+// SelectionPickResponse is the response type for selection.pick.
+type SelectionPickResponse struct {
+	Ok *bool `json:"ok,omitempty"`
+	ItemID *string `json:"item_id,omitempty"`
+	ResetEngine *bool `json:"reset_engine,omitempty"`
+	ShellAction *string `json:"shell_action,omitempty"`
+}
+
+// MatchAliasesSetRequest is the request type for match_aliases.set.
+type MatchAliasesSetRequest struct {
+	Aliases map[string]string `json:"aliases"`
+}
+
+// MatchAliasesSetResponse is the response type for match_aliases.set.
+type MatchAliasesSetResponse struct {
+	Ok *bool `json:"ok,omitempty"`
+	Count *int `json:"count,omitempty"`
+}
+
+// MatchAliasesGetResponse is the response type for match_aliases.get.
+type MatchAliasesGetResponse struct {
+	Aliases map[string]string `json:"aliases,omitempty"`
+}
+
 // KeybindsRegisterRequest is the request type for keybinds.register.
 type KeybindsRegisterRequest struct {
 	Snapshot json.RawMessage `json:"snapshot"`
@@ -329,19 +416,6 @@ type KeyNamesSetRequest struct {
 type KeyNamesSetResponse struct {
 	Ok bool `json:"ok"`
 	Count *int `json:"count,omitempty"`
-}
-
-// DiscoveryOpenRequest is the request type for discovery.open.
-type DiscoveryOpenRequest struct {
-	RequireTag *string `json:"require_tag,omitempty"`
-	Words []string `json:"words,omitempty"`
-	Countdown *bool `json:"countdown,omitempty"`
-}
-
-// DiscoveryCloseRequest is the request type for discovery.close.
-type DiscoveryCloseRequest struct {
-	ClearScopedTags *bool `json:"clear_scoped_tags,omitempty"`
-	ClearPluginTags *bool `json:"clear_plugin_tags,omitempty"`
 }
 
 // NativeWorldModelRequest is the request type for native.world_model.
