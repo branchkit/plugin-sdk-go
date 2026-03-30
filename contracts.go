@@ -10,16 +10,23 @@ const (
 	MethodCommandsList = "commands.list"
 	MethodCommandsMatch = "commands.match"
 	MethodControlSignal = "control.signal"
-	MethodDiscoveryClose = "discovery.close"
-	MethodDiscoveryOpen = "discovery.open"
+	MethodEventsAppend = "events.append"
 	MethodEventsEmit = "events.emit"
 	MethodExecute = "execute"
 	MethodGrammarPush = "grammar.push"
+	MethodHudCreateChannel = "hud.create_channel"
+	MethodHudHide = "hud.hide"
+	MethodHudPush = "hud.push"
+	MethodHudRemoveChannel = "hud.remove_channel"
+	MethodHudSetSize = "hud.set_size"
+	MethodHudShow = "hud.show"
 	MethodKeyNamesSet = "key_names.set"
 	MethodKeybindsRegister = "keybinds.register"
 	MethodListsDelete = "lists.delete"
 	MethodListsGet = "lists.get"
 	MethodListsUpdate = "lists.update"
+	MethodMatchAliasesGet = "match_aliases.get"
+	MethodMatchAliasesSet = "match_aliases.set"
 	MethodNativeAudioDevices = "native.audio_devices"
 	MethodNativeBatchIsTileable = "native.batch_is_tileable"
 	MethodNativeBatchSetFrames = "native.batch_set_frames"
@@ -35,7 +42,9 @@ const (
 	MethodNativeUnhideApp = "native.unhide_app"
 	MethodNativeWarpCursor = "native.warp_cursor"
 	MethodNativeWorldModel = "native.world_model"
+	MethodSelectionPick = "selection.pick"
 	MethodSelectionSet = "selection.set"
+	MethodSessionEndCleanup = "session.end_cleanup"
 	MethodSettingsRulesCreate = "settings.rules_create"
 	MethodSettingsRulesUpdate = "settings.rules_update"
 	MethodStoreGet = "store.get"
@@ -78,8 +87,10 @@ const (
 	EventWorldUpdated = "_platform.world.updated"
 )
 
-// Tag namespace prefix constants.
+// Tag namespace prefix and value constants.
 const (
 	TagPrefixApp = "app."
 	TagPrefixPlugin = "plugin."
+	TagInputActive = "_platform.input.active"
+	TagInputLiftKeys = "_platform.input.lift_keys"
 )
