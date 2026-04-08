@@ -28,3 +28,12 @@ func ReadJSON(r *http.Request, v any) error {
 	defer r.Body.Close()
 	return json.NewDecoder(r.Body).Decode(v)
 }
+
+// GetAPIVersion returns the BranchKit API version from the actuator (env var),
+// falling back to the version this SDK was compiled against.
+func GetAPIVersion() string {
+	if v := os.Getenv("BRANCHKIT_API_VERSION"); v != "" {
+		return v
+	}
+	return APIVersion
+}
