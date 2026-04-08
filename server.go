@@ -12,6 +12,11 @@ func Log(pluginID, msg string) {
 	fmt.Fprintf(os.Stderr, "[%s] %s\n", pluginID, msg)
 }
 
+// Logf prints a formatted message to stderr with the plugin ID prefix.
+func Logf(pluginID, format string, args ...any) {
+	fmt.Fprintf(os.Stderr, "[%s] "+format+"\n", append([]any{pluginID}, args...)...)
+}
+
 // WriteJSON writes a JSON response. Used by extension-facing TCP listeners.
 func WriteJSON(w http.ResponseWriter, v any) {
 	w.Header().Set("Content-Type", "application/json")

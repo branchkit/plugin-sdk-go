@@ -232,7 +232,7 @@ func (p *Plugin) readLoop() {
 
 		var msg rpcMessage
 		if err := json.Unmarshal(line, &msg); err != nil {
-			Log(p.pluginID, fmt.Sprintf("failed to parse message: %v", err))
+			Logf(p.pluginID, "failed to parse message: %v", err)
 			continue
 		}
 
@@ -240,7 +240,7 @@ func (p *Plugin) readLoop() {
 	}
 
 	if err := p.scanner.Err(); err != nil {
-		Log(p.pluginID, fmt.Sprintf("stdin read error: %v", err))
+		Logf(p.pluginID, "stdin read error: %v", err)
 	}
 
 	// Signal shutdown to any in-flight Call() waiters
@@ -309,7 +309,7 @@ func (p *Plugin) handleRequest(msg rpcMessage) {
 	func() {
 		defer func() {
 			if r := recover(); r != nil {
-				Log(p.pluginID, fmt.Sprintf("handler panic for %s: %v", msg.Method, r))
+				Logf(p.pluginID, "handler panic for %s: %v", msg.Method, r)
 				p.sendError(*msg.ID, -1, fmt.Sprintf("handler panic: %v", r))
 			}
 		}()
@@ -333,7 +333,7 @@ func (p *Plugin) handleRequest(msg rpcMessage) {
 			ID:      msg.ID,
 			Result:  resultRaw,
 		}); err != nil {
-			Log(p.pluginID, fmt.Sprintf("write response for %s failed: %v", msg.Method, err))
+			Logf(p.pluginID, "write response for %s failed: %v", msg.Method, err)
 		}
 	}()
 }
@@ -345,7 +345,7 @@ func (p *Plugin) handleNotification(msg rpcMessage) {
 		func() {
 			defer func() {
 				if r := recover(); r != nil {
-					Log(p.pluginID, fmt.Sprintf("listener panic for %s: %v", msg.Method, r))
+					Logf(p.pluginID, "listener panic for %s: %v", msg.Method, r)
 				}
 			}()
 			fn(msg.Params)
@@ -362,6 +362,6 @@ func (p *Plugin) sendError(id uint64, code int, message string) {
 		ID:      &id,
 		Error:   &rpcError{Code: code, Message: message},
 	}); err != nil {
-		Log(p.pluginID, fmt.Sprintf("write error response failed: %v", err))
+		Logf(p.pluginID, "write error response failed: %v", err)
 	}
 }
