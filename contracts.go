@@ -133,6 +133,12 @@ const (
 	MethodSettingsRulesUpdate = "settings.rules_update" // since 0.1.0
 	MethodStoreGet = "store.get" // since 0.1.0
 	MethodStorePush = "store.push" // since 0.1.0
+	MethodSystemLaunchApp = "system.launch_app" // since 0.1.0
+	MethodSystemNotify = "system.notify" // since 0.1.0
+	MethodSystemRunEval = "system.run_eval" // since 0.1.0
+	MethodSystemRunScript = "system.run_script" // since 0.1.0
+	MethodSystemRunShell = "system.run_shell" // since 0.1.0
+	MethodSystemRunTool = "system.run_tool" // since 0.1.0
 	MethodTagsGet = "tags.get" // since 0.1.0
 	MethodTagsModify = "tags.modify" // since 0.1.0
 )
