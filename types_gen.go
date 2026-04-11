@@ -53,10 +53,10 @@ type ActiveSpace struct {
 
 // AppData is auto-generated from the OpenRPC spec.
 type AppData struct {
-	Name string `json:"name"`
+	Aliases []string `json:"aliases"`
 	BundleID string `json:"bundle_id"`
-	Aliases []string `json:"aliases,omitempty"`
 	Enabled *bool `json:"enabled,omitempty"`
+	Name string `json:"name"`
 }
 
 // AudioDevice is auto-generated from the OpenRPC spec.
@@ -78,6 +78,15 @@ type BluetoothDevice struct {
 	IsPaired bool `json:"is_paired"`
 	Name string `json:"name"`
 }
+
+// CalibrateAction is auto-generated from the OpenRPC spec.
+type CalibrateAction string
+
+const (
+	CalibrateActionStart CalibrateAction = "start"
+	CalibrateActionSpeech CalibrateAction = "speech"
+	CalibrateActionCancel CalibrateAction = "cancel"
+)
 
 // ClipboardContents is auto-generated from the OpenRPC spec.
 type ClipboardContents struct {
@@ -147,33 +156,33 @@ type DisplayMetadata struct {
 
 // Frame is auto-generated from the OpenRPC spec.
 type Frame struct {
+	H int `json:"h"`
+	W int `json:"w"`
 	X int `json:"x"`
 	Y int `json:"y"`
-	W int `json:"w"`
-	H int `json:"h"`
 }
 
 // HudItem is auto-generated from the OpenRPC spec.
 type HudItem struct {
+	Icon *string `json:"icon,omitempty"`
 	ID string `json:"id"`
+	Subtitle *string `json:"subtitle,omitempty"`
 	Tag *string `json:"tag,omitempty"`
 	Title string `json:"title"`
-	Subtitle *string `json:"subtitle,omitempty"`
-	Icon *string `json:"icon,omitempty"`
 }
 
 // HudResponse is auto-generated from the OpenRPC spec.
 type HudResponse struct {
-	Title string `json:"title"`
-	Footer string `json:"footer"`
 	ContentHTML *string `json:"content_html,omitempty"`
+	Footer string `json:"footer"`
 	Sections []HudSection `json:"sections,omitempty"`
+	Title string `json:"title"`
 }
 
 // HudSection is auto-generated from the OpenRPC spec.
 type HudSection struct {
-	Title string `json:"title"`
 	Items []HudItem `json:"items"`
+	Title string `json:"title"`
 }
 
 // InputSource is auto-generated from the OpenRPC spec.
@@ -224,6 +233,15 @@ const (
 	MergeStrategyKeyed MergeStrategy = "keyed"
 )
 
+// OnActionStatus is auto-generated from the OpenRPC spec.
+type OnActionStatus string
+
+const (
+	OnActionStatusOk OnActionStatus = "ok"
+	OnActionStatusError OnActionStatus = "error"
+	OnActionStatusNotHandled OnActionStatus = "not_handled"
+)
+
 // RunningApp is auto-generated from the OpenRPC spec.
 type RunningApp struct {
 	BundleID json.RawMessage `json:"bundle_id,omitempty"`
@@ -248,6 +266,14 @@ type SpaceInfo struct {
 	SpaceID int `json:"space_id"`
 	SpaceType string `json:"space_type"`
 }
+
+// SpeechPipelineAction is auto-generated from the OpenRPC spec.
+type SpeechPipelineAction string
+
+const (
+	SpeechPipelineActionPass SpeechPipelineAction = "pass"
+	SpeechPipelineActionConsume SpeechPipelineAction = "consume"
+)
 
 // SpotlightResult is auto-generated from the OpenRPC spec.
 type SpotlightResult struct {
@@ -296,10 +322,11 @@ type WindowInfo struct {
 
 // WorldModel is auto-generated from the OpenRPC spec.
 type WorldModel struct {
-	Windows []WindowInfo `json:"windows,omitempty"`
-	Displays []DisplayInfo `json:"displays,omitempty"`
-	ActiveWindowID *string `json:"active_window_id,omitempty"`
 	ActiveApp *string `json:"active_app,omitempty"`
+	ActiveWindowID *string `json:"active_window_id,omitempty"`
+	Displays []DisplayInfo `json:"displays"`
+	KeyboardLayoutID string `json:"keyboard_layout_id"`
+	Windows []WindowInfo `json:"windows"`
 }
 
 // ===== Plugin → Actuator request/response types =====
@@ -1455,15 +1482,6 @@ type NativeWorldModelRequest struct {
 	OnScreen *bool `json:"on_screen,omitempty"`
 }
 
-// NativeWorldModelResponse is the response type for native.world_model.
-type NativeWorldModelResponse struct {
-	ActiveApp json.RawMessage `json:"active_app,omitempty"`
-	ActiveWindowID json.RawMessage `json:"active_window_id,omitempty"`
-	Displays []DisplayInfo `json:"displays,omitempty"`
-	KeyboardLayoutID *string `json:"keyboard_layout_id,omitempty"`
-	Windows []WindowInfo `json:"windows,omitempty"`
-}
-
 // SelectionPickRequest is the request type for selection.pick.
 type SelectionPickRequest struct {
 	Index int `json:"index"`
@@ -1640,44 +1658,6 @@ type TagsModifyResponse struct {
 
 // ===== Actuator → Plugin request/response types =====
 
-// RenderSettingsRequest is the request type for render_settings.
-type RenderSettingsRequest struct {
-	TabKey string `json:"tab_key"`
-	Search *string `json:"search,omitempty"`
-	Apps []AppData `json:"apps,omitempty"`
-	Commands json.RawMessage `json:"commands,omitempty"`
-	ActiveTags []string `json:"active_tags,omitempty"`
-}
-
-// RenderSettingsResponse is the response type for render_settings.
-type RenderSettingsResponse struct {
-	HTML string `json:"html"`
-}
-
-// RenderHUDRequest is the request type for render_hud.
-type RenderHUDRequest struct {
-	HudMode string `json:"hud_mode"`
-	Apps []AppData `json:"apps,omitempty"`
-	Title *string `json:"title,omitempty"`
-	Footer *string `json:"footer,omitempty"`
-	Sections []HudSection `json:"sections,omitempty"`
-}
-
-// OnActionRequest is the request type for on_action.
-type OnActionRequest struct {
-	Action string `json:"action"`
-	Params json.RawMessage `json:"params,omitempty"`
-	ActiveApp *string `json:"active_app,omitempty"`
-	ActiveWindowID *string `json:"active_window_id,omitempty"`
-}
-
-// OnActionResponse is the response type for on_action.
-type OnActionResponse struct {
-	Status string `json:"status"`
-	ShellAction *string `json:"shell_action,omitempty"`
-	ControlMessage *string `json:"control_message,omitempty"`
-}
-
 // BuildCommandRegistryRequest is the request type for build_command_registry.
 type BuildCommandRegistryRequest struct {
 	CommandsByPlugin json.RawMessage `json:"commands_by_plugin"`
@@ -1689,16 +1669,53 @@ type BuildCommandRegistryResponse struct {
 	PhoneticsCount int `json:"phonetics_count"`
 }
 
-// SpeechPipelineRequest is the request type for speech_pipeline.
-type SpeechPipelineRequest struct {
-	Transcript string `json:"transcript"`
-	IsFinal bool `json:"is_final"`
-	Mode string `json:"mode"`
+// CalibrateRequest is the request type for calibrate.
+type CalibrateRequest struct {
+	Action CalibrateAction `json:"action"`
+	Words []string `json:"words,omitempty"`
 }
 
-// SpeechPipelineResponse is the response type for speech_pipeline.
-type SpeechPipelineResponse struct {
+// CalibrateResponse is the response type for calibrate.
+type CalibrateResponse struct {
+	CalibrationActive bool `json:"calibration_active"`
+}
+
+// OnActionRequest is the request type for on_action.
+type OnActionRequest struct {
 	Action string `json:"action"`
+	ActiveApp *string `json:"active_app,omitempty"`
+	ActiveWindowID *string `json:"active_window_id,omitempty"`
+	Params json.RawMessage `json:"params,omitempty"`
+}
+
+// OnActionResponse is the response type for on_action.
+type OnActionResponse struct {
+	ControlMessage *string `json:"control_message,omitempty"`
+	ShellAction *string `json:"shell_action,omitempty"`
+	Status OnActionStatus `json:"status"`
+}
+
+// RenderHUDRequest is the request type for render_hud.
+type RenderHUDRequest struct {
+	Apps []AppData `json:"apps,omitempty"`
+	Footer *string `json:"footer,omitempty"`
+	HudMode string `json:"hud_mode"`
+	Sections []HudSection `json:"sections,omitempty"`
+	Title *string `json:"title,omitempty"`
+}
+
+// RenderSettingsRequest is the request type for render_settings.
+type RenderSettingsRequest struct {
+	ActiveTags []string `json:"active_tags,omitempty"`
+	Apps []AppData `json:"apps,omitempty"`
+	Commands json.RawMessage `json:"commands,omitempty"`
+	Search *string `json:"search,omitempty"`
+	TabKey string `json:"tab_key"`
+}
+
+// RenderSettingsResponse is the response type for render_settings.
+type RenderSettingsResponse struct {
+	HTML string `json:"html"`
 }
 
 // SpeechOrchestrateRequest is the request type for speech_orchestrate.
@@ -1709,17 +1726,18 @@ type SpeechOrchestrateRequest struct {
 
 // SpeechOrchestrateResponse is the response type for speech_orchestrate.
 type SpeechOrchestrateResponse struct {
-	Result string `json:"result"`
 	ActionsToExecute []json.RawMessage `json:"actions_to_execute,omitempty"`
+	Result string `json:"result"`
 }
 
-// CalibrateRequest is the request type for calibrate.
-type CalibrateRequest struct {
-	Action string `json:"action"`
-	Words []string `json:"words,omitempty"`
+// SpeechPipelineRequest is the request type for speech_pipeline.
+type SpeechPipelineRequest struct {
+	IsFinal bool `json:"is_final"`
+	Mode string `json:"mode"`
+	Transcript string `json:"transcript"`
 }
 
-// CalibrateResponse is the response type for calibrate.
-type CalibrateResponse struct {
-	CalibrationActive bool `json:"calibration_active"`
+// SpeechPipelineResponse is the response type for speech_pipeline.
+type SpeechPipelineResponse struct {
+	Action SpeechPipelineAction `json:"action"`
 }

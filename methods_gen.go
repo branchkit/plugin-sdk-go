@@ -1280,11 +1280,11 @@ func (p *Plugin) NativeWifi() (*NativeWifiResponse, error) {
 }
 
 // NativeWorldModel get a snapshot of all windows and displays (with managed HUD windows).
-func (p *Plugin) NativeWorldModel(onScreen *bool) (*NativeWorldModelResponse, error) {
+func (p *Plugin) NativeWorldModel(onScreen *bool) (*WorldModel, error) {
 	req := &NativeWorldModelRequest{
 		OnScreen: onScreen,
 	}
-	var result NativeWorldModelResponse
+	var result WorldModel
 	err := p.Call(MethodNativeWorldModel, req, &result)
 	if err != nil {
 		return nil, err
