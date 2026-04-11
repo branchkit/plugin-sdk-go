@@ -12,37 +12,43 @@ var _ json.RawMessage
 
 // AXElementInfo is auto-generated from the OpenRPC spec.
 type AXElementInfo struct {
-	Role string `json:"role"`
-	Subrole *string `json:"subrole,omitempty"`
-	Title *string `json:"title,omitempty"`
-	Value json.RawMessage `json:"value,omitempty"`
-	Description *string `json:"description,omitempty"`
-	Position []int `json:"position,omitempty"`
-	Size []int `json:"size,omitempty"`
-	Enabled bool `json:"enabled"`
-	Focused bool `json:"focused"`
-	ChildrenCount int `json:"children_count"`
 	Actions []string `json:"actions"`
 	Attributes []string `json:"attributes"`
+	ChildrenCount int `json:"children_count"`
+	Description json.RawMessage `json:"description,omitempty"`
+	Enabled bool `json:"enabled"`
+	Focused bool `json:"focused"`
 	Path []AXPathSegment `json:"path"`
+	Position json.RawMessage `json:"position,omitempty"`
+	Role string `json:"role"`
+	Size json.RawMessage `json:"size,omitempty"`
+	Subrole json.RawMessage `json:"subrole,omitempty"`
+	Title json.RawMessage `json:"title,omitempty"`
+	Value json.RawMessage `json:"value,omitempty"`
 }
 
 // AXElementNode is auto-generated from the OpenRPC spec.
 type AXElementNode struct {
-	Element AXElementInfo `json:"element"`
 	Children []AXElementNode `json:"children"`
+	Element AXElementInfo `json:"element"`
 }
 
 // AXElementRef is auto-generated from the OpenRPC spec.
 type AXElementRef struct {
+	Path []AXPathSegment `json:"path"`
 	Pid int `json:"pid"`
-	Path []AXPathSegment `json:"path,omitempty"`
 }
 
 // AXPathSegment is auto-generated from the OpenRPC spec.
 type AXPathSegment struct {
-	Role string `json:"role"`
 	Index int `json:"index"`
+	Role string `json:"role"`
+}
+
+// ActiveSpace is auto-generated from the OpenRPC spec.
+type ActiveSpace struct {
+	DisplayID int `json:"display_id"`
+	SpaceID int `json:"space_id"`
 }
 
 // AppData is auto-generated from the OpenRPC spec.
@@ -53,64 +59,90 @@ type AppData struct {
 	Enabled *bool `json:"enabled,omitempty"`
 }
 
-// ApplescriptResult is auto-generated from the OpenRPC spec.
-type ApplescriptResult struct {
-	Stdout string `json:"stdout"`
-	Stderr string `json:"stderr"`
-	ExitCode int `json:"exit_code"`
-}
-
 // AudioDevice is auto-generated from the OpenRPC spec.
 type AudioDevice struct {
 	ID int `json:"id"`
-	UID string `json:"uid"`
-	Name string `json:"name"`
-	IsInput bool `json:"is_input"`
-	IsOutput bool `json:"is_output"`
 	IsDefaultInput bool `json:"is_default_input"`
 	IsDefaultOutput bool `json:"is_default_output"`
+	IsInput bool `json:"is_input"`
+	IsOutput bool `json:"is_output"`
+	Name string `json:"name"`
+	UID string `json:"uid"`
 }
 
-// BoolResult is auto-generated from the OpenRPC spec.
-type BoolResult struct {
-	Result bool `json:"result"`
+// BluetoothDevice is auto-generated from the OpenRPC spec.
+type BluetoothDevice struct {
+	Address string `json:"address"`
+	DeviceType json.RawMessage `json:"device_type,omitempty"`
+	IsConnected bool `json:"is_connected"`
+	IsPaired bool `json:"is_paired"`
+	Name string `json:"name"`
 }
 
 // ClipboardContents is auto-generated from the OpenRPC spec.
 type ClipboardContents struct {
-	ContentType string `json:"content_type"`
-	Text *string `json:"text,omitempty"`
-	FileUrls []string `json:"file_urls,omitempty"`
-	ImageBase64 *string `json:"image_base64,omitempty"`
 	AvailableTypes []string `json:"available_types"`
+	ContentType string `json:"content_type"`
+	FileUrls json.RawMessage `json:"file_urls,omitempty"`
+	ImageBase64 json.RawMessage `json:"image_base64,omitempty"`
+	Text json.RawMessage `json:"text,omitempty"`
 }
 
-// Command is auto-generated from the OpenRPC spec.
-type Command struct {
-	Phrase json.RawMessage `json:"phrase"`
-	Action json.RawMessage `json:"action"`
-	RequiresTags []string `json:"requires_tags,omitempty"`
-	SetsTags []string `json:"sets_tags,omitempty"`
-	ClearsTags []string `json:"clears_tags,omitempty"`
+// ClipboardWriteItem is auto-generated from the OpenRPC spec.
+type ClipboardWriteItem struct {
+	ContentType string `json:"content_type"`
+	FileUrls json.RawMessage `json:"file_urls,omitempty"`
+	ImageBase64 json.RawMessage `json:"image_base64,omitempty"`
+	Text json.RawMessage `json:"text,omitempty"`
 }
 
-// DiscoveryResult is auto-generated from the OpenRPC spec.
-type DiscoveryResult struct {
-	Opened bool `json:"opened"`
-	ShellAction *string `json:"shell_action,omitempty"`
+// DeliveredNotification is auto-generated from the OpenRPC spec.
+type DeliveredNotification struct {
+	Body json.RawMessage `json:"body,omitempty"`
+	DeliveredAt string `json:"delivered_at"`
+	ID string `json:"id"`
+	Title string `json:"title"`
+}
+
+// DiscoverItem is auto-generated from the OpenRPC spec.
+type DiscoverItem struct {
+	ID string `json:"id"`
+	Subtitle json.RawMessage `json:"subtitle,omitempty"`
+	Tag string `json:"tag"`
+	Title string `json:"title"`
 }
 
 // DisplayInfo is auto-generated from the OpenRPC spec.
 type DisplayInfo struct {
-	ID int `json:"id"`
-	X int `json:"x"`
-	Y int `json:"y"`
-	W int `json:"w"`
 	H int `json:"h"`
+	ID int `json:"id"`
+	VisibleH int `json:"visible_h"`
+	VisibleW int `json:"visible_w"`
 	VisibleX int `json:"visible_x"`
 	VisibleY int `json:"visible_y"`
-	VisibleW int `json:"visible_w"`
+	W int `json:"w"`
+	X int `json:"x"`
+	Y int `json:"y"`
+}
+
+// DisplayMetadata is auto-generated from the OpenRPC spec.
+type DisplayMetadata struct {
+	DisplayID int `json:"display_id"`
+	H int `json:"h"`
+	IsBuiltin bool `json:"is_builtin"`
+	IsPrimary bool `json:"is_primary"`
+	Name string `json:"name"`
+	RefreshRate float64 `json:"refresh_rate"`
+	ResolutionH int `json:"resolution_h"`
+	ResolutionW int `json:"resolution_w"`
+	ScaleFactor float64 `json:"scale_factor"`
 	VisibleH int `json:"visible_h"`
+	VisibleW int `json:"visible_w"`
+	VisibleX int `json:"visible_x"`
+	VisibleY int `json:"visible_y"`
+	W int `json:"w"`
+	X int `json:"x"`
+	Y int `json:"y"`
 }
 
 // Frame is auto-generated from the OpenRPC spec.
@@ -144,73 +176,122 @@ type HudSection struct {
 	Items []HudItem `json:"items"`
 }
 
-// MatchResult is auto-generated from the OpenRPC spec.
-type MatchResult struct {
-	Matched bool `json:"matched"`
-	Action json.RawMessage `json:"action,omitempty"`
-	Args []string `json:"args,omitempty"`
-	ConsumedCount *int `json:"consumed_count,omitempty"`
-	SetsTags []string `json:"sets_tags,omitempty"`
-	ClearsTags []string `json:"clears_tags,omitempty"`
-	RequiresTags []string `json:"requires_tags,omitempty"`
-	OwnerPlugin *string `json:"owner_plugin,omitempty"`
+// InputSource is auto-generated from the OpenRPC spec.
+type InputSource struct {
+	ID string `json:"id"`
+	IsActive bool `json:"is_active"`
+	Name string `json:"name"`
 }
 
-// Point is auto-generated from the OpenRPC spec.
-type Point struct {
+// ListCommandItem is auto-generated from the OpenRPC spec.
+type ListCommandItem struct {
+	ID string `json:"id"`
+	Subtitle json.RawMessage `json:"subtitle,omitempty"`
+	Tag json.RawMessage `json:"tag,omitempty"`
+	Title string `json:"title"`
+}
+
+// ListCommandSection is auto-generated from the OpenRPC spec.
+type ListCommandSection struct {
+	Items []ListCommandItem `json:"items"`
+	Title string `json:"title"`
+}
+
+// LoginItem is auto-generated from the OpenRPC spec.
+type LoginItem struct {
+	BundleID json.RawMessage `json:"bundle_id,omitempty"`
+	Hidden bool `json:"hidden"`
+	Name string `json:"name"`
+	Path string `json:"path"`
+}
+
+// MenuItem is auto-generated from the OpenRPC spec.
+type MenuItem struct {
+	Children []MenuItem `json:"children"`
+	Enabled bool `json:"enabled"`
+	Index int `json:"index"`
+	Shortcut json.RawMessage `json:"shortcut,omitempty"`
+	Title string `json:"title"`
+}
+
+// MergeStrategy is auto-generated from the OpenRPC spec.
+// How contributions to a shared store are merged when read.
+type MergeStrategy string
+
+const (
+	MergeStrategyAuthoritative MergeStrategy = "authoritative"
+	MergeStrategyCollect MergeStrategy = "collect"
+	MergeStrategyKeyed MergeStrategy = "keyed"
+)
+
+// RunningApp is auto-generated from the OpenRPC spec.
+type RunningApp struct {
+	BundleID json.RawMessage `json:"bundle_id,omitempty"`
+	IsActive bool `json:"is_active"`
+	IsHidden bool `json:"is_hidden"`
+	Name string `json:"name"`
+	Pid int `json:"pid"`
+}
+
+// ScreenshotRegion is auto-generated from the OpenRPC spec.
+type ScreenshotRegion struct {
+	H int `json:"h"`
+	W int `json:"w"`
 	X int `json:"x"`
 	Y int `json:"y"`
 }
 
-// RunningApp is auto-generated from the OpenRPC spec.
-type RunningApp struct {
-	Pid int `json:"pid"`
-	BundleID *string `json:"bundle_id,omitempty"`
-	Name string `json:"name"`
-	IsHidden bool `json:"is_hidden"`
-	IsActive bool `json:"is_active"`
-}
-
-// UserSessionInfo is auto-generated from the OpenRPC spec.
-type UserSessionInfo struct {
-	Username string `json:"username"`
-	FullName string `json:"full_name"`
-	HomeDirectory string `json:"home_directory"`
-}
-
-// WindowDetail is auto-generated from the OpenRPC spec.
-type WindowDetail struct {
-	WindowID string `json:"window_id"`
-	Title *string `json:"title,omitempty"`
-	Subrole *string `json:"subrole,omitempty"`
-	IsMinimized bool `json:"is_minimized"`
-	IsFullscreen bool `json:"is_fullscreen"`
-	IsFocused bool `json:"is_focused"`
-	Alpha *float64 `json:"alpha,omitempty"`
-	Bounds json.RawMessage `json:"bounds"`
+// SpaceInfo is auto-generated from the OpenRPC spec.
+type SpaceInfo struct {
 	DisplayID int `json:"display_id"`
+	IsActive bool `json:"is_active"`
+	SpaceID int `json:"space_id"`
+	SpaceType string `json:"space_type"`
+}
+
+// SpotlightResult is auto-generated from the OpenRPC spec.
+type SpotlightResult struct {
+	Kind string `json:"kind"`
+	Modified string `json:"modified"`
+	Name string `json:"name"`
+	Path string `json:"path"`
+	Size json.RawMessage `json:"size,omitempty"`
+}
+
+// TileableEntry is auto-generated from the OpenRPC spec.
+type TileableEntry struct {
+	Tileable bool `json:"tileable"`
+	WindowID string `json:"window_id"`
+}
+
+// WindowBounds is auto-generated from the OpenRPC spec.
+type WindowBounds struct {
+	H int `json:"h"`
+	W int `json:"w"`
+	X int `json:"x"`
+	Y int `json:"y"`
 }
 
 // WindowFrame is auto-generated from the OpenRPC spec.
 type WindowFrame struct {
+	H int `json:"h"`
+	W int `json:"w"`
 	WindowID string `json:"window_id"`
 	X int `json:"x"`
 	Y int `json:"y"`
-	W int `json:"w"`
-	H int `json:"h"`
 }
 
 // WindowInfo is auto-generated from the OpenRPC spec.
 type WindowInfo struct {
-	ID string `json:"id"`
 	AppID string `json:"app_id"`
 	AppName string `json:"app_name"`
+	H int `json:"h"`
+	ID string `json:"id"`
+	Source string `json:"source"`
 	Title string `json:"title"`
+	W int `json:"w"`
 	X int `json:"x"`
 	Y int `json:"y"`
-	W int `json:"w"`
-	H int `json:"h"`
-	Source *string `json:"source,omitempty"`
 }
 
 // WorldModel is auto-generated from the OpenRPC spec.
@@ -223,80 +304,88 @@ type WorldModel struct {
 
 // ===== Plugin → Actuator request/response types =====
 
-// StorePushRequest is the request type for store.push.
-type StorePushRequest struct {
-	Name string `json:"name"`
-	Data json.RawMessage `json:"data"`
+// CommandsDiscoverRequest is the request type for commands.discover.
+type CommandsDiscoverRequest struct {
+	ActiveTags json.RawMessage `json:"active_tags,omitempty"`
+	RequireTag json.RawMessage `json:"require_tag,omitempty"`
+	Words json.RawMessage `json:"words,omitempty"`
 }
 
-// StorePushResponse is the response type for store.push.
-type StorePushResponse struct {
-	Ok bool `json:"ok"`
-}
-
-// StoreGetRequest is the request type for store.get.
-type StoreGetRequest struct {
-	Name string `json:"name"`
-}
-
-// StoreGetResponse is the response type for store.get.
-type StoreGetResponse struct {
-	Data json.RawMessage `json:"data,omitempty"`
-}
-
-// TagsGetResponse is the response type for tags.get.
-type TagsGetResponse struct {
-	Tags []string `json:"tags"`
-}
-
-// TagsModifyRequest is the request type for tags.modify.
-type TagsModifyRequest struct {
-	Set []string `json:"set,omitempty"`
-	Clear []string `json:"clear,omitempty"`
-	ClearScoped *bool `json:"clear_scoped,omitempty"`
-}
-
-// TagsModifyResponse is the response type for tags.modify.
-type TagsModifyResponse struct {
-	Tags []string `json:"tags"`
-}
-
-// CommandsMatchRequest is the request type for commands.match.
-type CommandsMatchRequest struct {
-	Words []string `json:"words"`
-	ActiveTags []string `json:"active_tags,omitempty"`
+// CommandsDiscoverResponse is the response type for commands.discover.
+type CommandsDiscoverResponse struct {
+	Items []DiscoverItem `json:"items"`
+	Title string `json:"title"`
 }
 
 // CommandsHasPartialRequest is the request type for commands.has_partial.
 type CommandsHasPartialRequest struct {
+	ActiveTags json.RawMessage `json:"active_tags,omitempty"`
 	Words []string `json:"words"`
-	ActiveTags []string `json:"active_tags,omitempty"`
 }
 
 // CommandsHasPartialResponse is the response type for commands.has_partial.
 type CommandsHasPartialResponse struct {
 	HasPartial bool `json:"has_partial"`
-	NextList *string `json:"next_list,omitempty"`
-}
-
-// CommandsDiscoverRequest is the request type for commands.discover.
-type CommandsDiscoverRequest struct {
-	Words []string `json:"words,omitempty"`
-	RequireTag *string `json:"require_tag,omitempty"`
-	ActiveTags []string `json:"active_tags,omitempty"`
-}
-
-// CommandsDiscoverResponse is the response type for commands.discover.
-type CommandsDiscoverResponse struct {
-	Title string `json:"title"`
-	Items []json.RawMessage `json:"items"`
+	NextList json.RawMessage `json:"next_list,omitempty"`
 }
 
 // CommandsListResponse is the response type for commands.list.
 type CommandsListResponse struct {
-	Title string `json:"title"`
 	Footer string `json:"footer"`
-	Sections []json.RawMessage `json:"sections"`
+	Sections []ListCommandSection `json:"sections"`
+	Title string `json:"title"`
+}
+
+// CommandsMatchRequest is the request type for commands.match.
+type CommandsMatchRequest struct {
+	ActiveTags json.RawMessage `json:"active_tags,omitempty"`
+	Words []string `json:"words"`
+}
+
+// CommandsMatchResponse is the response type for commands.match.
+type CommandsMatchResponse struct {
+	Action json.RawMessage `json:"action,omitempty"`
+	Args []json.RawMessage `json:"args"`
+	ClearsTags []string `json:"clears_tags"`
+	ConsumedCount int `json:"consumed_count"`
+	Matched bool `json:"matched"`
+	OwnerPlugin json.RawMessage `json:"owner_plugin,omitempty"`
+	RequiresTags []string `json:"requires_tags"`
+	SetsTags []string `json:"sets_tags"`
+}
+
+// ControlSignalRequest is the request type for control.signal.
+type ControlSignalRequest struct {
+	Signal string `json:"signal"`
+}
+
+// ControlSignalResponse is the response type for control.signal.
+type ControlSignalResponse struct {
+	Ok bool `json:"ok"`
+}
+
+// EventsAppendRequest is the request type for events.append.
+type EventsAppendRequest struct {
+	Data json.RawMessage `json:"data,omitempty"`
+	EventType string `json:"event_type"`
+	SessionID *string `json:"session_id,omitempty"`
+}
+
+// EventsAppendResponse is the response type for events.append.
+type EventsAppendResponse struct {
+	Ok bool `json:"ok"`
+}
+
+// EventsEmitRequest is the request type for events.emit.
+type EventsEmitRequest struct {
+	CorrelationID json.RawMessage `json:"correlation_id,omitempty"`
+	Data json.RawMessage `json:"data,omitempty"`
+	EventType string `json:"event_type"`
+}
+
+// EventsEmitResponse is the response type for events.emit.
+type EventsEmitResponse struct {
+	Ok bool `json:"ok"`
 }
 
 // ExecuteRequest is the request type for execute.
@@ -306,64 +395,34 @@ type ExecuteRequest struct {
 
 // ExecuteResponse is the response type for execute.
 type ExecuteResponse struct {
-	Status *string `json:"status,omitempty"`
+	Message json.RawMessage `json:"message,omitempty"`
 	ShellAction json.RawMessage `json:"shell_action,omitempty"`
+	Status string `json:"status"`
 }
 
-// SettingsRulesCreateRequest is the request type for settings.rules_create.
-type SettingsRulesCreateRequest struct {
-	Newrulephrase string `json:"newrulephrase"`
-	Newruleactiontype *string `json:"newruleactiontype,omitempty"`
+// GrammarPushRequest is the request type for grammar.push.
+type GrammarPushRequest struct {
+	Commands json.RawMessage `json:"commands,omitempty"`
 }
 
-// SettingsRulesCreateResponse is the response type for settings.rules_create.
-type SettingsRulesCreateResponse struct {
+// GrammarPushResponse is the response type for grammar.push.
+type GrammarPushResponse struct {
+	Count int `json:"count"`
 	Ok bool `json:"ok"`
 }
 
-// SettingsRulesUpdateRequest is the request type for settings.rules_update.
-type SettingsRulesUpdateRequest struct {
-	Canonical string `json:"canonical"`
-	Newrulephrase string `json:"newrulephrase"`
+// HUDCreateChannelRequest is the request type for hud.create_channel.
+type HUDCreateChannelRequest struct {
+	AcceptsInput *bool `json:"accepts_input,omitempty"`
+	Anchor json.RawMessage `json:"anchor,omitempty"`
+	Channel string `json:"channel"`
+	Description *string `json:"description,omitempty"`
+	MinHeight *int `json:"min_height,omitempty"`
+	Width *int `json:"width,omitempty"`
 }
 
-// SettingsRulesUpdateResponse is the response type for settings.rules_update.
-type SettingsRulesUpdateResponse struct {
-	Ok bool `json:"ok"`
-}
-
-// ListsGetRequest is the request type for lists.get.
-type ListsGetRequest struct {
-	Name string `json:"name"`
-}
-
-// ListsGetResponse is the response type for lists.get.
-type ListsGetResponse struct {
-	Name *string `json:"name,omitempty"`
-	Entries json.RawMessage `json:"entries,omitempty"`
-}
-
-// ListsUpdateRequest is the request type for lists.update.
-type ListsUpdateRequest struct {
-	Name string `json:"name"`
-	Entries json.RawMessage `json:"entries"`
-	Merge *bool `json:"merge,omitempty"`
-	Label *string `json:"label,omitempty"`
-}
-
-// ListsUpdateResponse is the response type for lists.update.
-type ListsUpdateResponse struct {
-	Name *string `json:"name,omitempty"`
-	Entries json.RawMessage `json:"entries,omitempty"`
-}
-
-// ListsDeleteRequest is the request type for lists.delete.
-type ListsDeleteRequest struct {
-	Name string `json:"name"`
-}
-
-// ListsDeleteResponse is the response type for lists.delete.
-type ListsDeleteResponse struct {
+// HUDCreateChannelResponse is the response type for hud.create_channel.
+type HUDCreateChannelResponse struct {
 	Ok bool `json:"ok"`
 }
 
@@ -380,28 +439,12 @@ type HUDHideResponse struct {
 // HUDPushRequest is the request type for hud.push.
 type HUDPushRequest struct {
 	Channel string `json:"channel"`
-	Fragments []json.RawMessage `json:"fragments"`
+	Fragments json.RawMessage `json:"fragments"`
 }
 
 // HUDPushResponse is the response type for hud.push.
 type HUDPushResponse struct {
 	Ok bool `json:"ok"`
-}
-
-// HUDCreateChannelRequest is the request type for hud.create_channel.
-type HUDCreateChannelRequest struct {
-	Channel string `json:"channel"`
-	Anchor string `json:"anchor,omitempty"`
-	Width *int `json:"width,omitempty"`
-	MinHeight *int `json:"min_height,omitempty"`
-	AcceptsInput *bool `json:"accepts_input,omitempty"`
-	Description *string `json:"description,omitempty"`
-}
-
-// HUDCreateChannelResponse is the response type for hud.create_channel.
-type HUDCreateChannelResponse struct {
-	Ok bool `json:"ok"`
-	Error *string `json:"error,omitempty"`
 }
 
 // HUDRemoveChannelRequest is the request type for hud.remove_channel.
@@ -412,7 +455,7 @@ type HUDRemoveChannelRequest struct {
 // HUDRemoveChannelResponse is the response type for hud.remove_channel.
 type HUDRemoveChannelResponse struct {
 	Ok bool `json:"ok"`
-	Removed *bool `json:"removed,omitempty"`
+	Removed bool `json:"removed"`
 }
 
 // HUDSetSizeRequest is the request type for hud.set_size.
@@ -436,85 +479,171 @@ type HUDShowResponse struct {
 	Ok bool `json:"ok"`
 }
 
-// SessionEndCleanupResponse is the response type for session.end_cleanup.
-type SessionEndCleanupResponse struct {
-	Ok *bool `json:"ok,omitempty"`
-	ShellAction *string `json:"shell_action,omitempty"`
-	ResetEngine *bool `json:"reset_engine,omitempty"`
+// InputClickRequest is the request type for input.click.
+type InputClickRequest struct {
+	Button *string `json:"button,omitempty"`
 }
 
-// EventsAppendRequest is the request type for events.append.
-type EventsAppendRequest struct {
-	SessionID *string `json:"session_id,omitempty"`
-	EventType string `json:"event_type"`
-	Data json.RawMessage `json:"data,omitempty"`
-}
-
-// EventsAppendResponse is the response type for events.append.
-type EventsAppendResponse struct {
+// InputClickResponse is the response type for input.click.
+type InputClickResponse struct {
 	Ok bool `json:"ok"`
 }
 
-// GrammarPushRequest is the request type for grammar.push.
-type GrammarPushRequest struct {
-	Commands []Command `json:"commands"`
+// InputClipboardActionRequest is the request type for input.clipboard_action.
+type InputClipboardActionRequest struct {
+	Action string `json:"action"`
+	Text json.RawMessage `json:"text,omitempty"`
 }
 
-// GrammarPushResponse is the response type for grammar.push.
-type GrammarPushResponse struct {
-	Ok bool `json:"ok"`
-	Count int `json:"count"`
-}
-
-// SelectionSetRequest is the request type for selection.set.
-type SelectionSetRequest struct {
-	Title *string `json:"title,omitempty"`
-	Items []HudItem `json:"items,omitempty"`
-}
-
-// SelectionSetResponse is the response type for selection.set.
-type SelectionSetResponse struct {
+// InputClipboardActionResponse is the response type for input.clipboard_action.
+type InputClipboardActionResponse struct {
 	Ok bool `json:"ok"`
 }
 
-// SelectionPickRequest is the request type for selection.pick.
-type SelectionPickRequest struct {
-	Index int `json:"index"`
+// InputClipboardReadRequest is the request type for input.clipboard_read.
+type InputClipboardReadRequest struct {
+	ContentType string `json:"content_type"`
 }
 
-// SelectionPickResponse is the response type for selection.pick.
-type SelectionPickResponse struct {
-	Ok *bool `json:"ok,omitempty"`
-	ItemID *string `json:"item_id,omitempty"`
-	ResetEngine *bool `json:"reset_engine,omitempty"`
-	ShellAction *string `json:"shell_action,omitempty"`
+// InputClipboardReadResponse is the response type for input.clipboard_read.
+type InputClipboardReadResponse struct {
+	AvailableTypes []string `json:"available_types"`
+	ContentType string `json:"content_type"`
+	FileUrls json.RawMessage `json:"file_urls,omitempty"`
+	ImageBase64 json.RawMessage `json:"image_base64,omitempty"`
+	Text json.RawMessage `json:"text,omitempty"`
 }
 
-// MatchAliasesSetRequest is the request type for match_aliases.set.
-type MatchAliasesSetRequest struct {
-	Aliases map[string]string `json:"aliases"`
+// InputClipboardReadAllResponse is the response type for input.clipboard_read_all.
+type InputClipboardReadAllResponse struct {
+	Items []ClipboardContents `json:"items"`
 }
 
-// MatchAliasesSetResponse is the response type for match_aliases.set.
-type MatchAliasesSetResponse struct {
-	Ok *bool `json:"ok,omitempty"`
-	Count *int `json:"count,omitempty"`
+// InputClipboardWriteRequest is the request type for input.clipboard_write.
+type InputClipboardWriteRequest struct {
+	ContentType string `json:"content_type"`
+	Data string `json:"data"`
 }
 
-// MatchAliasesGetResponse is the response type for match_aliases.get.
-type MatchAliasesGetResponse struct {
-	Aliases map[string]string `json:"aliases,omitempty"`
-}
-
-// KeybindsRegisterRequest is the request type for keybinds.register.
-type KeybindsRegisterRequest struct {
-	Snapshot json.RawMessage `json:"snapshot"`
-}
-
-// KeybindsRegisterResponse is the response type for keybinds.register.
-type KeybindsRegisterResponse struct {
+// InputClipboardWriteResponse is the response type for input.clipboard_write.
+type InputClipboardWriteResponse struct {
 	Ok bool `json:"ok"`
-	Count *int `json:"count,omitempty"`
+}
+
+// InputClipboardWriteItemsRequest is the request type for input.clipboard_write_items.
+type InputClipboardWriteItemsRequest struct {
+	Items []ClipboardWriteItem `json:"items"`
+}
+
+// InputClipboardWriteItemsResponse is the response type for input.clipboard_write_items.
+type InputClipboardWriteItemsResponse struct {
+	Ok bool `json:"ok"`
+}
+
+// InputDoubleClickRequest is the request type for input.double_click.
+type InputDoubleClickRequest struct {
+	X json.RawMessage `json:"x,omitempty"`
+	Y json.RawMessage `json:"y,omitempty"`
+}
+
+// InputDoubleClickResponse is the response type for input.double_click.
+type InputDoubleClickResponse struct {
+	Ok bool `json:"ok"`
+}
+
+// InputDragRequest is the request type for input.drag.
+type InputDragRequest struct {
+	DurationMs *int `json:"duration_ms,omitempty"`
+	FromX int `json:"from_x"`
+	FromY int `json:"from_y"`
+	ToX int `json:"to_x"`
+	ToY int `json:"to_y"`
+}
+
+// InputDragResponse is the response type for input.drag.
+type InputDragResponse struct {
+	Ok bool `json:"ok"`
+}
+
+// InputListInputSourcesResponse is the response type for input.list_input_sources.
+type InputListInputSourcesResponse struct {
+	Sources []InputSource `json:"sources"`
+}
+
+// InputMouseButtonRequest is the request type for input.mouse_button.
+type InputMouseButtonRequest struct {
+	Button *string `json:"button,omitempty"`
+	Direction string `json:"direction"`
+}
+
+// InputMouseButtonResponse is the response type for input.mouse_button.
+type InputMouseButtonResponse struct {
+	Ok bool `json:"ok"`
+}
+
+// InputPressKeyRequest is the request type for input.press_key.
+type InputPressKeyRequest struct {
+	Code json.RawMessage `json:"code,omitempty"`
+	Modifiers []string `json:"modifiers,omitempty"`
+	Name json.RawMessage `json:"name,omitempty"`
+}
+
+// InputPressKeyResponse is the response type for input.press_key.
+type InputPressKeyResponse struct {
+	Ok bool `json:"ok"`
+}
+
+// InputRawKeyRequest is the request type for input.raw_key.
+type InputRawKeyRequest struct {
+	Code int `json:"code"`
+	Direction string `json:"direction"`
+}
+
+// InputRawKeyResponse is the response type for input.raw_key.
+type InputRawKeyResponse struct {
+	Ok bool `json:"ok"`
+}
+
+// InputRightClickRequest is the request type for input.right_click.
+type InputRightClickRequest struct {
+	X json.RawMessage `json:"x,omitempty"`
+	Y json.RawMessage `json:"y,omitempty"`
+}
+
+// InputRightClickResponse is the response type for input.right_click.
+type InputRightClickResponse struct {
+	Ok bool `json:"ok"`
+}
+
+// InputScrollRequest is the request type for input.scroll.
+type InputScrollRequest struct {
+	Amount *int `json:"amount,omitempty"`
+	Direction string `json:"direction"`
+}
+
+// InputScrollResponse is the response type for input.scroll.
+type InputScrollResponse struct {
+	Ok bool `json:"ok"`
+}
+
+// InputSwitchInputSourceRequest is the request type for input.switch_input_source.
+type InputSwitchInputSourceRequest struct {
+	SourceID string `json:"source_id"`
+}
+
+// InputSwitchInputSourceResponse is the response type for input.switch_input_source.
+type InputSwitchInputSourceResponse struct {
+	Result bool `json:"result"`
+}
+
+// InputTypeTextRequest is the request type for input.type_text.
+type InputTypeTextRequest struct {
+	Text string `json:"text"`
+}
+
+// InputTypeTextResponse is the response type for input.type_text.
+type InputTypeTextResponse struct {
+	Ok bool `json:"ok"`
 }
 
 // KeyNamesSetRequest is the request type for key_names.set.
@@ -524,13 +653,193 @@ type KeyNamesSetRequest struct {
 
 // KeyNamesSetResponse is the response type for key_names.set.
 type KeyNamesSetResponse struct {
+	Count int `json:"count"`
 	Ok bool `json:"ok"`
-	Count *int `json:"count,omitempty"`
 }
 
-// NativeWorldModelRequest is the request type for native.world_model.
-type NativeWorldModelRequest struct {
-	OnScreen *bool `json:"on_screen,omitempty"`
+// KeybindsRegisterRequest is the request type for keybinds.register.
+type KeybindsRegisterRequest struct {
+	Snapshot json.RawMessage `json:"snapshot"`
+}
+
+// KeybindsRegisterResponse is the response type for keybinds.register.
+type KeybindsRegisterResponse struct {
+	Count int `json:"count"`
+	Ok bool `json:"ok"`
+}
+
+// ListsDeleteRequest is the request type for lists.delete.
+type ListsDeleteRequest struct {
+	Name string `json:"name"`
+}
+
+// ListsDeleteResponse is the response type for lists.delete.
+type ListsDeleteResponse struct {
+	Ok bool `json:"ok"`
+}
+
+// ListsGetRequest is the request type for lists.get.
+type ListsGetRequest struct {
+	Name string `json:"name"`
+}
+
+// ListsGetResponse is the response type for lists.get.
+type ListsGetResponse struct {
+	Entries json.RawMessage `json:"entries"`
+	Name string `json:"name"`
+}
+
+// ListsUpdateRequest is the request type for lists.update.
+type ListsUpdateRequest struct {
+	Entries json.RawMessage `json:"entries,omitempty"`
+	Label json.RawMessage `json:"label,omitempty"`
+	Merge *bool `json:"merge,omitempty"`
+	Name string `json:"name"`
+}
+
+// ListsUpdateResponse is the response type for lists.update.
+type ListsUpdateResponse struct {
+	Entries json.RawMessage `json:"entries"`
+	Name string `json:"name"`
+}
+
+// MatchAliasesGetResponse is the response type for match_aliases.get.
+type MatchAliasesGetResponse struct {
+	Aliases map[string]string `json:"aliases"`
+}
+
+// MatchAliasesSetRequest is the request type for match_aliases.set.
+type MatchAliasesSetRequest struct {
+	Aliases map[string]string `json:"aliases,omitempty"`
+}
+
+// MatchAliasesSetResponse is the response type for match_aliases.set.
+type MatchAliasesSetResponse struct {
+	Count int `json:"count"`
+	Ok bool `json:"ok"`
+}
+
+// NativeActivateAppRequest is the request type for native.activate_app.
+type NativeActivateAppRequest struct {
+	AllWindows *bool `json:"all_windows,omitempty"`
+	BundleID string `json:"bundle_id"`
+}
+
+// NativeActivateAppResponse is the response type for native.activate_app.
+type NativeActivateAppResponse struct {
+	Ok bool `json:"ok"`
+}
+
+// NativeActiveSpaceResponse is the response type for native.active_space.
+type NativeActiveSpaceResponse struct {
+	Active []ActiveSpace `json:"active"`
+}
+
+// NativeAppIconRequest is the request type for native.app_icon.
+type NativeAppIconRequest struct {
+	BundleID string `json:"bundle_id"`
+	Size *int `json:"size,omitempty"`
+}
+
+// NativeAppIconResponse is the response type for native.app_icon.
+type NativeAppIconResponse struct {
+	Format string `json:"format"`
+	ImageBase64 string `json:"image_base64"`
+}
+
+// NativeAudioDevicesResponse is the response type for native.audio_devices.
+type NativeAudioDevicesResponse struct {
+	Devices []AudioDevice `json:"devices"`
+}
+
+// NativeAxElementAtPointRequest is the request type for native.ax_element_at_point.
+type NativeAxElementAtPointRequest struct {
+	Pid int `json:"pid"`
+	X int `json:"x"`
+	Y int `json:"y"`
+}
+
+// NativeAxElementAtPointResponse is the response type for native.ax_element_at_point.
+type NativeAxElementAtPointResponse struct {
+	Actions []string `json:"actions"`
+	Attributes []string `json:"attributes"`
+	ChildrenCount int `json:"children_count"`
+	Description json.RawMessage `json:"description,omitempty"`
+	Enabled bool `json:"enabled"`
+	Focused bool `json:"focused"`
+	Path []AXPathSegment `json:"path"`
+	Position json.RawMessage `json:"position,omitempty"`
+	Role string `json:"role"`
+	Size json.RawMessage `json:"size,omitempty"`
+	Subrole json.RawMessage `json:"subrole,omitempty"`
+	Title json.RawMessage `json:"title,omitempty"`
+	Value json.RawMessage `json:"value,omitempty"`
+}
+
+// NativeAxElementTreeRequest is the request type for native.ax_element_tree.
+type NativeAxElementTreeRequest struct {
+	Depth *int `json:"depth,omitempty"`
+	Element AXElementRef `json:"element"`
+}
+
+// NativeAxObserveRequest is the request type for native.ax_observe.
+type NativeAxObserveRequest struct {
+	Notifications []string `json:"notifications"`
+	Pid int `json:"pid"`
+}
+
+// NativeAxObserveResponse is the response type for native.ax_observe.
+type NativeAxObserveResponse struct {
+	SubscriptionID string `json:"subscription_id"`
+}
+
+// NativeAxPerformActionRequest is the request type for native.ax_perform_action.
+type NativeAxPerformActionRequest struct {
+	Action string `json:"action"`
+	Element AXElementRef `json:"element"`
+}
+
+// NativeAxPerformActionResponse is the response type for native.ax_perform_action.
+type NativeAxPerformActionResponse struct {
+	Result bool `json:"result"`
+}
+
+// NativeAxReadAttributesRequest is the request type for native.ax_read_attributes.
+type NativeAxReadAttributesRequest struct {
+	Attributes []string `json:"attributes"`
+	Element AXElementRef `json:"element"`
+}
+
+// NativeAxSetAttributeRequest is the request type for native.ax_set_attribute.
+type NativeAxSetAttributeRequest struct {
+	Attribute string `json:"attribute"`
+	Element AXElementRef `json:"element"`
+	Value json.RawMessage `json:"value"`
+}
+
+// NativeAxSetAttributeResponse is the response type for native.ax_set_attribute.
+type NativeAxSetAttributeResponse struct {
+	Result bool `json:"result"`
+}
+
+// NativeAxUnobserveRequest is the request type for native.ax_unobserve.
+type NativeAxUnobserveRequest struct {
+	SubscriptionID string `json:"subscription_id"`
+}
+
+// NativeAxUnobserveResponse is the response type for native.ax_unobserve.
+type NativeAxUnobserveResponse struct {
+	Result bool `json:"result"`
+}
+
+// NativeBatchIsTileableRequest is the request type for native.batch_is_tileable.
+type NativeBatchIsTileableRequest struct {
+	WindowIds []string `json:"window_ids"`
+}
+
+// NativeBatchIsTileableResponse is the response type for native.batch_is_tileable.
+type NativeBatchIsTileableResponse struct {
+	Results []TileableEntry `json:"results"`
 }
 
 // NativeBatchSetFramesRequest is the request type for native.batch_set_frames.
@@ -544,30 +853,185 @@ type NativeBatchSetFramesResponse struct {
 	Results []WindowFrame `json:"results"`
 }
 
-// NativeRaiseWindowRequest is the request type for native.raise_window.
-type NativeRaiseWindowRequest struct {
+// NativeBatteryResponse is the response type for native.battery.
+type NativeBatteryResponse struct {
+	IsCharging bool `json:"is_charging"`
+	IsPluggedIn bool `json:"is_plugged_in"`
+	IsPresent bool `json:"is_present"`
+	Level float64 `json:"level"`
+	TimeRemainingMinutes json.RawMessage `json:"time_remaining_minutes,omitempty"`
+}
+
+// NativeBluetoothDevicesResponse is the response type for native.bluetooth_devices.
+type NativeBluetoothDevicesResponse struct {
+	Devices []BluetoothDevice `json:"devices"`
+}
+
+// NativeBordersResponse is the response type for native.borders.
+type NativeBordersResponse struct {
+	Ok bool `json:"ok"`
+}
+
+// NativeBrightnessRequest is the request type for native.brightness.
+type NativeBrightnessRequest struct {
+	DisplayID json.RawMessage `json:"display_id,omitempty"`
+}
+
+// NativeBrightnessResponse is the response type for native.brightness.
+type NativeBrightnessResponse struct {
+	Brightness float64 `json:"brightness"`
+}
+
+// NativeCaptureWindowRequest is the request type for native.capture_window.
+type NativeCaptureWindowRequest struct {
 	WindowID string `json:"window_id"`
 }
 
-// NativeBatchIsTileableRequest is the request type for native.batch_is_tileable.
-type NativeBatchIsTileableRequest struct {
-	WindowIds []string `json:"window_ids"`
+// NativeCaptureWindowResponse is the response type for native.capture_window.
+type NativeCaptureWindowResponse struct {
+	Format string `json:"format"`
+	ImageBase64 string `json:"image_base64"`
 }
 
-// NativeBatchIsTileableResponse is the response type for native.batch_is_tileable.
-type NativeBatchIsTileableResponse struct {
-	Results []json.RawMessage `json:"results"`
+// NativeClickMenuItemRequest is the request type for native.click_menu_item.
+type NativeClickMenuItemRequest struct {
+	Path []string `json:"path"`
+	Pid int `json:"pid"`
 }
 
-// NativeToggleFullscreenRequest is the request type for native.toggle_fullscreen.
-type NativeToggleFullscreenRequest struct {
+// NativeClickMenuItemResponse is the response type for native.click_menu_item.
+type NativeClickMenuItemResponse struct {
+	Result bool `json:"result"`
+}
+
+// NativeClipboardChangeCountResponse is the response type for native.clipboard_change_count.
+type NativeClipboardChangeCountResponse struct {
+	Count int `json:"count"`
+}
+
+// NativeCloseWindowRequest is the request type for native.close_window.
+type NativeCloseWindowRequest struct {
 	WindowID string `json:"window_id"`
 }
 
-// NativeWarpCursorRequest is the request type for native.warp_cursor.
-type NativeWarpCursorRequest struct {
+// NativeCloseWindowResponse is the response type for native.close_window.
+type NativeCloseWindowResponse struct {
+	Ok bool `json:"ok"`
+}
+
+// NativeColorAtPointRequest is the request type for native.color_at_point.
+type NativeColorAtPointRequest struct {
 	X int `json:"x"`
 	Y int `json:"y"`
+}
+
+// NativeColorAtPointResponse is the response type for native.color_at_point.
+type NativeColorAtPointResponse struct {
+	A int `json:"a"`
+	B int `json:"b"`
+	G int `json:"g"`
+	Hex string `json:"hex"`
+	R int `json:"r"`
+}
+
+// NativeCurrentUserResponse is the response type for native.current_user.
+type NativeCurrentUserResponse struct {
+	FullName string `json:"full_name"`
+	HomeDirectory string `json:"home_directory"`
+	Username string `json:"username"`
+}
+
+// NativeCursorResponse is the response type for native.cursor.
+type NativeCursorResponse struct {
+	X int `json:"x"`
+	Y int `json:"y"`
+}
+
+// NativeCursorInfoResponse is the response type for native.cursor_info.
+type NativeCursorInfoResponse struct {
+	CursorType string `json:"cursor_type"`
+	X int `json:"x"`
+	Y int `json:"y"`
+}
+
+// NativeDarkModeResponse is the response type for native.dark_mode.
+type NativeDarkModeResponse struct {
+	IsDark bool `json:"is_dark"`
+}
+
+// NativeDefaultBrowserResponse is the response type for native.default_browser.
+type NativeDefaultBrowserResponse struct {
+	BundleID string `json:"bundle_id"`
+}
+
+// NativeDismissNotificationRequest is the request type for native.dismiss_notification.
+type NativeDismissNotificationRequest struct {
+	ID string `json:"id"`
+}
+
+// NativeDismissNotificationResponse is the response type for native.dismiss_notification.
+type NativeDismissNotificationResponse struct {
+	Ok bool `json:"ok"`
+}
+
+// NativeDisplaysResponse is the response type for native.displays.
+type NativeDisplaysResponse struct {
+	Displays []DisplayMetadata `json:"displays"`
+}
+
+// NativeDndResponse is the response type for native.dnd.
+type NativeDndResponse struct {
+	Enabled bool `json:"enabled"`
+	FocusName json.RawMessage `json:"focus_name,omitempty"`
+}
+
+// NativeFileTagsRequest is the request type for native.file_tags.
+type NativeFileTagsRequest struct {
+	Path string `json:"path"`
+	Tags json.RawMessage `json:"tags,omitempty"`
+}
+
+// NativeForceQuitAppRequest is the request type for native.force_quit_app.
+type NativeForceQuitAppRequest struct {
+	BundleID string `json:"bundle_id"`
+}
+
+// NativeForceQuitAppResponse is the response type for native.force_quit_app.
+type NativeForceQuitAppResponse struct {
+	Result bool `json:"result"`
+}
+
+// NativeFrontmostAppResponse is the response type for native.frontmost_app.
+type NativeFrontmostAppResponse struct {
+	App json.RawMessage `json:"app,omitempty"`
+}
+
+// NativeGetWindowInfoRequest is the request type for native.get_window_info.
+type NativeGetWindowInfoRequest struct {
+	WindowID string `json:"window_id"`
+}
+
+// NativeGetWindowInfoResponse is the response type for native.get_window_info.
+type NativeGetWindowInfoResponse struct {
+	Alpha json.RawMessage `json:"alpha,omitempty"`
+	Bounds WindowBounds `json:"bounds"`
+	DisplayID int `json:"display_id"`
+	IsFocused bool `json:"is_focused"`
+	IsFullscreen bool `json:"is_fullscreen"`
+	IsMinimized bool `json:"is_minimized"`
+	Subrole json.RawMessage `json:"subrole,omitempty"`
+	Title json.RawMessage `json:"title,omitempty"`
+	WindowID string `json:"window_id"`
+}
+
+// NativeHideAppRequest is the request type for native.hide_app.
+type NativeHideAppRequest struct {
+	BundleID string `json:"bundle_id"`
+}
+
+// NativeHideAppResponse is the response type for native.hide_app.
+type NativeHideAppResponse struct {
+	Ok bool `json:"ok"`
 }
 
 // NativeIsAppHiddenRequest is the request type for native.is_app_hidden.
@@ -580,213 +1044,37 @@ type NativeIsAppHiddenResponse struct {
 	Result bool `json:"result"`
 }
 
-// NativeUnhideAppRequest is the request type for native.unhide_app.
-type NativeUnhideAppRequest struct {
-	BundleID string `json:"bundle_id"`
-}
-
-// NativeBordersRequest is the request type for native.borders.
-type NativeBordersRequest struct {
-	Frames json.RawMessage `json:"frames"`
-}
-
-// NativeRunApplescriptRequest is the request type for native.run_applescript.
-type NativeRunApplescriptRequest struct {
-	Script string `json:"script"`
-}
-
-// NativeAudioDevicesResponse is the response type for native.audio_devices.
-type NativeAudioDevicesResponse struct {
-	Devices []AudioDevice `json:"devices"`
-}
-
-// NativeSetAudioDeviceRequest is the request type for native.set_audio_device.
-type NativeSetAudioDeviceRequest struct {
-	UID string `json:"uid"`
-	DeviceType string `json:"device_type"`
-}
-
 // NativeKeyboardLayoutResponse is the response type for native.keyboard_layout.
 type NativeKeyboardLayoutResponse struct {
-	LayoutID *string `json:"layout_id,omitempty"`
-	LayoutName *string `json:"layout_name,omitempty"`
-	Mappings json.RawMessage `json:"mappings,omitempty"`
+	LayoutID string `json:"layout_id"`
+	LayoutName string `json:"layout_name"`
+	Mappings map[string]string `json:"mappings"`
 }
 
-// NativeRunningAppsResponse is the response type for native.running_apps.
-type NativeRunningAppsResponse struct {
-	Apps []RunningApp `json:"apps,omitempty"`
-}
-
-// NativeFrontmostAppResponse is the response type for native.frontmost_app.
-type NativeFrontmostAppResponse struct {
-	App *RunningApp `json:"app,omitempty"`
-}
-
-// NativeQuitAppRequest is the request type for native.quit_app.
-type NativeQuitAppRequest struct {
+// NativeLaunchAppRequest is the request type for native.launch_app.
+type NativeLaunchAppRequest struct {
 	BundleID string `json:"bundle_id"`
+	NewInstance *bool `json:"new_instance,omitempty"`
 }
 
-// NativeQuitAppResponse is the response type for native.quit_app.
-type NativeQuitAppResponse struct {
-	Result *bool `json:"result,omitempty"`
+// NativeLaunchAppResponse is the response type for native.launch_app.
+type NativeLaunchAppResponse struct {
+	Ok bool `json:"ok"`
 }
 
-// NativeForceQuitAppRequest is the request type for native.force_quit_app.
-type NativeForceQuitAppRequest struct {
-	BundleID string `json:"bundle_id"`
+// NativeListNotificationsResponse is the response type for native.list_notifications.
+type NativeListNotificationsResponse struct {
+	Notifications []DeliveredNotification `json:"notifications"`
 }
 
-// NativeForceQuitAppResponse is the response type for native.force_quit_app.
-type NativeForceQuitAppResponse struct {
-	Result *bool `json:"result,omitempty"`
+// NativeListSpacesResponse is the response type for native.list_spaces.
+type NativeListSpacesResponse struct {
+	Spaces []SpaceInfo `json:"spaces"`
 }
 
-// NativeHideAppRequest is the request type for native.hide_app.
-type NativeHideAppRequest struct {
-	BundleID string `json:"bundle_id"`
-}
-
-// NativeActivateAppRequest is the request type for native.activate_app.
-type NativeActivateAppRequest struct {
-	BundleID string `json:"bundle_id"`
-	AllWindows *bool `json:"all_windows,omitempty"`
-}
-
-// NativeMinimizeWindowRequest is the request type for native.minimize_window.
-type NativeMinimizeWindowRequest struct {
-	WindowID string `json:"window_id"`
-}
-
-// NativeUnminimizeWindowRequest is the request type for native.unminimize_window.
-type NativeUnminimizeWindowRequest struct {
-	WindowID string `json:"window_id"`
-}
-
-// NativeCloseWindowRequest is the request type for native.close_window.
-type NativeCloseWindowRequest struct {
-	WindowID string `json:"window_id"`
-}
-
-// NativeGetWindowInfoRequest is the request type for native.get_window_info.
-type NativeGetWindowInfoRequest struct {
-	WindowID string `json:"window_id"`
-}
-
-// NativeVolumeResponse is the response type for native.volume.
-type NativeVolumeResponse struct {
-	Volume *float64 `json:"volume,omitempty"`
-	IsMuted *bool `json:"is_muted,omitempty"`
-}
-
-// NativeSetVolumeRequest is the request type for native.set_volume.
-type NativeSetVolumeRequest struct {
-	Volume float64 `json:"volume"`
-}
-
-// NativeMuteRequest is the request type for native.mute.
-type NativeMuteRequest struct {
-	Muted bool `json:"muted"`
-}
-
-// NativeDarkModeResponse is the response type for native.dark_mode.
-type NativeDarkModeResponse struct {
-	IsDark *bool `json:"is_dark,omitempty"`
-}
-
-// NativeSetDarkModeRequest is the request type for native.set_dark_mode.
-type NativeSetDarkModeRequest struct {
-	Dark bool `json:"dark"`
-}
-
-// InputDragRequest is the request type for input.drag.
-type InputDragRequest struct {
-	FromX int `json:"from_x"`
-	FromY int `json:"from_y"`
-	ToX int `json:"to_x"`
-	ToY int `json:"to_y"`
-	DurationMs *int `json:"duration_ms,omitempty"`
-}
-
-// InputClipboardReadRequest is the request type for input.clipboard_read.
-type InputClipboardReadRequest struct {
-	ContentType string `json:"content_type"`
-}
-
-// InputClipboardWriteRequest is the request type for input.clipboard_write.
-type InputClipboardWriteRequest struct {
-	ContentType string `json:"content_type"`
-	Data string `json:"data"`
-}
-
-// InputClipboardWriteResponse is the response type for input.clipboard_write.
-type InputClipboardWriteResponse struct {
-	Ok *bool `json:"ok,omitempty"`
-}
-
-// NativeBatteryResponse is the response type for native.battery.
-type NativeBatteryResponse struct {
-	Level *float64 `json:"level,omitempty"`
-	IsCharging *bool `json:"is_charging,omitempty"`
-	IsPluggedIn *bool `json:"is_plugged_in,omitempty"`
-	TimeRemainingMinutes *int `json:"time_remaining_minutes,omitempty"`
-	IsPresent *bool `json:"is_present,omitempty"`
-}
-
-// NativeWifiResponse is the response type for native.wifi.
-type NativeWifiResponse struct {
-	Ssid *string `json:"ssid,omitempty"`
-	Bssid *string `json:"bssid,omitempty"`
-	Rssi *int `json:"rssi,omitempty"`
-	IsConnected *bool `json:"is_connected,omitempty"`
-	IsEnabled *bool `json:"is_enabled,omitempty"`
-}
-
-// NativePlaySoundRequest is the request type for native.play_sound.
-type NativePlaySoundRequest struct {
-	Name string `json:"name"`
-}
-
-// NativeSpeakRequest is the request type for native.speak.
-type NativeSpeakRequest struct {
-	Text string `json:"text"`
-	Voice *string `json:"voice,omitempty"`
-	Rate *float64 `json:"rate,omitempty"`
-}
-
-// NativeDisplaysResponse is the response type for native.displays.
-type NativeDisplaysResponse struct {
-	Displays []json.RawMessage `json:"displays,omitempty"`
-}
-
-// NativeBrightnessRequest is the request type for native.brightness.
-type NativeBrightnessRequest struct {
-	DisplayID *int `json:"display_id,omitempty"`
-}
-
-// NativeBrightnessResponse is the response type for native.brightness.
-type NativeBrightnessResponse struct {
-	Brightness *float64 `json:"brightness,omitempty"`
-}
-
-// NativeSetBrightnessRequest is the request type for native.set_brightness.
-type NativeSetBrightnessRequest struct {
-	Brightness float64 `json:"brightness"`
-	DisplayID *int `json:"display_id,omitempty"`
-}
-
-// NativeScreenshotRequest is the request type for native.screenshot.
-type NativeScreenshotRequest struct {
-	WindowID *string `json:"window_id,omitempty"`
-	DisplayID *int `json:"display_id,omitempty"`
-	Region json.RawMessage `json:"region,omitempty"`
-}
-
-// NativeScreenshotResponse is the response type for native.screenshot.
-type NativeScreenshotResponse struct {
-	ImageBase64 *string `json:"image_base64,omitempty"`
-	Format *string `json:"format,omitempty"`
+// NativeLoginItemsResponse is the response type for native.login_items.
+type NativeLoginItemsResponse struct {
+	Items []LoginItem `json:"items"`
 }
 
 // NativeMenuBarRequest is the request type for native.menu_bar.
@@ -796,195 +1084,108 @@ type NativeMenuBarRequest struct {
 
 // NativeMenuBarResponse is the response type for native.menu_bar.
 type NativeMenuBarResponse struct {
-	Items []json.RawMessage `json:"items,omitempty"`
+	Items []MenuItem `json:"items"`
 }
 
-// NativeClickMenuItemRequest is the request type for native.click_menu_item.
-type NativeClickMenuItemRequest struct {
-	Pid int `json:"pid"`
-	Path []string `json:"path"`
-}
-
-// NativeClickMenuItemResponse is the response type for native.click_menu_item.
-type NativeClickMenuItemResponse struct {
-	Result *bool `json:"result,omitempty"`
-}
-
-// NativeListSpacesResponse is the response type for native.list_spaces.
-type NativeListSpacesResponse struct {
-	Spaces []json.RawMessage `json:"spaces,omitempty"`
-}
-
-// NativeActiveSpaceResponse is the response type for native.active_space.
-type NativeActiveSpaceResponse struct {
-	Active []json.RawMessage `json:"active,omitempty"`
-}
-
-// NativeMoveWindowToSpaceRequest is the request type for native.move_window_to_space.
-type NativeMoveWindowToSpaceRequest struct {
+// NativeMinimizeWindowRequest is the request type for native.minimize_window.
+type NativeMinimizeWindowRequest struct {
 	WindowID string `json:"window_id"`
-	SpaceID int `json:"space_id"`
 }
 
-// NativeMoveWindowToSpaceResponse is the response type for native.move_window_to_space.
-type NativeMoveWindowToSpaceResponse struct {
-	Result *bool `json:"result,omitempty"`
+// NativeMinimizeWindowResponse is the response type for native.minimize_window.
+type NativeMinimizeWindowResponse struct {
+	Ok bool `json:"ok"`
 }
 
 // NativeMoveWindowToDisplayRequest is the request type for native.move_window_to_display.
 type NativeMoveWindowToDisplayRequest struct {
-	WindowID string `json:"window_id"`
 	DisplayID int `json:"display_id"`
-}
-
-// NativeCaptureWindowRequest is the request type for native.capture_window.
-type NativeCaptureWindowRequest struct {
 	WindowID string `json:"window_id"`
 }
 
-// NativeCaptureWindowResponse is the response type for native.capture_window.
-type NativeCaptureWindowResponse struct {
-	ImageBase64 *string `json:"image_base64,omitempty"`
-	Format *string `json:"format,omitempty"`
+// NativeMoveWindowToDisplayResponse is the response type for native.move_window_to_display.
+type NativeMoveWindowToDisplayResponse struct {
+	Ok bool `json:"ok"`
 }
 
-// NativeSetWindowAlphaRequest is the request type for native.set_window_alpha.
-type NativeSetWindowAlphaRequest struct {
+// NativeMoveWindowToSpaceRequest is the request type for native.move_window_to_space.
+type NativeMoveWindowToSpaceRequest struct {
+	SpaceID int `json:"space_id"`
 	WindowID string `json:"window_id"`
-	Alpha float64 `json:"alpha"`
 }
 
-// NativeAppIconRequest is the request type for native.app_icon.
-type NativeAppIconRequest struct {
-	BundleID string `json:"bundle_id"`
-	Size *int `json:"size,omitempty"`
+// NativeMoveWindowToSpaceResponse is the response type for native.move_window_to_space.
+type NativeMoveWindowToSpaceResponse struct {
+	Result bool `json:"result"`
 }
 
-// NativeAppIconResponse is the response type for native.app_icon.
-type NativeAppIconResponse struct {
-	ImageBase64 *string `json:"image_base64,omitempty"`
-	Format *string `json:"format,omitempty"`
+// NativeMuteRequest is the request type for native.mute.
+type NativeMuteRequest struct {
+	Muted bool `json:"muted"`
 }
 
-// InputDoubleClickRequest is the request type for input.double_click.
-type InputDoubleClickRequest struct {
-	X *int `json:"x,omitempty"`
-	Y *int `json:"y,omitempty"`
+// NativeMuteResponse is the response type for native.mute.
+type NativeMuteResponse struct {
+	Ok bool `json:"ok"`
 }
 
-// InputRightClickRequest is the request type for input.right_click.
-type InputRightClickRequest struct {
-	X *int `json:"x,omitempty"`
-	Y *int `json:"y,omitempty"`
+// NativeNotifyRequest is the request type for native.notify.
+type NativeNotifyRequest struct {
+	Body json.RawMessage `json:"body,omitempty"`
+	Sound json.RawMessage `json:"sound,omitempty"`
+	Subtitle json.RawMessage `json:"subtitle,omitempty"`
+	Title string `json:"title"`
 }
 
-// InputSwitchInputSourceRequest is the request type for input.switch_input_source.
-type InputSwitchInputSourceRequest struct {
-	SourceID string `json:"source_id"`
+// NativeNotifyResponse is the response type for native.notify.
+type NativeNotifyResponse struct {
+	ID json.RawMessage `json:"id,omitempty"`
 }
 
-// InputSwitchInputSourceResponse is the response type for input.switch_input_source.
-type InputSwitchInputSourceResponse struct {
-	Result *bool `json:"result,omitempty"`
+// NativeObserveWindowsRequest is the request type for native.observe_windows.
+type NativeObserveWindowsRequest struct {
+	Pid int `json:"pid"`
 }
 
-// InputListInputSourcesResponse is the response type for input.list_input_sources.
-type InputListInputSourcesResponse struct {
-	Sources []json.RawMessage `json:"sources,omitempty"`
+// NativeObserveWindowsResponse is the response type for native.observe_windows.
+type NativeObserveWindowsResponse struct {
+	SubscriptionID string `json:"subscription_id"`
 }
 
-// NativeDndResponse is the response type for native.dnd.
-type NativeDndResponse struct {
-	Enabled *bool `json:"enabled,omitempty"`
-	FocusName *string `json:"focus_name,omitempty"`
+// NativeOpenTargetRequest is the request type for native.open_target.
+type NativeOpenTargetRequest struct {
+	Target string `json:"target"`
 }
 
-// NativeSetDndRequest is the request type for native.set_dnd.
-type NativeSetDndRequest struct {
-	Enabled bool `json:"enabled"`
+// NativeOpenTargetResponse is the response type for native.open_target.
+type NativeOpenTargetResponse struct {
+	Ok bool `json:"ok"`
 }
 
-// NativeBluetoothDevicesResponse is the response type for native.bluetooth_devices.
-type NativeBluetoothDevicesResponse struct {
-	Devices []json.RawMessage `json:"devices,omitempty"`
+// NativePlaySoundRequest is the request type for native.play_sound.
+type NativePlaySoundRequest struct {
+	Name string `json:"name"`
+}
+
+// NativePlaySoundResponse is the response type for native.play_sound.
+type NativePlaySoundResponse struct {
+	Ok bool `json:"ok"`
+}
+
+// NativePollBurstResponse is the response type for native.poll_burst.
+type NativePollBurstResponse struct {
+	Ok bool `json:"ok"`
 }
 
 // NativePreventSleepRequest is the request type for native.prevent_sleep.
 type NativePreventSleepRequest struct {
+	AssertionID json.RawMessage `json:"assertion_id,omitempty"`
 	Reason *string `json:"reason,omitempty"`
-	AssertionID *string `json:"assertion_id,omitempty"`
 }
 
 // NativePreventSleepResponse is the response type for native.prevent_sleep.
 type NativePreventSleepResponse struct {
-	AssertionID *string `json:"assertion_id,omitempty"`
-}
-
-// NativeSystemUptimeResponse is the response type for native.system_uptime.
-type NativeSystemUptimeResponse struct {
-	UptimeSeconds *float64 `json:"uptime_seconds,omitempty"`
-	Formatted *string `json:"formatted,omitempty"`
-}
-
-// NativeColorAtPointRequest is the request type for native.color_at_point.
-type NativeColorAtPointRequest struct {
-	X int `json:"x"`
-	Y int `json:"y"`
-}
-
-// NativeColorAtPointResponse is the response type for native.color_at_point.
-type NativeColorAtPointResponse struct {
-	R *int `json:"r,omitempty"`
-	G *int `json:"g,omitempty"`
-	B *int `json:"b,omitempty"`
-	A *int `json:"a,omitempty"`
-	Hex *string `json:"hex,omitempty"`
-}
-
-// NativeCursorInfoResponse is the response type for native.cursor_info.
-type NativeCursorInfoResponse struct {
-	CursorType *string `json:"cursor_type,omitempty"`
-	X *int `json:"x,omitempty"`
-	Y *int `json:"y,omitempty"`
-}
-
-// NativeSpotlightRequest is the request type for native.spotlight.
-type NativeSpotlightRequest struct {
-	Query string `json:"query"`
-	Scope []string `json:"scope,omitempty"`
-	Limit *int `json:"limit,omitempty"`
-}
-
-// NativeSpotlightResponse is the response type for native.spotlight.
-type NativeSpotlightResponse struct {
-	Results []json.RawMessage `json:"results,omitempty"`
-}
-
-// NativeTrashRequest is the request type for native.trash.
-type NativeTrashRequest struct {
-	Path string `json:"path"`
-}
-
-// NativeTrashResponse is the response type for native.trash.
-type NativeTrashResponse struct {
-	Result *bool `json:"result,omitempty"`
-}
-
-// NativeFileTagsRequest is the request type for native.file_tags.
-type NativeFileTagsRequest struct {
-	Path string `json:"path"`
-	Tags []string `json:"tags,omitempty"`
-}
-
-// NativeFileTagsResponse is the response type for native.file_tags.
-type NativeFileTagsResponse struct {
-	Path *string `json:"path,omitempty"`
-	Tags []string `json:"tags,omitempty"`
-}
-
-// NativeRevealInFinderRequest is the request type for native.reveal_in_finder.
-type NativeRevealInFinderRequest struct {
-	Path string `json:"path"`
+	AssertionID string `json:"assertion_id"`
 }
 
 // NativeQuickLookRequest is the request type for native.quick_look.
@@ -995,119 +1196,222 @@ type NativeQuickLookRequest struct {
 
 // NativeQuickLookResponse is the response type for native.quick_look.
 type NativeQuickLookResponse struct {
-	ImageBase64 *string `json:"image_base64,omitempty"`
-	Format *string `json:"format,omitempty"`
+	Format string `json:"format"`
+	ImageBase64 string `json:"image_base64"`
+}
+
+// NativeQuitAppRequest is the request type for native.quit_app.
+type NativeQuitAppRequest struct {
+	BundleID string `json:"bundle_id"`
+}
+
+// NativeQuitAppResponse is the response type for native.quit_app.
+type NativeQuitAppResponse struct {
+	Result bool `json:"result"`
+}
+
+// NativeRaiseWindowRequest is the request type for native.raise_window.
+type NativeRaiseWindowRequest struct {
+	WindowID string `json:"window_id"`
+}
+
+// NativeRaiseWindowResponse is the response type for native.raise_window.
+type NativeRaiseWindowResponse struct {
+	Ok bool `json:"ok"`
+}
+
+// NativeRevealInFinderRequest is the request type for native.reveal_in_finder.
+type NativeRevealInFinderRequest struct {
+	Path string `json:"path"`
+}
+
+// NativeRevealInFinderResponse is the response type for native.reveal_in_finder.
+type NativeRevealInFinderResponse struct {
+	Ok bool `json:"ok"`
+}
+
+// NativeRunApplescriptRequest is the request type for native.run_applescript.
+type NativeRunApplescriptRequest struct {
+	Script string `json:"script"`
+}
+
+// NativeRunApplescriptResponse is the response type for native.run_applescript.
+type NativeRunApplescriptResponse struct {
+	ExitCode int `json:"exit_code"`
+	Stderr string `json:"stderr"`
+	Stdout string `json:"stdout"`
+}
+
+// NativeRunningAppsResponse is the response type for native.running_apps.
+type NativeRunningAppsResponse struct {
+	Apps []RunningApp `json:"apps"`
+}
+
+// NativeScreenLockResponse is the response type for native.screen_lock.
+type NativeScreenLockResponse struct {
+	Ok bool `json:"ok"`
+}
+
+// NativeScreenshotRequest is the request type for native.screenshot.
+type NativeScreenshotRequest struct {
+	DisplayID json.RawMessage `json:"display_id,omitempty"`
+	Region json.RawMessage `json:"region,omitempty"`
+	WindowID json.RawMessage `json:"window_id,omitempty"`
+}
+
+// NativeScreenshotResponse is the response type for native.screenshot.
+type NativeScreenshotResponse struct {
+	Format string `json:"format"`
+	ImageBase64 string `json:"image_base64"`
 }
 
 // NativeSelectedFinderItemsResponse is the response type for native.selected_finder_items.
 type NativeSelectedFinderItemsResponse struct {
-	Paths []string `json:"paths,omitempty"`
+	Paths []string `json:"paths"`
 }
 
-// NativeNotifyRequest is the request type for native.notify.
-type NativeNotifyRequest struct {
-	Title string `json:"title"`
-	Body *string `json:"body,omitempty"`
-	Subtitle *string `json:"subtitle,omitempty"`
-	Sound *string `json:"sound,omitempty"`
+// NativeSetAudioDeviceRequest is the request type for native.set_audio_device.
+type NativeSetAudioDeviceRequest struct {
+	DeviceType string `json:"device_type"`
+	UID string `json:"uid"`
 }
 
-// NativeNotifyResponse is the response type for native.notify.
-type NativeNotifyResponse struct {
-	ID *string `json:"id,omitempty"`
+// NativeSetAudioDeviceResponse is the response type for native.set_audio_device.
+type NativeSetAudioDeviceResponse struct {
+	Ok bool `json:"ok"`
 }
 
-// NativeListNotificationsResponse is the response type for native.list_notifications.
-type NativeListNotificationsResponse struct {
-	Notifications []json.RawMessage `json:"notifications,omitempty"`
+// NativeSetBrightnessRequest is the request type for native.set_brightness.
+type NativeSetBrightnessRequest struct {
+	Brightness float64 `json:"brightness"`
+	DisplayID json.RawMessage `json:"display_id,omitempty"`
 }
 
-// NativeDismissNotificationRequest is the request type for native.dismiss_notification.
-type NativeDismissNotificationRequest struct {
-	ID string `json:"id"`
+// NativeSetBrightnessResponse is the response type for native.set_brightness.
+type NativeSetBrightnessResponse struct {
+	Ok bool `json:"ok"`
 }
 
-// NativeDefaultBrowserResponse is the response type for native.default_browser.
-type NativeDefaultBrowserResponse struct {
-	BundleID *string `json:"bundle_id,omitempty"`
+// NativeSetDarkModeRequest is the request type for native.set_dark_mode.
+type NativeSetDarkModeRequest struct {
+	Dark bool `json:"dark"`
 }
 
-// NativeLoginItemsResponse is the response type for native.login_items.
-type NativeLoginItemsResponse struct {
-	Items []json.RawMessage `json:"items,omitempty"`
+// NativeSetDarkModeResponse is the response type for native.set_dark_mode.
+type NativeSetDarkModeResponse struct {
+	Ok bool `json:"ok"`
 }
 
-// NativeClipboardChangeCountResponse is the response type for native.clipboard_change_count.
-type NativeClipboardChangeCountResponse struct {
-	Count *int `json:"count,omitempty"`
+// NativeSetDndRequest is the request type for native.set_dnd.
+type NativeSetDndRequest struct {
+	Enabled bool `json:"enabled"`
 }
 
-// InputClipboardReadAllResponse is the response type for input.clipboard_read_all.
-type InputClipboardReadAllResponse struct {
-	Items []json.RawMessage `json:"items,omitempty"`
+// NativeSetDndResponse is the response type for native.set_dnd.
+type NativeSetDndResponse struct {
+	Ok bool `json:"ok"`
 }
 
-// InputClipboardWriteItemsRequest is the request type for input.clipboard_write_items.
-type InputClipboardWriteItemsRequest struct {
-	Items []json.RawMessage `json:"items"`
+// NativeSetVolumeRequest is the request type for native.set_volume.
+type NativeSetVolumeRequest struct {
+	Volume float64 `json:"volume"`
 }
 
-// NativeAxElementAtPointRequest is the request type for native.ax_element_at_point.
-type NativeAxElementAtPointRequest struct {
-	Pid int `json:"pid"`
-	X int `json:"x"`
-	Y int `json:"y"`
+// NativeSetVolumeResponse is the response type for native.set_volume.
+type NativeSetVolumeResponse struct {
+	Ok bool `json:"ok"`
 }
 
-// NativeAxElementTreeRequest is the request type for native.ax_element_tree.
-type NativeAxElementTreeRequest struct {
-	Element AXElementRef `json:"element"`
-	Depth *int `json:"depth,omitempty"`
+// NativeSetWindowAlphaRequest is the request type for native.set_window_alpha.
+type NativeSetWindowAlphaRequest struct {
+	Alpha float64 `json:"alpha"`
+	WindowID string `json:"window_id"`
 }
 
-// NativeAxReadAttributesRequest is the request type for native.ax_read_attributes.
-type NativeAxReadAttributesRequest struct {
-	Element AXElementRef `json:"element"`
-	Attributes []string `json:"attributes"`
+// NativeSetWindowAlphaResponse is the response type for native.set_window_alpha.
+type NativeSetWindowAlphaResponse struct {
+	Ok bool `json:"ok"`
 }
 
-// NativeAxSetAttributeRequest is the request type for native.ax_set_attribute.
-type NativeAxSetAttributeRequest struct {
-	Element AXElementRef `json:"element"`
-	Attribute string `json:"attribute"`
-	Value json.RawMessage `json:"value"`
+// NativeSetWindowLevelRequest is the request type for native.set_window_level.
+type NativeSetWindowLevelRequest struct {
+	Level string `json:"level"`
+	WindowID string `json:"window_id"`
 }
 
-// NativeAxPerformActionRequest is the request type for native.ax_perform_action.
-type NativeAxPerformActionRequest struct {
-	Element AXElementRef `json:"element"`
-	Action string `json:"action"`
+// NativeSetWindowLevelResponse is the response type for native.set_window_level.
+type NativeSetWindowLevelResponse struct {
+	Result bool `json:"result"`
 }
 
-// NativeAxObserveRequest is the request type for native.ax_observe.
-type NativeAxObserveRequest struct {
-	Pid int `json:"pid"`
-	Notifications []string `json:"notifications"`
+// NativeSpeakRequest is the request type for native.speak.
+type NativeSpeakRequest struct {
+	Rate json.RawMessage `json:"rate,omitempty"`
+	Text string `json:"text"`
+	Voice json.RawMessage `json:"voice,omitempty"`
 }
 
-// NativeAxObserveResponse is the response type for native.ax_observe.
-type NativeAxObserveResponse struct {
-	SubscriptionID *string `json:"subscription_id,omitempty"`
+// NativeSpeakResponse is the response type for native.speak.
+type NativeSpeakResponse struct {
+	Ok bool `json:"ok"`
 }
 
-// NativeAxUnobserveRequest is the request type for native.ax_unobserve.
-type NativeAxUnobserveRequest struct {
-	SubscriptionID string `json:"subscription_id"`
+// NativeSpotlightRequest is the request type for native.spotlight.
+type NativeSpotlightRequest struct {
+	Limit *int `json:"limit,omitempty"`
+	Query string `json:"query"`
+	Scope json.RawMessage `json:"scope,omitempty"`
 }
 
-// NativeObserveWindowsRequest is the request type for native.observe_windows.
-type NativeObserveWindowsRequest struct {
-	Pid int `json:"pid"`
+// NativeSpotlightResponse is the response type for native.spotlight.
+type NativeSpotlightResponse struct {
+	Results []SpotlightResult `json:"results"`
 }
 
-// NativeObserveWindowsResponse is the response type for native.observe_windows.
-type NativeObserveWindowsResponse struct {
-	SubscriptionID *string `json:"subscription_id,omitempty"`
+// NativeSystemUptimeResponse is the response type for native.system_uptime.
+type NativeSystemUptimeResponse struct {
+	Formatted string `json:"formatted"`
+	UptimeSeconds float64 `json:"uptime_seconds"`
+}
+
+// NativeToggleFullscreenRequest is the request type for native.toggle_fullscreen.
+type NativeToggleFullscreenRequest struct {
+	WindowID string `json:"window_id"`
+}
+
+// NativeToggleFullscreenResponse is the response type for native.toggle_fullscreen.
+type NativeToggleFullscreenResponse struct {
+	Ok bool `json:"ok"`
+}
+
+// NativeTrashRequest is the request type for native.trash.
+type NativeTrashRequest struct {
+	Path string `json:"path"`
+}
+
+// NativeTrashResponse is the response type for native.trash.
+type NativeTrashResponse struct {
+	Result bool `json:"result"`
+}
+
+// NativeUnhideAppRequest is the request type for native.unhide_app.
+type NativeUnhideAppRequest struct {
+	BundleID string `json:"bundle_id"`
+}
+
+// NativeUnhideAppResponse is the response type for native.unhide_app.
+type NativeUnhideAppResponse struct {
+	Ok bool `json:"ok"`
+}
+
+// NativeUnminimizeWindowRequest is the request type for native.unminimize_window.
+type NativeUnminimizeWindowRequest struct {
+	WindowID string `json:"window_id"`
+}
+
+// NativeUnminimizeWindowResponse is the response type for native.unminimize_window.
+type NativeUnminimizeWindowResponse struct {
+	Ok bool `json:"ok"`
 }
 
 // NativeUnobserveWindowsRequest is the request type for native.unobserve_windows.
@@ -1115,74 +1419,223 @@ type NativeUnobserveWindowsRequest struct {
 	SubscriptionID string `json:"subscription_id"`
 }
 
-// NativeSetWindowLevelRequest is the request type for native.set_window_level.
-type NativeSetWindowLevelRequest struct {
-	WindowID string `json:"window_id"`
-	Level string `json:"level"`
+// NativeUnobserveWindowsResponse is the response type for native.unobserve_windows.
+type NativeUnobserveWindowsResponse struct {
+	Result bool `json:"result"`
 }
 
-// ControlSignalRequest is the request type for control.signal.
-type ControlSignalRequest struct {
-	Signal string `json:"signal"`
+// NativeVolumeResponse is the response type for native.volume.
+type NativeVolumeResponse struct {
+	IsMuted bool `json:"is_muted"`
+	Volume float64 `json:"volume"`
 }
 
-// EventsEmitRequest is the request type for events.emit.
-type EventsEmitRequest struct {
-	EventType string `json:"event_type"`
-	Data json.RawMessage `json:"data,omitempty"`
-	CorrelationID *string `json:"correlation_id,omitempty"`
+// NativeWarpCursorRequest is the request type for native.warp_cursor.
+type NativeWarpCursorRequest struct {
+	X int `json:"x"`
+	Y int `json:"y"`
 }
 
-// InputTypeTextRequest is the request type for input.type_text.
-type InputTypeTextRequest struct {
-	Text string `json:"text"`
+// NativeWarpCursorResponse is the response type for native.warp_cursor.
+type NativeWarpCursorResponse struct {
+	Ok bool `json:"ok"`
 }
 
-// InputPressKeyRequest is the request type for input.press_key.
-type InputPressKeyRequest struct {
-	Code *int `json:"code,omitempty"`
-	Name *string `json:"name,omitempty"`
-	Modifiers []string `json:"modifiers,omitempty"`
+// NativeWifiResponse is the response type for native.wifi.
+type NativeWifiResponse struct {
+	Bssid json.RawMessage `json:"bssid,omitempty"`
+	IsConnected bool `json:"is_connected"`
+	IsEnabled bool `json:"is_enabled"`
+	Rssi json.RawMessage `json:"rssi,omitempty"`
+	Ssid json.RawMessage `json:"ssid,omitempty"`
 }
 
-// InputRawKeyRequest is the request type for input.raw_key.
-type InputRawKeyRequest struct {
-	Code int `json:"code"`
-	Direction string `json:"direction"`
+// NativeWorldModelRequest is the request type for native.world_model.
+type NativeWorldModelRequest struct {
+	OnScreen *bool `json:"on_screen,omitempty"`
 }
 
-// InputClickRequest is the request type for input.click.
-type InputClickRequest struct {
-	Button string `json:"button,omitempty"`
+// NativeWorldModelResponse is the response type for native.world_model.
+type NativeWorldModelResponse struct {
+	ActiveApp json.RawMessage `json:"active_app,omitempty"`
+	ActiveWindowID json.RawMessage `json:"active_window_id,omitempty"`
+	Displays []DisplayInfo `json:"displays,omitempty"`
+	KeyboardLayoutID *string `json:"keyboard_layout_id,omitempty"`
+	Windows []WindowInfo `json:"windows,omitempty"`
 }
 
-// InputScrollRequest is the request type for input.scroll.
-type InputScrollRequest struct {
-	Direction string `json:"direction"`
-	Amount *int `json:"amount,omitempty"`
+// SelectionPickRequest is the request type for selection.pick.
+type SelectionPickRequest struct {
+	Index int `json:"index"`
 }
 
-// InputMouseButtonRequest is the request type for input.mouse_button.
-type InputMouseButtonRequest struct {
-	Button string `json:"button,omitempty"`
-	Direction string `json:"direction"`
+// SelectionPickResponse is the response type for selection.pick.
+type SelectionPickResponse struct {
+	ItemID string `json:"item_id"`
+	Ok bool `json:"ok"`
+	ResetEngine bool `json:"reset_engine"`
+	ShellAction string `json:"shell_action"`
 }
 
-// InputClipboardActionRequest is the request type for input.clipboard_action.
-type InputClipboardActionRequest struct {
-	Action string `json:"action"`
-	Text *string `json:"text,omitempty"`
+// SelectionSetRequest is the request type for selection.set.
+type SelectionSetRequest struct {
+	Items json.RawMessage `json:"items,omitempty"`
+	Title json.RawMessage `json:"title,omitempty"`
 }
 
-// NativeLaunchAppRequest is the request type for native.launch_app.
-type NativeLaunchAppRequest struct {
+// SelectionSetResponse is the response type for selection.set.
+type SelectionSetResponse struct {
+	Ok bool `json:"ok"`
+}
+
+// SessionEndCleanupResponse is the response type for session.end_cleanup.
+type SessionEndCleanupResponse struct {
+	Ok bool `json:"ok"`
+	ResetEngine bool `json:"reset_engine"`
+	ShellAction json.RawMessage `json:"shell_action,omitempty"`
+}
+
+// SettingsRulesCreateRequest is the request type for settings.rules_create.
+type SettingsRulesCreateRequest struct {
+	Newruleactionjson json.RawMessage `json:"newruleactionjson,omitempty"`
+	Newruleactiontype json.RawMessage `json:"newruleactiontype,omitempty"`
+	Newruleactionval json.RawMessage `json:"newruleactionval,omitempty"`
+	Newrulecategory json.RawMessage `json:"newrulecategory,omitempty"`
+	Newruleclearstags json.RawMessage `json:"newruleclearstags,omitempty"`
+	Newruledescription json.RawMessage `json:"newruledescription,omitempty"`
+	Newrulephrase json.RawMessage `json:"newrulephrase,omitempty"`
+	Newrulerequirestags json.RawMessage `json:"newrulerequirestags,omitempty"`
+	Newrulesetstags json.RawMessage `json:"newrulesetstags,omitempty"`
+}
+
+// SettingsRulesCreateResponse is the response type for settings.rules_create.
+type SettingsRulesCreateResponse struct {
+	Ok bool `json:"ok"`
+}
+
+// SettingsRulesUpdateRequest is the request type for settings.rules_update.
+type SettingsRulesUpdateRequest struct {
+	Canonical string `json:"canonical"`
+	Newruleactionjson json.RawMessage `json:"newruleactionjson,omitempty"`
+	Newruleactiontype json.RawMessage `json:"newruleactiontype,omitempty"`
+	Newruleactionval json.RawMessage `json:"newruleactionval,omitempty"`
+	Newrulecategory json.RawMessage `json:"newrulecategory,omitempty"`
+	Newruleclearstags json.RawMessage `json:"newruleclearstags,omitempty"`
+	Newruledescription json.RawMessage `json:"newruledescription,omitempty"`
+	Newrulephrase json.RawMessage `json:"newrulephrase,omitempty"`
+	Newrulerequirestags json.RawMessage `json:"newrulerequirestags,omitempty"`
+	Newrulesetstags json.RawMessage `json:"newrulesetstags,omitempty"`
+}
+
+// SettingsRulesUpdateResponse is the response type for settings.rules_update.
+type SettingsRulesUpdateResponse struct {
+	Ok bool `json:"ok"`
+}
+
+// StoreGetRequest is the request type for store.get.
+type StoreGetRequest struct {
+	Name string `json:"name"`
+}
+
+// StoreGetResponse is the response type for store.get.
+type StoreGetResponse struct {
+	Data json.RawMessage `json:"data"`
+	Introducer string `json:"introducer"`
+	Merge MergeStrategy `json:"merge"`
+	Store string `json:"store"`
+}
+
+// StorePushRequest is the request type for store.push.
+type StorePushRequest struct {
+	Data json.RawMessage `json:"data"`
+	Name string `json:"name"`
+}
+
+// StorePushResponse is the response type for store.push.
+type StorePushResponse struct {
+	Ok bool `json:"ok"`
+}
+
+// SystemLaunchAppRequest is the request type for system.launch_app.
+type SystemLaunchAppRequest struct {
 	BundleID string `json:"bundle_id"`
 	NewInstance *bool `json:"new_instance,omitempty"`
 }
 
-// NativeOpenTargetRequest is the request type for native.open_target.
-type NativeOpenTargetRequest struct {
-	Target string `json:"target"`
+// SystemLaunchAppResponse is the response type for system.launch_app.
+type SystemLaunchAppResponse struct {
+	Ok bool `json:"ok"`
+}
+
+// SystemNotifyRequest is the request type for system.notify.
+type SystemNotifyRequest struct {
+	Body string `json:"body"`
+	Title string `json:"title"`
+}
+
+// SystemNotifyResponse is the response type for system.notify.
+type SystemNotifyResponse struct {
+	Ok bool `json:"ok"`
+}
+
+// SystemRunEvalRequest is the request type for system.run_eval.
+type SystemRunEvalRequest struct {
+	Command string `json:"command"`
+}
+
+// SystemRunEvalResponse is the response type for system.run_eval.
+type SystemRunEvalResponse struct {
+	Error string `json:"error"`
+	Ok bool `json:"ok"`
+}
+
+// SystemRunScriptRequest is the request type for system.run_script.
+type SystemRunScriptRequest struct {
+	Path string `json:"path"`
+}
+
+// SystemRunScriptResponse is the response type for system.run_script.
+type SystemRunScriptResponse struct {
+	Error string `json:"error"`
+	Ok bool `json:"ok"`
+}
+
+// SystemRunShellRequest is the request type for system.run_shell.
+type SystemRunShellRequest struct {
+	Command string `json:"command"`
+}
+
+// SystemRunShellResponse is the response type for system.run_shell.
+type SystemRunShellResponse struct {
+	Ok bool `json:"ok"`
+}
+
+// SystemRunToolRequest is the request type for system.run_tool.
+type SystemRunToolRequest struct {
+	Name string `json:"name"`
+	Params map[string]string `json:"params,omitempty"`
+}
+
+// SystemRunToolResponse is the response type for system.run_tool.
+type SystemRunToolResponse struct {
+	Ok bool `json:"ok"`
+}
+
+// TagsGetResponse is the response type for tags.get.
+type TagsGetResponse struct {
+	Tags []string `json:"tags"`
+}
+
+// TagsModifyRequest is the request type for tags.modify.
+type TagsModifyRequest struct {
+	Clear []string `json:"clear,omitempty"`
+	ClearScoped *bool `json:"clear_scoped,omitempty"`
+	Set []string `json:"set,omitempty"`
+}
+
+// TagsModifyResponse is the response type for tags.modify.
+type TagsModifyResponse struct {
+	Tags []string `json:"tags"`
 }
 
 // ===== Actuator → Plugin request/response types =====
