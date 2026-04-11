@@ -347,7 +347,7 @@ type CommandsDiscoverResponse struct {
 // CommandsHasPartialRequest is the request type for commands.has_partial.
 type CommandsHasPartialRequest struct {
 	ActiveTags json.RawMessage `json:"active_tags,omitempty"`
-	Words []string `json:"words"`
+	Words []string `json:"words,omitempty"`
 }
 
 // CommandsHasPartialResponse is the response type for commands.has_partial.
@@ -366,7 +366,7 @@ type CommandsListResponse struct {
 // CommandsMatchRequest is the request type for commands.match.
 type CommandsMatchRequest struct {
 	ActiveTags json.RawMessage `json:"active_tags,omitempty"`
-	Words []string `json:"words"`
+	Words []string `json:"words,omitempty"`
 }
 
 // CommandsMatchResponse is the response type for commands.match.
@@ -559,7 +559,7 @@ type InputClipboardWriteResponse struct {
 
 // InputClipboardWriteItemsRequest is the request type for input.clipboard_write_items.
 type InputClipboardWriteItemsRequest struct {
-	Items []ClipboardWriteItem `json:"items"`
+	Items []ClipboardWriteItem `json:"items,omitempty"`
 }
 
 // InputClipboardWriteItemsResponse is the response type for input.clipboard_write_items.
@@ -675,7 +675,7 @@ type InputTypeTextResponse struct {
 
 // KeyNamesSetRequest is the request type for key_names.set.
 type KeyNamesSetRequest struct {
-	Names map[string]int `json:"names"`
+	Names map[string]int `json:"names,omitempty"`
 }
 
 // KeyNamesSetResponse is the response type for key_names.set.
@@ -811,7 +811,7 @@ type NativeAxElementTreeRequest struct {
 
 // NativeAxObserveRequest is the request type for native.ax_observe.
 type NativeAxObserveRequest struct {
-	Notifications []string `json:"notifications"`
+	Notifications []string `json:"notifications,omitempty"`
 	Pid int `json:"pid"`
 }
 
@@ -833,7 +833,7 @@ type NativeAxPerformActionResponse struct {
 
 // NativeAxReadAttributesRequest is the request type for native.ax_read_attributes.
 type NativeAxReadAttributesRequest struct {
-	Attributes []string `json:"attributes"`
+	Attributes []string `json:"attributes,omitempty"`
 	Element AXElementRef `json:"element"`
 }
 
@@ -861,7 +861,7 @@ type NativeAxUnobserveResponse struct {
 
 // NativeBatchIsTileableRequest is the request type for native.batch_is_tileable.
 type NativeBatchIsTileableRequest struct {
-	WindowIds []string `json:"window_ids"`
+	WindowIds []string `json:"window_ids,omitempty"`
 }
 
 // NativeBatchIsTileableResponse is the response type for native.batch_is_tileable.
@@ -871,7 +871,7 @@ type NativeBatchIsTileableResponse struct {
 
 // NativeBatchSetFramesRequest is the request type for native.batch_set_frames.
 type NativeBatchSetFramesRequest struct {
-	Frames []WindowFrame `json:"frames"`
+	Frames []WindowFrame `json:"frames,omitempty"`
 	Readback *bool `json:"readback,omitempty"`
 }
 
@@ -922,7 +922,7 @@ type NativeCaptureWindowResponse struct {
 
 // NativeClickMenuItemRequest is the request type for native.click_menu_item.
 type NativeClickMenuItemRequest struct {
-	Path []string `json:"path"`
+	Path []string `json:"path,omitempty"`
 	Pid int `json:"pid"`
 }
 
