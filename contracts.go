@@ -161,6 +161,7 @@ const (
 	EventDisplayChanged = "_platform.display.changed"
 	EventInputSessionEnded = "_platform.input.session_ended"
 	EventKeyboardLayoutChanged = "_platform.keyboard.layout_changed"
+	EventPluginDegraded = "_platform.plugin.degraded"
 	EventPluginDisabled = "_platform.plugin.disabled"
 	EventPluginEnabled = "_platform.plugin.enabled"
 	EventSelectionPicked = "_platform.selection.picked"
