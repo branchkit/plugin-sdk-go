@@ -132,6 +132,30 @@ func (p *Plugin) On(method string, fn ListenerFunc) {
 
 // Call sends a request to the actuator and blocks until a response arrives or timeout.
 // The result is unmarshaled into the provided result pointer (pass nil to discard).
+//
+// WIRE-FORMAT GOTCHA — nil slices and maps marshal to JSON null, which the
+// actuator's strongly-typed deserializer historically rejected with
+// "invalid type: null, expected a sequence/map". The actuator now tolerates
+// null on collection fields (Phase 2-wire-tolerance), but you should still
+// pre-initialize collections explicitly to avoid surprises and to keep
+// payloads readable on the wire:
+//
+//	// BAD: nil slice marshals to null, count(items) on the actuator
+//	// side may report 0 from null instead of from [].
+//	var items []string
+//	plugin.Call("foo.bar", map[string]any{"items": items}, nil)
+//
+//	// GOOD: empty slice marshals to [].
+//	items := []string{}
+//	plugin.Call("foo.bar", map[string]any{"items": items}, nil)
+//
+// Same rule applies to map[K]V fields: use `map[K]V{}` instead of `var m
+// map[K]V`. When in doubt, prefer the typed wrapper methods on Plugin
+// (e.g. p.TagsModify(...)) — they construct the request struct for you
+// and never produce nil collections.
+//
+// For the post-mortem on why this matters, see the
+// `setVoiceMode pre-initializes clear slice` commit in plugins/voice.
 func (p *Plugin) Call(method string, params any, result any) error {
 	return p.CallWithTimeout(method, params, result, 10*time.Second)
 }
