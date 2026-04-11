@@ -1389,9 +1389,10 @@ func (p *Plugin) SystemLaunchApp(bundleID string, newInstance *bool) error {
 }
 
 // SystemNotify show a HUD notification with title and body text.
-func (p *Plugin) SystemNotify(body string, title string) error {
+func (p *Plugin) SystemNotify(body string, durationSecs json.RawMessage, title string) error {
 	req := &SystemNotifyRequest{
 		Body: body,
+		DurationSecs: durationSecs,
 		Title: title,
 	}
 	return p.Call(MethodSystemNotify, req, nil)

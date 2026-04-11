@@ -1588,6 +1588,7 @@ type SystemLaunchAppResponse struct {
 // SystemNotifyRequest is the request type for system.notify.
 type SystemNotifyRequest struct {
 	Body string `json:"body"`
+	DurationSecs json.RawMessage `json:"duration_secs,omitempty"`
 	Title string `json:"title"`
 }
 
