@@ -13,9 +13,9 @@ const (
 	MethodCommandsList = "commands.list" // since 0.1.0
 	MethodCommandsMatch = "commands.match" // since 0.1.0
 	MethodControlSignal = "control.signal" // since 0.1.0
+	MethodDispatch = "dispatch" // since 0.1.0
 	MethodEventsAppend = "events.append" // since 0.1.0
 	MethodEventsEmit = "events.emit" // since 0.1.0
-	MethodExecute = "execute" // since 0.1.0
 	MethodGrammarPush = "grammar.push" // since 0.1.0
 	MethodHudCreateChannel = "hud.create_channel" // since 0.1.0
 	MethodHudHide = "hud.hide" // since 0.1.0
@@ -135,10 +135,7 @@ const (
 	MethodStorePush = "store.push" // since 0.1.0
 	MethodSystemLaunchApp = "system.launch_app" // since 0.1.0
 	MethodSystemNotify = "system.notify" // since 0.1.0
-	MethodSystemRunEval = "system.run_eval" // since 0.1.0
-	MethodSystemRunScript = "system.run_script" // since 0.1.0
 	MethodSystemRunShell = "system.run_shell" // since 0.1.0
-	MethodSystemRunTool = "system.run_tool" // since 0.1.0
 	MethodTagsGet = "tags.get" // since 0.1.0
 	MethodTagsModify = "tags.modify" // since 0.1.0
 )
@@ -172,6 +169,7 @@ const (
 	EventWindowFocused = "_platform.window.focused"
 	EventWindowFrameChanged = "_platform.window.frame_changed"
 	EventWindowTitleChanged = "_platform.window.title_changed"
+	EventWorkspaceChanged = "_platform.workspace.changed"
 	EventWorldUpdated = "_platform.world.updated"
 )
 

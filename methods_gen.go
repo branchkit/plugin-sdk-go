@@ -69,6 +69,19 @@ func (p *Plugin) ControlSignal(signal string) error {
 	return p.Call(MethodControlSignal, req, nil)
 }
 
+// Dispatch dispatch a typed Action to a plugin or platform builtin.
+func (p *Plugin) Dispatch(action json.RawMessage) (*DispatchResponse, error) {
+	req := &DispatchRequest{
+		Action: action,
+	}
+	var result DispatchResponse
+	err := p.Call(MethodDispatch, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // EventsAppend append an event to the structured event log.
 func (p *Plugin) EventsAppend(data json.RawMessage, eventType string, sessionID *string) error {
 	req := &EventsAppendRequest{
@@ -87,19 +100,6 @@ func (p *Plugin) EventsEmit(correlationID json.RawMessage, data json.RawMessage,
 		EventType: eventType,
 	}
 	return p.Call(MethodEventsEmit, req, nil)
-}
-
-// Execute execute a typed Action: built-in shell action or deferred plugin dispatch.
-func (p *Plugin) Execute(action json.RawMessage) (*ExecuteResponse, error) {
-	req := &ExecuteRequest{
-		Action: action,
-	}
-	var result ExecuteResponse
-	err := p.Call(MethodExecute, req, &result)
-	if err != nil {
-		return nil, err
-	}
-	return &result, nil
 }
 
 // GrammarPush push voice commands to the matching engine.
@@ -1398,47 +1398,12 @@ func (p *Plugin) SystemNotify(body string, durationSecs json.RawMessage, title s
 	return p.Call(MethodSystemNotify, req, nil)
 }
 
-// SystemRunEval evaluate a Python expression (stub — Python bridge removed).
-func (p *Plugin) SystemRunEval(command string) (*SystemRunEvalResponse, error) {
-	req := &SystemRunEvalRequest{
-		Command: command,
-	}
-	var result SystemRunEvalResponse
-	err := p.Call(MethodSystemRunEval, req, &result)
-	if err != nil {
-		return nil, err
-	}
-	return &result, nil
-}
-
-// SystemRunScript run a Python script (stub — Python bridge removed).
-func (p *Plugin) SystemRunScript(path string) (*SystemRunScriptResponse, error) {
-	req := &SystemRunScriptRequest{
-		Path: path,
-	}
-	var result SystemRunScriptResponse
-	err := p.Call(MethodSystemRunScript, req, &result)
-	if err != nil {
-		return nil, err
-	}
-	return &result, nil
-}
-
 // SystemRunShell run a shell command via /bin/bash -c (security-sensitive).
 func (p *Plugin) SystemRunShell(command string) error {
 	req := &SystemRunShellRequest{
 		Command: command,
 	}
 	return p.Call(MethodSystemRunShell, req, nil)
-}
-
-// SystemRunTool run a named tool (stub — modality hub removed).
-func (p *Plugin) SystemRunTool(name string, params map[string]string) error {
-	req := &SystemRunToolRequest{
-		Name: name,
-		Params: params,
-	}
-	return p.Call(MethodSystemRunTool, req, nil)
 }
 
 // TagsGet get all active tags.

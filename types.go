@@ -21,16 +21,16 @@ func (a AppData) IsEnabled() bool {
 	return *a.Enabled
 }
 
-// ExecuteActionRequest is for plugins that call the execute HTTP endpoint.
-// Not part of the JSON-RPC protocol (execute is HTTP-only via TCP :21551).
-type ExecuteActionRequest struct {
+// DispatchActionRequest is for plugins that call the dispatch HTTP endpoint.
+// Not part of the JSON-RPC protocol (dispatch is HTTP-only via TCP :21551).
+type DispatchActionRequest struct {
 	Action json.RawMessage `json:"action"`
 }
 
-// ExecuteActionResponse is the response from the execute endpoint.
-type ExecuteActionResponse struct {
-	Status      string  `json:"status"`
-	Message     *string `json:"message,omitempty"`
-	ShellAction *string `json:"shell_action,omitempty"`
-	Mode        *string `json:"mode,omitempty"`
+// DispatchActionResponse is the response from the dispatch endpoint.
+type DispatchActionResponse struct {
+	Status         string  `json:"status"`
+	Message        *string `json:"message,omitempty"`
+	ControlMessage *string `json:"control_message,omitempty"`
+	Mode           *string `json:"mode,omitempty"`
 }

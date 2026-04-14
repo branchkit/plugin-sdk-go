@@ -391,6 +391,18 @@ type ControlSignalResponse struct {
 	Ok bool `json:"ok"`
 }
 
+// DispatchRequest is the request type for dispatch.
+type DispatchRequest struct {
+	Action json.RawMessage `json:"action"`
+}
+
+// DispatchResponse is the response type for dispatch.
+type DispatchResponse struct {
+	ControlMessage json.RawMessage `json:"control_message,omitempty"`
+	Message json.RawMessage `json:"message,omitempty"`
+	Status string `json:"status"`
+}
+
 // EventsAppendRequest is the request type for events.append.
 type EventsAppendRequest struct {
 	Data json.RawMessage `json:"data,omitempty"`
@@ -413,18 +425,6 @@ type EventsEmitRequest struct {
 // EventsEmitResponse is the response type for events.emit.
 type EventsEmitResponse struct {
 	Ok bool `json:"ok"`
-}
-
-// ExecuteRequest is the request type for execute.
-type ExecuteRequest struct {
-	Action json.RawMessage `json:"action"`
-}
-
-// ExecuteResponse is the response type for execute.
-type ExecuteResponse struct {
-	Message json.RawMessage `json:"message,omitempty"`
-	ShellAction json.RawMessage `json:"shell_action,omitempty"`
-	Status string `json:"status"`
 }
 
 // GrammarPushRequest is the request type for grammar.push.
@@ -1489,10 +1489,10 @@ type SelectionPickRequest struct {
 
 // SelectionPickResponse is the response type for selection.pick.
 type SelectionPickResponse struct {
+	ControlMessage string `json:"control_message"`
 	ItemID string `json:"item_id"`
 	Ok bool `json:"ok"`
 	ResetEngine bool `json:"reset_engine"`
-	ShellAction string `json:"shell_action"`
 }
 
 // SelectionSetRequest is the request type for selection.set.
@@ -1508,9 +1508,9 @@ type SelectionSetResponse struct {
 
 // SessionEndCleanupResponse is the response type for session.end_cleanup.
 type SessionEndCleanupResponse struct {
+	ControlMessage json.RawMessage `json:"control_message,omitempty"`
 	Ok bool `json:"ok"`
 	ResetEngine bool `json:"reset_engine"`
-	ShellAction json.RawMessage `json:"shell_action,omitempty"`
 }
 
 // SettingsRulesCreateRequest is the request type for settings.rules_create.
@@ -1597,28 +1597,6 @@ type SystemNotifyResponse struct {
 	Ok bool `json:"ok"`
 }
 
-// SystemRunEvalRequest is the request type for system.run_eval.
-type SystemRunEvalRequest struct {
-	Command string `json:"command"`
-}
-
-// SystemRunEvalResponse is the response type for system.run_eval.
-type SystemRunEvalResponse struct {
-	Error string `json:"error"`
-	Ok bool `json:"ok"`
-}
-
-// SystemRunScriptRequest is the request type for system.run_script.
-type SystemRunScriptRequest struct {
-	Path string `json:"path"`
-}
-
-// SystemRunScriptResponse is the response type for system.run_script.
-type SystemRunScriptResponse struct {
-	Error string `json:"error"`
-	Ok bool `json:"ok"`
-}
-
 // SystemRunShellRequest is the request type for system.run_shell.
 type SystemRunShellRequest struct {
 	Command string `json:"command"`
@@ -1626,17 +1604,6 @@ type SystemRunShellRequest struct {
 
 // SystemRunShellResponse is the response type for system.run_shell.
 type SystemRunShellResponse struct {
-	Ok bool `json:"ok"`
-}
-
-// SystemRunToolRequest is the request type for system.run_tool.
-type SystemRunToolRequest struct {
-	Name string `json:"name"`
-	Params map[string]string `json:"params,omitempty"`
-}
-
-// SystemRunToolResponse is the response type for system.run_tool.
-type SystemRunToolResponse struct {
 	Ok bool `json:"ok"`
 }
 
@@ -1692,7 +1659,6 @@ type OnActionRequest struct {
 // OnActionResponse is the response type for on_action.
 type OnActionResponse struct {
 	ControlMessage *string `json:"control_message,omitempty"`
-	ShellAction *string `json:"shell_action,omitempty"`
 	Status OnActionStatus `json:"status"`
 }
 
