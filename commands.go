@@ -23,7 +23,7 @@ type contextFile struct {
 }
 
 // PushCommands loads commands.json and any context files from commands/,
-// then pushes them all to the actuator via grammar.push.
+// then pushes them all to the actuator via commands.push.
 //
 // File layout:
 //
@@ -87,8 +87,8 @@ func PushCommands(p *Plugin) (int, error) {
 		Count int `json:"count"`
 	}
 	body := map[string]any{"commands": allCommands}
-	if err := p.Call("grammar.push", body, &resp); err != nil {
-		return 0, fmt.Errorf("grammar.push: %w", err)
+	if err := p.Call("commands.push", body, &resp); err != nil {
+		return 0, fmt.Errorf("commands.push: %w", err)
 	}
 	return resp.Count, nil
 }

@@ -61,6 +61,19 @@ func (p *Plugin) CommandsMatch(activeTags json.RawMessage, words []string) (*Com
 	return &result, nil
 }
 
+// CommandsPush register commands with the matching engine to the matching engine.
+func (p *Plugin) CommandsPush(commands json.RawMessage) (*CommandsPushResponse, error) {
+	req := &CommandsPushRequest{
+		Commands: commands,
+	}
+	var result CommandsPushResponse
+	err := p.Call(MethodCommandsPush, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // ControlSignal send a control signal to the Swift shell via the control stream.
 func (p *Plugin) ControlSignal(signal string) error {
 	req := &ControlSignalRequest{
@@ -100,19 +113,6 @@ func (p *Plugin) EventsEmit(correlationID json.RawMessage, data json.RawMessage,
 		EventType: eventType,
 	}
 	return p.Call(MethodEventsEmit, req, nil)
-}
-
-// GrammarPush push voice commands to the matching engine.
-func (p *Plugin) GrammarPush(commands json.RawMessage) (*GrammarPushResponse, error) {
-	req := &GrammarPushRequest{
-		Commands: commands,
-	}
-	var result GrammarPushResponse
-	err := p.Call(MethodGrammarPush, req, &result)
-	if err != nil {
-		return nil, err
-	}
-	return &result, nil
 }
 
 // HUDCreateChannel create a new HUD broadcast channel at runtime.

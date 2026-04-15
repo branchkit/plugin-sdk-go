@@ -12,11 +12,11 @@ const (
 	MethodCommandsHasPartial = "commands.has_partial" // since 0.1.0
 	MethodCommandsList = "commands.list" // since 0.1.0
 	MethodCommandsMatch = "commands.match" // since 0.1.0
+	MethodCommandsPush = "commands.push" // since 0.1.0
 	MethodControlSignal = "control.signal" // since 0.1.0
 	MethodDispatch = "dispatch" // since 0.1.0
 	MethodEventsAppend = "events.append" // since 0.1.0
 	MethodEventsEmit = "events.emit" // since 0.1.0
-	MethodGrammarPush = "grammar.push" // since 0.1.0
 	MethodHudCreateChannel = "hud.create_channel" // since 0.1.0
 	MethodHudHide = "hud.hide" // since 0.1.0
 	MethodHudPush = "hud.push" // since 0.1.0
@@ -142,9 +142,9 @@ const (
 
 // RPC method names: actuator → plugin (use with plugin.Handle()).
 const (
-	HookBuildCommandRegistry = "build_command_registry" // since 0.1.0
 	HookCalibrate = "calibrate" // since 0.1.0
 	HookOnAction = "on_action" // since 0.1.0
+	HookOnCommandsChanged = "on_commands_changed" // since 0.1.0
 	HookRenderHud = "render_hud" // since 0.1.0
 	HookRenderSettings = "render_settings" // since 0.1.0
 	HookSpeechOrchestrate = "speech_orchestrate" // since 0.1.0

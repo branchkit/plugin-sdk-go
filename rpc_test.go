@@ -107,7 +107,7 @@ func TestReadyGateHoldsRequestsBeforeRun(t *testing.T) {
 	p, actuatorW, actuatorR := newTestPlugin()
 
 	// Register handler AFTER creating plugin (mimics real init sequence)
-	p.Handle("build_command_registry", func(params json.RawMessage) (any, error) {
+	p.Handle("on_commands_changed", func(params json.RawMessage) (any, error) {
 		return map[string]string{"status": "ok"}, nil
 	})
 
@@ -116,7 +116,7 @@ func TestReadyGateHoldsRequestsBeforeRun(t *testing.T) {
 	msg := rpcMessage{
 		JSONRPC: "2.0",
 		ID:      &id,
-		Method:  "build_command_registry",
+		Method:  "on_commands_changed",
 		Params:  json.RawMessage(`{}`),
 	}
 	data, _ := json.Marshal(msg)

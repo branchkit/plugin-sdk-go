@@ -381,6 +381,17 @@ type CommandsMatchResponse struct {
 	SetsTags []string `json:"sets_tags"`
 }
 
+// CommandsPushRequest is the request type for commands.push.
+type CommandsPushRequest struct {
+	Commands json.RawMessage `json:"commands,omitempty"`
+}
+
+// CommandsPushResponse is the response type for commands.push.
+type CommandsPushResponse struct {
+	Count int `json:"count"`
+	Ok bool `json:"ok"`
+}
+
 // ControlSignalRequest is the request type for control.signal.
 type ControlSignalRequest struct {
 	Signal string `json:"signal"`
@@ -424,17 +435,6 @@ type EventsEmitRequest struct {
 
 // EventsEmitResponse is the response type for events.emit.
 type EventsEmitResponse struct {
-	Ok bool `json:"ok"`
-}
-
-// GrammarPushRequest is the request type for grammar.push.
-type GrammarPushRequest struct {
-	Commands json.RawMessage `json:"commands,omitempty"`
-}
-
-// GrammarPushResponse is the response type for grammar.push.
-type GrammarPushResponse struct {
-	Count int `json:"count"`
 	Ok bool `json:"ok"`
 }
 
@@ -1626,17 +1626,6 @@ type TagsModifyResponse struct {
 
 // ===== Actuator → Plugin request/response types =====
 
-// BuildCommandRegistryRequest is the request type for build_command_registry.
-type BuildCommandRegistryRequest struct {
-	CommandsByPlugin json.RawMessage `json:"commands_by_plugin"`
-	UserCommands []json.RawMessage `json:"user_commands,omitempty"`
-}
-
-// BuildCommandRegistryResponse is the response type for build_command_registry.
-type BuildCommandRegistryResponse struct {
-	PhoneticsCount int `json:"phonetics_count"`
-}
-
 // CalibrateRequest is the request type for calibrate.
 type CalibrateRequest struct {
 	Action CalibrateAction `json:"action"`
@@ -1660,6 +1649,17 @@ type OnActionRequest struct {
 type OnActionResponse struct {
 	ControlMessage *string `json:"control_message,omitempty"`
 	Status OnActionStatus `json:"status"`
+}
+
+// OnCommandsChangedRequest is the request type for on_commands_changed.
+type OnCommandsChangedRequest struct {
+	CommandsByPlugin json.RawMessage `json:"commands_by_plugin"`
+	UserCommands []json.RawMessage `json:"user_commands,omitempty"`
+}
+
+// OnCommandsChangedResponse is the response type for on_commands_changed.
+type OnCommandsChangedResponse struct {
+	ProcessedCount int `json:"processed_count"`
 }
 
 // RenderHUDRequest is the request type for render_hud.

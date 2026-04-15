@@ -10,7 +10,7 @@ import (
 func TestLoadCommandFile(t *testing.T) {
 	dir := t.TempDir()
 	path := filepath.Join(dir, "commands.json")
-	os.WriteFile(path, []byte(`[{"phrase":["hello"],"action":{"type":"key","code":0}}]`), 0644)
+	os.WriteFile(path, []byte(`[{"pattern":["hello"],"action":{"type":"key","code":0}}]`), 0644)
 
 	cmds, err := loadCommandFile(path)
 	if err != nil {
@@ -34,7 +34,7 @@ func TestLoadContextFile(t *testing.T) {
 	os.WriteFile(path, []byte(`{
 		"context": { "requires_tags": ["app.dev.warp.Warp-Stable"] },
 		"commands": [
-			{"phrase":["return"],"action":{"type":"key_by_name","name":"return"}}
+			{"pattern":["return"],"action":{"type":"key_by_name","name":"return"}}
 		]
 	}`), 0644)
 
@@ -62,7 +62,7 @@ func TestLoadContextFileMergesTags(t *testing.T) {
 	os.WriteFile(path, []byte(`{
 		"context": { "requires_tags": ["app.dev.warp.Warp-Stable"] },
 		"commands": [
-			{"phrase":["return"],"action":{"type":"key","code":0},"requires_tags":["plugin.voice.mode.command_hold"]}
+			{"pattern":["return"],"action":{"type":"key","code":0},"requires_tags":["plugin.voice.mode.command_hold"]}
 		]
 	}`), 0644)
 
@@ -91,7 +91,7 @@ func TestLoadContextFileRejectsEmptyContext(t *testing.T) {
 	path := filepath.Join(dir, "bad.json")
 	os.WriteFile(path, []byte(`{
 		"context": {},
-		"commands": [{"phrase":["x"],"action":{"type":"key","code":0}}]
+		"commands": [{"pattern":["x"],"action":{"type":"key","code":0}}]
 	}`), 0644)
 
 	_, err := loadContextFile(path)
@@ -118,7 +118,7 @@ func TestLoadContextFileEmptyCommands(t *testing.T) {
 }
 
 func TestMergeRequiresTags(t *testing.T) {
-	raw := json.RawMessage(`{"phrase":["test"],"action":{"type":"key","code":0}}`)
+	raw := json.RawMessage(`{"pattern":["test"],"action":{"type":"key","code":0}}`)
 	result, err := mergeRequiresTags(raw, []string{"app.foo", "app.bar"})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -134,7 +134,7 @@ func TestMergeRequiresTags(t *testing.T) {
 }
 
 func TestMergeRequiresTagsPreservesExisting(t *testing.T) {
-	raw := json.RawMessage(`{"phrase":["test"],"action":{"type":"key","code":0},"requires_tags":["existing"]}`)
+	raw := json.RawMessage(`{"pattern":["test"],"action":{"type":"key","code":0},"requires_tags":["existing"]}`)
 	result, err := mergeRequiresTags(raw, []string{"context"})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -150,7 +150,7 @@ func TestMergeRequiresTagsPreservesExisting(t *testing.T) {
 }
 
 func TestMergeRequiresTagsPreservesOtherFields(t *testing.T) {
-	raw := json.RawMessage(`{"phrase":["test"],"action":{"type":"key","code":0},"category":"Nav"}`)
+	raw := json.RawMessage(`{"pattern":["test"],"action":{"type":"key","code":0},"category":"Nav"}`)
 	result, err := mergeRequiresTags(raw, []string{"app.foo"})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -161,7 +161,7 @@ func TestMergeRequiresTagsPreservesOtherFields(t *testing.T) {
 	if _, ok := cmd["category"]; !ok {
 		t.Fatal("category field was lost during merge")
 	}
-	if _, ok := cmd["phrase"]; !ok {
+	if _, ok := cmd["pattern"]; !ok {
 		t.Fatal("phrase field was lost during merge")
 	}
 	if _, ok := cmd["action"]; !ok {
