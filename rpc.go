@@ -115,6 +115,14 @@ func NewPlugin() *Plugin {
 		signal.Stop(sigCh)
 	}()
 
+	// Built-in introspection: the actuator calls list_action_types after the
+	// plugin reaches readiness to validate that handlers match the manifest's
+	// `action_types` block. Registering here keeps plugins from having to
+	// wire it themselves.
+	p.handlers["list_action_types"] = func(_ json.RawMessage) (any, error) {
+		return map[string]any{"action_types": p.RegisteredActionTypes()}, nil
+	}
+
 	Log(pluginID, "started (JSON-RPC over stdio)")
 	go p.readLoop()
 
