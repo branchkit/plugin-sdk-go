@@ -110,23 +110,38 @@ func TestHandleActionReturnsNotHandledForUnknown(t *testing.T) {
 	actuatorW.(io.Closer).Close()
 }
 
-func TestHandleActionPanicsWhenMixedWithDirectOnAction(t *testing.T) {
+// Mutual exclusion is enforced regardless of registration order — both Handle
+// and HandleAction install a handler for the same RPC method (on_action), so
+// allowing both would silently clobber the dispatcher.
+
+func TestHandleActionPanicsAfterHandleOnAction(t *testing.T) {
 	p, _, _ := newTestPlugin()
 
-	// Register on_action directly first.
 	p.Handle(HookOnAction, func(params json.RawMessage) (any, error) {
 		return OnActionResponse{Status: OnActionStatusOk}, nil
 	})
 
-	// Calling HandleAction after Handle("on_action", ...) is a programming
-	// error — the SDK panics rather than silently overwrite.
 	defer func() {
-		r := recover()
-		if r == nil {
-			t.Fatal("expected panic when mixing Handle(\"on_action\", ...) and HandleAction")
+		if r := recover(); r == nil {
+			t.Fatal("expected panic when registering HandleAction after Handle(\"on_action\")")
 		}
 	}()
 	p.HandleAction("wm.snap", func(req *OnActionRequest) (any, error) { return nil, nil })
+}
+
+func TestHandleOnActionPanicsAfterHandleAction(t *testing.T) {
+	p, _, _ := newTestPlugin()
+
+	p.HandleAction("wm.snap", func(req *OnActionRequest) (any, error) { return nil, nil })
+
+	defer func() {
+		if r := recover(); r == nil {
+			t.Fatal("expected panic when registering Handle(\"on_action\") after HandleAction")
+		}
+	}()
+	p.Handle(HookOnAction, func(params json.RawMessage) (any, error) {
+		return OnActionResponse{Status: OnActionStatusOk}, nil
+	})
 }
 
 func TestHandleActionTypedHelper(t *testing.T) {

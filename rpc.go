@@ -123,7 +123,14 @@ func NewPlugin() *Plugin {
 
 // Handle registers a handler for actuator→plugin requests.
 // The handler receives the params and returns a result (serialized as JSON) or an error.
+//
+// Handle("on_action", ...) and HandleAction(...) are mutually exclusive — both
+// install a handler for the same RPC method. Calling either after the other
+// has been registered panics, regardless of order.
 func (p *Plugin) Handle(method string, fn HandlerFunc) {
+	if method == HookOnAction && p.actionRegistry != nil {
+		panic("plugin-sdk-go: cannot mix Handle(\"on_action\", ...) and HandleAction(...) — pick one")
+	}
 	p.handlers[method] = fn
 }
 
