@@ -74,6 +74,9 @@ type Plugin struct {
 	closeOnce sync.Once
 	ready     chan struct{} // closed when Run() is called, gates incoming requests
 	readyOnce sync.Once
+
+	// Lazily initialized when HandleAction is first called. See actions.go.
+	actionRegistry *actionRegistry
 }
 
 // NewPlugin creates a new Plugin that communicates via stdin/stdout.
@@ -122,6 +125,30 @@ func NewPlugin() *Plugin {
 // The handler receives the params and returns a result (serialized as JSON) or an error.
 func (p *Plugin) Handle(method string, fn HandlerFunc) {
 	p.handlers[method] = fn
+}
+
+// HandleTyped is a generic convenience over Handle that unmarshals params into
+// a typed request struct before calling fn. Empty params produces a zero-valued
+// Req. This is the standard helper for non-action RPCs (render_settings,
+// calibrate, etc.) — for dispatched actions use HandleAction instead.
+//
+//	type SetVolumeRequest struct {
+//	    Volume int `json:"volume"`
+//	}
+//	shared.HandleTyped(plugin, "set_volume", func(req *SetVolumeRequest) (any, error) {
+//	    setVolume(req.Volume)
+//	    return map[string]string{"result": "ok"}, nil
+//	})
+func HandleTyped[Req any](p *Plugin, method string, fn func(*Req) (any, error)) {
+	p.Handle(method, func(params json.RawMessage) (any, error) {
+		var req Req
+		if len(params) > 0 {
+			if err := json.Unmarshal(params, &req); err != nil {
+				return nil, fmt.Errorf("%s: bad params: %w", method, err)
+			}
+		}
+		return fn(&req)
+	})
 }
 
 // On registers a listener for actuator→plugin notifications (fire-and-forget).
