@@ -142,13 +142,10 @@ const (
 
 // RPC method names: actuator → plugin (use with plugin.Handle()).
 const (
-	HookCalibrate = "calibrate" // since 0.1.0
 	HookOnAction = "on_action" // since 0.1.0
 	HookOnCommandsChanged = "on_commands_changed" // since 0.1.0
 	HookRenderHud = "render_hud" // since 0.1.0
 	HookRenderSettings = "render_settings" // since 0.1.0
-	HookSpeechOrchestrate = "speech_orchestrate" // since 0.1.0
-	HookSpeechPipeline = "speech_pipeline" // since 0.1.0
 )
 
 // Platform event type constants (use with plugin.On()).

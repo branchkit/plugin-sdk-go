@@ -79,15 +79,6 @@ type BluetoothDevice struct {
 	Name string `json:"name"`
 }
 
-// CalibrateAction is auto-generated from the OpenRPC spec.
-type CalibrateAction string
-
-const (
-	CalibrateActionStart CalibrateAction = "start"
-	CalibrateActionSpeech CalibrateAction = "speech"
-	CalibrateActionCancel CalibrateAction = "cancel"
-)
-
 // ClipboardContents is auto-generated from the OpenRPC spec.
 type ClipboardContents struct {
 	AvailableTypes []string `json:"available_types"`
@@ -266,14 +257,6 @@ type SpaceInfo struct {
 	SpaceID int `json:"space_id"`
 	SpaceType string `json:"space_type"`
 }
-
-// SpeechPipelineAction is auto-generated from the OpenRPC spec.
-type SpeechPipelineAction string
-
-const (
-	SpeechPipelineActionPass SpeechPipelineAction = "pass"
-	SpeechPipelineActionConsume SpeechPipelineAction = "consume"
-)
 
 // SpotlightResult is auto-generated from the OpenRPC spec.
 type SpotlightResult struct {
@@ -1626,17 +1609,6 @@ type TagsModifyResponse struct {
 
 // ===== Actuator → Plugin request/response types =====
 
-// CalibrateRequest is the request type for calibrate.
-type CalibrateRequest struct {
-	Action CalibrateAction `json:"action"`
-	Words []string `json:"words,omitempty"`
-}
-
-// CalibrateResponse is the response type for calibrate.
-type CalibrateResponse struct {
-	CalibrationActive bool `json:"calibration_active"`
-}
-
 // OnActionRequest is the request type for on_action.
 type OnActionRequest struct {
 	Action string `json:"action"`
@@ -1683,28 +1655,4 @@ type RenderSettingsRequest struct {
 // RenderSettingsResponse is the response type for render_settings.
 type RenderSettingsResponse struct {
 	HTML string `json:"html"`
-}
-
-// SpeechOrchestrateRequest is the request type for speech_orchestrate.
-type SpeechOrchestrateRequest struct {
-	Transcript string `json:"transcript"`
-	Words []string `json:"words"`
-}
-
-// SpeechOrchestrateResponse is the response type for speech_orchestrate.
-type SpeechOrchestrateResponse struct {
-	ActionsToExecute []json.RawMessage `json:"actions_to_execute,omitempty"`
-	Result string `json:"result"`
-}
-
-// SpeechPipelineRequest is the request type for speech_pipeline.
-type SpeechPipelineRequest struct {
-	IsFinal bool `json:"is_final"`
-	Mode string `json:"mode"`
-	Transcript string `json:"transcript"`
-}
-
-// SpeechPipelineResponse is the response type for speech_pipeline.
-type SpeechPipelineResponse struct {
-	Action SpeechPipelineAction `json:"action"`
 }
