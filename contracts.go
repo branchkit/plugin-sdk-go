@@ -146,6 +146,7 @@ const (
 	HookOnCommandsChanged = "on_commands_changed" // since 0.1.0
 	HookRenderHud = "render_hud" // since 0.1.0
 	HookRenderSettings = "render_settings" // since 0.1.0
+	HookSpeechPipelineFull = "speech_pipeline_full" // since 0.1.0
 )
 
 // Platform event type constants (use with plugin.On()).

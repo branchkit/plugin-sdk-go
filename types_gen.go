@@ -176,6 +176,15 @@ type HudSection struct {
 	Title string `json:"title"`
 }
 
+// IngestSegmentSpec is auto-generated from the OpenRPC spec.
+type IngestSegmentSpec struct {
+	Alternatives []string `json:"alternatives"`
+	Duration float64 `json:"duration"`
+	ID int `json:"id"`
+	Start float64 `json:"start"`
+	Text string `json:"text"`
+}
+
 // InputSource is auto-generated from the OpenRPC spec.
 type InputSource struct {
 	ID string `json:"id"`
@@ -248,6 +257,12 @@ type ScreenshotRegion struct {
 	W int `json:"w"`
 	X int `json:"x"`
 	Y int `json:"y"`
+}
+
+// SelectionItemSpec is auto-generated from the OpenRPC spec.
+type SelectionItemSpec struct {
+	ID string `json:"id"`
+	Tag *string `json:"tag,omitempty"`
 }
 
 // SpaceInfo is auto-generated from the OpenRPC spec.
@@ -1655,4 +1670,30 @@ type RenderSettingsRequest struct {
 // RenderSettingsResponse is the response type for render_settings.
 type RenderSettingsResponse struct {
 	HTML string `json:"html"`
+}
+
+// SpeechPipelineFullRequest is the request type for speech_pipeline_full.
+type SpeechPipelineFullRequest struct {
+	IsContinuous *bool `json:"is_continuous,omitempty"`
+	IsDiscoveryOpen *bool `json:"is_discovery_open,omitempty"`
+	IsFinal bool `json:"is_final"`
+	IsHudOpen *bool `json:"is_hud_open,omitempty"`
+	MuteMatching *bool `json:"mute_matching,omitempty"`
+	ScopedPrefixes []string `json:"scoped_prefixes,omitempty"`
+	Segments []IngestSegmentSpec `json:"segments"`
+	SelectionActive *bool `json:"selection_active,omitempty"`
+	SelectionItems []SelectionItemSpec `json:"selection_items,omitempty"`
+	SessionEnd bool `json:"session_end"`
+	SessionID json.RawMessage `json:"session_id,omitempty"`
+	ShouldLift *bool `json:"should_lift,omitempty"`
+	Tags []string `json:"tags,omitempty"`
+}
+
+// SpeechPipelineFullResponse is the response type for speech_pipeline_full.
+type SpeechPipelineFullResponse struct {
+	ControlMessage json.RawMessage `json:"control_message,omitempty"`
+	IsHudOpen *bool `json:"is_hud_open,omitempty"`
+	PasteText json.RawMessage `json:"paste_text,omitempty"`
+	ResetEngine *bool `json:"reset_engine,omitempty"`
+	Status *string `json:"status,omitempty"`
 }
