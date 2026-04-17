@@ -329,6 +329,42 @@ type WorldModel struct {
 
 // ===== Plugin → Actuator request/response types =====
 
+// CollectionDeleteRequest is the request type for collection.delete.
+type CollectionDeleteRequest struct {
+	Name string `json:"name"`
+}
+
+// CollectionDeleteResponse is the response type for collection.delete.
+type CollectionDeleteResponse struct {
+	Ok bool `json:"ok"`
+}
+
+// CollectionGetRequest is the request type for collection.get.
+type CollectionGetRequest struct {
+	Name string `json:"name"`
+}
+
+// CollectionGetResponse is the response type for collection.get.
+type CollectionGetResponse struct {
+	Data json.RawMessage `json:"data"`
+	Entries json.RawMessage `json:"entries,omitempty"`
+	Introducer string `json:"introducer"`
+	Merge MergeStrategy `json:"merge"`
+	Name string `json:"name"`
+}
+
+// CollectionPushRequest is the request type for collection.push.
+type CollectionPushRequest struct {
+	Data json.RawMessage `json:"data"`
+	Label json.RawMessage `json:"label,omitempty"`
+	Name string `json:"name"`
+}
+
+// CollectionPushResponse is the response type for collection.push.
+type CollectionPushResponse struct {
+	Ok bool `json:"ok"`
+}
+
 // CommandsDiscoverRequest is the request type for commands.discover.
 type CommandsDiscoverRequest struct {
 	ActiveTags json.RawMessage `json:"active_tags,omitempty"`
@@ -691,41 +727,6 @@ type KeybindsRegisterRequest struct {
 type KeybindsRegisterResponse struct {
 	Count int `json:"count"`
 	Ok bool `json:"ok"`
-}
-
-// ListsDeleteRequest is the request type for lists.delete.
-type ListsDeleteRequest struct {
-	Name string `json:"name"`
-}
-
-// ListsDeleteResponse is the response type for lists.delete.
-type ListsDeleteResponse struct {
-	Ok bool `json:"ok"`
-}
-
-// ListsGetRequest is the request type for lists.get.
-type ListsGetRequest struct {
-	Name string `json:"name"`
-}
-
-// ListsGetResponse is the response type for lists.get.
-type ListsGetResponse struct {
-	Entries json.RawMessage `json:"entries"`
-	Name string `json:"name"`
-}
-
-// ListsUpdateRequest is the request type for lists.update.
-type ListsUpdateRequest struct {
-	Entries json.RawMessage `json:"entries,omitempty"`
-	Label json.RawMessage `json:"label,omitempty"`
-	Merge *bool `json:"merge,omitempty"`
-	Name string `json:"name"`
-}
-
-// ListsUpdateResponse is the response type for lists.update.
-type ListsUpdateResponse struct {
-	Entries json.RawMessage `json:"entries"`
-	Name string `json:"name"`
 }
 
 // MatchAliasesGetResponse is the response type for match_aliases.get.
@@ -1545,30 +1546,6 @@ type SettingsRulesUpdateRequest struct {
 
 // SettingsRulesUpdateResponse is the response type for settings.rules_update.
 type SettingsRulesUpdateResponse struct {
-	Ok bool `json:"ok"`
-}
-
-// StoreGetRequest is the request type for store.get.
-type StoreGetRequest struct {
-	Name string `json:"name"`
-}
-
-// StoreGetResponse is the response type for store.get.
-type StoreGetResponse struct {
-	Data json.RawMessage `json:"data"`
-	Introducer string `json:"introducer"`
-	Merge MergeStrategy `json:"merge"`
-	Store string `json:"store"`
-}
-
-// StorePushRequest is the request type for store.push.
-type StorePushRequest struct {
-	Data json.RawMessage `json:"data"`
-	Name string `json:"name"`
-}
-
-// StorePushResponse is the response type for store.push.
-type StorePushResponse struct {
 	Ok bool `json:"ok"`
 }
 

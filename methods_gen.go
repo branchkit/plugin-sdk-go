@@ -8,6 +8,37 @@ import "encoding/json"
 // Ensure json import is used.
 var _ json.RawMessage
 
+// CollectionDelete delete a dynamic collection.
+func (p *Plugin) CollectionDelete(name string) error {
+	req := &CollectionDeleteRequest{
+		Name: name,
+	}
+	return p.Call(MethodCollectionDelete, req, nil)
+}
+
+// CollectionGet read collection data with optional merge metadata.
+func (p *Plugin) CollectionGet(name string) (*CollectionGetResponse, error) {
+	req := &CollectionGetRequest{
+		Name: name,
+	}
+	var result CollectionGetResponse
+	err := p.Call(MethodCollectionGet, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// CollectionPush write data to a shared store.
+func (p *Plugin) CollectionPush(data json.RawMessage, label json.RawMessage, name string) error {
+	req := &CollectionPushRequest{
+		Data: data,
+		Label: label,
+		Name: name,
+	}
+	return p.Call(MethodCollectionPush, req, nil)
+}
+
 // CommandsDiscover discover available commands or next tokens for a partial match.
 func (p *Plugin) CommandsDiscover(activeTags json.RawMessage, requireTag json.RawMessage, words json.RawMessage) (*CommandsDiscoverResponse, error) {
 	req := &CommandsDiscoverRequest{
@@ -353,43 +384,6 @@ func (p *Plugin) KeybindsRegister(snapshot json.RawMessage) (*KeybindsRegisterRe
 	}
 	var result KeybindsRegisterResponse
 	err := p.Call(MethodKeybindsRegister, req, &result)
-	if err != nil {
-		return nil, err
-	}
-	return &result, nil
-}
-
-// ListsDelete delete a named list.
-func (p *Plugin) ListsDelete(name string) error {
-	req := &ListsDeleteRequest{
-		Name: name,
-	}
-	return p.Call(MethodListsDelete, req, nil)
-}
-
-// ListsGet retrieve a named list by name.
-func (p *Plugin) ListsGet(name string) (*ListsGetResponse, error) {
-	req := &ListsGetRequest{
-		Name: name,
-	}
-	var result ListsGetResponse
-	err := p.Call(MethodListsGet, req, &result)
-	if err != nil {
-		return nil, err
-	}
-	return &result, nil
-}
-
-// ListsUpdate create or update a named list used in command matching.
-func (p *Plugin) ListsUpdate(entries json.RawMessage, label json.RawMessage, merge *bool, name string) (*ListsUpdateResponse, error) {
-	req := &ListsUpdateRequest{
-		Entries: entries,
-		Label: label,
-		Merge: merge,
-		Name: name,
-	}
-	var result ListsUpdateResponse
-	err := p.Call(MethodListsUpdate, req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1355,28 +1349,6 @@ func (p *Plugin) SettingsRulesUpdate(canonical string, newruleactionjson json.Ra
 		Newrulesetstags: newrulesetstags,
 	}
 	return p.Call(MethodSettingsRulesUpdate, req, nil)
-}
-
-// StoreGet read data from a shared store with merge metadata.
-func (p *Plugin) StoreGet(name string) (*StoreGetResponse, error) {
-	req := &StoreGetRequest{
-		Name: name,
-	}
-	var result StoreGetResponse
-	err := p.Call(MethodStoreGet, req, &result)
-	if err != nil {
-		return nil, err
-	}
-	return &result, nil
-}
-
-// StorePush write data to a shared store.
-func (p *Plugin) StorePush(data json.RawMessage, name string) error {
-	req := &StorePushRequest{
-		Data: data,
-		Name: name,
-	}
-	return p.Call(MethodStorePush, req, nil)
 }
 
 // SystemLaunchApp launch an app and post a 'Launching' notification to the HUD.

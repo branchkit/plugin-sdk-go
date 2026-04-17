@@ -8,6 +8,9 @@ const APIVersion = "0.1.0"
 
 // RPC method names: plugin → actuator (use with plugin.Call()).
 const (
+	MethodCollectionDelete = "collection.delete" // since 0.1.0
+	MethodCollectionGet = "collection.get" // since 0.1.0
+	MethodCollectionPush = "collection.push" // since 0.1.0
 	MethodCommandsDiscover = "commands.discover" // since 0.1.0
 	MethodCommandsHasPartial = "commands.has_partial" // since 0.1.0
 	MethodCommandsList = "commands.list" // since 0.1.0
@@ -41,9 +44,6 @@ const (
 	MethodInputTypeText = "input.type_text" // since 0.1.0
 	MethodKeyNamesSet = "key_names.set" // since 0.1.0
 	MethodKeybindsRegister = "keybinds.register" // since 0.1.0
-	MethodListsDelete = "lists.delete" // since 0.1.0
-	MethodListsGet = "lists.get" // since 0.1.0
-	MethodListsUpdate = "lists.update" // since 0.1.0
 	MethodMatchAliasesGet = "match_aliases.get" // since 0.1.0
 	MethodMatchAliasesSet = "match_aliases.set" // since 0.1.0
 	MethodNativeActivateApp = "native.activate_app" // since 0.1.0
@@ -131,8 +131,6 @@ const (
 	MethodSessionEndCleanup = "session.end_cleanup" // since 0.1.0
 	MethodSettingsRulesCreate = "settings.rules_create" // since 0.1.0
 	MethodSettingsRulesUpdate = "settings.rules_update" // since 0.1.0
-	MethodStoreGet = "store.get" // since 0.1.0
-	MethodStorePush = "store.push" // since 0.1.0
 	MethodSystemLaunchApp = "system.launch_app" // since 0.1.0
 	MethodSystemNotify = "system.notify" // since 0.1.0
 	MethodSystemRunShell = "system.run_shell" // since 0.1.0
@@ -153,6 +151,7 @@ const (
 const (
 	EventActionExecuted = "_platform.action.executed"
 	EventAppFocused = "_platform.app.focused"
+	EventCollectionUpdated = "_platform.collection.updated"
 	EventDisplayChanged = "_platform.display.changed"
 	EventInputSessionEnded = "_platform.input.session_ended"
 	EventKeyboardLayoutChanged = "_platform.keyboard.layout_changed"
@@ -160,7 +159,6 @@ const (
 	EventPluginDisabled = "_platform.plugin.disabled"
 	EventPluginEnabled = "_platform.plugin.enabled"
 	EventSelectionPicked = "_platform.selection.picked"
-	EventStoreUpdated = "_platform.store.updated"
 	EventTagsChanged = "_platform.tags.changed"
 	EventWindowClosed = "_platform.window.closed"
 	EventWindowCreated = "_platform.window.created"

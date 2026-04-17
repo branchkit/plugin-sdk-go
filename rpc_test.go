@@ -207,7 +207,7 @@ func TestHandleNotification(t *testing.T) {
 	var mu sync.Mutex
 	done := make(chan struct{})
 
-	p.On("_platform.store.updated", func(params json.RawMessage) {
+	p.On("_platform.collection.updated", func(params json.RawMessage) {
 		var payload struct {
 			Store string `json:"store"`
 		}
@@ -223,7 +223,7 @@ func TestHandleNotification(t *testing.T) {
 	// Send a notification (no id)
 	msg := rpcMessage{
 		JSONRPC: "2.0",
-		Method:  "_platform.store.updated",
+		Method:  "_platform.collection.updated",
 		Params:  json.RawMessage(`{"store":"keybinds"}`),
 	}
 	data, _ := json.Marshal(msg)
@@ -256,7 +256,7 @@ func TestCallSuccess(t *testing.T) {
 	}
 	callDone := make(chan struct{})
 	go func() {
-		callErr = p.Call("store.get", map[string]string{"name": "key_names"}, &result)
+		callErr = p.Call("collection.get", map[string]string{"name": "key_names"}, &result)
 		close(callDone)
 	}()
 
@@ -267,8 +267,8 @@ func TestCallSuccess(t *testing.T) {
 	var req rpcMessage
 	json.Unmarshal(actuatorR.Bytes(), &req)
 
-	if req.Method != "store.get" {
-		t.Fatalf("expected method=store.get, got %q", req.Method)
+	if req.Method != "collection.get" {
+		t.Fatalf("expected method=collection.get, got %q", req.Method)
 	}
 	if req.ID == nil {
 		t.Fatal("expected id on request")
@@ -311,7 +311,7 @@ func TestCallTimeout(t *testing.T) {
 		}
 	}()
 
-	err := p.CallWithTimeout("store.get", nil, nil, 100*time.Millisecond)
+	err := p.CallWithTimeout("collection.get", nil, nil, 100*time.Millisecond)
 	if err == nil {
 		t.Fatal("expected timeout error")
 	}
@@ -329,7 +329,7 @@ func TestCallRPCError(t *testing.T) {
 
 	callDone := make(chan error, 1)
 	go func() {
-		callDone <- p.Call("store.get", nil, nil)
+		callDone <- p.Call("collection.get", nil, nil)
 	}()
 
 	// Read request
@@ -487,7 +487,7 @@ func TestCallUnblocksOnStdinClose(t *testing.T) {
 	// Start a Call that won't get a response
 	callDone := make(chan error, 1)
 	go func() {
-		callDone <- p.CallWithTimeout("store.get", nil, nil, 5*time.Second)
+		callDone <- p.CallWithTimeout("collection.get", nil, nil, 5*time.Second)
 	}()
 
 	// Give Call time to send the request
