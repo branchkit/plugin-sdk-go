@@ -351,6 +351,19 @@ type CollectionGetResponse struct {
 	Name string `json:"name"`
 }
 
+// CollectionOverrideRequest is the request type for collection.override.
+type CollectionOverrideRequest struct {
+	Action string `json:"action"`
+	Collection string `json:"collection"`
+	Fields json.RawMessage `json:"fields,omitempty"`
+	ID json.RawMessage `json:"id,omitempty"`
+}
+
+// CollectionOverrideResponse is the response type for collection.override.
+type CollectionOverrideResponse struct {
+	Ok bool `json:"ok"`
+}
+
 // CollectionPushRequest is the request type for collection.push.
 type CollectionPushRequest struct {
 	Data json.RawMessage `json:"data"`

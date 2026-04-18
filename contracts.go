@@ -10,6 +10,7 @@ const APIVersion = "0.1.0"
 const (
 	MethodCollectionDelete = "collection.delete" // since 0.1.0
 	MethodCollectionGet = "collection.get" // since 0.1.0
+	MethodCollectionOverride = "collection.override" // since 0.1.0
 	MethodCollectionPush = "collection.push" // since 0.1.0
 	MethodCommandsDiscover = "commands.discover" // since 0.1.0
 	MethodCommandsHasPartial = "commands.has_partial" // since 0.1.0

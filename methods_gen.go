@@ -29,6 +29,17 @@ func (p *Plugin) CollectionGet(name string) (*CollectionGetResponse, error) {
 	return &result, nil
 }
 
+// CollectionOverride add, remove, restore, patch, or reset user overrides for a collection.
+func (p *Plugin) CollectionOverride(action string, collection string, fields json.RawMessage, id json.RawMessage) error {
+	req := &CollectionOverrideRequest{
+		Action: action,
+		Collection: collection,
+		Fields: fields,
+		ID: id,
+	}
+	return p.Call(MethodCollectionOverride, req, nil)
+}
+
 // CollectionPush write data to a shared store.
 func (p *Plugin) CollectionPush(data json.RawMessage, label json.RawMessage, name string) error {
 	req := &CollectionPushRequest{
