@@ -812,6 +812,18 @@ func (p *Plugin) NativeHideApp(bundleID string) error {
 	return p.Call(MethodNativeHideApp, req, nil)
 }
 
+// NativeInstalledApps list all installed applications by scanning the filesystem.
+func (p *Plugin) NativeInstalledApps() ([]InstalledApp, error) {
+	var result struct {
+		Apps []InstalledApp `json:"apps"`
+	}
+	err := p.Call(MethodNativeInstalledApps, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Apps, nil
+}
+
 // NativeIsAppHidden check if an application is hidden.
 func (p *Plugin) NativeIsAppHidden(bundleID string) (bool, error) {
 	req := &NativeIsAppHiddenRequest{

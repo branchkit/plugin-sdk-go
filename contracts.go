@@ -81,6 +81,7 @@ const (
 	MethodNativeFrontmostApp = "native.frontmost_app" // since 0.1.0
 	MethodNativeGetWindowInfo = "native.get_window_info" // since 0.1.0
 	MethodNativeHideApp = "native.hide_app" // since 0.1.0
+	MethodNativeInstalledApps = "native.installed_apps" // since 0.1.0
 	MethodNativeIsAppHidden = "native.is_app_hidden" // since 0.1.0
 	MethodNativeKeyboardLayout = "native.keyboard_layout" // since 0.1.0
 	MethodNativeLaunchApp = "native.launch_app" // since 0.1.0

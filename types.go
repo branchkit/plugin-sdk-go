@@ -13,14 +13,6 @@ type Rect struct {
 	H int `json:"h"`
 }
 
-// IsEnabled returns true if the app is enabled (defaults to true if nil).
-func (a AppData) IsEnabled() bool {
-	if a.Enabled == nil {
-		return true
-	}
-	return *a.Enabled
-}
-
 // DispatchActionRequest is for plugins that call the dispatch HTTP endpoint.
 // Not part of the JSON-RPC protocol (dispatch is HTTP-only via TCP :21551).
 type DispatchActionRequest struct {

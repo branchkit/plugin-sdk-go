@@ -51,14 +51,6 @@ type ActiveSpace struct {
 	SpaceID int `json:"space_id"`
 }
 
-// AppData is auto-generated from the OpenRPC spec.
-type AppData struct {
-	Aliases []string `json:"aliases"`
-	BundleID string `json:"bundle_id"`
-	Enabled *bool `json:"enabled,omitempty"`
-	Name string `json:"name"`
-}
-
 // AudioDevice is auto-generated from the OpenRPC spec.
 type AudioDevice struct {
 	ID int `json:"id"`
@@ -189,6 +181,12 @@ type IngestSegmentSpec struct {
 type InputSource struct {
 	ID string `json:"id"`
 	IsActive bool `json:"is_active"`
+	Name string `json:"name"`
+}
+
+// InstalledApp is auto-generated from the OpenRPC spec.
+type InstalledApp struct {
+	BundleID string `json:"bundle_id"`
 	Name string `json:"name"`
 }
 
@@ -1060,6 +1058,11 @@ type NativeHideAppResponse struct {
 	Ok bool `json:"ok"`
 }
 
+// NativeInstalledAppsResponse is the response type for native.installed_apps.
+type NativeInstalledAppsResponse struct {
+	Apps []InstalledApp `json:"apps"`
+}
+
 // NativeIsAppHiddenRequest is the request type for native.is_app_hidden.
 type NativeIsAppHiddenRequest struct {
 	BundleID string `json:"bundle_id"`
@@ -1628,7 +1631,6 @@ type OnCommandsChangedResponse struct {
 
 // RenderHUDRequest is the request type for render_hud.
 type RenderHUDRequest struct {
-	Apps []AppData `json:"apps,omitempty"`
 	Footer *string `json:"footer,omitempty"`
 	HudMode string `json:"hud_mode"`
 	Sections []HudSection `json:"sections,omitempty"`
@@ -1638,7 +1640,6 @@ type RenderHUDRequest struct {
 // RenderSettingsRequest is the request type for render_settings.
 type RenderSettingsRequest struct {
 	ActiveTags []string `json:"active_tags,omitempty"`
-	Apps []AppData `json:"apps,omitempty"`
 	Commands json.RawMessage `json:"commands,omitempty"`
 	Search *string `json:"search,omitempty"`
 	TabKey string `json:"tab_key"`
