@@ -50,6 +50,21 @@ func (p *Plugin) CollectionPush(data json.RawMessage, label json.RawMessage, nam
 	return p.Call(MethodCollectionPush, req, nil)
 }
 
+// CollectionsList list collections with entries for display, optionally filtered by kind.
+func (p *Plugin) CollectionsList(kind json.RawMessage) ([]CollectionsListSection, error) {
+	req := &CollectionsListRequest{
+		Kind: kind,
+	}
+	var result struct {
+		Sections []CollectionsListSection `json:"sections"`
+	}
+	err := p.Call(MethodCollectionsList, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Sections, nil
+}
+
 // CommandsDiscover discover available commands or next tokens for a partial match.
 func (p *Plugin) CommandsDiscover(activeTags json.RawMessage, requireTag json.RawMessage, words json.RawMessage) (*CommandsDiscoverResponse, error) {
 	req := &CommandsDiscoverRequest{
@@ -158,12 +173,13 @@ func (p *Plugin) EventsEmit(correlationID json.RawMessage, data json.RawMessage,
 }
 
 // HUDCreateChannel create a new HUD broadcast channel at runtime.
-func (p *Plugin) HUDCreateChannel(acceptsInput *bool, anchor json.RawMessage, channel string, description *string, minHeight *int, width *int) error {
+func (p *Plugin) HUDCreateChannel(acceptsInput *bool, anchor json.RawMessage, channel string, description *string, followsFocus *bool, minHeight *int, width *int) error {
 	req := &HUDCreateChannelRequest{
 		AcceptsInput: acceptsInput,
 		Anchor: anchor,
 		Channel: channel,
 		Description: description,
+		FollowsFocus: followsFocus,
 		MinHeight: minHeight,
 		Width: width,
 	}
@@ -1323,8 +1339,9 @@ func (p *Plugin) SelectionPick(index int) (*SelectionPickResponse, error) {
 }
 
 // SelectionSet show the selection HUD with items for the user to pick from.
-func (p *Plugin) SelectionSet(items json.RawMessage, title json.RawMessage) error {
+func (p *Plugin) SelectionSet(channel json.RawMessage, items json.RawMessage, title json.RawMessage) error {
 	req := &SelectionSetRequest{
+		Channel: channel,
 		Items: items,
 		Title: title,
 	}

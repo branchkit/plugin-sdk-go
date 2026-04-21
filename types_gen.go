@@ -88,6 +88,22 @@ type ClipboardWriteItem struct {
 	Text json.RawMessage `json:"text,omitempty"`
 }
 
+// CollectionsListItem is auto-generated from the OpenRPC spec.
+type CollectionsListItem struct {
+	ID string `json:"id"`
+	Subtitle json.RawMessage `json:"subtitle,omitempty"`
+	Title string `json:"title"`
+}
+
+// CollectionsListSection is auto-generated from the OpenRPC spec.
+type CollectionsListSection struct {
+	EntryCount int `json:"entry_count"`
+	Items []CollectionsListItem `json:"items"`
+	Label string `json:"label"`
+	Name string `json:"name"`
+	Plugin string `json:"plugin"`
+}
+
 // DeliveredNotification is auto-generated from the OpenRPC spec.
 type DeliveredNotification struct {
 	Body json.RawMessage `json:"body,omitempty"`
@@ -376,6 +392,16 @@ type CollectionPushResponse struct {
 	Ok bool `json:"ok"`
 }
 
+// CollectionsListRequest is the request type for collections.list.
+type CollectionsListRequest struct {
+	Kind json.RawMessage `json:"kind,omitempty"`
+}
+
+// CollectionsListResponse is the response type for collections.list.
+type CollectionsListResponse struct {
+	Sections []CollectionsListSection `json:"sections"`
+}
+
 // CommandsDiscoverRequest is the request type for commands.discover.
 type CommandsDiscoverRequest struct {
 	ActiveTags json.RawMessage `json:"active_tags,omitempty"`
@@ -489,6 +515,7 @@ type HUDCreateChannelRequest struct {
 	Anchor json.RawMessage `json:"anchor,omitempty"`
 	Channel string `json:"channel"`
 	Description *string `json:"description,omitempty"`
+	FollowsFocus *bool `json:"follows_focus,omitempty"`
 	MinHeight *int `json:"min_height,omitempty"`
 	Width *int `json:"width,omitempty"`
 }
@@ -1512,6 +1539,7 @@ type SelectionPickResponse struct {
 
 // SelectionSetRequest is the request type for selection.set.
 type SelectionSetRequest struct {
+	Channel json.RawMessage `json:"channel,omitempty"`
 	Items json.RawMessage `json:"items,omitempty"`
 	Title json.RawMessage `json:"title,omitempty"`
 }
@@ -1627,6 +1655,20 @@ type OnActionRequest struct {
 
 // OnActionResponse is the response type for on_action.
 type OnActionResponse struct {
+	ControlMessage *string `json:"control_message,omitempty"`
+	Status OnActionStatus `json:"status"`
+}
+
+// OnChannelActionRequest is the request type for on_channel_action.
+type OnChannelActionRequest struct {
+	Action string `json:"action"`
+	Channel string `json:"channel"`
+	Payload json.RawMessage `json:"payload,omitempty"`
+}
+
+// OnChannelActionResponse is the response type for on_channel_action.
+type OnChannelActionResponse struct {
+	CloseChannel *bool `json:"close_channel,omitempty"`
 	ControlMessage *string `json:"control_message,omitempty"`
 	Status OnActionStatus `json:"status"`
 }
