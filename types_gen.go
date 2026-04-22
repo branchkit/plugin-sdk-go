@@ -488,6 +488,7 @@ type DispatchRequest struct {
 // DispatchResponse is the response type for dispatch.
 type DispatchResponse struct {
 	ControlMessage json.RawMessage `json:"control_message,omitempty"`
+	Handler json.RawMessage `json:"handler,omitempty"`
 	Message json.RawMessage `json:"message,omitempty"`
 	Status string `json:"status"`
 }
