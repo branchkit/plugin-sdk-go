@@ -154,12 +154,6 @@ type DisplayMetadata struct {
 	Y int `json:"y"`
 }
 
-// EntityEntry is auto-generated from the OpenRPC spec.
-type EntityEntry struct {
-	Source string `json:"source"`
-	Value json.RawMessage `json:"value,omitempty"`
-}
-
 // Frame is auto-generated from the OpenRPC spec.
 type Frame struct {
 	H int `json:"h"`
@@ -368,7 +362,6 @@ type CollectionGetRequest struct {
 // CollectionGetResponse is the response type for collection.get.
 type CollectionGetResponse struct {
 	Data json.RawMessage `json:"data"`
-	Entries json.RawMessage `json:"entries,omitempty"`
 	Introducer string `json:"introducer"`
 	Merge MergeStrategy `json:"merge"`
 	Name string `json:"name"`
