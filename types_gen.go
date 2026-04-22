@@ -91,6 +91,7 @@ type ClipboardWriteItem struct {
 // CollectionsListItem is auto-generated from the OpenRPC spec.
 type CollectionsListItem struct {
 	ID string `json:"id"`
+	Source string `json:"source"`
 	Subtitle json.RawMessage `json:"subtitle,omitempty"`
 	Title string `json:"title"`
 }
@@ -151,6 +152,12 @@ type DisplayMetadata struct {
 	W int `json:"w"`
 	X int `json:"x"`
 	Y int `json:"y"`
+}
+
+// EntityEntry is auto-generated from the OpenRPC spec.
+type EntityEntry struct {
+	Source string `json:"source"`
+	Value json.RawMessage `json:"value,omitempty"`
 }
 
 // Frame is auto-generated from the OpenRPC spec.
