@@ -144,7 +144,6 @@ const (
 // RPC method names: actuator → plugin (use with plugin.Handle()).
 const (
 	HookOnAction = "on_action" // since 0.1.0
-	HookOnChannelAction = "on_channel_action" // since 0.1.0
 	HookOnCommandsChanged = "on_commands_changed" // since 0.1.0
 	HookRenderHud = "render_hud" // since 0.1.0
 	HookRenderSettings = "render_settings" // since 0.1.0

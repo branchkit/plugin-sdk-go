@@ -1659,20 +1659,6 @@ type OnActionResponse struct {
 	Status OnActionStatus `json:"status"`
 }
 
-// OnChannelActionRequest is the request type for on_channel_action.
-type OnChannelActionRequest struct {
-	Action string `json:"action"`
-	Channel string `json:"channel"`
-	Payload json.RawMessage `json:"payload,omitempty"`
-}
-
-// OnChannelActionResponse is the response type for on_channel_action.
-type OnChannelActionResponse struct {
-	CloseChannel *bool `json:"close_channel,omitempty"`
-	ControlMessage *string `json:"control_message,omitempty"`
-	Status OnActionStatus `json:"status"`
-}
-
 // OnCommandsChangedRequest is the request type for on_commands_changed.
 type OnCommandsChangedRequest struct {
 	CommandsByPlugin json.RawMessage `json:"commands_by_plugin"`
