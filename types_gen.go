@@ -362,6 +362,7 @@ type CollectionGetRequest struct {
 // CollectionGetResponse is the response type for collection.get.
 type CollectionGetResponse struct {
 	Data json.RawMessage `json:"data"`
+	Entries json.RawMessage `json:"entries,omitempty"`
 	Introducer string `json:"introducer"`
 	Merge MergeStrategy `json:"merge"`
 	Name string `json:"name"`
