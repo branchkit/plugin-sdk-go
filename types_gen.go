@@ -1707,10 +1707,9 @@ type RenderSettingsResponse struct {
 
 // SpeechPipelineFullRequest is the request type for speech_pipeline_full.
 type SpeechPipelineFullRequest struct {
+	ChannelVisibility map[string]bool `json:"channel_visibility,omitempty"`
 	IsContinuous *bool `json:"is_continuous,omitempty"`
-	IsDiscoveryOpen *bool `json:"is_discovery_open,omitempty"`
 	IsFinal bool `json:"is_final"`
-	IsHudOpen *bool `json:"is_hud_open,omitempty"`
 	MuteMatching *bool `json:"mute_matching,omitempty"`
 	ScopedPrefixes []string `json:"scoped_prefixes,omitempty"`
 	Segments []IngestSegmentSpec `json:"segments"`
@@ -1725,7 +1724,6 @@ type SpeechPipelineFullRequest struct {
 // SpeechPipelineFullResponse is the response type for speech_pipeline_full.
 type SpeechPipelineFullResponse struct {
 	ControlMessage json.RawMessage `json:"control_message,omitempty"`
-	IsHudOpen *bool `json:"is_hud_open,omitempty"`
 	PasteText json.RawMessage `json:"paste_text,omitempty"`
 	ResetEngine *bool `json:"reset_engine,omitempty"`
 	Status *string `json:"status,omitempty"`
