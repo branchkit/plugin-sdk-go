@@ -19,7 +19,7 @@ type ActionHandlerFunc func(req *OnActionRequest) (any, error)
 //	type SnapParams struct {
 //	    Position string `json:"position"`
 //	}
-//	plugin.HandleAction("wm.snap", func(req *shared.OnActionRequest) (any, error) {
+//	plugin.HandleAction("foo.snap", func(req *shared.OnActionRequest) (any, error) {
 //	    var p SnapParams
 //	    if err := req.UnmarshalParams(&p); err != nil {
 //	        return nil, err
@@ -71,16 +71,16 @@ func (r *actionRegistry) dispatch(params json.RawMessage) (any, error) {
 }
 
 // HandleAction registers a handler for a single dispatched action type
-// (e.g. "wm.snap", "voice.dictation_start"). The SDK installs an internal
+// (e.g. "foo.snap", "bar.start"). The SDK installs an internal
 // on_action handler that demuxes by req.Action.
 //
 // HandleAction is the only supported way to register action handlers.
 // Calling Handle("on_action", ...) directly is reserved for plugins with
-// dynamic dispatch needs (e.g. browser, which forwards every browser.*
-// action to SSE clients) — but mixing the two will panic, since each is
+// dynamic dispatch needs (e.g. a plugin that forwards every prefix.*
+// action to external clients) — but mixing the two will panic, since each is
 // installing the same handler key.
 //
-//	plugin.HandleAction("wm.snap", func(req *shared.OnActionRequest) (any, error) {
+//	plugin.HandleAction("foo.snap", func(req *shared.OnActionRequest) (any, error) {
 //	    var p struct{ Position string `json:"position"` }
 //	    req.UnmarshalParams(&p)
 //	    return nil, nil // implicit "ok" — SDK fills in the response
@@ -119,7 +119,7 @@ func (p *Plugin) HandleAction(action string, fn ActionHandlerFunc) {
 //	type SnapParams struct {
 //	    Position string `json:"position"`
 //	}
-//	shared.HandleActionTyped(plugin, "wm.snap", func(p SnapParams, req *shared.OnActionRequest) (any, error) {
+//	shared.HandleActionTyped(plugin, "foo.snap", func(p SnapParams, req *shared.OnActionRequest) (any, error) {
 //	    // p is fully typed
 //	    return nil, nil
 //	})

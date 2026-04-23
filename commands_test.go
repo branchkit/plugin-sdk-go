@@ -62,7 +62,7 @@ func TestLoadContextFileMergesTags(t *testing.T) {
 	os.WriteFile(path, []byte(`{
 		"context": { "requires_tags": ["app.dev.warp.Warp-Stable"] },
 		"commands": [
-			{"pattern":["return"],"action":{"type":"key","code":0},"requires_tags":["plugin.voice.mode.command_hold"]}
+			{"pattern":["return"],"action":{"type":"key","code":0},"requires_tags":["plugin.foo.mode.active"]}
 		]
 	}`), 0644)
 
@@ -81,7 +81,7 @@ func TestLoadContextFileMergesTags(t *testing.T) {
 	if tags[0] != "app.dev.warp.Warp-Stable" {
 		t.Errorf("expected context tag first, got %s", tags[0])
 	}
-	if tags[1] != "plugin.voice.mode.command_hold" {
+	if tags[1] != "plugin.foo.mode.active" {
 		t.Errorf("expected command tag second, got %s", tags[1])
 	}
 }
