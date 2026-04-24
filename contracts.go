@@ -63,6 +63,7 @@ const (
 	MethodNativeBatchSetFrames = "native.batch_set_frames" // since 0.1.0
 	MethodNativeBattery = "native.battery" // since 0.1.0
 	MethodNativeBleDiscoverServices = "native.ble_discover_services" // since 0.1.0
+	MethodNativeBleSubscribe = "native.ble_subscribe" // since 0.1.0
 	MethodNativeBleWrite = "native.ble_write" // since 0.1.0
 	MethodNativeBluetoothDevices = "native.bluetooth_devices" // since 0.1.0
 	MethodNativeBorders = "native.borders" // since 0.1.0
@@ -158,6 +159,7 @@ const (
 const (
 	EventActionExecuted = "_platform.action.executed"
 	EventAppFocused = "_platform.app.focused"
+	EventBleNotification = "_platform.ble.notification"
 	EventCollectionUpdated = "_platform.collection.updated"
 	EventDisplayChanged = "_platform.display.changed"
 	EventHidConnected = "_platform.hid.connected"

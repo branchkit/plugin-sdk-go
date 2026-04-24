@@ -634,6 +634,21 @@ func (p *Plugin) NativeBleDiscoverServices(deviceIdentifier string) ([]BleServic
 	return result.Services, nil
 }
 
+// NativeBleSubscribe subscribe to GATT notifications on a BLE characteristic.
+func (p *Plugin) NativeBleSubscribe(characteristicUuid string, deviceIdentifier string, serviceUuid string) (*NativeBleSubscribeResponse, error) {
+	req := &NativeBleSubscribeRequest{
+		CharacteristicUuid: characteristicUuid,
+		DeviceIdentifier: deviceIdentifier,
+		ServiceUuid: serviceUuid,
+	}
+	var result NativeBleSubscribeResponse
+	err := p.Call(MethodNativeBleSubscribe, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // NativeBleWrite write bytes to a GATT characteristic on a paired BLE device.
 func (p *Plugin) NativeBleWrite(characteristicUuid string, data []int, deviceIdentifier string, serviceUuid string, writeType *string) (*NativeBleWriteResponse, error) {
 	req := &NativeBleWriteRequest{

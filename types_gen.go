@@ -962,6 +962,18 @@ type NativeBleDiscoverServicesResponse struct {
 	Services []BleService `json:"services"`
 }
 
+// NativeBleSubscribeRequest is the request type for native.ble_subscribe.
+type NativeBleSubscribeRequest struct {
+	CharacteristicUuid string `json:"characteristic_uuid"`
+	DeviceIdentifier string `json:"device_identifier"`
+	ServiceUuid string `json:"service_uuid"`
+}
+
+// NativeBleSubscribeResponse is the response type for native.ble_subscribe.
+type NativeBleSubscribeResponse struct {
+	Success bool `json:"success"`
+}
+
 // NativeBleWriteRequest is the request type for native.ble_write.
 type NativeBleWriteRequest struct {
 	CharacteristicUuid string `json:"characteristic_uuid"`
