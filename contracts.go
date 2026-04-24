@@ -62,6 +62,8 @@ const (
 	MethodNativeBatchIsTileable = "native.batch_is_tileable" // since 0.1.0
 	MethodNativeBatchSetFrames = "native.batch_set_frames" // since 0.1.0
 	MethodNativeBattery = "native.battery" // since 0.1.0
+	MethodNativeBleDiscoverServices = "native.ble_discover_services" // since 0.1.0
+	MethodNativeBleWrite = "native.ble_write" // since 0.1.0
 	MethodNativeBluetoothDevices = "native.bluetooth_devices" // since 0.1.0
 	MethodNativeBorders = "native.borders" // since 0.1.0
 	MethodNativeBrightness = "native.brightness" // since 0.1.0
@@ -82,6 +84,8 @@ const (
 	MethodNativeForceQuitApp = "native.force_quit_app" // since 0.1.0
 	MethodNativeFrontmostApp = "native.frontmost_app" // since 0.1.0
 	MethodNativeGetWindowInfo = "native.get_window_info" // since 0.1.0
+	MethodNativeHidDevices = "native.hid_devices" // since 0.1.0
+	MethodNativeHidSendReport = "native.hid_send_report" // since 0.1.0
 	MethodNativeHideApp = "native.hide_app" // since 0.1.0
 	MethodNativeInstalledApps = "native.installed_apps" // since 0.1.0
 	MethodNativeIsAppHidden = "native.is_app_hidden" // since 0.1.0
@@ -156,6 +160,10 @@ const (
 	EventAppFocused = "_platform.app.focused"
 	EventCollectionUpdated = "_platform.collection.updated"
 	EventDisplayChanged = "_platform.display.changed"
+	EventHidConnected = "_platform.hid.connected"
+	EventHidDisconnected = "_platform.hid.disconnected"
+	EventHidInput = "_platform.hid.input"
+	EventHidReport = "_platform.hid.report"
 	EventInputSessionEnded = "_platform.input.session_ended"
 	EventKeyboardLayoutChanged = "_platform.keyboard.layout_changed"
 	EventPluginDegraded = "_platform.plugin.degraded"

@@ -619,6 +619,38 @@ func (p *Plugin) NativeBattery() (*NativeBatteryResponse, error) {
 	return &result, nil
 }
 
+// NativeBleDiscoverServices discover GATT services and characteristics on a paired BLE device.
+func (p *Plugin) NativeBleDiscoverServices(deviceIdentifier string) ([]BleService, error) {
+	req := &NativeBleDiscoverServicesRequest{
+		DeviceIdentifier: deviceIdentifier,
+	}
+	var result struct {
+		Services []BleService `json:"services"`
+	}
+	err := p.Call(MethodNativeBleDiscoverServices, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Services, nil
+}
+
+// NativeBleWrite write bytes to a GATT characteristic on a paired BLE device.
+func (p *Plugin) NativeBleWrite(characteristicUuid string, data []int, deviceIdentifier string, serviceUuid string, writeType *string) (*NativeBleWriteResponse, error) {
+	req := &NativeBleWriteRequest{
+		CharacteristicUuid: characteristicUuid,
+		Data: data,
+		DeviceIdentifier: deviceIdentifier,
+		ServiceUuid: serviceUuid,
+		WriteType: writeType,
+	}
+	var result NativeBleWriteResponse
+	err := p.Call(MethodNativeBleWrite, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // NativeBluetoothDevices list paired/connected Bluetooth devices.
 func (p *Plugin) NativeBluetoothDevices() ([]BluetoothDevice, error) {
 	var result struct {
@@ -825,6 +857,34 @@ func (p *Plugin) NativeGetWindowInfo(windowID string) (*NativeGetWindowInfoRespo
 	}
 	var result NativeGetWindowInfoResponse
 	err := p.Call(MethodNativeGetWindowInfo, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeHidDevices list all connected non-Apple HID devices.
+func (p *Plugin) NativeHidDevices() ([]HidDeviceEntry, error) {
+	var result struct {
+		Devices []HidDeviceEntry `json:"devices"`
+	}
+	err := p.Call(MethodNativeHidDevices, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Devices, nil
+}
+
+// NativeHidSendReport send an output or feature report to a connected HID device.
+func (p *Plugin) NativeHidSendReport(data []int, deviceID string, reportID int, reportType string) (*NativeHidSendReportResponse, error) {
+	req := &NativeHidSendReportRequest{
+		Data: data,
+		DeviceID: deviceID,
+		ReportID: reportID,
+		ReportType: reportType,
+	}
+	var result NativeHidSendReportResponse
+	err := p.Call(MethodNativeHidSendReport, req, &result)
 	if err != nil {
 		return nil, err
 	}

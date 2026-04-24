@@ -62,6 +62,18 @@ type AudioDevice struct {
 	UID string `json:"uid"`
 }
 
+// BleCharacteristic is auto-generated from the OpenRPC spec.
+type BleCharacteristic struct {
+	Properties []string `json:"properties"`
+	Uuid string `json:"uuid"`
+}
+
+// BleService is auto-generated from the OpenRPC spec.
+type BleService struct {
+	Characteristics []BleCharacteristic `json:"characteristics"`
+	Uuid string `json:"uuid"`
+}
+
 // BluetoothDevice is auto-generated from the OpenRPC spec.
 type BluetoothDevice struct {
 	Address string `json:"address"`
@@ -160,6 +172,18 @@ type Frame struct {
 	W int `json:"w"`
 	X int `json:"x"`
 	Y int `json:"y"`
+}
+
+// HidDeviceEntry is auto-generated from the OpenRPC spec.
+type HidDeviceEntry struct {
+	Axes int `json:"axes"`
+	BleUuid json.RawMessage `json:"ble_uuid,omitempty"`
+	Buttons int `json:"buttons"`
+	ID string `json:"id"`
+	Product string `json:"product"`
+	ProductID int `json:"product_id"`
+	Transport string `json:"transport"`
+	VendorID int `json:"vendor_id"`
 }
 
 // HudItem is auto-generated from the OpenRPC spec.
@@ -928,6 +952,30 @@ type NativeBatteryResponse struct {
 	TimeRemainingMinutes json.RawMessage `json:"time_remaining_minutes,omitempty"`
 }
 
+// NativeBleDiscoverServicesRequest is the request type for native.ble_discover_services.
+type NativeBleDiscoverServicesRequest struct {
+	DeviceIdentifier string `json:"device_identifier"`
+}
+
+// NativeBleDiscoverServicesResponse is the response type for native.ble_discover_services.
+type NativeBleDiscoverServicesResponse struct {
+	Services []BleService `json:"services"`
+}
+
+// NativeBleWriteRequest is the request type for native.ble_write.
+type NativeBleWriteRequest struct {
+	CharacteristicUuid string `json:"characteristic_uuid"`
+	Data []int `json:"data,omitempty"`
+	DeviceIdentifier string `json:"device_identifier"`
+	ServiceUuid string `json:"service_uuid"`
+	WriteType *string `json:"write_type,omitempty"`
+}
+
+// NativeBleWriteResponse is the response type for native.ble_write.
+type NativeBleWriteResponse struct {
+	Success bool `json:"success"`
+}
+
 // NativeBluetoothDevicesResponse is the response type for native.bluetooth_devices.
 type NativeBluetoothDevicesResponse struct {
 	Devices []BluetoothDevice `json:"devices"`
@@ -1088,6 +1136,24 @@ type NativeGetWindowInfoResponse struct {
 	Subrole json.RawMessage `json:"subrole,omitempty"`
 	Title json.RawMessage `json:"title,omitempty"`
 	WindowID string `json:"window_id"`
+}
+
+// NativeHidDevicesResponse is the response type for native.hid_devices.
+type NativeHidDevicesResponse struct {
+	Devices []HidDeviceEntry `json:"devices"`
+}
+
+// NativeHidSendReportRequest is the request type for native.hid_send_report.
+type NativeHidSendReportRequest struct {
+	Data []int `json:"data,omitempty"`
+	DeviceID string `json:"device_id"`
+	ReportID int `json:"report_id"`
+	ReportType string `json:"report_type"`
+}
+
+// NativeHidSendReportResponse is the response type for native.hid_send_report.
+type NativeHidSendReportResponse struct {
+	Success bool `json:"success"`
 }
 
 // NativeHideAppRequest is the request type for native.hide_app.

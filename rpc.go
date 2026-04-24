@@ -347,9 +347,11 @@ func (p *Plugin) dispatch(msg rpcMessage) {
 		return
 	}
 
-	// Notification from actuator — has method, no id
+	// Notification from actuator — has method, no id.
+	// Run in goroutine so listeners can call plugin.Call() without
+	// blocking the read loop (same pattern as handleRequest).
 	if msg.ID == nil && msg.Method != "" {
-		p.handleNotification(msg)
+		go p.handleNotification(msg)
 		return
 	}
 }
