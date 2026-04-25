@@ -74,6 +74,14 @@ type BleService struct {
 	Uuid string `json:"uuid"`
 }
 
+// BleWriteEntry is auto-generated from the OpenRPC spec.
+type BleWriteEntry struct {
+	CharacteristicUuid string `json:"characteristic_uuid"`
+	Data []int `json:"data"`
+	ServiceUuid string `json:"service_uuid"`
+	WriteType string `json:"write_type"`
+}
+
 // BluetoothDevice is auto-generated from the OpenRPC spec.
 type BluetoothDevice struct {
 	Address string `json:"address"`
@@ -971,6 +979,18 @@ type NativeBleSubscribeRequest struct {
 
 // NativeBleSubscribeResponse is the response type for native.ble_subscribe.
 type NativeBleSubscribeResponse struct {
+	Success bool `json:"success"`
+}
+
+// NativeBleSubscribeAllThenWriteRequest is the request type for native.ble_subscribe_all_then_write.
+type NativeBleSubscribeAllThenWriteRequest struct {
+	DeviceIdentifier string `json:"device_identifier"`
+	SubscribeServices []string `json:"subscribe_services,omitempty"`
+	Writes []BleWriteEntry `json:"writes,omitempty"`
+}
+
+// NativeBleSubscribeAllThenWriteResponse is the response type for native.ble_subscribe_all_then_write.
+type NativeBleSubscribeAllThenWriteResponse struct {
 	Success bool `json:"success"`
 }
 

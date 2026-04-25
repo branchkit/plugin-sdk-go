@@ -649,6 +649,21 @@ func (p *Plugin) NativeBleSubscribe(characteristicUuid string, deviceIdentifier 
 	return &result, nil
 }
 
+// NativeBleSubscribeAllThenWrite subscribe to all notify characteristics on listed services, then write — single GATT cycle.
+func (p *Plugin) NativeBleSubscribeAllThenWrite(deviceIdentifier string, subscribeServices []string, writes []BleWriteEntry) (*NativeBleSubscribeAllThenWriteResponse, error) {
+	req := &NativeBleSubscribeAllThenWriteRequest{
+		DeviceIdentifier: deviceIdentifier,
+		SubscribeServices: subscribeServices,
+		Writes: writes,
+	}
+	var result NativeBleSubscribeAllThenWriteResponse
+	err := p.Call(MethodNativeBleSubscribeAllThenWrite, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // NativeBleWrite write bytes to a GATT characteristic on a paired BLE device.
 func (p *Plugin) NativeBleWrite(characteristicUuid string, data []int, deviceIdentifier string, serviceUuid string, writeType *string) (*NativeBleWriteResponse, error) {
 	req := &NativeBleWriteRequest{

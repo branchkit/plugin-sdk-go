@@ -64,6 +64,7 @@ const (
 	MethodNativeBattery = "native.battery" // since 0.1.0
 	MethodNativeBleDiscoverServices = "native.ble_discover_services" // since 0.1.0
 	MethodNativeBleSubscribe = "native.ble_subscribe" // since 0.1.0
+	MethodNativeBleSubscribeAllThenWrite = "native.ble_subscribe_all_then_write" // since 0.1.0
 	MethodNativeBleWrite = "native.ble_write" // since 0.1.0
 	MethodNativeBluetoothDevices = "native.bluetooth_devices" // since 0.1.0
 	MethodNativeBorders = "native.borders" // since 0.1.0
