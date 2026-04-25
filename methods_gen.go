@@ -8,6 +8,16 @@ import "encoding/json"
 // Ensure json import is used.
 var _ json.RawMessage
 
+// ActionsList return all action type schemas keyed by fully-qualified name.
+func (p *Plugin) ActionsList() (*ActionsListResponse, error) {
+	var result ActionsListResponse
+	err := p.Call(MethodActionsList, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // CollectionDelete delete a dynamic collection.
 func (p *Plugin) CollectionDelete(name string) error {
 	req := &CollectionDeleteRequest{

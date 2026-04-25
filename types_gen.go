@@ -45,6 +45,23 @@ type AXPathSegment struct {
 	Role string `json:"role"`
 }
 
+// ActionFieldSchema is auto-generated from the OpenRPC spec.
+type ActionFieldSchema struct {
+	EnumValues []string `json:"enum_values"`
+	FieldType FieldType `json:"field_type"`
+	Fields []ActionFieldSchema `json:"fields"`
+	Key string `json:"key"`
+	Label string `json:"label"`
+	Placeholder json.RawMessage `json:"placeholder,omitempty"`
+	Required bool `json:"required"`
+}
+
+// ActionTypeSchema is auto-generated from the OpenRPC spec.
+type ActionTypeSchema struct {
+	Fields []ActionFieldSchema `json:"fields"`
+	Label string `json:"label"`
+}
+
 // ActiveSpace is auto-generated from the OpenRPC spec.
 type ActiveSpace struct {
 	DisplayID int `json:"display_id"`
@@ -173,6 +190,27 @@ type DisplayMetadata struct {
 	X int `json:"x"`
 	Y int `json:"y"`
 }
+
+// FieldType is auto-generated from the OpenRPC spec.
+// The declared shape of a single action-type field. See `ActionFieldSchema`.
+// 
+// Wire format uses snake_case strings (`"string"`, `"int"`, `"enum"`, …).
+// Unknown values fail deserialization — that's deliberate: a typo in
+// `plugin.json` should surface at load time, not at dispatch. The `Json`
+// variant is the documented escape hatch for shapes too dynamic to
+// declare statically.
+type FieldType string
+
+const (
+	FieldTypeString FieldType = "string"
+	FieldTypeInt FieldType = "int"
+	FieldTypeNumber FieldType = "number"
+	FieldTypeBoolean FieldType = "boolean"
+	FieldTypeStringArray FieldType = "string[]"
+	FieldTypeEnum FieldType = "enum"
+	FieldTypeObject FieldType = "object"
+	FieldTypeJson FieldType = "json"
+)
 
 // Frame is auto-generated from the OpenRPC spec.
 type Frame struct {
@@ -391,6 +429,11 @@ type WorldModel struct {
 
 // ===== Plugin → Actuator request/response types =====
 
+// ActionsListResponse is the response type for actions.list.
+type ActionsListResponse struct {
+	Actions map[string]ActionTypeSchema `json:"actions"`
+}
+
 // CollectionDeleteRequest is the request type for collection.delete.
 type CollectionDeleteRequest struct {
 	Name string `json:"name"`
@@ -531,6 +574,7 @@ type DispatchResponse struct {
 	ControlMessage json.RawMessage `json:"control_message,omitempty"`
 	Handler json.RawMessage `json:"handler,omitempty"`
 	Message json.RawMessage `json:"message,omitempty"`
+	Result json.RawMessage `json:"result,omitempty"`
 	Status string `json:"status"`
 }
 
@@ -1801,6 +1845,7 @@ type OnActionRequest struct {
 // OnActionResponse is the response type for on_action.
 type OnActionResponse struct {
 	ControlMessage *string `json:"control_message,omitempty"`
+	Result json.RawMessage `json:"result,omitempty"`
 	Status OnActionStatus `json:"status"`
 }
 
