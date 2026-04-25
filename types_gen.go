@@ -190,8 +190,23 @@ type HidDeviceEntry struct {
 	ID string `json:"id"`
 	Product string `json:"product"`
 	ProductID int `json:"product_id"`
+	Seized bool `json:"seized"`
 	Transport string `json:"transport"`
 	VendorID int `json:"vendor_id"`
+}
+
+// HidElementEntry is auto-generated from the OpenRPC spec.
+type HidElementEntry struct {
+	BitOffset int `json:"bit_offset"`
+	ByteOffset int `json:"byte_offset"`
+	LogicalMax int `json:"logical_max"`
+	LogicalMin int `json:"logical_min"`
+	ReportCount int `json:"report_count"`
+	ReportID int `json:"report_id"`
+	ReportSize int `json:"report_size"`
+	Type string `json:"type"`
+	Usage int `json:"usage"`
+	UsagePage int `json:"usage_page"`
 }
 
 // HudItem is auto-generated from the OpenRPC spec.
@@ -1170,9 +1185,39 @@ type NativeGetWindowInfoResponse struct {
 	WindowID string `json:"window_id"`
 }
 
+// NativeHidClaimRequest is the request type for native.hid_claim.
+type NativeHidClaimRequest struct {
+	DeviceID string `json:"device_id"`
+}
+
+// NativeHidClaimResponse is the response type for native.hid_claim.
+type NativeHidClaimResponse struct {
+	Success bool `json:"success"`
+}
+
 // NativeHidDevicesResponse is the response type for native.hid_devices.
 type NativeHidDevicesResponse struct {
 	Devices []HidDeviceEntry `json:"devices"`
+}
+
+// NativeHidElementsRequest is the request type for native.hid_elements.
+type NativeHidElementsRequest struct {
+	DeviceID string `json:"device_id"`
+}
+
+// NativeHidElementsResponse is the response type for native.hid_elements.
+type NativeHidElementsResponse struct {
+	Elements []HidElementEntry `json:"elements"`
+}
+
+// NativeHidReleaseRequest is the request type for native.hid_release.
+type NativeHidReleaseRequest struct {
+	DeviceID string `json:"device_id"`
+}
+
+// NativeHidReleaseResponse is the response type for native.hid_release.
+type NativeHidReleaseResponse struct {
+	Success bool `json:"success"`
 }
 
 // NativeHidSendReportRequest is the request type for native.hid_send_report.

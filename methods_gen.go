@@ -893,6 +893,19 @@ func (p *Plugin) NativeGetWindowInfo(windowID string) (*NativeGetWindowInfoRespo
 	return &result, nil
 }
 
+// NativeHidClaim seize exclusive access to a HID device, suppressing native macOS events.
+func (p *Plugin) NativeHidClaim(deviceID string) (*NativeHidClaimResponse, error) {
+	req := &NativeHidClaimRequest{
+		DeviceID: deviceID,
+	}
+	var result NativeHidClaimResponse
+	err := p.Call(MethodNativeHidClaim, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // NativeHidDevices list all connected non-Apple HID devices.
 func (p *Plugin) NativeHidDevices() ([]HidDeviceEntry, error) {
 	var result struct {
@@ -903,6 +916,34 @@ func (p *Plugin) NativeHidDevices() ([]HidDeviceEntry, error) {
 		return nil, err
 	}
 	return result.Devices, nil
+}
+
+// NativeHidElements return the parsed HID element tree (buttons, axes, dials) for a connected device.
+func (p *Plugin) NativeHidElements(deviceID string) ([]HidElementEntry, error) {
+	req := &NativeHidElementsRequest{
+		DeviceID: deviceID,
+	}
+	var result struct {
+		Elements []HidElementEntry `json:"elements"`
+	}
+	err := p.Call(MethodNativeHidElements, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Elements, nil
+}
+
+// NativeHidRelease release exclusive access to a HID device, restoring native macOS behavior.
+func (p *Plugin) NativeHidRelease(deviceID string) (*NativeHidReleaseResponse, error) {
+	req := &NativeHidReleaseRequest{
+		DeviceID: deviceID,
+	}
+	var result NativeHidReleaseResponse
+	err := p.Call(MethodNativeHidRelease, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
 }
 
 // NativeHidSendReport send an output or feature report to a connected HID device.

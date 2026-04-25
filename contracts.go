@@ -86,7 +86,10 @@ const (
 	MethodNativeForceQuitApp = "native.force_quit_app" // since 0.1.0
 	MethodNativeFrontmostApp = "native.frontmost_app" // since 0.1.0
 	MethodNativeGetWindowInfo = "native.get_window_info" // since 0.1.0
+	MethodNativeHidClaim = "native.hid_claim" // since 0.1.0
 	MethodNativeHidDevices = "native.hid_devices" // since 0.1.0
+	MethodNativeHidElements = "native.hid_elements" // since 0.1.0
+	MethodNativeHidRelease = "native.hid_release" // since 0.1.0
 	MethodNativeHidSendReport = "native.hid_send_report" // since 0.1.0
 	MethodNativeHideApp = "native.hide_app" // since 0.1.0
 	MethodNativeInstalledApps = "native.installed_apps" // since 0.1.0
