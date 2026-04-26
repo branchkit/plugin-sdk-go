@@ -142,6 +142,18 @@ type CollectionsListSection struct {
 	Plugin string `json:"plugin"`
 }
 
+// CommandRowData is auto-generated from the OpenRPC spec.
+type CommandRowData struct {
+	Action string `json:"action"`
+	ActionJson json.RawMessage `json:"action_json,omitempty"`
+	Canonical string `json:"canonical"`
+	Category string `json:"category"`
+	IsUser bool `json:"is_user"`
+	Pattern string `json:"pattern"`
+	PluginName string `json:"plugin_name"`
+	Tier string `json:"tier"`
+}
+
 // DeliveredNotification is auto-generated from the OpenRPC spec.
 type DeliveredNotification struct {
 	Body json.RawMessage `json:"body,omitempty"`
@@ -363,6 +375,21 @@ type ScreenshotRegion struct {
 type SelectionItemSpec struct {
 	ID string `json:"id"`
 	Tag *string `json:"tag,omitempty"`
+}
+
+// SettingsListSchemaInfo is auto-generated from the OpenRPC spec.
+type SettingsListSchemaInfo struct {
+	Description string `json:"description"`
+	EntryCount int `json:"entry_count"`
+	Label string `json:"label"`
+	SourcePlugin string `json:"source_plugin"`
+}
+
+// SettingsTagSchemaInfo is auto-generated from the OpenRPC spec.
+type SettingsTagSchemaInfo struct {
+	Description string `json:"description"`
+	Label string `json:"label"`
+	SourcePlugin string `json:"source_plugin"`
 }
 
 // SpaceInfo is auto-generated from the OpenRPC spec.
@@ -1870,10 +1897,14 @@ type RenderHUDRequest struct {
 
 // RenderSettingsRequest is the request type for render_settings.
 type RenderSettingsRequest struct {
-	ActiveTags []string `json:"active_tags,omitempty"`
-	Commands json.RawMessage `json:"commands,omitempty"`
-	Search *string `json:"search,omitempty"`
+	ActionTypeSchemas map[string]ActionTypeSchema `json:"action_type_schemas,omitempty"`
+	CollectionData map[string]json.RawMessage `json:"collection_data,omitempty"`
+	CommandFilter *string `json:"command_filter,omitempty"`
+	Commands []CommandRowData `json:"commands,omitempty"`
+	ListSchemas map[string]SettingsListSchemaInfo `json:"list_schemas,omitempty"`
+	Search string `json:"search"`
 	TabKey string `json:"tab_key"`
+	TagSchemas map[string]SettingsTagSchemaInfo `json:"tag_schemas,omitempty"`
 }
 
 // RenderSettingsResponse is the response type for render_settings.
