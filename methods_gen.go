@@ -1499,6 +1499,14 @@ func (p *Plugin) SessionEndCleanup() (*SessionEndCleanupResponse, error) {
 	return &result, nil
 }
 
+// SettingsPatchSignals push Datastar signal patches to all active settings SSE streams.
+func (p *Plugin) SettingsPatchSignals(signals string) error {
+	req := &SettingsPatchSignalsRequest{
+		Signals: signals,
+	}
+	return p.Call(MethodSettingsPatchSignals, req, nil)
+}
+
 // SettingsRulesCreate create a new user voice command from settings-UI signals.
 func (p *Plugin) SettingsRulesCreate(newruleactionjson json.RawMessage, newruleactiontype json.RawMessage, newruleactionval json.RawMessage, newrulecategory json.RawMessage, newruleclearstags json.RawMessage, newruledescription json.RawMessage, newrulephrase json.RawMessage, newrulerequirestags json.RawMessage, newrulesetstags json.RawMessage) error {
 	req := &SettingsRulesCreateRequest{

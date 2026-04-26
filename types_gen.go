@@ -1772,6 +1772,16 @@ type SessionEndCleanupResponse struct {
 	ResetEngine bool `json:"reset_engine"`
 }
 
+// SettingsPatchSignalsRequest is the request type for settings.patch_signals.
+type SettingsPatchSignalsRequest struct {
+	Signals string `json:"signals"`
+}
+
+// SettingsPatchSignalsResponse is the response type for settings.patch_signals.
+type SettingsPatchSignalsResponse struct {
+	Ok bool `json:"ok"`
+}
+
 // SettingsRulesCreateRequest is the request type for settings.rules_create.
 type SettingsRulesCreateRequest struct {
 	Newruleactionjson json.RawMessage `json:"newruleactionjson,omitempty"`

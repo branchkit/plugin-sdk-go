@@ -142,6 +142,7 @@ const (
 	MethodSelectionPick = "selection.pick" // since 0.1.0
 	MethodSelectionSet = "selection.set" // since 0.1.0
 	MethodSessionEndCleanup = "session.end_cleanup" // since 0.1.0
+	MethodSettingsPatchSignals = "settings.patch_signals" // since 0.1.0
 	MethodSettingsRulesCreate = "settings.rules_create" // since 0.1.0
 	MethodSettingsRulesUpdate = "settings.rules_update" // since 0.1.0
 	MethodSystemLaunchApp = "system.launch_app" // since 0.1.0
