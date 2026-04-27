@@ -594,6 +594,7 @@ type ControlSignalResponse struct {
 // DispatchRequest is the request type for dispatch.
 type DispatchRequest struct {
 	Action json.RawMessage `json:"action"`
+	Phase json.RawMessage `json:"phase,omitempty"`
 }
 
 // DispatchResponse is the response type for dispatch.
@@ -838,6 +839,7 @@ type InputRightClickResponse struct {
 type InputScrollRequest struct {
 	Amount *int `json:"amount,omitempty"`
 	Direction string `json:"direction"`
+	Unit *string `json:"unit,omitempty"`
 }
 
 // InputScrollResponse is the response type for input.scroll.
@@ -1782,6 +1784,11 @@ type SettingsPatchSignalsResponse struct {
 	Ok bool `json:"ok"`
 }
 
+// SettingsRefreshResponse is the response type for settings.refresh.
+type SettingsRefreshResponse struct {
+	Ok bool `json:"ok"`
+}
+
 // SettingsRulesCreateRequest is the request type for settings.rules_create.
 type SettingsRulesCreateRequest struct {
 	Newruleactionjson json.RawMessage `json:"newruleactionjson,omitempty"`
@@ -1877,6 +1884,7 @@ type OnActionRequest struct {
 	ActiveApp *string `json:"active_app,omitempty"`
 	ActiveWindowID *string `json:"active_window_id,omitempty"`
 	Params json.RawMessage `json:"params,omitempty"`
+	Phase *string `json:"phase,omitempty"`
 }
 
 // OnActionResponse is the response type for on_action.

@@ -150,9 +150,10 @@ func (p *Plugin) ControlSignal(signal string) error {
 }
 
 // Dispatch dispatch a typed Action to a plugin or platform builtin.
-func (p *Plugin) Dispatch(action json.RawMessage) (*DispatchResponse, error) {
+func (p *Plugin) Dispatch(action json.RawMessage, phase json.RawMessage) (*DispatchResponse, error) {
 	req := &DispatchRequest{
 		Action: action,
+		Phase: phase,
 	}
 	var result DispatchResponse
 	err := p.Call(MethodDispatch, req, &result)
@@ -373,10 +374,11 @@ func (p *Plugin) InputRightClick(x json.RawMessage, y json.RawMessage) error {
 }
 
 // InputScroll scroll the mouse wheel.
-func (p *Plugin) InputScroll(amount *int, direction string) error {
+func (p *Plugin) InputScroll(amount *int, direction string, unit *string) error {
 	req := &InputScrollRequest{
 		Amount: amount,
 		Direction: direction,
+		Unit: unit,
 	}
 	return p.Call(MethodInputScroll, req, nil)
 }
@@ -1505,6 +1507,11 @@ func (p *Plugin) SettingsPatchSignals(signals string) error {
 		Signals: signals,
 	}
 	return p.Call(MethodSettingsPatchSignals, req, nil)
+}
+
+// SettingsRefresh trigger a full re-render of all active settings SSE streams.
+func (p *Plugin) SettingsRefresh() error {
+	return p.Call(MethodSettingsRefresh, nil, nil)
 }
 
 // SettingsRulesCreate create a new user voice command from settings-UI signals.
