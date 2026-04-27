@@ -60,6 +60,7 @@ type ActionFieldSchema struct {
 type ActionTypeSchema struct {
 	Fields []ActionFieldSchema `json:"fields"`
 	Label string `json:"label"`
+	Modes []string `json:"modes"`
 }
 
 // ActiveSpace is auto-generated from the OpenRPC spec.
