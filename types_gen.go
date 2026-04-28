@@ -595,7 +595,6 @@ type ControlSignalResponse struct {
 // DispatchRequest is the request type for dispatch.
 type DispatchRequest struct {
 	Action json.RawMessage `json:"action"`
-	Phase json.RawMessage `json:"phase,omitempty"`
 }
 
 // DispatchResponse is the response type for dispatch.

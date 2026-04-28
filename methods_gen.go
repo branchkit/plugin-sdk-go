@@ -150,10 +150,9 @@ func (p *Plugin) ControlSignal(signal string) error {
 }
 
 // Dispatch dispatch a typed Action to a plugin or platform builtin.
-func (p *Plugin) Dispatch(action json.RawMessage, phase json.RawMessage) (*DispatchResponse, error) {
+func (p *Plugin) Dispatch(action json.RawMessage) (*DispatchResponse, error) {
 	req := &DispatchRequest{
 		Action: action,
-		Phase: phase,
 	}
 	var result DispatchResponse
 	err := p.Call(MethodDispatch, req, &result)
