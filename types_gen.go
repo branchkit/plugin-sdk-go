@@ -47,6 +47,7 @@ type AXPathSegment struct {
 
 // ActionFieldSchema is auto-generated from the OpenRPC spec.
 type ActionFieldSchema struct {
+	Display json.RawMessage `json:"display,omitempty"`
 	EnumValues []string `json:"enum_values"`
 	FieldType FieldType `json:"field_type"`
 	Fields []ActionFieldSchema `json:"fields"`
@@ -203,6 +204,18 @@ type DisplayMetadata struct {
 	X int `json:"x"`
 	Y int `json:"y"`
 }
+
+// FieldDisplay is auto-generated from the OpenRPC spec.
+// Where a field appears in generic UI rendering. Currently used by
+// `kind: "log"` collections in the Collections tab to drive the timeline
+// row summary line. Extending this enum is how new generic display roles
+// get added (detail-only, hidden, etc.) without smuggling presentation
+// hints into freeform strings.
+type FieldDisplay string
+
+const (
+	FieldDisplaySummary FieldDisplay = "summary"
+)
 
 // FieldType is auto-generated from the OpenRPC spec.
 // The declared shape of a single action-type field. See `ActionFieldSchema`.
