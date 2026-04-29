@@ -18,12 +18,42 @@ func (p *Plugin) ActionsList() (*ActionsListResponse, error) {
 	return &result, nil
 }
 
+// CollectionAppend append an entry to a log-kind collection.
+func (p *Plugin) CollectionAppend(name string, payload json.RawMessage) (*LogEntry, error) {
+	req := &CollectionAppendRequest{
+		Name: name,
+		Payload: payload,
+	}
+	var result struct {
+		Entry *LogEntry `json:"entry,omitempty"`
+	}
+	err := p.Call(MethodCollectionAppend, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Entry, nil
+}
+
 // CollectionDelete delete a dynamic collection.
 func (p *Plugin) CollectionDelete(name string) error {
 	req := &CollectionDeleteRequest{
 		Name: name,
 	}
 	return p.Call(MethodCollectionDelete, req, nil)
+}
+
+// CollectionDeleteLogEntry delete one entry from a log-kind collection by id.
+func (p *Plugin) CollectionDeleteLogEntry(id string, name string) (*CollectionDeleteLogEntryResponse, error) {
+	req := &CollectionDeleteLogEntryRequest{
+		ID: id,
+		Name: name,
+	}
+	var result CollectionDeleteLogEntryResponse
+	err := p.Call(MethodCollectionDeleteLogEntry, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
 }
 
 // CollectionGet read collection data with optional merge metadata.
@@ -33,6 +63,47 @@ func (p *Plugin) CollectionGet(name string) (*CollectionGetResponse, error) {
 	}
 	var result CollectionGetResponse
 	err := p.Call(MethodCollectionGet, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// CollectionGetLogEntry fetch one entry from a log-kind collection by id.
+func (p *Plugin) CollectionGetLogEntry(id string, name string) (*CollectionGetLogEntryResponse, error) {
+	req := &CollectionGetLogEntryRequest{
+		ID: id,
+		Name: name,
+	}
+	var result CollectionGetLogEntryResponse
+	err := p.Call(MethodCollectionGetLogEntry, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// CollectionGetRecording read the effective recording flag for a log-kind collection.
+func (p *Plugin) CollectionGetRecording(name string) (*CollectionGetRecordingResponse, error) {
+	req := &CollectionGetRecordingRequest{
+		Name: name,
+	}
+	var result CollectionGetRecordingResponse
+	err := p.Call(MethodCollectionGetRecording, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// CollectionListLog list entries in a log-kind collection (paginated, newest first).
+func (p *Plugin) CollectionListLog(name string, opts *LogListOpts) (*CollectionListLogResponse, error) {
+	req := &CollectionListLogRequest{
+		Name: name,
+		Opts: opts,
+	}
+	var result CollectionListLogResponse
+	err := p.Call(MethodCollectionListLog, req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -58,6 +129,15 @@ func (p *Plugin) CollectionPush(data json.RawMessage, label json.RawMessage, nam
 		Name: name,
 	}
 	return p.Call(MethodCollectionPush, req, nil)
+}
+
+// CollectionSetRecording toggle the recording flag on a log-kind collection.
+func (p *Plugin) CollectionSetRecording(enabled bool, name string) error {
+	req := &CollectionSetRecordingRequest{
+		Enabled: enabled,
+		Name: name,
+	}
+	return p.Call(MethodCollectionSetRecording, req, nil)
 }
 
 // CollectionsList list collections with entries for display, optionally filtered by kind.

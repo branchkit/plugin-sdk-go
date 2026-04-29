@@ -332,6 +332,21 @@ type ListCommandSection struct {
 	Title string `json:"title"`
 }
 
+// LogEntry is auto-generated from the OpenRPC spec.
+type LogEntry struct {
+	ID string `json:"id"`
+	Payload json.RawMessage `json:"payload,omitempty"`
+	TimestampMs int `json:"timestamp_ms"`
+}
+
+// LogListOpts is auto-generated from the OpenRPC spec.
+type LogListOpts struct {
+	Cursor json.RawMessage `json:"cursor,omitempty"`
+	Limit json.RawMessage `json:"limit,omitempty"`
+	SinceMs json.RawMessage `json:"since_ms,omitempty"`
+	UntilMs json.RawMessage `json:"until_ms,omitempty"`
+}
+
 // LoginItem is auto-generated from the OpenRPC spec.
 type LoginItem struct {
 	BundleID json.RawMessage `json:"bundle_id,omitempty"`
@@ -475,6 +490,17 @@ type ActionsListResponse struct {
 	Actions map[string]ActionTypeSchema `json:"actions"`
 }
 
+// CollectionAppendRequest is the request type for collection.append.
+type CollectionAppendRequest struct {
+	Name string `json:"name"`
+	Payload json.RawMessage `json:"payload"`
+}
+
+// CollectionAppendResponse is the response type for collection.append.
+type CollectionAppendResponse struct {
+	Entry LogEntry `json:"entry"`
+}
+
 // CollectionDeleteRequest is the request type for collection.delete.
 type CollectionDeleteRequest struct {
 	Name string `json:"name"`
@@ -483,6 +509,17 @@ type CollectionDeleteRequest struct {
 // CollectionDeleteResponse is the response type for collection.delete.
 type CollectionDeleteResponse struct {
 	Ok bool `json:"ok"`
+}
+
+// CollectionDeleteLogEntryRequest is the request type for collection.delete_log_entry.
+type CollectionDeleteLogEntryRequest struct {
+	ID string `json:"id"`
+	Name string `json:"name"`
+}
+
+// CollectionDeleteLogEntryResponse is the response type for collection.delete_log_entry.
+type CollectionDeleteLogEntryResponse struct {
+	Deleted bool `json:"deleted"`
 }
 
 // CollectionGetRequest is the request type for collection.get.
@@ -497,6 +534,39 @@ type CollectionGetResponse struct {
 	Introducer string `json:"introducer"`
 	Merge MergeStrategy `json:"merge"`
 	Name string `json:"name"`
+}
+
+// CollectionGetLogEntryRequest is the request type for collection.get_log_entry.
+type CollectionGetLogEntryRequest struct {
+	ID string `json:"id"`
+	Name string `json:"name"`
+}
+
+// CollectionGetLogEntryResponse is the response type for collection.get_log_entry.
+type CollectionGetLogEntryResponse struct {
+	Entry json.RawMessage `json:"entry,omitempty"`
+}
+
+// CollectionGetRecordingRequest is the request type for collection.get_recording.
+type CollectionGetRecordingRequest struct {
+	Name string `json:"name"`
+}
+
+// CollectionGetRecordingResponse is the response type for collection.get_recording.
+type CollectionGetRecordingResponse struct {
+	Enabled bool `json:"enabled"`
+}
+
+// CollectionListLogRequest is the request type for collection.list_log.
+type CollectionListLogRequest struct {
+	Name string `json:"name"`
+	Opts *LogListOpts `json:"opts,omitempty"`
+}
+
+// CollectionListLogResponse is the response type for collection.list_log.
+type CollectionListLogResponse struct {
+	Entries []LogEntry `json:"entries"`
+	Total int `json:"total"`
 }
 
 // CollectionOverrideRequest is the request type for collection.override.
@@ -521,6 +591,17 @@ type CollectionPushRequest struct {
 
 // CollectionPushResponse is the response type for collection.push.
 type CollectionPushResponse struct {
+	Ok bool `json:"ok"`
+}
+
+// CollectionSetRecordingRequest is the request type for collection.set_recording.
+type CollectionSetRecordingRequest struct {
+	Enabled bool `json:"enabled"`
+	Name string `json:"name"`
+}
+
+// CollectionSetRecordingResponse is the response type for collection.set_recording.
+type CollectionSetRecordingResponse struct {
 	Ok bool `json:"ok"`
 }
 

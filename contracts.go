@@ -9,10 +9,16 @@ const APIVersion = "0.1.0"
 // RPC method names: plugin → actuator (use with plugin.Call()).
 const (
 	MethodActionsList = "actions.list" // since 0.1.0
+	MethodCollectionAppend = "collection.append" // since 0.1.0
 	MethodCollectionDelete = "collection.delete" // since 0.1.0
+	MethodCollectionDeleteLogEntry = "collection.delete_log_entry" // since 0.1.0
 	MethodCollectionGet = "collection.get" // since 0.1.0
+	MethodCollectionGetLogEntry = "collection.get_log_entry" // since 0.1.0
+	MethodCollectionGetRecording = "collection.get_recording" // since 0.1.0
+	MethodCollectionListLog = "collection.list_log" // since 0.1.0
 	MethodCollectionOverride = "collection.override" // since 0.1.0
 	MethodCollectionPush = "collection.push" // since 0.1.0
+	MethodCollectionSetRecording = "collection.set_recording" // since 0.1.0
 	MethodCollectionsList = "collections.list" // since 0.1.0
 	MethodCommandsDiscover = "commands.discover" // since 0.1.0
 	MethodCommandsHasPartial = "commands.has_partial" // since 0.1.0
