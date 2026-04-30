@@ -34,6 +34,19 @@ func (p *Plugin) CollectionAppend(name string, payload json.RawMessage) (*LogEnt
 	return result.Entry, nil
 }
 
+// CollectionCount total record count for a collection.
+func (p *Plugin) CollectionCount(name string) (*CollectionCountResponse, error) {
+	req := &CollectionCountRequest{
+		Name: name,
+	}
+	var result CollectionCountResponse
+	err := p.Call(MethodCollectionCount, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // CollectionDelete delete a dynamic collection.
 func (p *Plugin) CollectionDelete(name string) error {
 	req := &CollectionDeleteRequest{
@@ -50,6 +63,34 @@ func (p *Plugin) CollectionDeleteLogEntry(id string, name string) (*CollectionDe
 	}
 	var result CollectionDeleteLogEntryResponse
 	err := p.Call(MethodCollectionDeleteLogEntry, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// CollectionDeleteRecord delete one record from a collection by id.
+func (p *Plugin) CollectionDeleteRecord(id string, name string) (*CollectionDeleteRecordResponse, error) {
+	req := &CollectionDeleteRecordRequest{
+		ID: id,
+		Name: name,
+	}
+	var result CollectionDeleteRecordResponse
+	err := p.Call(MethodCollectionDeleteRecord, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// CollectionFetch fetch a single record from a collection by id.
+func (p *Plugin) CollectionFetch(id string, name string) (*CollectionFetchResponse, error) {
+	req := &CollectionFetchRequest{
+		ID: id,
+		Name: name,
+	}
+	var result CollectionFetchResponse
+	err := p.Call(MethodCollectionFetch, req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -96,6 +137,20 @@ func (p *Plugin) CollectionGetRecording(name string) (*CollectionGetRecordingRes
 	return &result, nil
 }
 
+// CollectionList list records in a collection (paginated).
+func (p *Plugin) CollectionList(name string, opts *ListOpts) (*CollectionListResponse, error) {
+	req := &CollectionListRequest{
+		Name: name,
+		Opts: opts,
+	}
+	var result CollectionListResponse
+	err := p.Call(MethodCollectionList, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // CollectionListLog list entries in a log-kind collection (paginated, newest first).
 func (p *Plugin) CollectionListLog(name string, opts *LogListOpts) (*CollectionListLogResponse, error) {
 	req := &CollectionListLogRequest{
@@ -121,6 +176,16 @@ func (p *Plugin) CollectionOverride(action string, collection string, fields jso
 	return p.Call(MethodCollectionOverride, req, nil)
 }
 
+// CollectionPatch partial update of an existing record.
+func (p *Plugin) CollectionPatch(fields json.RawMessage, id string, name string) error {
+	req := &CollectionPatchRequest{
+		Fields: fields,
+		ID: id,
+		Name: name,
+	}
+	return p.Call(MethodCollectionPatch, req, nil)
+}
+
 // CollectionPush write data to a shared store.
 func (p *Plugin) CollectionPush(data json.RawMessage, label json.RawMessage, name string) error {
 	req := &CollectionPushRequest{
@@ -129,6 +194,16 @@ func (p *Plugin) CollectionPush(data json.RawMessage, label json.RawMessage, nam
 		Name: name,
 	}
 	return p.Call(MethodCollectionPush, req, nil)
+}
+
+// CollectionPut upsert a record at the given id.
+func (p *Plugin) CollectionPut(id string, name string, payload json.RawMessage) error {
+	req := &CollectionPutRequest{
+		ID: id,
+		Name: name,
+		Payload: payload,
+	}
+	return p.Call(MethodCollectionPut, req, nil)
 }
 
 // CollectionSetRecording toggle the recording flag on a log-kind collection.
