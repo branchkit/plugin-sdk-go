@@ -127,6 +127,12 @@ type ClipboardWriteItem struct {
 	Text json.RawMessage `json:"text,omitempty"`
 }
 
+// CollectionRecord is auto-generated from the OpenRPC spec.
+type CollectionRecord struct {
+	ID string `json:"id"`
+	Payload json.RawMessage `json:"payload,omitempty"`
+}
+
 // CollectionsListItem is auto-generated from the OpenRPC spec.
 type CollectionsListItem struct {
 	ID string `json:"id"`
@@ -391,12 +397,6 @@ const (
 	OnActionStatusNotHandled OnActionStatus = "not_handled"
 )
 
-// Record is auto-generated from the OpenRPC spec.
-type Record struct {
-	ID string `json:"id"`
-	Payload json.RawMessage `json:"payload,omitempty"`
-}
-
 // RunningApp is auto-generated from the OpenRPC spec.
 type RunningApp struct {
 	BundleID json.RawMessage `json:"bundle_id,omitempty"`
@@ -611,7 +611,7 @@ type CollectionListRequest struct {
 
 // CollectionListResponse is the response type for collection.list.
 type CollectionListResponse struct {
-	Records []Record `json:"records"`
+	Records []CollectionRecord `json:"records"`
 	Total int `json:"total"`
 }
 

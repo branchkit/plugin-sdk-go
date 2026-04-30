@@ -19,10 +19,10 @@ import (
 // record with that id exists.
 //
 // Codegen note: CollectionFetchResponse.Record is json.RawMessage because
-// the actuator declares it as Option<Record> and the Go emitter routes
-// every Option<T> through RawMessage. We unmarshal to *Record here so
-// callers get a typed value.
-func (p *Plugin) Get(name, id string) (*Record, error) {
+// the actuator declares it as Option<CollectionRecord> and the Go emitter
+// routes every Option<T> through RawMessage. We unmarshal to
+// *CollectionRecord here so callers get a typed value.
+func (p *Plugin) Get(name, id string) (*CollectionRecord, error) {
 	res, err := p.CollectionFetch(id, name)
 	if err != nil {
 		return nil, err
@@ -30,7 +30,7 @@ func (p *Plugin) Get(name, id string) (*Record, error) {
 	if res == nil || len(res.Record) == 0 || string(res.Record) == "null" {
 		return nil, nil
 	}
-	var rec Record
+	var rec CollectionRecord
 	if err := json.Unmarshal(res.Record, &rec); err != nil {
 		return nil, fmt.Errorf("decode record: %w", err)
 	}
@@ -40,7 +40,7 @@ func (p *Plugin) Get(name, id string) (*Record, error) {
 // List returns records from a collection. Pass nil for default options
 // (every record, default ordering). The total field on the response is
 // the unfiltered record count, useful for paginated UIs.
-func (p *Plugin) List(name string, opts *ListOpts) ([]Record, error) {
+func (p *Plugin) List(name string, opts *ListOpts) ([]CollectionRecord, error) {
 	res, err := p.CollectionList(name, opts)
 	if err != nil {
 		return nil, err
@@ -54,7 +54,7 @@ func (p *Plugin) List(name string, opts *ListOpts) ([]Record, error) {
 // ListPage is like List but also returns the unfiltered total count so
 // callers building paginated UIs don't need to call CollectionList
 // directly to read it off the response.
-func (p *Plugin) ListPage(name string, opts *ListOpts) (records []Record, total int, err error) {
+func (p *Plugin) ListPage(name string, opts *ListOpts) (records []CollectionRecord, total int, err error) {
 	res, err := p.CollectionList(name, opts)
 	if err != nil {
 		return nil, 0, err
