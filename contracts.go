@@ -32,6 +32,7 @@ const (
 	MethodCommandsMatch = "commands.match" // since 0.1.0
 	MethodCommandsPush = "commands.push" // since 0.1.0
 	MethodControlSignal = "control.signal" // since 0.1.0
+	MethodDiscoveryClosed = "discovery.closed" // since 0.1.0
 	MethodDispatch = "dispatch" // since 0.1.0
 	MethodEventsAppend = "events.append" // since 0.1.0
 	MethodEventsEmit = "events.emit" // since 0.1.0
@@ -180,6 +181,7 @@ const (
 	EventAppFocused = "_platform.app.focused"
 	EventBleNotification = "_platform.ble.notification"
 	EventCollectionUpdated = "_platform.collection.updated"
+	EventDiscoveryClosed = "_platform.discovery.closed"
 	EventDisplayChanged = "_platform.display.changed"
 	EventHidConnected = "_platform.hid.connected"
 	EventHidDisconnected = "_platform.hid.disconnected"

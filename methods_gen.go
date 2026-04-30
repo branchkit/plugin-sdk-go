@@ -304,6 +304,11 @@ func (p *Plugin) ControlSignal(signal string) error {
 	return p.Call(MethodControlSignal, req, nil)
 }
 
+// DiscoveryClosed notify that the discovery HUD closed; emits _platform.discovery.closed.
+func (p *Plugin) DiscoveryClosed() error {
+	return p.Call(MethodDiscoveryClosed, nil, nil)
+}
+
 // Dispatch dispatch a typed Action to a plugin or platform builtin.
 func (p *Plugin) Dispatch(action json.RawMessage) (*DispatchResponse, error) {
 	req := &DispatchRequest{

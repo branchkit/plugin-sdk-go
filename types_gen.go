@@ -778,6 +778,11 @@ type ControlSignalResponse struct {
 	Ok bool `json:"ok"`
 }
 
+// DiscoveryClosedResponse is the response type for discovery.closed.
+type DiscoveryClosedResponse struct {
+	Ok bool `json:"ok"`
+}
+
 // DispatchRequest is the request type for dispatch.
 type DispatchRequest struct {
 	Action json.RawMessage `json:"action"`
