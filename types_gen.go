@@ -252,6 +252,14 @@ type Frame struct {
 	Y int `json:"y"`
 }
 
+// GateWrite is auto-generated from the OpenRPC spec.
+type GateWrite struct {
+	Collection string `json:"collection"`
+	ID string `json:"id"`
+	Payload json.RawMessage `json:"payload,omitempty"`
+	Tag string `json:"tag"`
+}
+
 // HidDeviceEntry is auto-generated from the OpenRPC spec.
 type HidDeviceEntry struct {
 	Axes int `json:"axes"`
@@ -739,11 +747,13 @@ type CommandsMatchRequest struct {
 type CommandsMatchResponse struct {
 	Action json.RawMessage `json:"action,omitempty"`
 	Args []json.RawMessage `json:"args"`
+	ClearsTagWrites []GateWrite `json:"clears_tag_writes,omitempty"`
 	ClearsTags []string `json:"clears_tags"`
 	ConsumedCount int `json:"consumed_count"`
 	Matched bool `json:"matched"`
 	OwnerPlugin json.RawMessage `json:"owner_plugin,omitempty"`
 	RequiresTags []string `json:"requires_tags"`
+	SetsTagWrites []GateWrite `json:"sets_tag_writes,omitempty"`
 	SetsTags []string `json:"sets_tags"`
 }
 
