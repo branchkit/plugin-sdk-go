@@ -162,8 +162,6 @@ const (
 	MethodSystemLaunchApp = "system.launch_app" // since 0.1.0
 	MethodSystemNotify = "system.notify" // since 0.1.0
 	MethodSystemRunShell = "system.run_shell" // since 0.1.0
-	MethodTagsGet = "tags.get" // since 0.1.0
-	MethodTagsModify = "tags.modify" // since 0.1.0
 )
 
 // RPC method names: actuator → plugin (use with plugin.Handle()).
@@ -193,7 +191,6 @@ const (
 	EventPluginDisabled = "_platform.plugin.disabled"
 	EventPluginEnabled = "_platform.plugin.enabled"
 	EventSelectionPicked = "_platform.selection.picked"
-	EventTagsChanged = "_platform.tags.changed"
 	EventWindowClosed = "_platform.window.closed"
 	EventWindowCreated = "_platform.window.created"
 	EventWindowFocused = "_platform.window.focused"
@@ -207,6 +204,4 @@ const (
 const (
 	TagPrefixApp = "app."
 	TagPrefixPlugin = "plugin."
-	TagInputActive = "_platform.input.active"
-	TagInputLiftKeys = "_platform.input.lift_keys"
 )

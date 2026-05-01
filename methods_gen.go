@@ -1732,32 +1732,3 @@ func (p *Plugin) SystemRunShell(command string) error {
 	}
 	return p.Call(MethodSystemRunShell, req, nil)
 }
-
-// TagsGet get all active tags.
-func (p *Plugin) TagsGet() ([]string, error) {
-	var result struct {
-		Tags []string `json:"tags"`
-	}
-	err := p.Call(MethodTagsGet, nil, &result)
-	if err != nil {
-		return nil, err
-	}
-	return result.Tags, nil
-}
-
-// TagsModify set and/or clear active tags.
-func (p *Plugin) TagsModify(clear []string, clearScoped *bool, set []string) ([]string, error) {
-	req := &TagsModifyRequest{
-		Clear: clear,
-		ClearScoped: clearScoped,
-		Set: set,
-	}
-	var result struct {
-		Tags []string `json:"tags"`
-	}
-	err := p.Call(MethodTagsModify, req, &result)
-	if err != nil {
-		return nil, err
-	}
-	return result.Tags, nil
-}

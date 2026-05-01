@@ -193,8 +193,8 @@ func (p *Plugin) On(method string, fn ListenerFunc) {
 //
 // Same rule applies to map[K]V fields: use `map[K]V{}` instead of `var m
 // map[K]V`. When in doubt, prefer the typed wrapper methods on Plugin
-// (e.g. p.TagsModify(...)) — they construct the request struct for you
-// and never produce nil collections.
+// (e.g. p.Put / p.Delete / p.List) — they construct the request struct
+// for you and never produce nil collections.
 //
 // For the post-mortem on why this matters, see the
 // `setVoiceMode pre-initializes clear slice` commit in plugins/voice.

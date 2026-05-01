@@ -2050,23 +2050,6 @@ type SystemRunShellResponse struct {
 	Ok bool `json:"ok"`
 }
 
-// TagsGetResponse is the response type for tags.get.
-type TagsGetResponse struct {
-	Tags []string `json:"tags"`
-}
-
-// TagsModifyRequest is the request type for tags.modify.
-type TagsModifyRequest struct {
-	Clear []string `json:"clear,omitempty"`
-	ClearScoped *bool `json:"clear_scoped,omitempty"`
-	Set []string `json:"set,omitempty"`
-}
-
-// TagsModifyResponse is the response type for tags.modify.
-type TagsModifyResponse struct {
-	Tags []string `json:"tags"`
-}
-
 // ===== Actuator → Plugin request/response types =====
 
 // OnActionRequest is the request type for on_action.
