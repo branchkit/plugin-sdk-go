@@ -34,6 +34,9 @@ const (
 	MethodControlSignal = "control.signal" // since 0.1.0
 	MethodDiscoveryClosed = "discovery.closed" // since 0.1.0
 	MethodDispatch = "dispatch" // since 0.1.0
+	MethodEffectsAssert = "effects.assert" // since 0.1.0
+	MethodEffectsIsActive = "effects.is_active" // since 0.1.0
+	MethodEffectsRetract = "effects.retract" // since 0.1.0
 	MethodEventsAppend = "events.append" // since 0.1.0
 	MethodEventsEmit = "events.emit" // since 0.1.0
 	MethodHudCreateChannel = "hud.create_channel" // since 0.1.0
@@ -181,6 +184,7 @@ const (
 	EventCollectionUpdated = "_platform.collection.updated"
 	EventDiscoveryClosed = "_platform.discovery.closed"
 	EventDisplayChanged = "_platform.display.changed"
+	EventEffectDisplaced = "_platform.effect.displaced"
 	EventHidConnected = "_platform.hid.connected"
 	EventHidDisconnected = "_platform.hid.disconnected"
 	EventHidInput = "_platform.hid.input"

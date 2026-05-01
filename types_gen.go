@@ -797,6 +797,40 @@ type DispatchResponse struct {
 	Status string `json:"status"`
 }
 
+// EffectsAssertRequest is the request type for effects.assert.
+type EffectsAssertRequest struct {
+	Name string `json:"name"`
+}
+
+// EffectsAssertResponse is the response type for effects.assert.
+type EffectsAssertResponse struct {
+	AlreadyHeld bool `json:"already_held"`
+	Displaced json.RawMessage `json:"displaced,omitempty"`
+	Granted bool `json:"granted"`
+}
+
+// EffectsIsActiveRequest is the request type for effects.is_active.
+type EffectsIsActiveRequest struct {
+	Name string `json:"name"`
+}
+
+// EffectsIsActiveResponse is the response type for effects.is_active.
+type EffectsIsActiveResponse struct {
+	Active bool `json:"active"`
+	CurrentOwner json.RawMessage `json:"current_owner,omitempty"`
+}
+
+// EffectsRetractRequest is the request type for effects.retract.
+type EffectsRetractRequest struct {
+	Name string `json:"name"`
+}
+
+// EffectsRetractResponse is the response type for effects.retract.
+type EffectsRetractResponse struct {
+	NewOwner json.RawMessage `json:"new_owner,omitempty"`
+	Retracted bool `json:"retracted"`
+}
+
 // EventsAppendRequest is the request type for events.append.
 type EventsAppendRequest struct {
 	Data json.RawMessage `json:"data,omitempty"`

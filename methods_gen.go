@@ -322,6 +322,45 @@ func (p *Plugin) Dispatch(action json.RawMessage) (*DispatchResponse, error) {
 	return &result, nil
 }
 
+// EffectsAssert assert an exclusivity-shape platform effect on behalf of this plugin.
+func (p *Plugin) EffectsAssert(name string) (*EffectsAssertResponse, error) {
+	req := &EffectsAssertRequest{
+		Name: name,
+	}
+	var result EffectsAssertResponse
+	err := p.Call(MethodEffectsAssert, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// EffectsIsActive query whether this plugin holds top-of-stack for the named effect.
+func (p *Plugin) EffectsIsActive(name string) (*EffectsIsActiveResponse, error) {
+	req := &EffectsIsActiveRequest{
+		Name: name,
+	}
+	var result EffectsIsActiveResponse
+	err := p.Call(MethodEffectsIsActive, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// EffectsRetract retract this plugin's assertion of an exclusivity-shape platform effect.
+func (p *Plugin) EffectsRetract(name string) (*EffectsRetractResponse, error) {
+	req := &EffectsRetractRequest{
+		Name: name,
+	}
+	var result EffectsRetractResponse
+	err := p.Call(MethodEffectsRetract, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // EventsAppend append an event to the structured event log.
 func (p *Plugin) EventsAppend(data json.RawMessage, eventType string, sessionID *string) error {
 	req := &EventsAppendRequest{
