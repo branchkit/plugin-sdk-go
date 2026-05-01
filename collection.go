@@ -79,8 +79,8 @@ func (p *Plugin) Put(name, id string, payload any) error {
 // Patch merges fields into an existing record. The fields argument is
 // JSON-marshaled — pass any struct or map. Errors with NOT_FOUND if no
 // record with that id exists, or OPERATION_NOT_PERMITTED on collections
-// the substrate forbids patching (e.g., log-shaped collections, or
-// gate-feed collections during the substrate transition).
+// the state forbids patching (e.g., log-shaped collections, or
+// gate-feed collections during the state transition).
 func (p *Plugin) Patch(name, id string, fields any) error {
 	raw, err := json.Marshal(fields)
 	if err != nil {
