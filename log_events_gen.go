@@ -104,7 +104,7 @@ var LogEventRegistry = map[string]LogEventMeta{
 	"plugin.rpc_failed": {Name: "plugin.rpc_failed", Summary: "A plugin RPC method returned an error or failed to respond.", Since: "0.1.0", Source: "plugins", Severity: "warn", Redaction: "none"},
 	"plugin.sandbox_applied": {Name: "plugin.sandbox_applied", Summary: "Sandbox profile applied (or skipped) for a managed plugin spawn.", Since: "0.1.0", Source: "plugins", Severity: "debug", Redaction: "none"},
 	"plugin.spawned": {Name: "plugin.spawned", Summary: "A managed plugin process was spawned.", Since: "0.1.0", Source: "plugins", Severity: "info", Redaction: "none"},
-	"plugin.stderr_line": {Name: "plugin.stderr_line", Summary: "A managed plugin emitted a stdout/stderr line.", Since: "0.1.0", Source: "plugins", Severity: "debug", Redaction: "none"},
+	"plugin.stderr_line": {Name: "plugin.stderr_line", Summary: "A managed plugin emitted a stdout/stderr line.", Since: "0.1.0", Source: "plugins", Severity: "info", Redaction: "none"},
 	"session.control_message": {Name: "session.control_message", Summary: "A control message was forwarded to the Swift host (HUD show, mode reset, etc.).", Since: "0.1.0", Source: "dispatch", Severity: "info", Redaction: "none"},
 	"state.retention_swept": {Name: "state.retention_swept", Summary: "Retention sweep removed expired records from a collection.", Since: "0.1.0", Source: "state", Severity: "info", Redaction: "none"},
 	"state.tag_cleared": {Name: "state.tag_cleared", Summary: "One or more tags were cleared via a gate-shape collection mutation.", Since: "0.1.0", Source: "state", Severity: "info", Redaction: "none"},
