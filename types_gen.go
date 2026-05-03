@@ -512,6 +512,17 @@ type ActionsListResponse struct {
 	Actions map[string]ActionTypeSchema `json:"actions"`
 }
 
+// BridgeEmitObservabilityEventRequest is the request type for bridge.emit_observability_event.
+type BridgeEmitObservabilityEventRequest struct {
+	EventType string `json:"event_type"`
+	Params json.RawMessage `json:"params"`
+}
+
+// BridgeEmitObservabilityEventResponse is the response type for bridge.emit_observability_event.
+type BridgeEmitObservabilityEventResponse struct {
+	Ok bool `json:"ok"`
+}
+
 // CollectionAppendRequest is the request type for collection.append.
 type CollectionAppendRequest struct {
 	Name string `json:"name"`

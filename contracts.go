@@ -9,6 +9,7 @@ const APIVersion = "0.1.0"
 // RPC method names: plugin → actuator (use with plugin.Call()).
 const (
 	MethodActionsList = "actions.list" // since 0.1.0
+	MethodBridgeEmitObservabilityEvent = "bridge.emit_observability_event" // since 0.1.0
 	MethodCollectionAppend = "collection.append" // since 0.1.0
 	MethodCollectionCount = "collection.count" // since 0.1.0
 	MethodCollectionDelete = "collection.delete" // since 0.1.0

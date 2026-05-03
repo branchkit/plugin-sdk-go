@@ -18,6 +18,15 @@ func (p *Plugin) ActionsList() (*ActionsListResponse, error) {
 	return &result, nil
 }
 
+// BridgeEmitObservabilityEvent inject a Swift-originated observability event onto the actuator's bus..
+func (p *Plugin) BridgeEmitObservabilityEvent(eventType string, params json.RawMessage) error {
+	req := &BridgeEmitObservabilityEventRequest{
+		EventType: eventType,
+		Params: params,
+	}
+	return p.Call(MethodBridgeEmitObservabilityEvent, req, nil)
+}
+
 // CollectionAppend append an entry to a log-kind collection.
 func (p *Plugin) CollectionAppend(name string, payload json.RawMessage) (*LogEntry, error) {
 	req := &CollectionAppendRequest{
