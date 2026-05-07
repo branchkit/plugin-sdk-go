@@ -468,6 +468,18 @@ func (p *Plugin) InputClipboardAction(action string, text json.RawMessage) error
 	return p.Call(MethodInputClipboardAction, req, nil)
 }
 
+// InputClipboardHistory get recent clipboard entries (if available).
+func (p *Plugin) InputClipboardHistory() ([]string, error) {
+	var result struct {
+		Entries []string `json:"entries"`
+	}
+	err := p.Call(MethodInputClipboardHistory, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Entries, nil
+}
+
 // InputClipboardRead read clipboard contents by type.
 func (p *Plugin) InputClipboardRead(contentType string) (*InputClipboardReadResponse, error) {
 	req := &InputClipboardReadRequest{
@@ -491,6 +503,19 @@ func (p *Plugin) InputClipboardReadAll() ([]ClipboardContents, error) {
 		return nil, err
 	}
 	return result.Items, nil
+}
+
+// InputClipboardReadFormat read clipboard contents in a specific pasteboard type (UTI).
+func (p *Plugin) InputClipboardReadFormat(format string) (*InputClipboardReadFormatResponse, error) {
+	req := &InputClipboardReadFormatRequest{
+		Format: format,
+	}
+	var result InputClipboardReadFormatResponse
+	err := p.Call(MethodInputClipboardReadFormat, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
 }
 
 // InputClipboardWrite write typed content to clipboard.
@@ -590,6 +615,11 @@ func (p *Plugin) InputScroll(amount *int, direction string, unit *string) error 
 	return p.Call(MethodInputScroll, req, nil)
 }
 
+// InputSelectAll select all content (Cmd+A).
+func (p *Plugin) InputSelectAll() error {
+	return p.Call(MethodInputSelectAll, nil, nil)
+}
+
 // InputSwitchInputSource switch keyboard input source.
 func (p *Plugin) InputSwitchInputSource(sourceID string) (bool, error) {
 	req := &InputSwitchInputSourceRequest{
@@ -600,6 +630,15 @@ func (p *Plugin) InputSwitchInputSource(sourceID string) (bool, error) {
 	}
 	err := p.Call(MethodInputSwitchInputSource, req, &result)
 	return result.Result, err
+}
+
+// InputTripleClick triple-click at position (select paragraph/line).
+func (p *Plugin) InputTripleClick(x json.RawMessage, y json.RawMessage) error {
+	req := &InputTripleClickRequest{
+		X: x,
+		Y: y,
+	}
+	return p.Call(MethodInputTripleClick, req, nil)
 }
 
 // InputTypeText type text into the active application via clipboard paste.
@@ -659,6 +698,36 @@ func (p *Plugin) MatchAliasesSet(aliases map[string]string) (*MatchAliasesSetRes
 	return &result, nil
 }
 
+// NativeAccentColor get the system accent color name.
+func (p *Plugin) NativeAccentColor() (*NativeAccentColorResponse, error) {
+	var result NativeAccentColorResponse
+	err := p.Call(MethodNativeAccentColor, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeAccessibilityDisplayInvert check if display colors are inverted.
+func (p *Plugin) NativeAccessibilityDisplayInvert() (*NativeAccessibilityDisplayInvertResponse, error) {
+	var result NativeAccessibilityDisplayInvertResponse
+	err := p.Call(MethodNativeAccessibilityDisplayInvert, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeAccessibilityEnabled check if accessibility access is granted for this app.
+func (p *Plugin) NativeAccessibilityEnabled() (*NativeAccessibilityEnabledResponse, error) {
+	var result NativeAccessibilityEnabledResponse
+	err := p.Call(MethodNativeAccessibilityEnabled, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // NativeActivateApp bring an app to front by bundle ID.
 func (p *Plugin) NativeActivateApp(allWindows *bool, bundleID string) error {
 	req := &NativeActivateAppRequest{
@@ -666,6 +735,28 @@ func (p *Plugin) NativeActivateApp(allWindows *bool, bundleID string) error {
 		BundleID: bundleID,
 	}
 	return p.Call(MethodNativeActivateApp, req, nil)
+}
+
+// NativeActiveNetworkService get the primary active network service name.
+func (p *Plugin) NativeActiveNetworkService() (*NativeActiveNetworkServiceResponse, error) {
+	var result NativeActiveNetworkServiceResponse
+	err := p.Call(MethodNativeActiveNetworkService, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeActivePorts list processes with listening TCP/UDP ports.
+func (p *Plugin) NativeActivePorts() ([]ListeningPort, error) {
+	var result struct {
+		Ports []ListeningPort `json:"ports"`
+	}
+	err := p.Call(MethodNativeActivePorts, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Ports, nil
 }
 
 // NativeActiveSpace get the active space per display.
@@ -678,6 +769,84 @@ func (p *Plugin) NativeActiveSpace() ([]ActiveSpace, error) {
 		return nil, err
 	}
 	return result.Active, nil
+}
+
+// NativeAirdropEnabled check if AirDrop discoverability is enabled.
+func (p *Plugin) NativeAirdropEnabled() (*NativeAirdropEnabledResponse, error) {
+	var result NativeAirdropEnabledResponse
+	err := p.Call(MethodNativeAirdropEnabled, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeAirportPower check if Wi-Fi (AirPort) is powered on.
+func (p *Plugin) NativeAirportPower() (*NativeAirportPowerResponse, error) {
+	var result NativeAirportPowerResponse
+	err := p.Call(MethodNativeAirportPower, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeAlertSound get the system alert sound name.
+func (p *Plugin) NativeAlertSound() (*NativeAlertSoundResponse, error) {
+	var result NativeAlertSoundResponse
+	err := p.Call(MethodNativeAlertSound, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeAlertVolume get the alert volume (0.0-1.0).
+func (p *Plugin) NativeAlertVolume() error {
+	return p.Call(MethodNativeAlertVolume, nil, nil)
+}
+
+// NativeAllWindowIds list all on-screen window IDs.
+func (p *Plugin) NativeAllWindowIds() ([]string, error) {
+	var result struct {
+		WindowIds []string `json:"window_ids"`
+	}
+	err := p.Call(MethodNativeAllWindowIds, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.WindowIds, nil
+}
+
+// NativeApfsSnapshots list APFS snapshots as JSON.
+func (p *Plugin) NativeApfsSnapshots() (*NativeApfsSnapshotsResponse, error) {
+	var result NativeApfsSnapshotsResponse
+	err := p.Call(MethodNativeApfsSnapshots, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeAppBundlePath get the filesystem path to an app bundle by bundle ID.
+func (p *Plugin) NativeAppBundlePath(bundleID string) (*NativeAppBundlePathResponse, error) {
+	req := &NativeAppBundlePathRequest{
+		BundleID: bundleID,
+	}
+	var result NativeAppBundlePathResponse
+	err := p.Call(MethodNativeAppBundlePath, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeAppFocusedWindowID get focused window ID for app by bundle ID.
+func (p *Plugin) NativeAppFocusedWindowID(bundleID string) error {
+	req := &NativeAppFocusedWindowIDRequest{
+		BundleID: bundleID,
+	}
+	return p.Call(MethodNativeAppFocusedWindowId, req, nil)
 }
 
 // NativeAppIcon get app icon as PNG (base64).
@@ -694,6 +863,136 @@ func (p *Plugin) NativeAppIcon(bundleID string, size *int) (*NativeAppIconRespon
 	return &result, nil
 }
 
+// NativeAppIconPath get path to app icon.
+func (p *Plugin) NativeAppIconPath(bundleID string) error {
+	req := &NativeAppIconPathRequest{
+		BundleID: bundleID,
+	}
+	return p.Call(MethodNativeAppIconPath, req, nil)
+}
+
+// NativeAppIsAgent check if app is an LSUIElement (agent/background).
+func (p *Plugin) NativeAppIsAgent(bundleID string) (*NativeAppIsAgentResponse, error) {
+	req := &NativeAppIsAgentRequest{
+		BundleID: bundleID,
+	}
+	var result NativeAppIsAgentResponse
+	err := p.Call(MethodNativeAppIsAgent, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeAppIsRunning check if an app is running by bundle ID.
+func (p *Plugin) NativeAppIsRunning(bundleID string) (*NativeAppIsRunningResponse, error) {
+	req := &NativeAppIsRunningRequest{
+		BundleID: bundleID,
+	}
+	var result NativeAppIsRunningResponse
+	err := p.Call(MethodNativeAppIsRunning, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeAppLaunchAtLogin check if app is in login items.
+func (p *Plugin) NativeAppLaunchAtLogin(bundleID string) (*NativeAppLaunchAtLoginResponse, error) {
+	req := &NativeAppLaunchAtLoginRequest{
+		BundleID: bundleID,
+	}
+	var result NativeAppLaunchAtLoginResponse
+	err := p.Call(MethodNativeAppLaunchAtLogin, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeAppMetadata get bundle metadata for an application.
+func (p *Plugin) NativeAppMetadata(bundleID string) (*NativeAppMetadataResponse, error) {
+	req := &NativeAppMetadataRequest{
+		BundleID: bundleID,
+	}
+	var result NativeAppMetadataResponse
+	err := p.Call(MethodNativeAppMetadata, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeAppPath get an app path by bundle ID.
+func (p *Plugin) NativeAppPath(bundleID string) error {
+	req := &NativeAppPathRequest{
+		BundleID: bundleID,
+	}
+	return p.Call(MethodNativeAppPath, req, nil)
+}
+
+// NativeAppPid get PID of running app by bundle ID.
+func (p *Plugin) NativeAppPid(bundleID string) error {
+	req := &NativeAppPidRequest{
+		BundleID: bundleID,
+	}
+	return p.Call(MethodNativeAppPid, req, nil)
+}
+
+// NativeAppSupportDirectory get the user's Application Support directory path.
+func (p *Plugin) NativeAppSupportDirectory() (*NativeAppSupportDirectoryResponse, error) {
+	var result NativeAppSupportDirectoryResponse
+	err := p.Call(MethodNativeAppSupportDirectory, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeAppVersion get an app version by bundle ID.
+func (p *Plugin) NativeAppVersion(bundleID string) error {
+	req := &NativeAppVersionRequest{
+		BundleID: bundleID,
+	}
+	return p.Call(MethodNativeAppVersion, req, nil)
+}
+
+// NativeAppWindows list all windows belonging to a specific app by bundle ID.
+func (p *Plugin) NativeAppWindows(bundleID string) ([]WindowDetail, error) {
+	req := &NativeAppWindowsRequest{
+		BundleID: bundleID,
+	}
+	var result struct {
+		Windows []WindowDetail `json:"windows"`
+	}
+	err := p.Call(MethodNativeAppWindows, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Windows, nil
+}
+
+// NativeAppWindowsCount count windows for an app by bundle ID.
+func (p *Plugin) NativeAppWindowsCount(bundleID string) error {
+	req := &NativeAppWindowsCountRequest{
+		BundleID: bundleID,
+	}
+	return p.Call(MethodNativeAppWindowsCount, req, nil)
+}
+
+// NativeAudioDeviceVolume get volume state for a specific audio device by UID.
+func (p *Plugin) NativeAudioDeviceVolume(deviceUID string) (*NativeAudioDeviceVolumeResponse, error) {
+	req := &NativeAudioDeviceVolumeRequest{
+		DeviceUID: deviceUID,
+	}
+	var result NativeAudioDeviceVolumeResponse
+	err := p.Call(MethodNativeAudioDeviceVolume, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // NativeAudioDevices list all audio input and output devices.
 func (p *Plugin) NativeAudioDevices() ([]AudioDevice, error) {
 	var result struct {
@@ -704,6 +1003,94 @@ func (p *Plugin) NativeAudioDevices() ([]AudioDevice, error) {
 		return nil, err
 	}
 	return result.Devices, nil
+}
+
+// NativeAudioInputDevice get the default audio input device name.
+func (p *Plugin) NativeAudioInputDevice() (*NativeAudioInputDeviceResponse, error) {
+	var result NativeAudioInputDeviceResponse
+	err := p.Call(MethodNativeAudioInputDevice, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeAudioInputLevel get the system audio input volume (0.0-1.0).
+func (p *Plugin) NativeAudioInputLevel() error {
+	return p.Call(MethodNativeAudioInputLevel, nil, nil)
+}
+
+// NativeAudioOutputDevice get the default audio output device name.
+func (p *Plugin) NativeAudioOutputDevice() (*NativeAudioOutputDeviceResponse, error) {
+	var result NativeAudioOutputDeviceResponse
+	err := p.Call(MethodNativeAudioOutputDevice, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeAutoBrightness check if auto-brightness is enabled.
+func (p *Plugin) NativeAutoBrightness() (*NativeAutoBrightnessResponse, error) {
+	var result NativeAutoBrightnessResponse
+	err := p.Call(MethodNativeAutoBrightness, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeAutoRearrangeSpaces check if Spaces auto-rearrange based on usage.
+func (p *Plugin) NativeAutoRearrangeSpaces() (*NativeAutoRearrangeSpacesResponse, error) {
+	var result NativeAutoRearrangeSpacesResponse
+	err := p.Call(MethodNativeAutoRearrangeSpaces, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeAutoTimezone check if automatic timezone is enabled.
+func (p *Plugin) NativeAutoTimezone() (*NativeAutoTimezoneResponse, error) {
+	var result NativeAutoTimezoneResponse
+	err := p.Call(MethodNativeAutoTimezone, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeAutocorrectEnabled check if auto-correction is enabled.
+func (p *Plugin) NativeAutocorrectEnabled() (*NativeAutocorrectEnabledResponse, error) {
+	var result NativeAutocorrectEnabledResponse
+	err := p.Call(MethodNativeAutocorrectEnabled, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeAutomaticLoginUser get automatic login username if configured.
+func (p *Plugin) NativeAutomaticLoginUser() (*NativeAutomaticLoginUserResponse, error) {
+	var result NativeAutomaticLoginUserResponse
+	err := p.Call(MethodNativeAutomaticLoginUser, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeAutomationPermission check if automation permission is granted for target app.
+func (p *Plugin) NativeAutomationPermission(bundleID string) (*NativeAutomationPermissionResponse, error) {
+	req := &NativeAutomationPermissionRequest{
+		BundleID: bundleID,
+	}
+	var result NativeAutomationPermissionResponse
+	err := p.Call(MethodNativeAutomationPermission, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
 }
 
 // NativeAxElementAtPoint get the accessibility element at a screen point.
@@ -735,7 +1122,7 @@ func (p *Plugin) NativeAxElementTree(depth *int, element AXElementRef) (*AXEleme
 	return &result, nil
 }
 
-// NativeAxObserve start observing AX notifications (STUB — not yet implemented).
+// NativeAxObserve start observing AX notifications (STUB -- not yet implemented).
 func (p *Plugin) NativeAxObserve(notifications []string, pid int) (*NativeAxObserveResponse, error) {
 	req := &NativeAxObserveRequest{
 		Notifications: notifications,
@@ -838,6 +1225,26 @@ func (p *Plugin) NativeBattery() (*NativeBatteryResponse, error) {
 	return &result, nil
 }
 
+// NativeBatteryCycleCount get battery cycle count.
+func (p *Plugin) NativeBatteryCycleCount() error {
+	return p.Call(MethodNativeBatteryCycleCount, nil, nil)
+}
+
+// NativeBatteryHealth get battery health status.
+func (p *Plugin) NativeBatteryHealth() (*NativeBatteryHealthResponse, error) {
+	var result NativeBatteryHealthResponse
+	err := p.Call(MethodNativeBatteryHealth, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeBatteryMaxCapacity get battery maximum capacity percentage.
+func (p *Plugin) NativeBatteryMaxCapacity() error {
+	return p.Call(MethodNativeBatteryMaxCapacity, nil, nil)
+}
+
 // NativeBleDiscoverServices discover GATT services and characteristics on a paired BLE device.
 func (p *Plugin) NativeBleDiscoverServices(deviceIdentifier string) ([]BleService, error) {
 	req := &NativeBleDiscoverServicesRequest{
@@ -912,6 +1319,36 @@ func (p *Plugin) NativeBluetoothDevices() ([]BluetoothDevice, error) {
 	return result.Devices, nil
 }
 
+// NativeBluetoothPower check if Bluetooth is powered on.
+func (p *Plugin) NativeBluetoothPower() (*NativeBluetoothPowerResponse, error) {
+	var result NativeBluetoothPowerResponse
+	err := p.Call(MethodNativeBluetoothPower, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeBoldTextEnabled check if bold text is enabled in accessibility.
+func (p *Plugin) NativeBoldTextEnabled() (*NativeBoldTextEnabledResponse, error) {
+	var result NativeBoldTextEnabledResponse
+	err := p.Call(MethodNativeBoldTextEnabled, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeBootVolume get the boot volume name.
+func (p *Plugin) NativeBootVolume() (*NativeBootVolumeResponse, error) {
+	var result NativeBootVolumeResponse
+	err := p.Call(MethodNativeBootVolume, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // NativeBorders draw window border overlays (forwarded to Swift shell).
 func (p *Plugin) NativeBorders() error {
 	return p.Call(MethodNativeBorders, nil, nil)
@@ -930,6 +1367,76 @@ func (p *Plugin) NativeBrightness(displayID json.RawMessage) (*NativeBrightnessR
 	return &result, nil
 }
 
+// NativeCalendarEventsRange get calendar events in a date range (ISO 8601).
+func (p *Plugin) NativeCalendarEventsRange(end string, start string) ([]CalendarEvent, error) {
+	req := &NativeCalendarEventsRangeRequest{
+		End: end,
+		Start: start,
+	}
+	var result struct {
+		Events []CalendarEvent `json:"events"`
+	}
+	err := p.Call(MethodNativeCalendarEventsRange, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Events, nil
+}
+
+// NativeCalendarEventsToday get today's calendar events.
+func (p *Plugin) NativeCalendarEventsToday() ([]CalendarEvent, error) {
+	var result struct {
+		Events []CalendarEvent `json:"events"`
+	}
+	err := p.Call(MethodNativeCalendarEventsToday, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Events, nil
+}
+
+// NativeCalendarPermission check if calendar access is available.
+func (p *Plugin) NativeCalendarPermission() (*NativeCalendarPermissionResponse, error) {
+	var result NativeCalendarPermissionResponse
+	err := p.Call(MethodNativeCalendarPermission, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeCameraPermission check if camera access is available.
+func (p *Plugin) NativeCameraPermission() (*NativeCameraPermissionResponse, error) {
+	var result NativeCameraPermissionResponse
+	err := p.Call(MethodNativeCameraPermission, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeCameras list available camera devices.
+func (p *Plugin) NativeCameras() ([]CameraDevice, error) {
+	var result struct {
+		Cameras []CameraDevice `json:"cameras"`
+	}
+	err := p.Call(MethodNativeCameras, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Cameras, nil
+}
+
+// NativeCapsLockState check if Caps Lock is currently on.
+func (p *Plugin) NativeCapsLockState() (*NativeCapsLockStateResponse, error) {
+	var result NativeCapsLockStateResponse
+	err := p.Call(MethodNativeCapsLockState, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // NativeCaptureWindow capture a single window as PNG (base64).
 func (p *Plugin) NativeCaptureWindow(windowID string) (*NativeCaptureWindowResponse, error) {
 	req := &NativeCaptureWindowRequest{
@@ -941,6 +1448,51 @@ func (p *Plugin) NativeCaptureWindow(windowID string) (*NativeCaptureWindowRespo
 		return nil, err
 	}
 	return &result, nil
+}
+
+// NativeCascadeWindows cascade all windows for an app.
+func (p *Plugin) NativeCascadeWindows(bundleID string) error {
+	req := &NativeCascadeWindowsRequest{
+		BundleID: bundleID,
+	}
+	return p.Call(MethodNativeCascadeWindows, req, nil)
+}
+
+// NativeCenterWindow center a window on its current display.
+func (p *Plugin) NativeCenterWindow(windowID string) error {
+	req := &NativeCenterWindowRequest{
+		WindowID: windowID,
+	}
+	return p.Call(MethodNativeCenterWindow, req, nil)
+}
+
+// NativeCheckPermission check a permission status (screen_recording, camera, etc.).
+func (p *Plugin) NativeCheckPermission(permission string) (*NativeCheckPermissionResponse, error) {
+	req := &NativeCheckPermissionRequest{
+		Permission: permission,
+	}
+	var result NativeCheckPermissionResponse
+	err := p.Call(MethodNativeCheckPermission, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeClearFileQuarantine remove the quarantine extended attribute from a file.
+func (p *Plugin) NativeClearFileQuarantine(path string) error {
+	req := &NativeClearFileQuarantineRequest{
+		Path: path,
+	}
+	return p.Call(MethodNativeClearFileQuarantine, req, nil)
+}
+
+// NativeClearNotifications clear all delivered notifications for an app.
+func (p *Plugin) NativeClearNotifications(bundleID string) error {
+	req := &NativeClearNotificationsRequest{
+		BundleID: bundleID,
+	}
+	return p.Call(MethodNativeClearNotifications, req, nil)
 }
 
 // NativeClickMenuItem click a menu item by navigating the menu bar path.
@@ -966,6 +1518,97 @@ func (p *Plugin) NativeClipboardChangeCount() (*NativeClipboardChangeCountRespon
 	return &result, nil
 }
 
+// NativeClipboardFileUrls get file URLs from clipboard as JSON array.
+func (p *Plugin) NativeClipboardFileUrls() (*NativeClipboardFileUrlsResponse, error) {
+	var result NativeClipboardFileUrlsResponse
+	err := p.Call(MethodNativeClipboardFileUrls, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeClipboardHasImage check if clipboard contains an image.
+func (p *Plugin) NativeClipboardHasImage() (*NativeClipboardHasImageResponse, error) {
+	var result NativeClipboardHasImageResponse
+	err := p.Call(MethodNativeClipboardHasImage, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeClipboardHasText check if clipboard contains text.
+func (p *Plugin) NativeClipboardHasText() (*NativeClipboardHasTextResponse, error) {
+	var result NativeClipboardHasTextResponse
+	err := p.Call(MethodNativeClipboardHasText, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeClipboardHTML get HTML content from clipboard.
+func (p *Plugin) NativeClipboardHTML() (*NativeClipboardHTMLResponse, error) {
+	var result NativeClipboardHTMLResponse
+	err := p.Call(MethodNativeClipboardHtml, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeClipboardImageDimensions get dimensions of clipboard image as WxH.
+func (p *Plugin) NativeClipboardImageDimensions() (*NativeClipboardImageDimensionsResponse, error) {
+	var result NativeClipboardImageDimensionsResponse
+	err := p.Call(MethodNativeClipboardImageDimensions, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeClipboardRichText get rich text (RTF) from clipboard.
+func (p *Plugin) NativeClipboardRichText() (*NativeClipboardRichTextResponse, error) {
+	var result NativeClipboardRichTextResponse
+	err := p.Call(MethodNativeClipboardRichText, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeClipboardSetHTML set HTML content on clipboard.
+func (p *Plugin) NativeClipboardSetHTML(html string) error {
+	req := &NativeClipboardSetHTMLRequest{
+		HTML: html,
+	}
+	return p.Call(MethodNativeClipboardSetHtml, req, nil)
+}
+
+// NativeClipboardSetText set clipboard text content.
+func (p *Plugin) NativeClipboardSetText(text string) error {
+	req := &NativeClipboardSetTextRequest{
+		Text: text,
+	}
+	return p.Call(MethodNativeClipboardSetText, req, nil)
+}
+
+// NativeClipboardTypes list available pasteboard types on the clipboard.
+func (p *Plugin) NativeClipboardTypes(pasteboard *string) ([]string, error) {
+	req := &NativeClipboardTypesRequest{
+		Pasteboard: pasteboard,
+	}
+	var result struct {
+		Types []string `json:"types"`
+	}
+	err := p.Call(MethodNativeClipboardTypes, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Types, nil
+}
+
 // NativeCloseWindow close a window by ID.
 func (p *Plugin) NativeCloseWindow(windowID string) error {
 	req := &NativeCloseWindowRequest{
@@ -988,10 +1631,124 @@ func (p *Plugin) NativeColorAtPoint(x int, y int) (*NativeColorAtPointResponse, 
 	return &result, nil
 }
 
+// NativeComputerName get the computer name.
+func (p *Plugin) NativeComputerName() (*NativeComputerNameResponse, error) {
+	var result NativeComputerNameResponse
+	err := p.Call(MethodNativeComputerName, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeComputerSleepTime get computer sleep timeout in minutes.
+func (p *Plugin) NativeComputerSleepTime() error {
+	return p.Call(MethodNativeComputerSleepTime, nil, nil)
+}
+
+// NativeContactsPermission check if contacts access is available.
+func (p *Plugin) NativeContactsPermission() (*NativeContactsPermissionResponse, error) {
+	var result NativeContactsPermissionResponse
+	err := p.Call(MethodNativeContactsPermission, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeCopyFile copy a file or directory.
+func (p *Plugin) NativeCopyFile(destination string, source string) error {
+	req := &NativeCopyFileRequest{
+		Destination: destination,
+		Source: source,
+	}
+	return p.Call(MethodNativeCopyFile, req, nil)
+}
+
+// NativeCpuInfo get CPU chip name, core count, and architecture.
+func (p *Plugin) NativeCpuInfo() (*NativeCpuInfoResponse, error) {
+	var result NativeCpuInfoResponse
+	err := p.Call(MethodNativeCpuInfo, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeCpuTemperature get CPU temperature in Celsius.
+func (p *Plugin) NativeCpuTemperature() error {
+	return p.Call(MethodNativeCpuTemperature, nil, nil)
+}
+
+// NativeCpuUsage get current CPU usage percentage.
+func (p *Plugin) NativeCpuUsage() error {
+	return p.Call(MethodNativeCpuUsage, nil, nil)
+}
+
+// NativeCreateDirectory create a directory (with intermediate directories).
+func (p *Plugin) NativeCreateDirectory(path string) error {
+	req := &NativeCreateDirectoryRequest{
+		Path: path,
+	}
+	return p.Call(MethodNativeCreateDirectory, req, nil)
+}
+
+// NativeCronJobs list the current user crontab entries.
+func (p *Plugin) NativeCronJobs() ([]string, error) {
+	var result struct {
+		Jobs []string `json:"jobs"`
+	}
+	err := p.Call(MethodNativeCronJobs, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Jobs, nil
+}
+
+// NativeCurrencyCode get the system currency code (e.g. USD).
+func (p *Plugin) NativeCurrencyCode() (*NativeCurrencyCodeResponse, error) {
+	var result NativeCurrencyCodeResponse
+	err := p.Call(MethodNativeCurrencyCode, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeCurrentDatetime get current date, time, and timezone in ISO 8601.
+func (p *Plugin) NativeCurrentDatetime() (*NativeCurrentDatetimeResponse, error) {
+	var result NativeCurrentDatetimeResponse
+	err := p.Call(MethodNativeCurrentDatetime, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // NativeCurrentUser get current user session info.
 func (p *Plugin) NativeCurrentUser() (*NativeCurrentUserResponse, error) {
 	var result NativeCurrentUserResponse
 	err := p.Call(MethodNativeCurrentUser, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeCurrentUserAdmin check if the current user has admin privileges.
+func (p *Plugin) NativeCurrentUserAdmin() (*NativeCurrentUserAdminResponse, error) {
+	var result NativeCurrentUserAdminResponse
+	err := p.Call(MethodNativeCurrentUserAdmin, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeCurrentWallpaper get the current desktop wallpaper path.
+func (p *Plugin) NativeCurrentWallpaper() (*NativeCurrentWallpaperResponse, error) {
+	var result NativeCurrentWallpaperResponse
+	err := p.Call(MethodNativeCurrentWallpaper, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1018,10 +1775,43 @@ func (p *Plugin) NativeCursorInfo() (*NativeCursorInfoResponse, error) {
 	return &result, nil
 }
 
+// NativeCursorShakeToLocate check if shake mouse to locate cursor is enabled.
+func (p *Plugin) NativeCursorShakeToLocate() (*NativeCursorShakeToLocateResponse, error) {
+	var result NativeCursorShakeToLocateResponse
+	err := p.Call(MethodNativeCursorShakeToLocate, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // NativeDarkMode check if dark mode is active.
 func (p *Plugin) NativeDarkMode() (*NativeDarkModeResponse, error) {
 	var result NativeDarkModeResponse
 	err := p.Call(MethodNativeDarkMode, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeDateFormat get user date format string.
+func (p *Plugin) NativeDateFormat() (*NativeDateFormatResponse, error) {
+	var result NativeDateFormatResponse
+	err := p.Call(MethodNativeDateFormat, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeDefaultAppForUti get the default application for a UTI.
+func (p *Plugin) NativeDefaultAppForUti(uti string) (*NativeDefaultAppForUtiResponse, error) {
+	req := &NativeDefaultAppForUtiRequest{
+		Uti: uti,
+	}
+	var result NativeDefaultAppForUtiResponse
+	err := p.Call(MethodNativeDefaultAppForUti, req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1038,12 +1828,219 @@ func (p *Plugin) NativeDefaultBrowser() (*NativeDefaultBrowserResponse, error) {
 	return &result, nil
 }
 
+// NativeDefaultEmailClient get the default email client bundle ID.
+func (p *Plugin) NativeDefaultEmailClient() (*NativeDefaultEmailClientResponse, error) {
+	var result NativeDefaultEmailClientResponse
+	err := p.Call(MethodNativeDefaultEmailClient, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeDefaultPrinter get the default printer name.
+func (p *Plugin) NativeDefaultPrinter() (*NativeDefaultPrinterResponse, error) {
+	var result NativeDefaultPrinterResponse
+	err := p.Call(MethodNativeDefaultPrinter, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeDeleteFile delete a file or empty directory.
+func (p *Plugin) NativeDeleteFile(path string) error {
+	req := &NativeDeleteFileRequest{
+		Path: path,
+	}
+	return p.Call(MethodNativeDeleteFile, req, nil)
+}
+
+// NativeDesktopDirectory get the user's Desktop directory path.
+func (p *Plugin) NativeDesktopDirectory() (*NativeDesktopDirectoryResponse, error) {
+	var result NativeDesktopDirectoryResponse
+	err := p.Call(MethodNativeDesktopDirectory, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeDetectBarcodes detect barcodes and QR codes from the screen.
+func (p *Plugin) NativeDetectBarcodes() ([]BarcodeResult, error) {
+	var result struct {
+		Barcodes []BarcodeResult `json:"barcodes"`
+	}
+	err := p.Call(MethodNativeDetectBarcodes, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Barcodes, nil
+}
+
+// NativeDetectBarcodesFile detect barcodes and QR codes from an image file.
+func (p *Plugin) NativeDetectBarcodesFile(path string) ([]BarcodeResult, error) {
+	req := &NativeDetectBarcodesFileRequest{
+		Path: path,
+	}
+	var result struct {
+		Barcodes []BarcodeResult `json:"barcodes"`
+	}
+	err := p.Call(MethodNativeDetectBarcodesFile, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Barcodes, nil
+}
+
+// NativeDictationEnabled check if Dictation is enabled.
+func (p *Plugin) NativeDictationEnabled() (*NativeDictationEnabledResponse, error) {
+	var result NativeDictationEnabledResponse
+	err := p.Call(MethodNativeDictationEnabled, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeDifferentiateWithoutColor check if differentiate without color is enabled.
+func (p *Plugin) NativeDifferentiateWithoutColor() (*NativeDifferentiateWithoutColorResponse, error) {
+	var result NativeDifferentiateWithoutColorResponse
+	err := p.Call(MethodNativeDifferentiateWithoutColor, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeDirectoryContents list files and directories at a path.
+func (p *Plugin) NativeDirectoryContents(includeHidden *bool, path string) ([]DirectoryEntry, error) {
+	req := &NativeDirectoryContentsRequest{
+		IncludeHidden: includeHidden,
+		Path: path,
+	}
+	var result struct {
+		Entries []DirectoryEntry `json:"entries"`
+	}
+	err := p.Call(MethodNativeDirectoryContents, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Entries, nil
+}
+
+// NativeDiskSpace get disk space for a volume (default: /).
+func (p *Plugin) NativeDiskSpace(path *string) (*NativeDiskSpaceResponse, error) {
+	req := &NativeDiskSpaceRequest{
+		Path: path,
+	}
+	var result NativeDiskSpaceResponse
+	err := p.Call(MethodNativeDiskSpace, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeDiskUsage get disk usage for a path (like du -sh).
+func (p *Plugin) NativeDiskUsage(path string) (*NativeDiskUsageResponse, error) {
+	req := &NativeDiskUsageRequest{
+		Path: path,
+	}
+	var result NativeDiskUsageResponse
+	err := p.Call(MethodNativeDiskUsage, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // NativeDismissNotification dismiss a delivered notification (partial — no-op).
 func (p *Plugin) NativeDismissNotification(id string) error {
 	req := &NativeDismissNotificationRequest{
 		ID: id,
 	}
 	return p.Call(MethodNativeDismissNotification, req, nil)
+}
+
+// NativeDisplayBrightness get current display brightness (0.0-1.0).
+func (p *Plugin) NativeDisplayBrightness() error {
+	return p.Call(MethodNativeDisplayBrightness, nil, nil)
+}
+
+// NativeDisplayColorProfiles get color profile for each connected display.
+func (p *Plugin) NativeDisplayColorProfiles() ([]DisplayColorProfile, error) {
+	var result struct {
+		Profiles []DisplayColorProfile `json:"profiles"`
+	}
+	err := p.Call(MethodNativeDisplayColorProfiles, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Profiles, nil
+}
+
+// NativeDisplayCount get the number of connected displays.
+func (p *Plugin) NativeDisplayCount() (*NativeDisplayCountResponse, error) {
+	var result NativeDisplayCountResponse
+	err := p.Call(MethodNativeDisplayCount, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeDisplayMirroring check if display mirroring is active.
+func (p *Plugin) NativeDisplayMirroring() (*NativeDisplayMirroringResponse, error) {
+	var result NativeDisplayMirroringResponse
+	err := p.Call(MethodNativeDisplayMirroring, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeDisplayRefreshRate get display refresh rate in Hz.
+func (p *Plugin) NativeDisplayRefreshRate(displayID int) error {
+	req := &NativeDisplayRefreshRateRequest{
+		DisplayID: displayID,
+	}
+	return p.Call(MethodNativeDisplayRefreshRate, req, nil)
+}
+
+// NativeDisplayRotation get rotation for each connected display.
+func (p *Plugin) NativeDisplayRotation() ([]DisplayRotation, error) {
+	var result struct {
+		Rotations []DisplayRotation `json:"rotations"`
+	}
+	err := p.Call(MethodNativeDisplayRotation, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Rotations, nil
+}
+
+// NativeDisplayScaleFactor get display scale factor.
+func (p *Plugin) NativeDisplayScaleFactor(displayID int) error {
+	req := &NativeDisplayScaleFactorRequest{
+		DisplayID: displayID,
+	}
+	return p.Call(MethodNativeDisplayScaleFactor, req, nil)
+}
+
+// NativeDisplaySerialNumber get primary display serial number.
+func (p *Plugin) NativeDisplaySerialNumber() (*NativeDisplaySerialNumberResponse, error) {
+	var result NativeDisplaySerialNumberResponse
+	err := p.Call(MethodNativeDisplaySerialNumber, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeDisplaySleepTime get display sleep timeout in minutes.
+func (p *Plugin) NativeDisplaySleepTime() error {
+	return p.Call(MethodNativeDisplaySleepTime, nil, nil)
 }
 
 // NativeDisplays get metadata for all connected displays.
@@ -1068,6 +2065,324 @@ func (p *Plugin) NativeDnd() (*NativeDndResponse, error) {
 	return &result, nil
 }
 
+// NativeDnsServers list configured DNS server addresses.
+func (p *Plugin) NativeDnsServers() ([]string, error) {
+	var result struct {
+		Servers []string `json:"servers"`
+	}
+	err := p.Call(MethodNativeDnsServers, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Servers, nil
+}
+
+// NativeDockAutoHide check if Dock auto-hide is enabled.
+func (p *Plugin) NativeDockAutoHide() (*NativeDockAutoHideResponse, error) {
+	var result NativeDockAutoHideResponse
+	err := p.Call(MethodNativeDockAutoHide, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeDockMagnification check if Dock magnification is enabled.
+func (p *Plugin) NativeDockMagnification() (*NativeDockMagnificationResponse, error) {
+	var result NativeDockMagnificationResponse
+	err := p.Call(MethodNativeDockMagnification, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeDockMinimizeEffect get Dock minimize animation (genie/scale).
+func (p *Plugin) NativeDockMinimizeEffect() (*NativeDockMinimizeEffectResponse, error) {
+	var result NativeDockMinimizeEffectResponse
+	err := p.Call(MethodNativeDockMinimizeEffect, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeDockMinimizeToApp check if windows minimize into app icon.
+func (p *Plugin) NativeDockMinimizeToApp() (*NativeDockMinimizeToAppResponse, error) {
+	var result NativeDockMinimizeToAppResponse
+	err := p.Call(MethodNativeDockMinimizeToApp, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeDockPosition get the Dock position (left, bottom, right).
+func (p *Plugin) NativeDockPosition() (*NativeDockPositionResponse, error) {
+	var result NativeDockPositionResponse
+	err := p.Call(MethodNativeDockPosition, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeDockShowIndicators check if Dock shows running app indicators.
+func (p *Plugin) NativeDockShowIndicators() (*NativeDockShowIndicatorsResponse, error) {
+	var result NativeDockShowIndicatorsResponse
+	err := p.Call(MethodNativeDockShowIndicators, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeDockShowRecents check if Dock shows recent apps.
+func (p *Plugin) NativeDockShowRecents() (*NativeDockShowRecentsResponse, error) {
+	var result NativeDockShowRecentsResponse
+	err := p.Call(MethodNativeDockShowRecents, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeDockSize get the Dock tile size (0-128).
+func (p *Plugin) NativeDockSize() error {
+	return p.Call(MethodNativeDockSize, nil, nil)
+}
+
+// NativeDocumentsDirectory get the user's Documents directory path.
+func (p *Plugin) NativeDocumentsDirectory() (*NativeDocumentsDirectoryResponse, error) {
+	var result NativeDocumentsDirectoryResponse
+	err := p.Call(MethodNativeDocumentsDirectory, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeDownloadsDirectory get the user's Downloads directory path.
+func (p *Plugin) NativeDownloadsDirectory() (*NativeDownloadsDirectoryResponse, error) {
+	var result NativeDownloadsDirectoryResponse
+	err := p.Call(MethodNativeDownloadsDirectory, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeEjectDisk eject a mounted volume by path.
+func (p *Plugin) NativeEjectDisk(mountPoint string) error {
+	req := &NativeEjectDiskRequest{
+		MountPoint: mountPoint,
+	}
+	return p.Call(MethodNativeEjectDisk, req, nil)
+}
+
+// NativeEmptyTrash empty the Trash.
+func (p *Plugin) NativeEmptyTrash() error {
+	return p.Call(MethodNativeEmptyTrash, nil, nil)
+}
+
+// NativeEnvVar read an environment variable.
+func (p *Plugin) NativeEnvVar(name string) (*NativeEnvVarResponse, error) {
+	req := &NativeEnvVarRequest{
+		Name: name,
+	}
+	var result NativeEnvVarResponse
+	err := p.Call(MethodNativeEnvVar, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeEpochTime get current Unix epoch time in seconds.
+func (p *Plugin) NativeEpochTime() (*NativeEpochTimeResponse, error) {
+	var result NativeEpochTimeResponse
+	err := p.Call(MethodNativeEpochTime, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeExtendedAttributes read extended attributes (xattrs) from a file.
+func (p *Plugin) NativeExtendedAttributes(path string) error {
+	req := &NativeExtendedAttributesRequest{
+		Path: path,
+	}
+	return p.Call(MethodNativeExtendedAttributes, req, nil)
+}
+
+// NativeExternalDisks list mounted external/removable disks.
+func (p *Plugin) NativeExternalDisks() ([]ExternalDisk, error) {
+	var result struct {
+		Disks []ExternalDisk `json:"disks"`
+	}
+	err := p.Call(MethodNativeExternalDisks, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Disks, nil
+}
+
+// NativeExternalDisplayNames get names of connected external displays.
+func (p *Plugin) NativeExternalDisplayNames() ([]string, error) {
+	var result struct {
+		Names []string `json:"names"`
+	}
+	err := p.Call(MethodNativeExternalDisplayNames, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Names, nil
+}
+
+// NativeFanSpeeds get fan speeds as JSON.
+func (p *Plugin) NativeFanSpeeds() (*NativeFanSpeedsResponse, error) {
+	var result NativeFanSpeedsResponse
+	err := p.Call(MethodNativeFanSpeeds, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeFastUserSwitching check if fast user switching is enabled.
+func (p *Plugin) NativeFastUserSwitching() (*NativeFastUserSwitchingResponse, error) {
+	var result NativeFastUserSwitchingResponse
+	err := p.Call(MethodNativeFastUserSwitching, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeFileAcl get file ACL as string.
+func (p *Plugin) NativeFileAcl(path string) error {
+	req := &NativeFileAclRequest{
+		Path: path,
+	}
+	return p.Call(MethodNativeFileAcl, req, nil)
+}
+
+// NativeFileCreationDate get file creation date as ISO string.
+func (p *Plugin) NativeFileCreationDate(path string) error {
+	req := &NativeFileCreationDateRequest{
+		Path: path,
+	}
+	return p.Call(MethodNativeFileCreationDate, req, nil)
+}
+
+// NativeFileExists check if a file or directory exists.
+func (p *Plugin) NativeFileExists(path string) (*NativeFileExistsResponse, error) {
+	req := &NativeFileExistsRequest{
+		Path: path,
+	}
+	var result NativeFileExistsResponse
+	err := p.Call(MethodNativeFileExists, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeFileExtendedAttributes list extended attributes on a file.
+func (p *Plugin) NativeFileExtendedAttributes(path string) ([]string, error) {
+	req := &NativeFileExtendedAttributesRequest{
+		Path: path,
+	}
+	var result struct {
+		Attributes []string `json:"attributes"`
+	}
+	err := p.Call(MethodNativeFileExtendedAttributes, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Attributes, nil
+}
+
+// NativeFileHash compute SHA-256 hash of a file.
+func (p *Plugin) NativeFileHash(algorithm *string, path string) (*NativeFileHashResponse, error) {
+	req := &NativeFileHashRequest{
+		Algorithm: algorithm,
+		Path: path,
+	}
+	var result NativeFileHashResponse
+	err := p.Call(MethodNativeFileHash, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeFileMetadata get metadata for a file or directory (size, dates, permissions).
+func (p *Plugin) NativeFileMetadata(path string) (*NativeFileMetadataResponse, error) {
+	req := &NativeFileMetadataRequest{
+		Path: path,
+	}
+	var result NativeFileMetadataResponse
+	err := p.Call(MethodNativeFileMetadata, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeFileModificationDate get file modification date as ISO string.
+func (p *Plugin) NativeFileModificationDate(path string) error {
+	req := &NativeFileModificationDateRequest{
+		Path: path,
+	}
+	return p.Call(MethodNativeFileModificationDate, req, nil)
+}
+
+// NativeFileOwner get the owner user and group of a file.
+func (p *Plugin) NativeFileOwner(path string) (*NativeFileOwnerResponse, error) {
+	req := &NativeFileOwnerRequest{
+		Path: path,
+	}
+	var result NativeFileOwnerResponse
+	err := p.Call(MethodNativeFileOwner, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeFileQuarantine check if a file has a quarantine flag.
+func (p *Plugin) NativeFileQuarantine(path string) (*NativeFileQuarantineResponse, error) {
+	req := &NativeFileQuarantineRequest{
+		Path: path,
+	}
+	var result NativeFileQuarantineResponse
+	err := p.Call(MethodNativeFileQuarantine, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeFileSharingEnabled check if file sharing (SMB) is enabled.
+func (p *Plugin) NativeFileSharingEnabled() (*NativeFileSharingEnabledResponse, error) {
+	var result NativeFileSharingEnabledResponse
+	err := p.Call(MethodNativeFileSharingEnabled, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeFileSize get file size in bytes.
+func (p *Plugin) NativeFileSize(path string) error {
+	req := &NativeFileSizeRequest{
+		Path: path,
+	}
+	return p.Call(MethodNativeFileSize, req, nil)
+}
+
 // NativeFileTags read or write Finder tags on a file.
 func (p *Plugin) NativeFileTags(path string, tags json.RawMessage) error {
 	req := &NativeFileTagsRequest{
@@ -1075,6 +2390,189 @@ func (p *Plugin) NativeFileTags(path string, tags json.RawMessage) error {
 		Tags: tags,
 	}
 	return p.Call(MethodNativeFileTags, req, nil)
+}
+
+// NativeFileType get the UTI type of a file.
+func (p *Plugin) NativeFileType(path string) (*NativeFileTypeResponse, error) {
+	req := &NativeFileTypeRequest{
+		Path: path,
+	}
+	var result NativeFileTypeResponse
+	err := p.Call(MethodNativeFileType, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeFileUti get the UTI (Uniform Type Identifier) for a file.
+func (p *Plugin) NativeFileUti(path string) error {
+	req := &NativeFileUtiRequest{
+		Path: path,
+	}
+	return p.Call(MethodNativeFileUti, req, nil)
+}
+
+// NativeFilevaultStatus check if FileVault disk encryption is enabled.
+func (p *Plugin) NativeFilevaultStatus() (*NativeFilevaultStatusResponse, error) {
+	var result NativeFilevaultStatusResponse
+	err := p.Call(MethodNativeFilevaultStatus, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeFinderDefaultView get Finder default view style.
+func (p *Plugin) NativeFinderDefaultView() (*NativeFinderDefaultViewResponse, error) {
+	var result NativeFinderDefaultViewResponse
+	err := p.Call(MethodNativeFinderDefaultView, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeFinderNewWindowTarget get Finder new window default location.
+func (p *Plugin) NativeFinderNewWindowTarget() (*NativeFinderNewWindowTargetResponse, error) {
+	var result NativeFinderNewWindowTargetResponse
+	err := p.Call(MethodNativeFinderNewWindowTarget, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeFinderSelection get the currently selected files in Finder.
+func (p *Plugin) NativeFinderSelection() ([]string, error) {
+	var result struct {
+		Paths []string `json:"paths"`
+	}
+	err := p.Call(MethodNativeFinderSelection, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Paths, nil
+}
+
+// NativeFinderShowExtensions check if Finder shows file extensions.
+func (p *Plugin) NativeFinderShowExtensions() (*NativeFinderShowExtensionsResponse, error) {
+	var result NativeFinderShowExtensionsResponse
+	err := p.Call(MethodNativeFinderShowExtensions, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeFinderShowHidden check if Finder shows hidden files.
+func (p *Plugin) NativeFinderShowHidden() (*NativeFinderShowHiddenResponse, error) {
+	var result NativeFinderShowHiddenResponse
+	err := p.Call(MethodNativeFinderShowHidden, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeFinderShowPathBar check if Finder shows path bar.
+func (p *Plugin) NativeFinderShowPathBar() (*NativeFinderShowPathBarResponse, error) {
+	var result NativeFinderShowPathBarResponse
+	err := p.Call(MethodNativeFinderShowPathBar, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeFinderShowStatusBar check if Finder shows status bar.
+func (p *Plugin) NativeFinderShowStatusBar() (*NativeFinderShowStatusBarResponse, error) {
+	var result NativeFinderShowStatusBarResponse
+	err := p.Call(MethodNativeFinderShowStatusBar, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeFinderWindowPath get the path of the frontmost Finder window.
+func (p *Plugin) NativeFinderWindowPath() (*NativeFinderWindowPathResponse, error) {
+	var result NativeFinderWindowPathResponse
+	err := p.Call(MethodNativeFinderWindowPath, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeFirewallEnabled check if macOS firewall is enabled.
+func (p *Plugin) NativeFirewallEnabled() (*NativeFirewallEnabledResponse, error) {
+	var result NativeFirewallEnabledResponse
+	err := p.Call(MethodNativeFirewallEnabled, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeFirstDayOfWeek get the first day of the week (1=Sunday, 2=Monday).
+func (p *Plugin) NativeFirstDayOfWeek() error {
+	return p.Call(MethodNativeFirstDayOfWeek, nil, nil)
+}
+
+// NativeFlushDns flush DNS cache.
+func (p *Plugin) NativeFlushDns() error {
+	return p.Call(MethodNativeFlushDns, nil, nil)
+}
+
+// NativeFnKeyFunction get function key default behavior.
+func (p *Plugin) NativeFnKeyFunction() (*NativeFnKeyFunctionResponse, error) {
+	var result NativeFnKeyFunctionResponse
+	err := p.Call(MethodNativeFnKeyFunction, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeFocusModes get configured Focus modes as JSON.
+func (p *Plugin) NativeFocusModes() (*NativeFocusModesResponse, error) {
+	var result NativeFocusModesResponse
+	err := p.Call(MethodNativeFocusModes, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeFocusedElement get the currently focused UI element (text field, button, etc.).
+func (p *Plugin) NativeFocusedElement() (*NativeFocusedElementResponse, error) {
+	var result NativeFocusedElementResponse
+	err := p.Call(MethodNativeFocusedElement, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeFocusedWindowID get the currently focused window ID.
+func (p *Plugin) NativeFocusedWindowID() (*NativeFocusedWindowIDResponse, error) {
+	var result NativeFocusedWindowIDResponse
+	err := p.Call(MethodNativeFocusedWindowId, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeFontSmoothing check if font smoothing (anti-aliasing) is enabled.
+func (p *Plugin) NativeFontSmoothing() (*NativeFontSmoothingResponse, error) {
+	var result NativeFontSmoothingResponse
+	err := p.Call(MethodNativeFontSmoothing, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
 }
 
 // NativeForceQuitApp force-quit an app by bundle ID.
@@ -1099,6 +2597,55 @@ func (p *Plugin) NativeFrontmostApp() (*NativeFrontmostAppResponse, error) {
 	return &result, nil
 }
 
+// NativeFullDiskAccess check if full disk access is granted.
+func (p *Plugin) NativeFullDiskAccess() (*NativeFullDiskAccessResponse, error) {
+	var result NativeFullDiskAccessResponse
+	err := p.Call(MethodNativeFullDiskAccess, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeFunctionKeysStandard check if function keys are set to standard behavior (not media).
+func (p *Plugin) NativeFunctionKeysStandard() (*NativeFunctionKeysStandardResponse, error) {
+	var result NativeFunctionKeysStandardResponse
+	err := p.Call(MethodNativeFunctionKeysStandard, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeGatekeeperStatus check if Gatekeeper is enabled.
+func (p *Plugin) NativeGatekeeperStatus() (*NativeGatekeeperStatusResponse, error) {
+	var result NativeGatekeeperStatusResponse
+	err := p.Call(MethodNativeGatekeeperStatus, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeGatewayAddress get the default gateway IP address.
+func (p *Plugin) NativeGatewayAddress() (*NativeGatewayAddressResponse, error) {
+	var result NativeGatewayAddressResponse
+	err := p.Call(MethodNativeGatewayAddress, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeGeneratePdf generate a PDF from HTML content.
+func (p *Plugin) NativeGeneratePdf(html string, outputPath string) error {
+	req := &NativeGeneratePdfRequest{
+		HTML: html,
+		OutputPath: outputPath,
+	}
+	return p.Call(MethodNativeGeneratePdf, req, nil)
+}
+
 // NativeGetWindowInfo get detailed info for a single window.
 func (p *Plugin) NativeGetWindowInfo(windowID string) (*NativeGetWindowInfoResponse, error) {
 	req := &NativeGetWindowInfoRequest{
@@ -1106,6 +2653,82 @@ func (p *Plugin) NativeGetWindowInfo(windowID string) (*NativeGetWindowInfoRespo
 	}
 	var result NativeGetWindowInfoResponse
 	err := p.Call(MethodNativeGetWindowInfo, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeGlobFiles find files matching a glob pattern.
+func (p *Plugin) NativeGlobFiles(maxResults *int, pattern string) ([]string, error) {
+	req := &NativeGlobFilesRequest{
+		MaxResults: maxResults,
+		Pattern: pattern,
+	}
+	var result struct {
+		Paths []string `json:"paths"`
+	}
+	err := p.Call(MethodNativeGlobFiles, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Paths, nil
+}
+
+// NativeGpuInfo get GPU name and VRAM info.
+func (p *Plugin) NativeGpuInfo() (*NativeGpuInfoResponse, error) {
+	var result NativeGpuInfoResponse
+	err := p.Call(MethodNativeGpuInfo, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeGrayscaleEnabled check if grayscale display is enabled.
+func (p *Plugin) NativeGrayscaleEnabled() (*NativeGrayscaleEnabledResponse, error) {
+	var result NativeGrayscaleEnabledResponse
+	err := p.Call(MethodNativeGrayscaleEnabled, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeGroupWindowsByApp check if Mission Control groups windows by app.
+func (p *Plugin) NativeGroupWindowsByApp() (*NativeGroupWindowsByAppResponse, error) {
+	var result NativeGroupWindowsByAppResponse
+	err := p.Call(MethodNativeGroupWindowsByApp, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeHandoffEnabled check if Handoff is enabled.
+func (p *Plugin) NativeHandoffEnabled() (*NativeHandoffEnabledResponse, error) {
+	var result NativeHandoffEnabledResponse
+	err := p.Call(MethodNativeHandoffEnabled, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeHardwareModel get the hardware model identifier (e.g. Mac14,2).
+func (p *Plugin) NativeHardwareModel() (*NativeHardwareModelResponse, error) {
+	var result NativeHardwareModelResponse
+	err := p.Call(MethodNativeHardwareModel, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeHardwareUuid get the hardware UUID.
+func (p *Plugin) NativeHardwareUuid() (*NativeHardwareUuidResponse, error) {
+	var result NativeHardwareUuidResponse
+	err := p.Call(MethodNativeHardwareUuid, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1189,6 +2812,123 @@ func (p *Plugin) NativeHideApp(bundleID string) error {
 	return p.Call(MethodNativeHideApp, req, nil)
 }
 
+// NativeHighlightColor get the system highlight/selection color.
+func (p *Plugin) NativeHighlightColor() (*NativeHighlightColorResponse, error) {
+	var result NativeHighlightColorResponse
+	err := p.Call(MethodNativeHighlightColor, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeHomeDirectory get the current user's home directory path.
+func (p *Plugin) NativeHomeDirectory() (*NativeHomeDirectoryResponse, error) {
+	var result NativeHomeDirectoryResponse
+	err := p.Call(MethodNativeHomeDirectory, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeHomebrewPrefix get the Homebrew installation prefix.
+func (p *Plugin) NativeHomebrewPrefix() (*NativeHomebrewPrefixResponse, error) {
+	var result NativeHomebrewPrefixResponse
+	err := p.Call(MethodNativeHomebrewPrefix, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeHostname get the system hostname.
+func (p *Plugin) NativeHostname() (*NativeHostnameResponse, error) {
+	var result NativeHostnameResponse
+	err := p.Call(MethodNativeHostname, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeHostnameResolve resolve a hostname to IP addresses.
+func (p *Plugin) NativeHostnameResolve(hostname string) ([]string, error) {
+	req := &NativeHostnameResolveRequest{
+		Hostname: hostname,
+	}
+	var result struct {
+		Addresses []string `json:"addresses"`
+	}
+	err := p.Call(MethodNativeHostnameResolve, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Addresses, nil
+}
+
+// NativeHotCorners get hot corner actions as JSON string.
+func (p *Plugin) NativeHotCorners() (*NativeHotCornersResponse, error) {
+	var result NativeHotCornersResponse
+	err := p.Call(MethodNativeHotCorners, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeIcloudDesktopSync check if iCloud Desktop & Documents sync is enabled.
+func (p *Plugin) NativeIcloudDesktopSync() (*NativeIcloudDesktopSyncResponse, error) {
+	var result NativeIcloudDesktopSyncResponse
+	err := p.Call(MethodNativeIcloudDesktopSync, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeIcloudDrivePath get the local path to iCloud Drive.
+func (p *Plugin) NativeIcloudDrivePath() (*NativeIcloudDrivePathResponse, error) {
+	var result NativeIcloudDrivePathResponse
+	err := p.Call(MethodNativeIcloudDrivePath, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeIcloudSignedIn check if the user is signed into iCloud.
+func (p *Plugin) NativeIcloudSignedIn() (*NativeIcloudSignedInResponse, error) {
+	var result NativeIcloudSignedInResponse
+	err := p.Call(MethodNativeIcloudSignedIn, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeIncreaseContrast check if Increase Contrast is enabled.
+func (p *Plugin) NativeIncreaseContrast() (*NativeIncreaseContrastResponse, error) {
+	var result NativeIncreaseContrastResponse
+	err := p.Call(MethodNativeIncreaseContrast, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeInputSources list installed keyboard input sources.
+func (p *Plugin) NativeInputSources() ([]InputSource, error) {
+	var result struct {
+		Sources []InputSource `json:"sources"`
+	}
+	err := p.Call(MethodNativeInputSources, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Sources, nil
+}
+
 // NativeInstalledApps list all installed applications by scanning the filesystem.
 func (p *Plugin) NativeInstalledApps() ([]InstalledApp, error) {
 	var result struct {
@@ -1199,6 +2939,26 @@ func (p *Plugin) NativeInstalledApps() ([]InstalledApp, error) {
 		return nil, err
 	}
 	return result.Apps, nil
+}
+
+// NativeInterfaceStyleSwitcher get auto appearance switching setting.
+func (p *Plugin) NativeInterfaceStyleSwitcher() (*NativeInterfaceStyleSwitcherResponse, error) {
+	var result NativeInterfaceStyleSwitcherResponse
+	err := p.Call(MethodNativeInterfaceStyleSwitcher, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeIpv6Address get primary IPv6 address.
+func (p *Plugin) NativeIpv6Address() (*NativeIpv6AddressResponse, error) {
+	var result NativeIpv6AddressResponse
+	err := p.Call(MethodNativeIpv6Address, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
 }
 
 // NativeIsAppHidden check if an application is hidden.
@@ -1213,10 +2973,113 @@ func (p *Plugin) NativeIsAppHidden(bundleID string) (bool, error) {
 	return result.Result, err
 }
 
+// NativeIsDirectory check if a path is a directory.
+func (p *Plugin) NativeIsDirectory(path string) (*NativeIsDirectoryResponse, error) {
+	req := &NativeIsDirectoryRequest{
+		Path: path,
+	}
+	var result NativeIsDirectoryResponse
+	err := p.Call(MethodNativeIsDirectory, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeIsFileHidden check if file has hidden flag.
+func (p *Plugin) NativeIsFileHidden(path string) (*NativeIsFileHiddenResponse, error) {
+	req := &NativeIsFileHiddenRequest{
+		Path: path,
+	}
+	var result NativeIsFileHiddenResponse
+	err := p.Call(MethodNativeIsFileHidden, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeKernelVersion get the Darwin kernel version string.
+func (p *Plugin) NativeKernelVersion() (*NativeKernelVersionResponse, error) {
+	var result NativeKernelVersionResponse
+	err := p.Call(MethodNativeKernelVersion, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeKeyRepeatDelay get initial key repeat delay.
+func (p *Plugin) NativeKeyRepeatDelay() error {
+	return p.Call(MethodNativeKeyRepeatDelay, nil, nil)
+}
+
+// NativeKeyRepeatRate get the keyboard repeat rate (keys per second).
+func (p *Plugin) NativeKeyRepeatRate() error {
+	return p.Call(MethodNativeKeyRepeatRate, nil, nil)
+}
+
+// NativeKeyboardBrightness get keyboard backlight brightness (0.0-1.0).
+func (p *Plugin) NativeKeyboardBrightness() error {
+	return p.Call(MethodNativeKeyboardBrightness, nil, nil)
+}
+
 // NativeKeyboardLayout get the current keyboard layout and key mappings.
 func (p *Plugin) NativeKeyboardLayout() (*NativeKeyboardLayoutResponse, error) {
 	var result NativeKeyboardLayoutResponse
 	err := p.Call(MethodNativeKeyboardLayout, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeKeychainDelete delete a keychain item by service and account.
+func (p *Plugin) NativeKeychainDelete(account string, service string) error {
+	req := &NativeKeychainDeleteRequest{
+		Account: account,
+		Service: service,
+	}
+	return p.Call(MethodNativeKeychainDelete, req, nil)
+}
+
+// NativeKeychainRead read a password from the keychain by service and account.
+func (p *Plugin) NativeKeychainRead(account string, service string) (*NativeKeychainReadResponse, error) {
+	req := &NativeKeychainReadRequest{
+		Account: account,
+		Service: service,
+	}
+	var result NativeKeychainReadResponse
+	err := p.Call(MethodNativeKeychainRead, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeKeychainWrite store a password in the keychain for a service and account.
+func (p *Plugin) NativeKeychainWrite(account string, password string, service string) error {
+	req := &NativeKeychainWriteRequest{
+		Account: account,
+		Password: password,
+		Service: service,
+	}
+	return p.Call(MethodNativeKeychainWrite, req, nil)
+}
+
+// NativeKillProcess send a signal to a process by PID.
+func (p *Plugin) NativeKillProcess(pid int, signal *int) error {
+	req := &NativeKillProcessRequest{
+		Pid: pid,
+		Signal: signal,
+	}
+	return p.Call(MethodNativeKillProcess, req, nil)
+}
+
+// NativeLastReboot get the last reboot date/time.
+func (p *Plugin) NativeLastReboot() (*NativeLastRebootResponse, error) {
+	var result NativeLastRebootResponse
+	err := p.Call(MethodNativeLastReboot, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1232,6 +3095,54 @@ func (p *Plugin) NativeLaunchApp(bundleID string, newInstance *bool) error {
 	return p.Call(MethodNativeLaunchApp, req, nil)
 }
 
+// NativeLaunchdAgents list user launch agents.
+func (p *Plugin) NativeLaunchdAgents() ([]string, error) {
+	var result struct {
+		Agents []string `json:"agents"`
+	}
+	err := p.Call(MethodNativeLaunchdAgents, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Agents, nil
+}
+
+// NativeLaunchdDaemons list system launch daemons.
+func (p *Plugin) NativeLaunchdDaemons() ([]string, error) {
+	var result struct {
+		Daemons []string `json:"daemons"`
+	}
+	err := p.Call(MethodNativeLaunchdDaemons, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Daemons, nil
+}
+
+// NativeListAudioInputDevices list available audio input device names.
+func (p *Plugin) NativeListAudioInputDevices() ([]string, error) {
+	var result struct {
+		Devices []string `json:"devices"`
+	}
+	err := p.Call(MethodNativeListAudioInputDevices, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Devices, nil
+}
+
+// NativeListAudioOutputDevices list available audio output device names.
+func (p *Plugin) NativeListAudioOutputDevices() ([]string, error) {
+	var result struct {
+		Devices []string `json:"devices"`
+	}
+	err := p.Call(MethodNativeListAudioOutputDevices, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Devices, nil
+}
+
 // NativeListNotifications list delivered notifications (partial — returns empty).
 func (p *Plugin) NativeListNotifications() ([]DeliveredNotification, error) {
 	var result struct {
@@ -1242,6 +3153,18 @@ func (p *Plugin) NativeListNotifications() ([]DeliveredNotification, error) {
 		return nil, err
 	}
 	return result.Notifications, nil
+}
+
+// NativeListShortcuts list available Shortcuts.app shortcuts.
+func (p *Plugin) NativeListShortcuts() ([]ShortcutInfo, error) {
+	var result struct {
+		Shortcuts []ShortcutInfo `json:"shortcuts"`
+	}
+	err := p.Call(MethodNativeListShortcuts, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Shortcuts, nil
 }
 
 // NativeListSpaces list all spaces across all displays.
@@ -1256,6 +3179,63 @@ func (p *Plugin) NativeListSpaces() ([]SpaceInfo, error) {
 	return result.Spaces, nil
 }
 
+// NativeLiveTextEnabled check if Live Text is enabled.
+func (p *Plugin) NativeLiveTextEnabled() (*NativeLiveTextEnabledResponse, error) {
+	var result NativeLiveTextEnabledResponse
+	err := p.Call(MethodNativeLiveTextEnabled, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeLocalIP get the primary local/LAN IP address.
+func (p *Plugin) NativeLocalIP() (*NativeLocalIPResponse, error) {
+	var result NativeLocalIPResponse
+	err := p.Call(MethodNativeLocalIp, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeLocale get current system locale identifier.
+func (p *Plugin) NativeLocale() (*NativeLocaleResponse, error) {
+	var result NativeLocaleResponse
+	err := p.Call(MethodNativeLocale, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeLocationEnabled check if Location Services is enabled.
+func (p *Plugin) NativeLocationEnabled() (*NativeLocationEnabledResponse, error) {
+	var result NativeLocationEnabledResponse
+	err := p.Call(MethodNativeLocationEnabled, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeLogOut log out current user.
+func (p *Plugin) NativeLogOut() error {
+	return p.Call(MethodNativeLogOut, nil, nil)
+}
+
+// NativeLoggedInUsers list currently logged-in users.
+func (p *Plugin) NativeLoggedInUsers() ([]string, error) {
+	var result struct {
+		Users []string `json:"users"`
+	}
+	err := p.Call(MethodNativeLoggedInUsers, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Users, nil
+}
+
 // NativeLoginItems list login items (launch-at-login entries).
 func (p *Plugin) NativeLoginItems() ([]LoginItem, error) {
 	var result struct {
@@ -1266,6 +3246,91 @@ func (p *Plugin) NativeLoginItems() ([]LoginItem, error) {
 		return nil, err
 	}
 	return result.Items, nil
+}
+
+// NativeLoginItemsModern list modern login items (SMAppService).
+func (p *Plugin) NativeLoginItemsModern() ([]string, error) {
+	var result struct {
+		Items []string `json:"items"`
+	}
+	err := p.Call(MethodNativeLoginItemsModern, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Items, nil
+}
+
+// NativeLowPowerMode check if Low Power Mode is enabled.
+func (p *Plugin) NativeLowPowerMode() (*NativeLowPowerModeResponse, error) {
+	var result NativeLowPowerModeResponse
+	err := p.Call(MethodNativeLowPowerMode, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeMacAddress get primary network interface MAC address.
+func (p *Plugin) NativeMacAddress() (*NativeMacAddressResponse, error) {
+	var result NativeMacAddressResponse
+	err := p.Call(MethodNativeMacAddress, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeMaximizeWindow maximize window to fill screen.
+func (p *Plugin) NativeMaximizeWindow(windowID string) error {
+	req := &NativeMaximizeWindowRequest{
+		WindowID: windowID,
+	}
+	return p.Call(MethodNativeMaximizeWindow, req, nil)
+}
+
+// NativeMeasurementSystem get the measurement system (metric/us).
+func (p *Plugin) NativeMeasurementSystem() (*NativeMeasurementSystemResponse, error) {
+	var result NativeMeasurementSystemResponse
+	err := p.Call(MethodNativeMeasurementSystem, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeMediaNextTrack skip to next track in the current media player.
+func (p *Plugin) NativeMediaNextTrack() error {
+	return p.Call(MethodNativeMediaNextTrack, nil, nil)
+}
+
+// NativeMediaPlayPause toggle play/pause for the current media player.
+func (p *Plugin) NativeMediaPlayPause() error {
+	return p.Call(MethodNativeMediaPlayPause, nil, nil)
+}
+
+// NativeMediaPreviousTrack skip to previous track in the current media player.
+func (p *Plugin) NativeMediaPreviousTrack() error {
+	return p.Call(MethodNativeMediaPreviousTrack, nil, nil)
+}
+
+// NativeMemoryInfo get total and available system memory.
+func (p *Plugin) NativeMemoryInfo() (*NativeMemoryInfoResponse, error) {
+	var result NativeMemoryInfoResponse
+	err := p.Call(MethodNativeMemoryInfo, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeMemoryPressure get memory pressure level (nominal/warn/critical).
+func (p *Plugin) NativeMemoryPressure() (*NativeMemoryPressureResponse, error) {
+	var result NativeMemoryPressureResponse
+	err := p.Call(MethodNativeMemoryPressure, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
 }
 
 // NativeMenuBar read the menu bar structure of an application by PID.
@@ -1283,12 +3348,98 @@ func (p *Plugin) NativeMenuBar(pid int) ([]MenuItem, error) {
 	return result.Items, nil
 }
 
+// NativeMenuBarAutoHide check if menu bar auto-hide is enabled.
+func (p *Plugin) NativeMenuBarAutoHide() (*NativeMenuBarAutoHideResponse, error) {
+	var result NativeMenuBarAutoHideResponse
+	err := p.Call(MethodNativeMenuBarAutoHide, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeMenuBarBatteryPercent check if battery percentage is shown in menu bar.
+func (p *Plugin) NativeMenuBarBatteryPercent() (*NativeMenuBarBatteryPercentResponse, error) {
+	var result NativeMenuBarBatteryPercentResponse
+	err := p.Call(MethodNativeMenuBarBatteryPercent, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeMenuBarClockFormat get menu bar clock format string.
+func (p *Plugin) NativeMenuBarClockFormat() (*NativeMenuBarClockFormatResponse, error) {
+	var result NativeMenuBarClockFormatResponse
+	err := p.Call(MethodNativeMenuBarClockFormat, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeMicrophonePermission check if microphone access is available.
+func (p *Plugin) NativeMicrophonePermission() (*NativeMicrophonePermissionResponse, error) {
+	var result NativeMicrophonePermissionResponse
+	err := p.Call(MethodNativeMicrophonePermission, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // NativeMinimizeWindow minimize a window by ID.
 func (p *Plugin) NativeMinimizeWindow(windowID string) error {
 	req := &NativeMinimizeWindowRequest{
 		WindowID: windowID,
 	}
 	return p.Call(MethodNativeMinimizeWindow, req, nil)
+}
+
+// NativeModelName get the hardware model name (e.g. MacBook Pro 14-inch 2023).
+func (p *Plugin) NativeModelName() (*NativeModelNameResponse, error) {
+	var result NativeModelNameResponse
+	err := p.Call(MethodNativeModelName, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeMountPoints list mounted volumes.
+func (p *Plugin) NativeMountPoints() ([]string, error) {
+	var result struct {
+		Volumes []string `json:"volumes"`
+	}
+	err := p.Call(MethodNativeMountPoints, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Volumes, nil
+}
+
+// NativeMouseButtonClick click a specific mouse button (middle, button4, etc.).
+func (p *Plugin) NativeMouseButtonClick(button int, x json.RawMessage, y json.RawMessage) error {
+	req := &NativeMouseButtonClickRequest{
+		Button: button,
+		X: x,
+		Y: y,
+	}
+	return p.Call(MethodNativeMouseButtonClick, req, nil)
+}
+
+// NativeMouseSpeed get the mouse tracking speed (0.0-3.0).
+func (p *Plugin) NativeMouseSpeed() error {
+	return p.Call(MethodNativeMouseSpeed, nil, nil)
+}
+
+// NativeMoveFile move or rename a file or directory.
+func (p *Plugin) NativeMoveFile(destination string, source string) error {
+	req := &NativeMoveFileRequest{
+		Destination: destination,
+		Source: source,
+	}
+	return p.Call(MethodNativeMoveFile, req, nil)
 }
 
 // NativeMoveWindowToDisplay move a window to a different display.
@@ -1321,6 +3472,106 @@ func (p *Plugin) NativeMute(muted bool) error {
 	return p.Call(MethodNativeMute, req, nil)
 }
 
+// NativeNetworkBandwidth get network link speed.
+func (p *Plugin) NativeNetworkBandwidth() (*NativeNetworkBandwidthResponse, error) {
+	var result NativeNetworkBandwidthResponse
+	err := p.Call(MethodNativeNetworkBandwidth, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeNetworkDnsDomain get DNS search domain.
+func (p *Plugin) NativeNetworkDnsDomain() (*NativeNetworkDnsDomainResponse, error) {
+	var result NativeNetworkDnsDomainResponse
+	err := p.Call(MethodNativeNetworkDnsDomain, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeNetworkInterfaces list network interfaces with IP addresses.
+func (p *Plugin) NativeNetworkInterfaces() ([]NetworkInterface, error) {
+	var result struct {
+		Interfaces []NetworkInterface `json:"interfaces"`
+	}
+	err := p.Call(MethodNativeNetworkInterfaces, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Interfaces, nil
+}
+
+// NativeNetworkProxyEnabled check if any network proxy is configured.
+func (p *Plugin) NativeNetworkProxyEnabled() (*NativeNetworkProxyEnabledResponse, error) {
+	var result NativeNetworkProxyEnabledResponse
+	err := p.Call(MethodNativeNetworkProxyEnabled, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeNetworkQuality run a quick network quality test (upload/download Mbps).
+func (p *Plugin) NativeNetworkQuality() (*NativeNetworkQualityResponse, error) {
+	var result NativeNetworkQualityResponse
+	err := p.Call(MethodNativeNetworkQuality, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeNetworkReachable check if a host is reachable via network.
+func (p *Plugin) NativeNetworkReachable(host string) (*NativeNetworkReachableResponse, error) {
+	req := &NativeNetworkReachableRequest{
+		Host: host,
+	}
+	var result NativeNetworkReachableResponse
+	err := p.Call(MethodNativeNetworkReachable, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeNetworkSignalStrength get Wi-Fi signal strength in dBm.
+func (p *Plugin) NativeNetworkSignalStrength() error {
+	return p.Call(MethodNativeNetworkSignalStrength, nil, nil)
+}
+
+// NativeNetworkSsid get currently connected Wi-Fi SSID.
+func (p *Plugin) NativeNetworkSsid() (*NativeNetworkSsidResponse, error) {
+	var result NativeNetworkSsidResponse
+	err := p.Call(MethodNativeNetworkSsid, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeNightShift check if Night Shift is currently enabled.
+func (p *Plugin) NativeNightShift() (*NativeNightShiftResponse, error) {
+	var result NativeNightShiftResponse
+	err := p.Call(MethodNativeNightShift, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeNotificationSoundEnabled check if notification sounds are enabled.
+func (p *Plugin) NativeNotificationSoundEnabled() (*NativeNotificationSoundEnabledResponse, error) {
+	var result NativeNotificationSoundEnabledResponse
+	err := p.Call(MethodNativeNotificationSoundEnabled, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // NativeNotify post a rich notification (osascript fallback).
 func (p *Plugin) NativeNotify(body json.RawMessage, sound json.RawMessage, subtitle json.RawMessage, title string) (*NativeNotifyResponse, error) {
 	req := &NativeNotifyRequest{
@@ -1337,7 +3588,27 @@ func (p *Plugin) NativeNotify(body json.RawMessage, sound json.RawMessage, subti
 	return &result, nil
 }
 
-// NativeObserveWindows start observing window events for a PID (STUB — not yet implemented).
+// NativeNowPlaying get currently playing media info (title, artist, album, app).
+func (p *Plugin) NativeNowPlaying() (*NativeNowPlayingResponse, error) {
+	var result NativeNowPlayingResponse
+	err := p.Call(MethodNativeNowPlaying, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeNumberFormatDecimal get decimal separator character.
+func (p *Plugin) NativeNumberFormatDecimal() (*NativeNumberFormatDecimalResponse, error) {
+	var result NativeNumberFormatDecimalResponse
+	err := p.Call(MethodNativeNumberFormatDecimal, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeObserveWindows start observing window events for a PID (STUB -- not yet implemented).
 func (p *Plugin) NativeObserveWindows(pid int) (*NativeObserveWindowsResponse, error) {
 	req := &NativeObserveWindowsRequest{
 		Pid: pid,
@@ -1350,12 +3621,189 @@ func (p *Plugin) NativeObserveWindows(pid int) (*NativeObserveWindowsResponse, e
 	return &result, nil
 }
 
+// NativeOcrClipboard oCR text from the clipboard image.
+func (p *Plugin) NativeOcrClipboard() ([]OcrRegion, error) {
+	var result struct {
+		Regions []OcrRegion `json:"regions"`
+	}
+	err := p.Call(MethodNativeOcrClipboard, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Regions, nil
+}
+
+// NativeOcrFile oCR text from an image file path.
+func (p *Plugin) NativeOcrFile(path string) ([]OcrRegion, error) {
+	req := &NativeOcrFileRequest{
+		Path: path,
+	}
+	var result struct {
+		Regions []OcrRegion `json:"regions"`
+	}
+	err := p.Call(MethodNativeOcrFile, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Regions, nil
+}
+
+// NativeOcrScreen oCR text from the current screen.
+func (p *Plugin) NativeOcrScreen() ([]OcrRegion, error) {
+	var result struct {
+		Regions []OcrRegion `json:"regions"`
+	}
+	err := p.Call(MethodNativeOcrScreen, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Regions, nil
+}
+
+// NativeOcrScreenRegion oCR text from a screen region (x, y, width, height).
+func (p *Plugin) NativeOcrScreenRegion(height float64, width float64, x float64, y float64) ([]OcrRegion, error) {
+	req := &NativeOcrScreenRegionRequest{
+		Height: height,
+		Width: width,
+		X: x,
+		Y: y,
+	}
+	var result struct {
+		Regions []OcrRegion `json:"regions"`
+	}
+	err := p.Call(MethodNativeOcrScreenRegion, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Regions, nil
+}
+
+// NativeOcrWindow oCR text from a specific window by ID.
+func (p *Plugin) NativeOcrWindow(windowID int) ([]OcrRegion, error) {
+	req := &NativeOcrWindowRequest{
+		WindowID: windowID,
+	}
+	var result struct {
+		Regions []OcrRegion `json:"regions"`
+	}
+	err := p.Call(MethodNativeOcrWindow, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Regions, nil
+}
+
+// NativeOpenAppSettings open an app's preferences window.
+func (p *Plugin) NativeOpenAppSettings(bundleID string) error {
+	req := &NativeOpenAppSettingsRequest{
+		BundleID: bundleID,
+	}
+	return p.Call(MethodNativeOpenAppSettings, req, nil)
+}
+
+// NativeOpenFinderWindow open a Finder window at a specific path.
+func (p *Plugin) NativeOpenFinderWindow(path string) error {
+	req := &NativeOpenFinderWindowRequest{
+		Path: path,
+	}
+	return p.Call(MethodNativeOpenFinderWindow, req, nil)
+}
+
+// NativeOpenSystemSettings open System Settings to a specific pane (e.g. 'Privacy_Accessibility').
+func (p *Plugin) NativeOpenSystemSettings(pane json.RawMessage) error {
+	req := &NativeOpenSystemSettingsRequest{
+		Pane: pane,
+	}
+	return p.Call(MethodNativeOpenSystemSettings, req, nil)
+}
+
 // NativeOpenTarget open a URL or file path with the default handler.
 func (p *Plugin) NativeOpenTarget(target string) error {
 	req := &NativeOpenTargetRequest{
 		Target: target,
 	}
 	return p.Call(MethodNativeOpenTarget, req, nil)
+}
+
+// NativeOpenURL open a URL in the default handler.
+func (p *Plugin) NativeOpenURL(url string) error {
+	req := &NativeOpenURLRequest{
+		URL: url,
+	}
+	return p.Call(MethodNativeOpenUrl, req, nil)
+}
+
+// NativeOpenWithApp open a URL or path with a specific application.
+func (p *Plugin) NativeOpenWithApp(bundleID string, target string) error {
+	req := &NativeOpenWithAppRequest{
+		BundleID: bundleID,
+		Target: target,
+	}
+	return p.Call(MethodNativeOpenWithApp, req, nil)
+}
+
+// NativeOptimizedCharging check if optimized battery charging is enabled.
+func (p *Plugin) NativeOptimizedCharging() (*NativeOptimizedChargingResponse, error) {
+	var result NativeOptimizedChargingResponse
+	err := p.Call(MethodNativeOptimizedCharging, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativePdfExtractText extract text from a PDF file.
+func (p *Plugin) NativePdfExtractText(page *int, path string) error {
+	req := &NativePdfExtractTextRequest{
+		Page: page,
+		Path: path,
+	}
+	return p.Call(MethodNativePdfExtractText, req, nil)
+}
+
+// NativePdfPageCount get the page count of a PDF file.
+func (p *Plugin) NativePdfPageCount(path string) error {
+	req := &NativePdfPageCountRequest{
+		Path: path,
+	}
+	return p.Call(MethodNativePdfPageCount, req, nil)
+}
+
+// NativePinWindowAbove pin or unpin a window above all others.
+func (p *Plugin) NativePinWindowAbove(pinned bool, windowID string) error {
+	req := &NativePinWindowAboveRequest{
+		Pinned: pinned,
+		WindowID: windowID,
+	}
+	return p.Call(MethodNativePinWindowAbove, req, nil)
+}
+
+// NativePinchToZoom check if pinch-to-zoom gesture is enabled.
+func (p *Plugin) NativePinchToZoom() (*NativePinchToZoomResponse, error) {
+	var result NativePinchToZoomResponse
+	err := p.Call(MethodNativePinchToZoom, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativePing ping a host and return latency in milliseconds.
+func (p *Plugin) NativePing(host string) error {
+	req := &NativePingRequest{
+		Host: host,
+	}
+	return p.Call(MethodNativePing, req, nil)
+}
+
+// NativePlayFeedbackWhenVolumeChanged check if volume change feedback sound is enabled.
+func (p *Plugin) NativePlayFeedbackWhenVolumeChanged() (*NativePlayFeedbackWhenVolumeChangedResponse, error) {
+	var result NativePlayFeedbackWhenVolumeChangedResponse
+	err := p.Call(MethodNativePlayFeedbackWhenVolumeChanged, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
 }
 
 // NativePlaySound play a named system sound.
@@ -1371,6 +3819,36 @@ func (p *Plugin) NativePollBurst() error {
 	return p.Call(MethodNativePollBurst, nil, nil)
 }
 
+// NativePowerAdapterConnected check if power adapter is connected.
+func (p *Plugin) NativePowerAdapterConnected() (*NativePowerAdapterConnectedResponse, error) {
+	var result NativePowerAdapterConnectedResponse
+	err := p.Call(MethodNativePowerAdapterConnected, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativePowerSource get current power source type (battery, AC, UPS).
+func (p *Plugin) NativePowerSource() (*NativePowerSourceResponse, error) {
+	var result NativePowerSourceResponse
+	err := p.Call(MethodNativePowerSource, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativePressAndHoldEnabled check if press-and-hold for accented characters is enabled.
+func (p *Plugin) NativePressAndHoldEnabled() (*NativePressAndHoldEnabledResponse, error) {
+	var result NativePressAndHoldEnabledResponse
+	err := p.Call(MethodNativePressAndHoldEnabled, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // NativePreventSleep assert or release sleep prevention.
 func (p *Plugin) NativePreventSleep(assertionID json.RawMessage, reason *string) (*NativePreventSleepResponse, error) {
 	req := &NativePreventSleepRequest{
@@ -1383,6 +3861,174 @@ func (p *Plugin) NativePreventSleep(assertionID json.RawMessage, reason *string)
 		return nil, err
 	}
 	return &result, nil
+}
+
+// NativePrimaryDisplay get metadata for the primary display.
+func (p *Plugin) NativePrimaryDisplay() (*NativePrimaryDisplayResponse, error) {
+	var result NativePrimaryDisplayResponse
+	err := p.Call(MethodNativePrimaryDisplay, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativePrimaryDisplayID get primary display ID.
+func (p *Plugin) NativePrimaryDisplayID() (*NativePrimaryDisplayIDResponse, error) {
+	var result NativePrimaryDisplayIDResponse
+	err := p.Call(MethodNativePrimaryDisplayId, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativePrinterSharingEnabled check if printer sharing is enabled.
+func (p *Plugin) NativePrinterSharingEnabled() (*NativePrinterSharingEnabledResponse, error) {
+	var result NativePrinterSharingEnabledResponse
+	err := p.Call(MethodNativePrinterSharingEnabled, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativePrinters list available printers.
+func (p *Plugin) NativePrinters() ([]PrinterInfo, error) {
+	var result struct {
+		Printers []PrinterInfo `json:"printers"`
+	}
+	err := p.Call(MethodNativePrinters, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Printers, nil
+}
+
+// NativeProcessCount get total number of running processes.
+func (p *Plugin) NativeProcessCount() (*NativeProcessCountResponse, error) {
+	var result NativeProcessCountResponse
+	err := p.Call(MethodNativeProcessCount, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeProcessCpuUsage get CPU usage for process by PID.
+func (p *Plugin) NativeProcessCpuUsage(pid int) error {
+	req := &NativeProcessCpuUsageRequest{
+		Pid: pid,
+	}
+	return p.Call(MethodNativeProcessCpuUsage, req, nil)
+}
+
+// NativeProcessExists check if a process with given PID exists.
+func (p *Plugin) NativeProcessExists(pid int) (*NativeProcessExistsResponse, error) {
+	req := &NativeProcessExistsRequest{
+		Pid: pid,
+	}
+	var result NativeProcessExistsResponse
+	err := p.Call(MethodNativeProcessExists, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeProcessInfo get info about a process by PID (name, cpu, memory, path).
+func (p *Plugin) NativeProcessInfo(pid int) (*NativeProcessInfoResponse, error) {
+	req := &NativeProcessInfoRequest{
+		Pid: pid,
+	}
+	var result NativeProcessInfoResponse
+	err := p.Call(MethodNativeProcessInfo, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeProcessList list all running processes with PID, name, and user.
+func (p *Plugin) NativeProcessList() ([]ProcessInfo, error) {
+	var result struct {
+		Processes []ProcessInfo `json:"processes"`
+	}
+	err := p.Call(MethodNativeProcessList, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Processes, nil
+}
+
+// NativeProcessMemoryUsage get memory usage in bytes for process by PID.
+func (p *Plugin) NativeProcessMemoryUsage(pid int) error {
+	req := &NativeProcessMemoryUsageRequest{
+		Pid: pid,
+	}
+	return p.Call(MethodNativeProcessMemoryUsage, req, nil)
+}
+
+// NativeProcessName get process name by PID.
+func (p *Plugin) NativeProcessName(pid int) error {
+	req := &NativeProcessNameRequest{
+		Pid: pid,
+	}
+	return p.Call(MethodNativeProcessName, req, nil)
+}
+
+// NativeProcessParentPid get parent PID of a process.
+func (p *Plugin) NativeProcessParentPid(pid int) error {
+	req := &NativeProcessParentPidRequest{
+		Pid: pid,
+	}
+	return p.Call(MethodNativeProcessParentPid, req, nil)
+}
+
+// NativeProcessPath get the executable path for a PID.
+func (p *Plugin) NativeProcessPath(pid int) error {
+	req := &NativeProcessPathRequest{
+		Pid: pid,
+	}
+	return p.Call(MethodNativeProcessPath, req, nil)
+}
+
+// NativeProcessStartTime get process start time as ISO string.
+func (p *Plugin) NativeProcessStartTime(pid int) error {
+	req := &NativeProcessStartTimeRequest{
+		Pid: pid,
+	}
+	return p.Call(MethodNativeProcessStartTime, req, nil)
+}
+
+// NativeProxySettings get system proxy configuration.
+func (p *Plugin) NativeProxySettings() (*NativeProxySettingsResponse, error) {
+	var result NativeProxySettingsResponse
+	err := p.Call(MethodNativeProxySettings, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativePublicIP get the external/public IP address via a DNS lookup (no HTTP).
+func (p *Plugin) NativePublicIP() (*NativePublicIPResponse, error) {
+	var result NativePublicIPResponse
+	err := p.Call(MethodNativePublicIp, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativePurgeMemory purge inactive memory.
+func (p *Plugin) NativePurgeMemory() error {
+	return p.Call(MethodNativePurgeMemory, nil, nil)
+}
+
+// NativePurgeableSpace get purgeable disk space in bytes.
+func (p *Plugin) NativePurgeableSpace() error {
+	return p.Call(MethodNativePurgeableSpace, nil, nil)
 }
 
 // NativeQuickLook generate Quick Look thumbnail as PNG (base64).
@@ -1419,12 +4065,170 @@ func (p *Plugin) NativeRaiseWindow(windowID string) error {
 	return p.Call(MethodNativeRaiseWindow, req, nil)
 }
 
+// NativeRandomUuid generate a random UUID v4.
+func (p *Plugin) NativeRandomUuid() (*NativeRandomUuidResponse, error) {
+	var result NativeRandomUuidResponse
+	err := p.Call(MethodNativeRandomUuid, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeReadAppPreference read a preference value for an app domain.
+func (p *Plugin) NativeReadAppPreference(domain string, key string) error {
+	req := &NativeReadAppPreferenceRequest{
+		Domain: domain,
+		Key: key,
+	}
+	return p.Call(MethodNativeReadAppPreference, req, nil)
+}
+
+// NativeReadFile read file contents as UTF-8 string.
+func (p *Plugin) NativeReadFile(path string) (*NativeReadFileResponse, error) {
+	req := &NativeReadFileRequest{
+		Path: path,
+	}
+	var result NativeReadFileResponse
+	err := p.Call(MethodNativeReadFile, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeReadFileBinary read a file as base64-encoded binary.
+func (p *Plugin) NativeReadFileBinary(maxBytes json.RawMessage, path string) (*NativeReadFileBinaryResponse, error) {
+	req := &NativeReadFileBinaryRequest{
+		MaxBytes: maxBytes,
+		Path: path,
+	}
+	var result NativeReadFileBinaryResponse
+	err := p.Call(MethodNativeReadFileBinary, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeReadPlist read a property list file as JSON.
+func (p *Plugin) NativeReadPlist(path string) error {
+	req := &NativeReadPlistRequest{
+		Path: path,
+	}
+	return p.Call(MethodNativeReadPlist, req, nil)
+}
+
+// NativeRecentDocuments get recent documents for an app (by bundle ID).
+func (p *Plugin) NativeRecentDocuments(bundleID string) ([]string, error) {
+	req := &NativeRecentDocumentsRequest{
+		BundleID: bundleID,
+	}
+	var result struct {
+		Paths []string `json:"paths"`
+	}
+	err := p.Call(MethodNativeRecentDocuments, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Paths, nil
+}
+
+// NativeReduceMotion check if Reduce Motion is enabled.
+func (p *Plugin) NativeReduceMotion() (*NativeReduceMotionResponse, error) {
+	var result NativeReduceMotionResponse
+	err := p.Call(MethodNativeReduceMotion, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeReduceTransparency check if Reduce Transparency is enabled.
+func (p *Plugin) NativeReduceTransparency() (*NativeReduceTransparencyResponse, error) {
+	var result NativeReduceTransparencyResponse
+	err := p.Call(MethodNativeReduceTransparency, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeRemindersIncomplete get incomplete reminders.
+func (p *Plugin) NativeRemindersIncomplete() ([]ReminderItem, error) {
+	var result struct {
+		Reminders []ReminderItem `json:"reminders"`
+	}
+	err := p.Call(MethodNativeRemindersIncomplete, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Reminders, nil
+}
+
+// NativeRemoteLoginEnabled check if Remote Login (SSH) is enabled.
+func (p *Plugin) NativeRemoteLoginEnabled() (*NativeRemoteLoginEnabledResponse, error) {
+	var result NativeRemoteLoginEnabledResponse
+	err := p.Call(MethodNativeRemoteLoginEnabled, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeRenameFile rename a file or directory (same parent, new name).
+func (p *Plugin) NativeRenameFile(newName string, path string) error {
+	req := &NativeRenameFileRequest{
+		NewName: newName,
+		Path: path,
+	}
+	return p.Call(MethodNativeRenameFile, req, nil)
+}
+
+// NativeRequestScreenCapture request screen capture permission (shows system dialog).
+func (p *Plugin) NativeRequestScreenCapture() (*NativeRequestScreenCaptureResponse, error) {
+	var result NativeRequestScreenCaptureResponse
+	err := p.Call(MethodNativeRequestScreenCapture, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeResourceUsage get CPU and memory usage snapshot.
+func (p *Plugin) NativeResourceUsage() (*NativeResourceUsageResponse, error) {
+	var result NativeResourceUsageResponse
+	err := p.Call(MethodNativeResourceUsage, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeRestartApp quit and relaunch an app by bundle ID.
+func (p *Plugin) NativeRestartApp(bundleID string) error {
+	req := &NativeRestartAppRequest{
+		BundleID: bundleID,
+	}
+	return p.Call(MethodNativeRestartApp, req, nil)
+}
+
 // NativeRevealInFinder reveal file in Finder.
 func (p *Plugin) NativeRevealInFinder(path string) error {
 	req := &NativeRevealInFinderRequest{
 		Path: path,
 	}
 	return p.Call(MethodNativeRevealInFinder, req, nil)
+}
+
+// NativeRosettaInstalled check if Rosetta 2 is installed (Apple Silicon).
+func (p *Plugin) NativeRosettaInstalled() (*NativeRosettaInstalledResponse, error) {
+	var result NativeRosettaInstalledResponse
+	err := p.Call(MethodNativeRosettaInstalled, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
 }
 
 // NativeRunApplescript execute an AppleScript via osascript.
@@ -1434,6 +4238,33 @@ func (p *Plugin) NativeRunApplescript(script string) (*NativeRunApplescriptRespo
 	}
 	var result NativeRunApplescriptResponse
 	err := p.Call(MethodNativeRunApplescript, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeRunJxa run JavaScript for Automation (JXA) code.
+func (p *Plugin) NativeRunJxa(script string) (*NativeRunJxaResponse, error) {
+	req := &NativeRunJxaRequest{
+		Script: script,
+	}
+	var result NativeRunJxaResponse
+	err := p.Call(MethodNativeRunJxa, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeRunShortcut run a Shortcuts.app shortcut by name.
+func (p *Plugin) NativeRunShortcut(input json.RawMessage, name string) (*NativeRunShortcutResponse, error) {
+	req := &NativeRunShortcutRequest{
+		Input: input,
+		Name: name,
+	}
+	var result NativeRunShortcutResponse
+	err := p.Call(MethodNativeRunShortcut, req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1452,9 +4283,89 @@ func (p *Plugin) NativeRunningApps() ([]RunningApp, error) {
 	return result.Apps, nil
 }
 
+// NativeScreenCapturePermission check screen capture permission status (Sonoma 14+).
+func (p *Plugin) NativeScreenCapturePermission() (*NativeScreenCapturePermissionResponse, error) {
+	var result NativeScreenCapturePermissionResponse
+	err := p.Call(MethodNativeScreenCapturePermission, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeScreenCount get number of connected displays.
+func (p *Plugin) NativeScreenCount() (*NativeScreenCountResponse, error) {
+	var result NativeScreenCountResponse
+	err := p.Call(MethodNativeScreenCount, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // NativeScreenLock lock the screen.
 func (p *Plugin) NativeScreenLock() error {
 	return p.Call(MethodNativeScreenLock, nil, nil)
+}
+
+// NativeScreenLocked check if screen is currently locked.
+func (p *Plugin) NativeScreenLocked() (*NativeScreenLockedResponse, error) {
+	var result NativeScreenLockedResponse
+	err := p.Call(MethodNativeScreenLocked, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeScreenResolution get primary display resolution as 'WxH'.
+func (p *Plugin) NativeScreenResolution() (*NativeScreenResolutionResponse, error) {
+	var result NativeScreenResolutionResponse
+	err := p.Call(MethodNativeScreenResolution, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeScreenSaverAskPassword check if password required after screen saver.
+func (p *Plugin) NativeScreenSaverAskPassword() (*NativeScreenSaverAskPasswordResponse, error) {
+	var result NativeScreenSaverAskPasswordResponse
+	err := p.Call(MethodNativeScreenSaverAskPassword, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeScreenSaverDelay get delay before password required after screen saver.
+func (p *Plugin) NativeScreenSaverDelay() error {
+	return p.Call(MethodNativeScreenSaverDelay, nil, nil)
+}
+
+// NativeScreenSaverStart start the screen saver.
+func (p *Plugin) NativeScreenSaverStart() error {
+	return p.Call(MethodNativeScreenSaverStart, nil, nil)
+}
+
+// NativeScreenSaverStatus check if the screen saver is currently active.
+func (p *Plugin) NativeScreenSaverStatus() (*NativeScreenSaverStatusResponse, error) {
+	var result NativeScreenSaverStatusResponse
+	err := p.Call(MethodNativeScreenSaverStatus, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeScreenSharingEnabled check if screen sharing is enabled.
+func (p *Plugin) NativeScreenSharingEnabled() (*NativeScreenSharingEnabledResponse, error) {
+	var result NativeScreenSharingEnabledResponse
+	err := p.Call(MethodNativeScreenSharingEnabled, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
 }
 
 // NativeScreenshot capture a screenshot as base64-encoded PNG.
@@ -1466,6 +4377,91 @@ func (p *Plugin) NativeScreenshot(displayID json.RawMessage, region json.RawMess
 	}
 	var result NativeScreenshotResponse
 	err := p.Call(MethodNativeScreenshot, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeScreenshotFormat get screenshot file format.
+func (p *Plugin) NativeScreenshotFormat() (*NativeScreenshotFormatResponse, error) {
+	var result NativeScreenshotFormatResponse
+	err := p.Call(MethodNativeScreenshotFormat, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeScreenshotIncludeShadow check if screenshots include window shadow.
+func (p *Plugin) NativeScreenshotIncludeShadow() (*NativeScreenshotIncludeShadowResponse, error) {
+	var result NativeScreenshotIncludeShadowResponse
+	err := p.Call(MethodNativeScreenshotIncludeShadow, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeScreenshotLocation get the configured screenshot save location.
+func (p *Plugin) NativeScreenshotLocation() (*NativeScreenshotLocationResponse, error) {
+	var result NativeScreenshotLocationResponse
+	err := p.Call(MethodNativeScreenshotLocation, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeScreenshotShowThumbnail check if screenshot thumbnail is shown.
+func (p *Plugin) NativeScreenshotShowThumbnail() (*NativeScreenshotShowThumbnailResponse, error) {
+	var result NativeScreenshotShowThumbnailResponse
+	err := p.Call(MethodNativeScreenshotShowThumbnail, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeScrollDirection check if natural (inverted) scroll direction is enabled.
+func (p *Plugin) NativeScrollDirection() (*NativeScrollDirectionResponse, error) {
+	var result NativeScrollDirectionResponse
+	err := p.Call(MethodNativeScrollDirection, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeScrollDirectionNatural check if scroll direction is natural.
+func (p *Plugin) NativeScrollDirectionNatural() (*NativeScrollDirectionNaturalResponse, error) {
+	var result NativeScrollDirectionNaturalResponse
+	err := p.Call(MethodNativeScrollDirectionNatural, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeSearchContacts search contacts by name.
+func (p *Plugin) NativeSearchContacts(query string) ([]ContactInfo, error) {
+	req := &NativeSearchContactsRequest{
+		Query: query,
+	}
+	var result struct {
+		Contacts []ContactInfo `json:"contacts"`
+	}
+	err := p.Call(MethodNativeSearchContacts, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Contacts, nil
+}
+
+// NativeSecureInputEnabled check if Secure Input is currently enabled (blocks key events).
+func (p *Plugin) NativeSecureInputEnabled() (*NativeSecureInputEnabledResponse, error) {
+	var result NativeSecureInputEnabledResponse
+	err := p.Call(MethodNativeSecureInputEnabled, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1484,6 +4480,43 @@ func (p *Plugin) NativeSelectedFinderItems() ([]string, error) {
 	return result.Paths, nil
 }
 
+// NativeSelectedText get the currently selected text from the frontmost app.
+func (p *Plugin) NativeSelectedText() (*NativeSelectedTextResponse, error) {
+	var result NativeSelectedTextResponse
+	err := p.Call(MethodNativeSelectedText, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeSerialNumber get the hardware serial number.
+func (p *Plugin) NativeSerialNumber() (*NativeSerialNumberResponse, error) {
+	var result NativeSerialNumberResponse
+	err := p.Call(MethodNativeSerialNumber, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeSetAirportPower turn Wi-Fi (AirPort) on or off.
+func (p *Plugin) NativeSetAirportPower(on bool) error {
+	req := &NativeSetAirportPowerRequest{
+		On: on,
+	}
+	return p.Call(MethodNativeSetAirportPower, req, nil)
+}
+
+// NativeSetAppHidden hide or unhide an app.
+func (p *Plugin) NativeSetAppHidden(bundleID string, hidden bool) error {
+	req := &NativeSetAppHiddenRequest{
+		BundleID: bundleID,
+		Hidden: hidden,
+	}
+	return p.Call(MethodNativeSetAppHidden, req, nil)
+}
+
 // NativeSetAudioDevice set the default audio input or output device.
 func (p *Plugin) NativeSetAudioDevice(deviceType string, uid string) error {
 	req := &NativeSetAudioDeviceRequest{
@@ -1493,6 +4526,47 @@ func (p *Plugin) NativeSetAudioDevice(deviceType string, uid string) error {
 	return p.Call(MethodNativeSetAudioDevice, req, nil)
 }
 
+// NativeSetAudioDeviceVolume set volume for a specific audio device by UID.
+func (p *Plugin) NativeSetAudioDeviceVolume(deviceUID string, volume float64) error {
+	req := &NativeSetAudioDeviceVolumeRequest{
+		DeviceUID: deviceUID,
+		Volume: volume,
+	}
+	return p.Call(MethodNativeSetAudioDeviceVolume, req, nil)
+}
+
+// NativeSetAudioInputDevice set active audio input device by name.
+func (p *Plugin) NativeSetAudioInputDevice(name string) error {
+	req := &NativeSetAudioInputDeviceRequest{
+		Name: name,
+	}
+	return p.Call(MethodNativeSetAudioInputDevice, req, nil)
+}
+
+// NativeSetAudioOutputDevice set active audio output device by name.
+func (p *Plugin) NativeSetAudioOutputDevice(name string) error {
+	req := &NativeSetAudioOutputDeviceRequest{
+		Name: name,
+	}
+	return p.Call(MethodNativeSetAudioOutputDevice, req, nil)
+}
+
+// NativeSetAutoRearrangeSpaces enable or disable auto-rearrange Spaces.
+func (p *Plugin) NativeSetAutoRearrangeSpaces(enabled bool) error {
+	req := &NativeSetAutoRearrangeSpacesRequest{
+		Enabled: enabled,
+	}
+	return p.Call(MethodNativeSetAutoRearrangeSpaces, req, nil)
+}
+
+// NativeSetBluetoothPower turn Bluetooth on or off.
+func (p *Plugin) NativeSetBluetoothPower(on bool) error {
+	req := &NativeSetBluetoothPowerRequest{
+		On: on,
+	}
+	return p.Call(MethodNativeSetBluetoothPower, req, nil)
+}
+
 // NativeSetBrightness set display brightness (0.0-1.0).
 func (p *Plugin) NativeSetBrightness(brightness float64, displayID json.RawMessage) error {
 	req := &NativeSetBrightnessRequest{
@@ -1500,6 +4574,14 @@ func (p *Plugin) NativeSetBrightness(brightness float64, displayID json.RawMessa
 		DisplayID: displayID,
 	}
 	return p.Call(MethodNativeSetBrightness, req, nil)
+}
+
+// NativeSetComputerName set the computer name.
+func (p *Plugin) NativeSetComputerName(name string) error {
+	req := &NativeSetComputerNameRequest{
+		Name: name,
+	}
+	return p.Call(MethodNativeSetComputerName, req, nil)
 }
 
 // NativeSetDarkMode set dark or light mode.
@@ -1518,12 +4600,250 @@ func (p *Plugin) NativeSetDnd(enabled bool) error {
 	return p.Call(MethodNativeSetDnd, req, nil)
 }
 
+// NativeSetDockAutoHide enable or disable Dock auto-hide.
+func (p *Plugin) NativeSetDockAutoHide(enabled bool) error {
+	req := &NativeSetDockAutoHideRequest{
+		Enabled: enabled,
+	}
+	return p.Call(MethodNativeSetDockAutoHide, req, nil)
+}
+
+// NativeSetDockMagnification enable or disable Dock magnification.
+func (p *Plugin) NativeSetDockMagnification(enabled bool) error {
+	req := &NativeSetDockMagnificationRequest{
+		Enabled: enabled,
+	}
+	return p.Call(MethodNativeSetDockMagnification, req, nil)
+}
+
+// NativeSetDockMinimizeEffect set Dock minimize animation (genie/scale).
+func (p *Plugin) NativeSetDockMinimizeEffect(effect string) error {
+	req := &NativeSetDockMinimizeEffectRequest{
+		Effect: effect,
+	}
+	return p.Call(MethodNativeSetDockMinimizeEffect, req, nil)
+}
+
+// NativeSetDockPosition set the Dock position (left, bottom, right).
+func (p *Plugin) NativeSetDockPosition(position string) error {
+	req := &NativeSetDockPositionRequest{
+		Position: position,
+	}
+	return p.Call(MethodNativeSetDockPosition, req, nil)
+}
+
+// NativeSetDockShowRecents show or hide recent apps in Dock.
+func (p *Plugin) NativeSetDockShowRecents(enabled bool) error {
+	req := &NativeSetDockShowRecentsRequest{
+		Enabled: enabled,
+	}
+	return p.Call(MethodNativeSetDockShowRecents, req, nil)
+}
+
+// NativeSetDockSize set Dock tile size.
+func (p *Plugin) NativeSetDockSize(size float64) error {
+	req := &NativeSetDockSizeRequest{
+		Size: size,
+	}
+	return p.Call(MethodNativeSetDockSize, req, nil)
+}
+
+// NativeSetExtendedAttribute set an extended attribute on a file.
+func (p *Plugin) NativeSetExtendedAttribute(name string, path string, value string) error {
+	req := &NativeSetExtendedAttributeRequest{
+		Name: name,
+		Path: path,
+		Value: value,
+	}
+	return p.Call(MethodNativeSetExtendedAttribute, req, nil)
+}
+
+// NativeSetFileHidden set file hidden flag.
+func (p *Plugin) NativeSetFileHidden(hidden bool, path string) error {
+	req := &NativeSetFileHiddenRequest{
+		Hidden: hidden,
+		Path: path,
+	}
+	return p.Call(MethodNativeSetFileHidden, req, nil)
+}
+
+// NativeSetFilePermissions set file permissions (chmod octal mode).
+func (p *Plugin) NativeSetFilePermissions(mode string, path string) error {
+	req := &NativeSetFilePermissionsRequest{
+		Mode: mode,
+		Path: path,
+	}
+	return p.Call(MethodNativeSetFilePermissions, req, nil)
+}
+
+// NativeSetFinderShowExtensions show or hide file extensions in Finder.
+func (p *Plugin) NativeSetFinderShowExtensions(enabled bool) error {
+	req := &NativeSetFinderShowExtensionsRequest{
+		Enabled: enabled,
+	}
+	return p.Call(MethodNativeSetFinderShowExtensions, req, nil)
+}
+
+// NativeSetFinderShowHidden show or hide hidden files in Finder.
+func (p *Plugin) NativeSetFinderShowHidden(enabled bool) error {
+	req := &NativeSetFinderShowHiddenRequest{
+		Enabled: enabled,
+	}
+	return p.Call(MethodNativeSetFinderShowHidden, req, nil)
+}
+
+// NativeSetHighlightColor set system highlight/accent color.
+func (p *Plugin) NativeSetHighlightColor(color string) error {
+	req := &NativeSetHighlightColorRequest{
+		Color: color,
+	}
+	return p.Call(MethodNativeSetHighlightColor, req, nil)
+}
+
+// NativeSetHotCorner set a hot corner action.
+func (p *Plugin) NativeSetHotCorner(action int, corner string) error {
+	req := &NativeSetHotCornerRequest{
+		Action: action,
+		Corner: corner,
+	}
+	return p.Call(MethodNativeSetHotCorner, req, nil)
+}
+
+// NativeSetInputSource switch to a keyboard input source by ID.
+func (p *Plugin) NativeSetInputSource(sourceID string) error {
+	req := &NativeSetInputSourceRequest{
+		SourceID: sourceID,
+	}
+	return p.Call(MethodNativeSetInputSource, req, nil)
+}
+
+// NativeSetKeyRepeatDelay set initial key repeat delay.
+func (p *Plugin) NativeSetKeyRepeatDelay(delay float64) error {
+	req := &NativeSetKeyRepeatDelayRequest{
+		Delay: delay,
+	}
+	return p.Call(MethodNativeSetKeyRepeatDelay, req, nil)
+}
+
+// NativeSetKeyRepeatRate set key repeat rate.
+func (p *Plugin) NativeSetKeyRepeatRate(rate float64) error {
+	req := &NativeSetKeyRepeatRateRequest{
+		Rate: rate,
+	}
+	return p.Call(MethodNativeSetKeyRepeatRate, req, nil)
+}
+
+// NativeSetMenuBarAutoHide enable or disable menu bar auto-hide.
+func (p *Plugin) NativeSetMenuBarAutoHide(enabled bool) error {
+	req := &NativeSetMenuBarAutoHideRequest{
+		Enabled: enabled,
+	}
+	return p.Call(MethodNativeSetMenuBarAutoHide, req, nil)
+}
+
+// NativeSetMouseSpeed set mouse tracking speed.
+func (p *Plugin) NativeSetMouseSpeed(speed float64) error {
+	req := &NativeSetMouseSpeedRequest{
+		Speed: speed,
+	}
+	return p.Call(MethodNativeSetMouseSpeed, req, nil)
+}
+
+// NativeSetNightShift enable or disable Night Shift.
+func (p *Plugin) NativeSetNightShift(enabled bool) error {
+	req := &NativeSetNightShiftRequest{
+		Enabled: enabled,
+	}
+	return p.Call(MethodNativeSetNightShift, req, nil)
+}
+
+// NativeSetScreenshotFormat set screenshot file format (png/jpg/pdf/tiff).
+func (p *Plugin) NativeSetScreenshotFormat(format string) error {
+	req := &NativeSetScreenshotFormatRequest{
+		Format: format,
+	}
+	return p.Call(MethodNativeSetScreenshotFormat, req, nil)
+}
+
+// NativeSetScreenshotIncludeShadow enable or disable window shadow in screenshots.
+func (p *Plugin) NativeSetScreenshotIncludeShadow(enabled bool) error {
+	req := &NativeSetScreenshotIncludeShadowRequest{
+		Enabled: enabled,
+	}
+	return p.Call(MethodNativeSetScreenshotIncludeShadow, req, nil)
+}
+
+// NativeSetScreenshotLocation set the screenshot save location.
+func (p *Plugin) NativeSetScreenshotLocation(path string) error {
+	req := &NativeSetScreenshotLocationRequest{
+		Path: path,
+	}
+	return p.Call(MethodNativeSetScreenshotLocation, req, nil)
+}
+
+// NativeSetScrollDirectionNatural set natural scroll direction.
+func (p *Plugin) NativeSetScrollDirectionNatural(enabled bool) error {
+	req := &NativeSetScrollDirectionNaturalRequest{
+		Enabled: enabled,
+	}
+	return p.Call(MethodNativeSetScrollDirectionNatural, req, nil)
+}
+
+// NativeSetSidebarIconSize set sidebar icon size (1=small,2=medium,3=large).
+func (p *Plugin) NativeSetSidebarIconSize(size int) error {
+	req := &NativeSetSidebarIconSizeRequest{
+		Size: size,
+	}
+	return p.Call(MethodNativeSetSidebarIconSize, req, nil)
+}
+
+// NativeSetStageManager enable or disable Stage Manager.
+func (p *Plugin) NativeSetStageManager(enabled bool) error {
+	req := &NativeSetStageManagerRequest{
+		Enabled: enabled,
+	}
+	return p.Call(MethodNativeSetStageManager, req, nil)
+}
+
+// NativeSetTapToClick enable or disable tap-to-click.
+func (p *Plugin) NativeSetTapToClick(enabled bool) error {
+	req := &NativeSetTapToClickRequest{
+		Enabled: enabled,
+	}
+	return p.Call(MethodNativeSetTapToClick, req, nil)
+}
+
+// NativeSetTrackpadSpeed set trackpad tracking speed.
+func (p *Plugin) NativeSetTrackpadSpeed(speed float64) error {
+	req := &NativeSetTrackpadSpeedRequest{
+		Speed: speed,
+	}
+	return p.Call(MethodNativeSetTrackpadSpeed, req, nil)
+}
+
+// NativeSetURLSchemeHandler register an application as the handler for a URL scheme.
+func (p *Plugin) NativeSetURLSchemeHandler(bundleID string, scheme string) error {
+	req := &NativeSetURLSchemeHandlerRequest{
+		BundleID: bundleID,
+		Scheme: scheme,
+	}
+	return p.Call(MethodNativeSetUrlSchemeHandler, req, nil)
+}
+
 // NativeSetVolume set system volume (0.0–1.0).
 func (p *Plugin) NativeSetVolume(volume float64) error {
 	req := &NativeSetVolumeRequest{
 		Volume: volume,
 	}
 	return p.Call(MethodNativeSetVolume, req, nil)
+}
+
+// NativeSetWallpaper set the desktop wallpaper to an image file.
+func (p *Plugin) NativeSetWallpaper(path string) error {
+	req := &NativeSetWallpaperRequest{
+		Path: path,
+	}
+	return p.Call(MethodNativeSetWallpaper, req, nil)
 }
 
 // NativeSetWindowAlpha set window transparency.
@@ -1548,6 +4868,149 @@ func (p *Plugin) NativeSetWindowLevel(level string, windowID string) (bool, erro
 	return result.Result, err
 }
 
+// NativeSetWindowPosition move a window to x,y without changing size.
+func (p *Plugin) NativeSetWindowPosition(windowID string, x int, y int) error {
+	req := &NativeSetWindowPositionRequest{
+		WindowID: windowID,
+		X: x,
+		Y: y,
+	}
+	return p.Call(MethodNativeSetWindowPosition, req, nil)
+}
+
+// NativeSetWindowShadow enable or disable the drop shadow for a window.
+func (p *Plugin) NativeSetWindowShadow(enabled bool, windowID string) error {
+	req := &NativeSetWindowShadowRequest{
+		Enabled: enabled,
+		WindowID: windowID,
+	}
+	return p.Call(MethodNativeSetWindowShadow, req, nil)
+}
+
+// NativeSetWindowSize resize a window without changing position.
+func (p *Plugin) NativeSetWindowSize(h int, w int, windowID string) error {
+	req := &NativeSetWindowSizeRequest{
+		H: h,
+		W: w,
+		WindowID: windowID,
+	}
+	return p.Call(MethodNativeSetWindowSize, req, nil)
+}
+
+// NativeSetWindowSticky set a window to appear on all spaces (sticky).
+func (p *Plugin) NativeSetWindowSticky(sticky bool, windowID string) error {
+	req := &NativeSetWindowStickyRequest{
+		Sticky: sticky,
+		WindowID: windowID,
+	}
+	return p.Call(MethodNativeSetWindowSticky, req, nil)
+}
+
+// NativeSharingName get the local network sharing name.
+func (p *Plugin) NativeSharingName() (*NativeSharingNameResponse, error) {
+	var result NativeSharingNameResponse
+	err := p.Call(MethodNativeSharingName, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeShowScrollBars get scroll bar visibility setting.
+func (p *Plugin) NativeShowScrollBars() (*NativeShowScrollBarsResponse, error) {
+	var result NativeShowScrollBarsResponse
+	err := p.Call(MethodNativeShowScrollBars, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeSidebarIconSize get sidebar icon size (small/medium/large).
+func (p *Plugin) NativeSidebarIconSize() (*NativeSidebarIconSizeResponse, error) {
+	var result NativeSidebarIconSizeResponse
+	err := p.Call(MethodNativeSidebarIconSize, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeSipStatus check if System Integrity Protection is enabled.
+func (p *Plugin) NativeSipStatus() (*NativeSipStatusResponse, error) {
+	var result NativeSipStatusResponse
+	err := p.Call(MethodNativeSipStatus, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeSiriEnabled check if Siri is enabled.
+func (p *Plugin) NativeSiriEnabled() (*NativeSiriEnabledResponse, error) {
+	var result NativeSiriEnabledResponse
+	err := p.Call(MethodNativeSiriEnabled, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeSleepNow put the system to sleep immediately.
+func (p *Plugin) NativeSleepNow() error {
+	return p.Call(MethodNativeSleepNow, nil, nil)
+}
+
+// NativeSlowKeys check if Slow Keys is enabled.
+func (p *Plugin) NativeSlowKeys() (*NativeSlowKeysResponse, error) {
+	var result NativeSlowKeysResponse
+	err := p.Call(MethodNativeSlowKeys, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeSmartQuotesEnabled check if smart quotes are enabled.
+func (p *Plugin) NativeSmartQuotesEnabled() (*NativeSmartQuotesEnabledResponse, error) {
+	var result NativeSmartQuotesEnabledResponse
+	err := p.Call(MethodNativeSmartQuotesEnabled, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeSmartZoom check if smart zoom (double-tap) is enabled.
+func (p *Plugin) NativeSmartZoom() (*NativeSmartZoomResponse, error) {
+	var result NativeSmartZoomResponse
+	err := p.Call(MethodNativeSmartZoom, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeSoundEffectsEnabled check if UI sound effects are enabled.
+func (p *Plugin) NativeSoundEffectsEnabled() (*NativeSoundEffectsEnabledResponse, error) {
+	var result NativeSoundEffectsEnabledResponse
+	err := p.Call(MethodNativeSoundEffectsEnabled, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeSpacesSpanDisplays check if Spaces span displays independently.
+func (p *Plugin) NativeSpacesSpanDisplays() (*NativeSpacesSpanDisplaysResponse, error) {
+	var result NativeSpacesSpanDisplaysResponse
+	err := p.Call(MethodNativeSpacesSpanDisplays, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // NativeSpeak speak text using the system text-to-speech engine.
 func (p *Plugin) NativeSpeak(rate json.RawMessage, text string, voice json.RawMessage) error {
 	req := &NativeSpeakRequest{
@@ -1556,6 +5019,47 @@ func (p *Plugin) NativeSpeak(rate json.RawMessage, text string, voice json.RawMe
 		Voice: voice,
 	}
 	return p.Call(MethodNativeSpeak, req, nil)
+}
+
+// NativeSpeechLocales list available speech recognition locales.
+func (p *Plugin) NativeSpeechLocales() ([]SpeechLocale, error) {
+	var result struct {
+		Locales []SpeechLocale `json:"locales"`
+	}
+	err := p.Call(MethodNativeSpeechLocales, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Locales, nil
+}
+
+// NativeSpeechRecognitionAvailable check if on-device speech recognition is available.
+func (p *Plugin) NativeSpeechRecognitionAvailable() (*NativeSpeechRecognitionAvailableResponse, error) {
+	var result NativeSpeechRecognitionAvailableResponse
+	err := p.Call(MethodNativeSpeechRecognitionAvailable, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeSpeechRecognizeFile recognize speech from an audio file (returns transcript).
+func (p *Plugin) NativeSpeechRecognizeFile(locale *string, path string) error {
+	req := &NativeSpeechRecognizeFileRequest{
+		Locale: locale,
+		Path: path,
+	}
+	return p.Call(MethodNativeSpeechRecognizeFile, req, nil)
+}
+
+// NativeSpellingLanguage get current spelling language.
+func (p *Plugin) NativeSpellingLanguage() (*NativeSpellingLanguageResponse, error) {
+	var result NativeSpellingLanguageResponse
+	err := p.Call(MethodNativeSpellingLanguage, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
 }
 
 // NativeSpotlight search files via Spotlight.
@@ -1575,6 +5079,145 @@ func (p *Plugin) NativeSpotlight(limit *int, query string, scope json.RawMessage
 	return result.Results, nil
 }
 
+// NativeStageManagerEnabled check if Stage Manager is enabled.
+func (p *Plugin) NativeStageManagerEnabled() (*NativeStageManagerEnabledResponse, error) {
+	var result NativeStageManagerEnabledResponse
+	err := p.Call(MethodNativeStageManagerEnabled, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeStartupDisk get the boot volume name and path.
+func (p *Plugin) NativeStartupDisk() (*NativeStartupDiskResponse, error) {
+	var result NativeStartupDiskResponse
+	err := p.Call(MethodNativeStartupDisk, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeStartupSoundEnabled check if startup sound is enabled.
+func (p *Plugin) NativeStartupSoundEnabled() (*NativeStartupSoundEnabledResponse, error) {
+	var result NativeStartupSoundEnabledResponse
+	err := p.Call(MethodNativeStartupSoundEnabled, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeStickyKeys check if Sticky Keys is enabled.
+func (p *Plugin) NativeStickyKeys() (*NativeStickyKeysResponse, error) {
+	var result NativeStickyKeysResponse
+	err := p.Call(MethodNativeStickyKeys, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeSwipeBetweenPages check if swipe between pages gesture is enabled.
+func (p *Plugin) NativeSwipeBetweenPages() (*NativeSwipeBetweenPagesResponse, error) {
+	var result NativeSwipeBetweenPagesResponse
+	err := p.Call(MethodNativeSwipeBetweenPages, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeSwitchSpace switch to a specific Mission Control space by ID.
+func (p *Plugin) NativeSwitchSpace(spaceID int) error {
+	req := &NativeSwitchSpaceRequest{
+		SpaceID: spaceID,
+	}
+	return p.Call(MethodNativeSwitchSpace, req, nil)
+}
+
+// NativeSwitchSpaceWhenSwitchingApp check if switching to app switches to its Space.
+func (p *Plugin) NativeSwitchSpaceWhenSwitchingApp() (*NativeSwitchSpaceWhenSwitchingAppResponse, error) {
+	var result NativeSwitchSpaceWhenSwitchingAppResponse
+	err := p.Call(MethodNativeSwitchSpaceWhenSwitchingApp, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeSymlink create a symbolic link.
+func (p *Plugin) NativeSymlink(link string, source string) error {
+	req := &NativeSymlinkRequest{
+		Link: link,
+		Source: source,
+	}
+	return p.Call(MethodNativeSymlink, req, nil)
+}
+
+// NativeSystemAppearance get system appearance info (accent color, highlight color, reduce motion, reduce transparency).
+func (p *Plugin) NativeSystemAppearance() (*NativeSystemAppearanceResponse, error) {
+	var result NativeSystemAppearanceResponse
+	err := p.Call(MethodNativeSystemAppearance, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeSystemInfo get system identity (macOS version, model, serial).
+func (p *Plugin) NativeSystemInfo() (*NativeSystemInfoResponse, error) {
+	var result NativeSystemInfoResponse
+	err := p.Call(MethodNativeSystemInfo, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeSystemIntegrityInfo get SIP and security policy details.
+func (p *Plugin) NativeSystemIntegrityInfo() (*NativeSystemIntegrityInfoResponse, error) {
+	var result NativeSystemIntegrityInfoResponse
+	err := p.Call(MethodNativeSystemIntegrityInfo, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeSystemLanguage get the system language code (e.g. en).
+func (p *Plugin) NativeSystemLanguage() (*NativeSystemLanguageResponse, error) {
+	var result NativeSystemLanguageResponse
+	err := p.Call(MethodNativeSystemLanguage, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeSystemRegion get the system region code (e.g. US).
+func (p *Plugin) NativeSystemRegion() (*NativeSystemRegionResponse, error) {
+	var result NativeSystemRegionResponse
+	err := p.Call(MethodNativeSystemRegion, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeSystemSounds list available system alert sounds.
+func (p *Plugin) NativeSystemSounds() ([]string, error) {
+	var result struct {
+		Sounds []string `json:"sounds"`
+	}
+	err := p.Call(MethodNativeSystemSounds, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Sounds, nil
+}
+
 // NativeSystemUptime get system uptime.
 func (p *Plugin) NativeSystemUptime() (*NativeSystemUptimeResponse, error) {
 	var result NativeSystemUptimeResponse
@@ -1585,12 +5228,176 @@ func (p *Plugin) NativeSystemUptime() (*NativeSystemUptimeResponse, error) {
 	return &result, nil
 }
 
+// NativeSystemUptimeSeconds get system uptime in seconds.
+func (p *Plugin) NativeSystemUptimeSeconds() (*NativeSystemUptimeSecondsResponse, error) {
+	var result NativeSystemUptimeSecondsResponse
+	err := p.Call(MethodNativeSystemUptimeSeconds, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeTapToClick check if tap-to-click is enabled on trackpad.
+func (p *Plugin) NativeTapToClick() (*NativeTapToClickResponse, error) {
+	var result NativeTapToClickResponse
+	err := p.Call(MethodNativeTapToClick, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeTempDirectory get the system temporary directory path.
+func (p *Plugin) NativeTempDirectory() (*NativeTempDirectoryResponse, error) {
+	var result NativeTempDirectoryResponse
+	err := p.Call(MethodNativeTempDirectory, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeTemperatureUnit get temperature unit preference.
+func (p *Plugin) NativeTemperatureUnit() (*NativeTemperatureUnitResponse, error) {
+	var result NativeTemperatureUnitResponse
+	err := p.Call(MethodNativeTemperatureUnit, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeTextReplacements get user text replacements as JSON.
+func (p *Plugin) NativeTextReplacements() (*NativeTextReplacementsResponse, error) {
+	var result NativeTextReplacementsResponse
+	err := p.Call(MethodNativeTextReplacements, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeThermalState get system thermal state (nominal/fair/serious/critical).
+func (p *Plugin) NativeThermalState() (*NativeThermalStateResponse, error) {
+	var result NativeThermalStateResponse
+	err := p.Call(MethodNativeThermalState, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeThreeFingerDrag check if three-finger drag is enabled.
+func (p *Plugin) NativeThreeFingerDrag() (*NativeThreeFingerDragResponse, error) {
+	var result NativeThreeFingerDragResponse
+	err := p.Call(MethodNativeThreeFingerDrag, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeThunderboltDevices list connected Thunderbolt devices.
+func (p *Plugin) NativeThunderboltDevices() (*NativeThunderboltDevicesResponse, error) {
+	var result NativeThunderboltDevicesResponse
+	err := p.Call(MethodNativeThunderboltDevices, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeTimeFormat get user time format string.
+func (p *Plugin) NativeTimeFormat() (*NativeTimeFormatResponse, error) {
+	var result NativeTimeFormatResponse
+	err := p.Call(MethodNativeTimeFormat, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeTimeMachineLastBackup get the last Time Machine backup date.
+func (p *Plugin) NativeTimeMachineLastBackup() (*NativeTimeMachineLastBackupResponse, error) {
+	var result NativeTimeMachineLastBackupResponse
+	err := p.Call(MethodNativeTimeMachineLastBackup, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeTimeMachineStatus check if Time Machine is enabled and get destination.
+func (p *Plugin) NativeTimeMachineStatus() (*NativeTimeMachineStatusResponse, error) {
+	var result NativeTimeMachineStatusResponse
+	err := p.Call(MethodNativeTimeMachineStatus, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeTimeOnBattery get time on battery in minutes since last unplug.
+func (p *Plugin) NativeTimeOnBattery() error {
+	return p.Call(MethodNativeTimeOnBattery, nil, nil)
+}
+
+// NativeTimezone get current system timezone identifier.
+func (p *Plugin) NativeTimezone() (*NativeTimezoneResponse, error) {
+	var result NativeTimezoneResponse
+	err := p.Call(MethodNativeTimezone, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeToggleBluetooth toggle Bluetooth on/off.
+func (p *Plugin) NativeToggleBluetooth(enabled bool) error {
+	req := &NativeToggleBluetoothRequest{
+		Enabled: enabled,
+	}
+	return p.Call(MethodNativeToggleBluetooth, req, nil)
+}
+
 // NativeToggleFullscreen toggle native fullscreen for a window.
 func (p *Plugin) NativeToggleFullscreen(windowID string) error {
 	req := &NativeToggleFullscreenRequest{
 		WindowID: windowID,
 	}
 	return p.Call(MethodNativeToggleFullscreen, req, nil)
+}
+
+// NativeToggleWifi toggle Wi-Fi on/off.
+func (p *Plugin) NativeToggleWifi(enabled bool) error {
+	req := &NativeToggleWifiRequest{
+		Enabled: enabled,
+	}
+	return p.Call(MethodNativeToggleWifi, req, nil)
+}
+
+// NativeTouchIDAvailable check if Touch ID / biometric auth hardware is available.
+func (p *Plugin) NativeTouchIDAvailable() (*NativeTouchIDAvailableResponse, error) {
+	var result NativeTouchIDAvailableResponse
+	err := p.Call(MethodNativeTouchIdAvailable, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeTrackpadSpeed get the trackpad tracking speed (0.0-3.0).
+func (p *Plugin) NativeTrackpadSpeed() error {
+	return p.Call(MethodNativeTrackpadSpeed, nil, nil)
+}
+
+// NativeTransparencyConsent check TCC consent status for a service (e.g. kTCCServiceAccessibility).
+func (p *Plugin) NativeTransparencyConsent(service string) error {
+	req := &NativeTransparencyConsentRequest{
+		Service: service,
+	}
+	return p.Call(MethodNativeTransparencyConsent, req, nil)
 }
 
 // NativeTrash move file to Trash.
@@ -1603,6 +5410,38 @@ func (p *Plugin) NativeTrash(path string) (bool, error) {
 	}
 	err := p.Call(MethodNativeTrash, req, &result)
 	return result.Result, err
+}
+
+// NativeTrueTone check if True Tone is enabled.
+func (p *Plugin) NativeTrueTone() (*NativeTrueToneResponse, error) {
+	var result NativeTrueToneResponse
+	err := p.Call(MethodNativeTrueTone, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeTtsVoices list available text-to-speech voices.
+func (p *Plugin) NativeTtsVoices() ([]TtsVoice, error) {
+	var result struct {
+		Voices []TtsVoice `json:"voices"`
+	}
+	err := p.Call(MethodNativeTtsVoices, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Voices, nil
+}
+
+// NativeTwentyFourHourClock check if 24-hour clock is enabled.
+func (p *Plugin) NativeTwentyFourHourClock() (*NativeTwentyFourHourClockResponse, error) {
+	var result NativeTwentyFourHourClockResponse
+	err := p.Call(MethodNativeTwentyFourHourClock, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
 }
 
 // NativeUnhideApp unhide a hidden application.
@@ -1633,10 +5472,94 @@ func (p *Plugin) NativeUnobserveWindows(subscriptionID string) (bool, error) {
 	return result.Result, err
 }
 
+// NativeUnzip extract a zip archive to a directory.
+func (p *Plugin) NativeUnzip(destination string, source string) error {
+	req := &NativeUnzipRequest{
+		Destination: destination,
+		Source: source,
+	}
+	return p.Call(MethodNativeUnzip, req, nil)
+}
+
+// NativeURLSchemeHandler get the bundle ID registered as the handler for a URL scheme.
+func (p *Plugin) NativeURLSchemeHandler(scheme string) (*NativeURLSchemeHandlerResponse, error) {
+	req := &NativeURLSchemeHandlerRequest{
+		Scheme: scheme,
+	}
+	var result NativeURLSchemeHandlerResponse
+	err := p.Call(MethodNativeUrlSchemeHandler, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeUsbDevices list connected USB devices.
+func (p *Plugin) NativeUsbDevices() ([]UsbDevice, error) {
+	var result struct {
+		Devices []UsbDevice `json:"devices"`
+	}
+	err := p.Call(MethodNativeUsbDevices, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Devices, nil
+}
+
+// NativeUserAvatar get the current user account avatar as base64 PNG.
+func (p *Plugin) NativeUserAvatar() (*NativeUserAvatarResponse, error) {
+	var result NativeUserAvatarResponse
+	err := p.Call(MethodNativeUserAvatar, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeUserName get the current user's display name.
+func (p *Plugin) NativeUserName() (*NativeUserNameResponse, error) {
+	var result NativeUserNameResponse
+	err := p.Call(MethodNativeUserName, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeUserShell get the current user's login shell path.
+func (p *Plugin) NativeUserShell() (*NativeUserShellResponse, error) {
+	var result NativeUserShellResponse
+	err := p.Call(MethodNativeUserShell, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeVoiceoverEnabled check if VoiceOver is enabled.
+func (p *Plugin) NativeVoiceoverEnabled() (*NativeVoiceoverEnabledResponse, error) {
+	var result NativeVoiceoverEnabledResponse
+	err := p.Call(MethodNativeVoiceoverEnabled, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // NativeVolume get system volume and mute state.
 func (p *Plugin) NativeVolume() (*NativeVolumeResponse, error) {
 	var result NativeVolumeResponse
 	err := p.Call(MethodNativeVolume, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeVpnStatus check if a VPN connection is active.
+func (p *Plugin) NativeVpnStatus() (*NativeVpnStatusResponse, error) {
+	var result NativeVpnStatusResponse
+	err := p.Call(MethodNativeVpnStatus, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1662,6 +5585,120 @@ func (p *Plugin) NativeWifi() (*NativeWifiResponse, error) {
 	return &result, nil
 }
 
+// NativeWifiNetworks scan for nearby Wi-Fi networks.
+func (p *Plugin) NativeWifiNetworks() ([]string, error) {
+	var result struct {
+		Networks []string `json:"networks"`
+	}
+	err := p.Call(MethodNativeWifiNetworks, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Networks, nil
+}
+
+// NativeWindowApp get the owning app bundle ID for a window.
+func (p *Plugin) NativeWindowApp(windowID string) error {
+	req := &NativeWindowAppRequest{
+		WindowID: windowID,
+	}
+	return p.Call(MethodNativeWindowApp, req, nil)
+}
+
+// NativeWindowBounds get a window position and size by ID.
+func (p *Plugin) NativeWindowBounds(windowID string) (*NativeWindowBoundsResponse, error) {
+	req := &NativeWindowBoundsRequest{
+		WindowID: windowID,
+	}
+	var result NativeWindowBoundsResponse
+	err := p.Call(MethodNativeWindowBounds, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeWindowDisplayID get display ID for window.
+func (p *Plugin) NativeWindowDisplayID(windowID string) error {
+	req := &NativeWindowDisplayIDRequest{
+		WindowID: windowID,
+	}
+	return p.Call(MethodNativeWindowDisplayId, req, nil)
+}
+
+// NativeWindowIsFullscreen check if window is fullscreen.
+func (p *Plugin) NativeWindowIsFullscreen(windowID string) (*NativeWindowIsFullscreenResponse, error) {
+	req := &NativeWindowIsFullscreenRequest{
+		WindowID: windowID,
+	}
+	var result NativeWindowIsFullscreenResponse
+	err := p.Call(MethodNativeWindowIsFullscreen, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeWindowIsMinimized check if window is minimized.
+func (p *Plugin) NativeWindowIsMinimized(windowID string) (*NativeWindowIsMinimizedResponse, error) {
+	req := &NativeWindowIsMinimizedRequest{
+		WindowID: windowID,
+	}
+	var result NativeWindowIsMinimizedResponse
+	err := p.Call(MethodNativeWindowIsMinimized, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeWindowLayer get window layer level.
+func (p *Plugin) NativeWindowLayer(windowID string) error {
+	req := &NativeWindowLayerRequest{
+		WindowID: windowID,
+	}
+	return p.Call(MethodNativeWindowLayer, req, nil)
+}
+
+// NativeWindowScreenshot take a screenshot of a specific window as base64 PNG.
+func (p *Plugin) NativeWindowScreenshot(windowID int) error {
+	req := &NativeWindowScreenshotRequest{
+		WindowID: windowID,
+	}
+	return p.Call(MethodNativeWindowScreenshot, req, nil)
+}
+
+// NativeWindowSubrole get window subrole.
+func (p *Plugin) NativeWindowSubrole(windowID string) error {
+	req := &NativeWindowSubroleRequest{
+		WindowID: windowID,
+	}
+	return p.Call(MethodNativeWindowSubrole, req, nil)
+}
+
+// NativeWindowTitle get a window title by ID.
+func (p *Plugin) NativeWindowTitle(windowID string) error {
+	req := &NativeWindowTitleRequest{
+		WindowID: windowID,
+	}
+	return p.Call(MethodNativeWindowTitle, req, nil)
+}
+
+// NativeWindowsOnSpace list window IDs on a specific space.
+func (p *Plugin) NativeWindowsOnSpace(spaceID int) ([]string, error) {
+	req := &NativeWindowsOnSpaceRequest{
+		SpaceID: spaceID,
+	}
+	var result struct {
+		WindowIds []string `json:"window_ids"`
+	}
+	err := p.Call(MethodNativeWindowsOnSpace, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.WindowIds, nil
+}
+
 // NativeWorldModel get a snapshot of all windows and displays (with managed HUD windows).
 func (p *Plugin) NativeWorldModel(onScreen *bool) (*WorldModel, error) {
 	req := &NativeWorldModelRequest{
@@ -1669,6 +5706,113 @@ func (p *Plugin) NativeWorldModel(onScreen *bool) (*WorldModel, error) {
 	}
 	var result WorldModel
 	err := p.Call(MethodNativeWorldModel, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeWriteAppPreference write a preference value for an app domain.
+func (p *Plugin) NativeWriteAppPreference(domain string, key string, value json.RawMessage) error {
+	req := &NativeWriteAppPreferenceRequest{
+		Domain: domain,
+		Key: key,
+		Value: value,
+	}
+	return p.Call(MethodNativeWriteAppPreference, req, nil)
+}
+
+// NativeWriteFile write string contents to a file.
+func (p *Plugin) NativeWriteFile(contents string, path string) error {
+	req := &NativeWriteFileRequest{
+		Contents: contents,
+		Path: path,
+	}
+	return p.Call(MethodNativeWriteFile, req, nil)
+}
+
+// NativeXcodePath get the active Xcode developer directory path.
+func (p *Plugin) NativeXcodePath() (*NativeXcodePathResponse, error) {
+	var result NativeXcodePathResponse
+	err := p.Call(MethodNativeXcodePath, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeXcodeVersion get the installed Xcode version.
+func (p *Plugin) NativeXcodeVersion() (*NativeXcodeVersionResponse, error) {
+	var result NativeXcodeVersionResponse
+	err := p.Call(MethodNativeXcodeVersion, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeZip create a zip archive from files or a directory.
+func (p *Plugin) NativeZip(destination string, source string) error {
+	req := &NativeZipRequest{
+		Destination: destination,
+		Source: source,
+	}
+	return p.Call(MethodNativeZip, req, nil)
+}
+
+// NativeZoomEnabled check if Zoom accessibility is enabled.
+func (p *Plugin) NativeZoomEnabled() (*NativeZoomEnabledResponse, error) {
+	var result NativeZoomEnabledResponse
+	err := p.Call(MethodNativeZoomEnabled, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// PipelinesGrammar get the current command grammar word list for speech recognition.
+func (p *Plugin) PipelinesGrammar() ([]string, error) {
+	var result struct {
+		Words []string `json:"words"`
+	}
+	err := p.Call(MethodPipelinesGrammar, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Words, nil
+}
+
+// PipelinesRun start a named pipeline.
+func (p *Plugin) PipelinesRun(ephemeral *bool, name string) (*PipelinesRunResponse, error) {
+	req := &PipelinesRunRequest{
+		Ephemeral: ephemeral,
+		Name: name,
+	}
+	var result PipelinesRunResponse
+	err := p.Call(MethodPipelinesRun, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// PipelinesStatus list currently running pipelines.
+func (p *Plugin) PipelinesStatus() (*PipelinesStatusResponse, error) {
+	var result PipelinesStatusResponse
+	err := p.Call(MethodPipelinesStatus, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// PipelinesStop stop a running pipeline by name.
+func (p *Plugin) PipelinesStop(name string) (*PipelinesStopResponse, error) {
+	req := &PipelinesStopRequest{
+		Name: name,
+	}
+	var result PipelinesStopResponse
+	err := p.Call(MethodPipelinesStop, req, &result)
 	if err != nil {
 		return nil, err
 	}
