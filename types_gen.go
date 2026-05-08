@@ -927,31 +927,6 @@ type CommandsCompletionsResponse struct {
 	Title string `json:"title"`
 }
 
-// CommandsDiscoverRequest is the request type for commands.discover.
-type CommandsDiscoverRequest struct {
-	ActiveTags json.RawMessage `json:"active_tags,omitempty"`
-	RequireTag json.RawMessage `json:"require_tag,omitempty"`
-	Words json.RawMessage `json:"words,omitempty"`
-}
-
-// CommandsDiscoverResponse is the response type for commands.discover.
-type CommandsDiscoverResponse struct {
-	Items []DiscoverItem `json:"items"`
-	Title string `json:"title"`
-}
-
-// CommandsHasPartialRequest is the request type for commands.has_partial.
-type CommandsHasPartialRequest struct {
-	ActiveTags json.RawMessage `json:"active_tags,omitempty"`
-	Words []string `json:"words,omitempty"`
-}
-
-// CommandsHasPartialResponse is the response type for commands.has_partial.
-type CommandsHasPartialResponse struct {
-	HasPartial bool `json:"has_partial"`
-	NextList json.RawMessage `json:"next_list,omitempty"`
-}
-
 // CommandsListResponse is the response type for commands.list.
 type CommandsListResponse struct {
 	Footer string `json:"footer"`

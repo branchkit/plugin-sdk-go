@@ -255,35 +255,6 @@ func (p *Plugin) CommandsCompletions(activeTags json.RawMessage, collections jso
 	return &result, nil
 }
 
-// CommandsDiscover discover available commands or next tokens for a partial match.
-func (p *Plugin) CommandsDiscover(activeTags json.RawMessage, requireTag json.RawMessage, words json.RawMessage) (*CommandsDiscoverResponse, error) {
-	req := &CommandsDiscoverRequest{
-		ActiveTags: activeTags,
-		RequireTag: requireTag,
-		Words: words,
-	}
-	var result CommandsDiscoverResponse
-	err := p.Call(MethodCommandsDiscover, req, &result)
-	if err != nil {
-		return nil, err
-	}
-	return &result, nil
-}
-
-// CommandsHasPartial check if words partially match any command (prefix matching).
-func (p *Plugin) CommandsHasPartial(activeTags json.RawMessage, words []string) (*CommandsHasPartialResponse, error) {
-	req := &CommandsHasPartialRequest{
-		ActiveTags: activeTags,
-		Words: words,
-	}
-	var result CommandsHasPartialResponse
-	err := p.Call(MethodCommandsHasPartial, req, &result)
-	if err != nil {
-		return nil, err
-	}
-	return &result, nil
-}
-
 // CommandsList return all commands grouped by category for HUD display.
 func (p *Plugin) CommandsList() (*CommandsListResponse, error) {
 	var result CommandsListResponse

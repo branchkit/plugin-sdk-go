@@ -27,8 +27,7 @@ const (
 	MethodCollectionPut = "collection.put" // since 0.1.0
 	MethodCollectionSetRecording = "collection.set_recording" // since 0.1.0
 	MethodCollectionsList = "collections.list" // since 0.1.0
-	MethodCommandsDiscover = "commands.discover" // since 0.1.0
-	MethodCommandsHasPartial = "commands.has_partial" // since 0.1.0
+	MethodCommandsCompletions = "commands.completions" // since 0.1.0
 	MethodCommandsList = "commands.list" // since 0.1.0
 	MethodCommandsMatch = "commands.match" // since 0.1.0
 	MethodCommandsPush = "commands.push" // since 0.1.0
@@ -575,6 +574,7 @@ const (
 	MethodNativeZip = "native.zip" // since 0.1.0
 	MethodNativeZoomEnabled = "native.zoom_enabled" // since 0.1.0
 	MethodPipelinesGrammar = "pipelines.grammar" // since 0.1.0
+	MethodPipelinesInject = "pipelines.inject" // since 0.1.0
 	MethodPipelinesRun = "pipelines.run" // since 0.1.0
 	MethodPipelinesStatus = "pipelines.status" // since 0.1.0
 	MethodPipelinesStop = "pipelines.stop" // since 0.1.0
