@@ -911,6 +911,22 @@ type CollectionsListResponse struct {
 	Sections []CollectionsListSection `json:"sections"`
 }
 
+// CommandsCompletionsRequest is the request type for commands.completions.
+type CommandsCompletionsRequest struct {
+	ActiveTags json.RawMessage `json:"active_tags,omitempty"`
+	Collections json.RawMessage `json:"collections,omitempty"`
+	RequireTag json.RawMessage `json:"require_tag,omitempty"`
+	Words []string `json:"words,omitempty"`
+}
+
+// CommandsCompletionsResponse is the response type for commands.completions.
+type CommandsCompletionsResponse struct {
+	HasCompletions bool `json:"has_completions"`
+	Items []DiscoverItem `json:"items"`
+	NextWords []string `json:"next_words"`
+	Title string `json:"title"`
+}
+
 // CommandsDiscoverRequest is the request type for commands.discover.
 type CommandsDiscoverRequest struct {
 	ActiveTags json.RawMessage `json:"active_tags,omitempty"`
@@ -4854,6 +4870,18 @@ type NativeZoomEnabledResponse struct {
 // PipelinesGrammarResponse is the response type for pipelines.grammar.
 type PipelinesGrammarResponse struct {
 	Words []string `json:"words"`
+}
+
+// PipelinesInjectRequest is the request type for pipelines.inject.
+type PipelinesInjectRequest struct {
+	Data json.RawMessage `json:"data,omitempty"`
+	EventType string `json:"event_type"`
+	Name string `json:"name"`
+}
+
+// PipelinesInjectResponse is the response type for pipelines.inject.
+type PipelinesInjectResponse struct {
+	Injected bool `json:"injected"`
 }
 
 // PipelinesRunRequest is the request type for pipelines.run.

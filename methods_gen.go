@@ -239,6 +239,22 @@ func (p *Plugin) CollectionsList(kind json.RawMessage) ([]CollectionsListSection
 	return result.Sections, nil
 }
 
+// CommandsCompletions get completions for a command prefix: partial match status, next words for grammar, and display items.
+func (p *Plugin) CommandsCompletions(activeTags json.RawMessage, collections json.RawMessage, requireTag json.RawMessage, words []string) (*CommandsCompletionsResponse, error) {
+	req := &CommandsCompletionsRequest{
+		ActiveTags: activeTags,
+		Collections: collections,
+		RequireTag: requireTag,
+		Words: words,
+	}
+	var result CommandsCompletionsResponse
+	err := p.Call(MethodCommandsCompletions, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // CommandsDiscover discover available commands or next tokens for a partial match.
 func (p *Plugin) CommandsDiscover(activeTags json.RawMessage, requireTag json.RawMessage, words json.RawMessage) (*CommandsDiscoverResponse, error) {
 	req := &CommandsDiscoverRequest{
@@ -5780,6 +5796,21 @@ func (p *Plugin) PipelinesGrammar() ([]string, error) {
 		return nil, err
 	}
 	return result.Words, nil
+}
+
+// PipelinesInject inject an event into a running pipeline.
+func (p *Plugin) PipelinesInject(data json.RawMessage, eventType string, name string) (*PipelinesInjectResponse, error) {
+	req := &PipelinesInjectRequest{
+		Data: data,
+		EventType: eventType,
+		Name: name,
+	}
+	var result PipelinesInjectResponse
+	err := p.Call(MethodPipelinesInject, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
 }
 
 // PipelinesRun start a named pipeline.
