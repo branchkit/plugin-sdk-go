@@ -528,6 +528,20 @@ type PipelineStatusEntry struct {
 	Name string `json:"name"`
 }
 
+// PipelineTranscriptAlternative is auto-generated from the OpenRPC spec.
+type PipelineTranscriptAlternative struct {
+	Confidence float64 `json:"confidence"`
+	Text string `json:"text"`
+}
+
+// PoolStageStatusEntry is auto-generated from the OpenRPC spec.
+type PoolStageStatusEntry struct {
+	Alive bool `json:"alive"`
+	Generation int `json:"generation"`
+	Leased bool `json:"leased"`
+	Name string `json:"name"`
+}
+
 // PrinterInfo is auto-generated from the OpenRPC spec.
 type PrinterInfo struct {
 	IsDefault bool `json:"is_default"`
@@ -4874,6 +4888,7 @@ type PipelinesRunResponse struct {
 // PipelinesStatusResponse is the response type for pipelines.status.
 type PipelinesStatusResponse struct {
 	Pipelines []PipelineStatusEntry `json:"pipelines"`
+	PoolStages []PoolStageStatusEntry `json:"pool_stages"`
 	Running []string `json:"running"`
 }
 
@@ -5055,5 +5070,6 @@ type RenderSettingsRequest struct {
 
 // RenderSettingsResponse is the response type for render_settings.
 type RenderSettingsResponse struct {
+	CSS *string `json:"css,omitempty"`
 	HTML string `json:"html"`
 }
