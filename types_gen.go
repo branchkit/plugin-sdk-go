@@ -184,9 +184,12 @@ type CommandRowData struct {
 	ActionJson json.RawMessage `json:"action_json,omitempty"`
 	Canonical string `json:"canonical"`
 	Category string `json:"category"`
+	ClearsTags []string `json:"clears_tags"`
 	IsUser bool `json:"is_user"`
 	Pattern string `json:"pattern"`
 	PluginName string `json:"plugin_name"`
+	RequiresTags []string `json:"requires_tags"`
+	SetsTags []string `json:"sets_tags"`
 	Tier string `json:"tier"`
 	Variants []string `json:"variants"`
 }
