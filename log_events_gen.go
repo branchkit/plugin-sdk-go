@@ -53,6 +53,7 @@ const (
 	LogEventStateWriteAttempted = "state.write_attempted"
 	LogEventStateWriteDenied = "state.write_denied"
 	LogEventStateWriteSucceeded = "state.write_succeeded"
+	LogEventValidationError = "validation.error"
 	LogEventValidationStartupPass = "validation.startup_pass"
 	LogEventValidationWarning = "validation.warning"
 	LogEventWatchdogWarning = "watchdog.warning"
@@ -114,6 +115,7 @@ var LogEventRegistry = map[string]LogEventMeta{
 	"state.write_attempted": {Name: "state.write_attempted", Summary: "A write to a state collection was initiated.", Since: "0.1.0", Source: "state", Severity: "debug", Redaction: "payload_hash"},
 	"state.write_denied": {Name: "state.write_denied", Summary: "A write was rejected by auth, grants, validation, or policy.", Since: "0.1.0", Source: "state", Severity: "warn", Redaction: "none"},
 	"state.write_succeeded": {Name: "state.write_succeeded", Summary: "A write to a state collection completed.", Since: "0.1.0", Source: "state", Severity: "info", Redaction: "none"},
+	"validation.error": {Name: "validation.error", Summary: "Manifest validation error — plugin was rejected or not reloaded.", Since: "0.1.0", Source: "validation", Severity: "error", Redaction: "none"},
 	"validation.startup_pass": {Name: "validation.startup_pass", Summary: "Startup validation pass completed; warning_count summarizes any drift detected.", Since: "0.1.0", Source: "validation", Severity: "info", Redaction: "none"},
 	"validation.warning": {Name: "validation.warning", Summary: "Manifest / commands / action validation produced a warning.", Since: "0.1.0", Source: "validation", Severity: "warn", Redaction: "none"},
 	"watchdog.warning": {Name: "watchdog.warning", Summary: "Watchdog observed mutex contention or suspected a deadlock.", Since: "0.1.0", Source: "lifecycle", Severity: "warn", Redaction: "none"},
