@@ -188,6 +188,7 @@ type CommandRowData struct {
 	Pattern string `json:"pattern"`
 	PluginName string `json:"plugin_name"`
 	Tier string `json:"tier"`
+	Variants []string `json:"variants"`
 }
 
 // ContactInfo is auto-generated from the OpenRPC spec.
