@@ -1360,22 +1360,6 @@ type KeybindsRegisterResponse struct {
 	Ok bool `json:"ok"`
 }
 
-// MatchAliasesGetResponse is the response type for match_aliases.get.
-type MatchAliasesGetResponse struct {
-	Aliases map[string]string `json:"aliases"`
-}
-
-// MatchAliasesSetRequest is the request type for match_aliases.set.
-type MatchAliasesSetRequest struct {
-	Aliases map[string]string `json:"aliases,omitempty"`
-}
-
-// MatchAliasesSetResponse is the response type for match_aliases.set.
-type MatchAliasesSetResponse struct {
-	Count int `json:"count"`
-	Ok bool `json:"ok"`
-}
-
 // NativeAccentColorResponse is the response type for native.accent_color.
 type NativeAccentColorResponse struct {
 	Color string `json:"color"`

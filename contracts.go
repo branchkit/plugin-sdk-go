@@ -67,8 +67,6 @@ const (
 	MethodInputTypeText = "input.type_text" // since 0.1.0
 	MethodKeyNamesSet = "key_names.set" // since 0.1.0
 	MethodKeybindsRegister = "keybinds.register" // since 0.1.0
-	MethodMatchAliasesGet = "match_aliases.get" // since 0.1.0
-	MethodMatchAliasesSet = "match_aliases.set" // since 0.1.0
 	MethodNativeAccentColor = "native.accent_color" // since 0.1.0
 	MethodNativeAccessibilityDisplayInvert = "native.accessibility_display_invert" // since 0.1.0
 	MethodNativeAccessibilityEnabled = "native.accessibility_enabled" // since 0.1.0

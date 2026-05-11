@@ -662,29 +662,6 @@ func (p *Plugin) KeybindsRegister(snapshot json.RawMessage) (*KeybindsRegisterRe
 	return &result, nil
 }
 
-// MatchAliasesGet get all registered match aliases.
-func (p *Plugin) MatchAliasesGet() (*MatchAliasesGetResponse, error) {
-	var result MatchAliasesGetResponse
-	err := p.Call(MethodMatchAliasesGet, nil, &result)
-	if err != nil {
-		return nil, err
-	}
-	return &result, nil
-}
-
-// MatchAliasesSet register word aliases for command matching (e.g., 'three' → '3'). Aliases are merged with existing entries..
-func (p *Plugin) MatchAliasesSet(aliases map[string]string) (*MatchAliasesSetResponse, error) {
-	req := &MatchAliasesSetRequest{
-		Aliases: aliases,
-	}
-	var result MatchAliasesSetResponse
-	err := p.Call(MethodMatchAliasesSet, req, &result)
-	if err != nil {
-		return nil, err
-	}
-	return &result, nil
-}
-
 // NativeAccentColor get the system accent color name.
 func (p *Plugin) NativeAccentColor() (*NativeAccentColorResponse, error) {
 	var result NativeAccentColorResponse
