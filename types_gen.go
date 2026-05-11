@@ -4881,6 +4881,7 @@ type PipelinesInjectResponse struct {
 type PipelinesRunRequest struct {
 	Ephemeral *bool `json:"ephemeral,omitempty"`
 	Name string `json:"name"`
+	ParamOverrides map[string]json.RawMessage `json:"param_overrides,omitempty"`
 }
 
 // PipelinesRunResponse is the response type for pipelines.run.

@@ -5785,10 +5785,11 @@ func (p *Plugin) PipelinesInject(data json.RawMessage, eventType string, name st
 }
 
 // PipelinesRun start a named pipeline.
-func (p *Plugin) PipelinesRun(ephemeral *bool, name string) (*PipelinesRunResponse, error) {
+func (p *Plugin) PipelinesRun(ephemeral *bool, name string, paramOverrides map[string]json.RawMessage) (*PipelinesRunResponse, error) {
 	req := &PipelinesRunRequest{
 		Ephemeral: ephemeral,
 		Name: name,
+		ParamOverrides: paramOverrides,
 	}
 	var result PipelinesRunResponse
 	err := p.Call(MethodPipelinesRun, req, &result)
