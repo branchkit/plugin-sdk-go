@@ -12,7 +12,7 @@ import (
 // methods_gen.go are namespaced with the `Collection` prefix to match the
 // existing collection family (CollectionPush, CollectionGet, ...). The
 // helpers below provide shorter, payload-typed wrappers that mirror the
-// SDK spec §4.6 surface: Append, ListLog, GetLogEntry, DeleteLogEntry,
+// SDK spec section 4.6 surface: Append, ListLog, GetLogEntry, DeleteLogEntry,
 // SetCollectionRecording, GetCollectionRecording.
 
 // ErrRecordingDisabled is returned (wrapped) by Append when the target

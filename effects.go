@@ -97,7 +97,7 @@ func (p *Plugin) IsEffectActive(name string) (active bool, currentOwner string, 
 // audited and logged today, but the event-bus emit hasn't been wired
 // yet. Plugins can safely register callbacks now; they'll start
 // firing once the actuator path lands. See
-// `notes/DESIGN_CAPABILITY_MECHANISM.md` §10.2.
+// `notes/DESIGN_CAPABILITY_MECHANISM.md` section 10.2.
 //
 // Multiple callbacks can be registered; each fires for every event.
 func (p *Plugin) OnEffectDisplaced(handler func(evt EffectDisplacedEvent)) {
