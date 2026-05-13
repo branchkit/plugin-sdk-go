@@ -77,8 +77,6 @@ type Plugin struct {
 
 	// Lazily initialized when HandleAction is first called. See actions.go.
 	actionRegistry *actionRegistry
-
-	onReady func()
 }
 
 // NewPlugin creates a new Plugin that communicates via stdin/stdout.
