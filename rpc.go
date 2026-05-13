@@ -77,6 +77,8 @@ type Plugin struct {
 
 	// Lazily initialized when HandleAction is first called. See actions.go.
 	actionRegistry *actionRegistry
+
+	onReady func()
 }
 
 // NewPlugin creates a new Plugin that communicates via stdin/stdout.
@@ -170,6 +172,16 @@ func HandleTyped[Req any](p *Plugin, method string, fn func(*Req) (any, error)) 
 // Multiple listeners can be registered for the same method.
 func (p *Plugin) On(method string, fn ListenerFunc) {
 	p.listeners[method] = append(p.listeners[method], fn)
+}
+
+// OnReady registers a callback that fires when all plugins are ready.
+// The actuator sends on_ready after every plugin has called Run().
+// This is the safe place to read other plugins' collections.
+// Must be called before Run().
+func (p *Plugin) OnReady(fn func()) {
+	p.On("on_ready", func(_ json.RawMessage) {
+		fn()
+	})
 }
 
 // Call sends a request to the actuator and blocks until a response arrives or timeout.
@@ -286,6 +298,9 @@ func (p *Plugin) Notify(method string, params any) error {
 // handlers are registered.
 func (p *Plugin) Run() {
 	p.readyOnce.Do(func() { close(p.ready) })
+	if err := p.Notify("plugin.initialized", nil); err != nil {
+		Logf(p.pluginID, "failed to send plugin.initialized: %v", err)
+	}
 	<-p.closed
 }
 
