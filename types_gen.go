@@ -945,6 +945,16 @@ type CommandsCompletionsResponse struct {
 	Title string `json:"title"`
 }
 
+// CommandsDeleteRequest is the request type for commands.delete.
+type CommandsDeleteRequest struct {
+	Canonical string `json:"canonical"`
+}
+
+// CommandsDeleteResponse is the response type for commands.delete.
+type CommandsDeleteResponse struct {
+	Ok bool `json:"ok"`
+}
+
 // CommandsListResponse is the response type for commands.list.
 type CommandsListResponse struct {
 	Footer string `json:"footer"`
@@ -980,6 +990,16 @@ type CommandsPushRequest struct {
 // CommandsPushResponse is the response type for commands.push.
 type CommandsPushResponse struct {
 	Count int `json:"count"`
+	Ok bool `json:"ok"`
+}
+
+// CommandsResetRequest is the request type for commands.reset.
+type CommandsResetRequest struct {
+	Canonical string `json:"canonical"`
+}
+
+// CommandsResetResponse is the response type for commands.reset.
+type CommandsResetResponse struct {
 	Ok bool `json:"ok"`
 }
 
@@ -1357,6 +1377,16 @@ type KeybindsRegisterRequest struct {
 // KeybindsRegisterResponse is the response type for keybinds.register.
 type KeybindsRegisterResponse struct {
 	Count int `json:"count"`
+	Ok bool `json:"ok"`
+}
+
+// ModelDeleteRequest is the request type for model.delete.
+type ModelDeleteRequest struct {
+	Ref string `json:"ref"`
+}
+
+// ModelDeleteResponse is the response type for model.delete.
+type ModelDeleteResponse struct {
 	Ok bool `json:"ok"`
 }
 
@@ -4930,6 +4960,16 @@ type SettingsPatchSignalsRequest struct {
 
 // SettingsPatchSignalsResponse is the response type for settings.patch_signals.
 type SettingsPatchSignalsResponse struct {
+	Ok bool `json:"ok"`
+}
+
+// SettingsRedirectRequest is the request type for settings.redirect.
+type SettingsRedirectRequest struct {
+	Tab string `json:"tab"`
+}
+
+// SettingsRedirectResponse is the response type for settings.redirect.
+type SettingsRedirectResponse struct {
 	Ok bool `json:"ok"`
 }
 

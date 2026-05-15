@@ -28,9 +28,11 @@ const (
 	MethodCollectionSetRecording = "collection.set_recording" // since 0.1.0
 	MethodCollectionsList = "collections.list" // since 0.1.0
 	MethodCommandsCompletions = "commands.completions" // since 0.1.0
+	MethodCommandsDelete = "commands.delete" // since 0.1.0
 	MethodCommandsList = "commands.list" // since 0.1.0
 	MethodCommandsMatch = "commands.match" // since 0.1.0
 	MethodCommandsPush = "commands.push" // since 0.1.0
+	MethodCommandsReset = "commands.reset" // since 0.1.0
 	MethodControlSignal = "control.signal" // since 0.1.0
 	MethodDiscoveryClosed = "discovery.closed" // since 0.1.0
 	MethodDispatch = "dispatch" // since 0.1.0
@@ -67,6 +69,7 @@ const (
 	MethodInputTypeText = "input.type_text" // since 0.1.0
 	MethodKeyNamesSet = "key_names.set" // since 0.1.0
 	MethodKeybindsRegister = "keybinds.register" // since 0.1.0
+	MethodModelDelete = "model.delete" // since 0.1.0
 	MethodNativeAccentColor = "native.accent_color" // since 0.1.0
 	MethodNativeAccessibilityDisplayInvert = "native.accessibility_display_invert" // since 0.1.0
 	MethodNativeAccessibilityEnabled = "native.accessibility_enabled" // since 0.1.0
@@ -580,6 +583,7 @@ const (
 	MethodSelectionSet = "selection.set" // since 0.1.0
 	MethodSessionEndCleanup = "session.end_cleanup" // since 0.1.0
 	MethodSettingsPatchSignals = "settings.patch_signals" // since 0.1.0
+	MethodSettingsRedirect = "settings.redirect" // since 0.1.0
 	MethodSettingsRefresh = "settings.refresh" // since 0.1.0
 	MethodSettingsRulesCreate = "settings.rules_create" // since 0.1.0
 	MethodSettingsRulesUpdate = "settings.rules_update" // since 0.1.0

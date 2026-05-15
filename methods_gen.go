@@ -255,6 +255,14 @@ func (p *Plugin) CommandsCompletions(activeTags json.RawMessage, collections jso
 	return &result, nil
 }
 
+// CommandsDelete delete a user command by canonical name.
+func (p *Plugin) CommandsDelete(canonical string) error {
+	req := &CommandsDeleteRequest{
+		Canonical: canonical,
+	}
+	return p.Call(MethodCommandsDelete, req, nil)
+}
+
 // CommandsList return all commands grouped by category for HUD display.
 func (p *Plugin) CommandsList() (*CommandsListResponse, error) {
 	var result CommandsListResponse
@@ -290,6 +298,14 @@ func (p *Plugin) CommandsPush(commands json.RawMessage) (*CommandsPushResponse, 
 		return nil, err
 	}
 	return &result, nil
+}
+
+// CommandsReset reset a command override to the plugin default.
+func (p *Plugin) CommandsReset(canonical string) error {
+	req := &CommandsResetRequest{
+		Canonical: canonical,
+	}
+	return p.Call(MethodCommandsReset, req, nil)
 }
 
 // ControlSignal send a control signal to the Swift shell via the control stream.
@@ -660,6 +676,14 @@ func (p *Plugin) KeybindsRegister(snapshot json.RawMessage) (*KeybindsRegisterRe
 		return nil, err
 	}
 	return &result, nil
+}
+
+// ModelDelete delete a speech model (Vosk: filesystem removal; WhisperKit: control message).
+func (p *Plugin) ModelDelete(ref string) error {
+	req := &ModelDeleteRequest{
+		Ref: ref,
+	}
+	return p.Call(MethodModelDelete, req, nil)
 }
 
 // NativeAccentColor get the system accent color name.
@@ -5838,6 +5862,14 @@ func (p *Plugin) SettingsPatchSignals(signals string) error {
 		Signals: signals,
 	}
 	return p.Call(MethodSettingsPatchSignals, req, nil)
+}
+
+// SettingsRedirect navigate the settings UI to a tab declared by the calling plugin.
+func (p *Plugin) SettingsRedirect(tab string) error {
+	req := &SettingsRedirectRequest{
+		Tab: tab,
+	}
+	return p.Call(MethodSettingsRedirect, req, nil)
 }
 
 // SettingsRefresh trigger a full re-render of all active settings SSE streams.
