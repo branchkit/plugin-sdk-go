@@ -341,6 +341,92 @@ func (h *Harness) RequireNoTag(tag string) {
 	}
 }
 
+// Reload re-reads the manifest from disk and restarts the plugin. Use this to
+// test hot reload behavior after modifying plugin.json or the binary.
+func (h *Harness) Reload() {
+	h.t.Helper()
+	h.call("test.reload", map[string]any{}, nil)
+}
+
+// InjectEvent fires an event on the event bus. For plugin events, use any
+// event_type name. For platform events, use a valid _platform.* event type.
+func (h *Harness) InjectEvent(eventType string, data any) {
+	h.t.Helper()
+	h.call("test.inject_event", map[string]any{
+		"event_type": eventType,
+		"data":       data,
+	}, nil)
+}
+
+// HUDResult holds the content of a single HUD channel.
+type HUDResult struct {
+	Channel  string `json:"channel"`
+	HTML     string `json:"html"`
+	TargetID string `json:"target_id,omitempty"`
+	Raw      bool   `json:"raw,omitempty"`
+}
+
+// GetHUD reads the last fragment pushed to a HUD channel.
+func (h *Harness) GetHUD(channel string) HUDResult {
+	h.t.Helper()
+	var result HUDResult
+	h.call("test.get_hud", map[string]any{"channel": channel}, &result)
+	return result
+}
+
+// HUDChannelInfo describes a registered HUD channel.
+type HUDChannelInfo struct {
+	Channel     string `json:"channel"`
+	PluginID    string `json:"plugin_id"`
+	Description string `json:"description"`
+}
+
+// ListHUDChannels returns all registered HUD channels.
+func (h *Harness) ListHUDChannels() []HUDChannelInfo {
+	h.t.Helper()
+	var result struct {
+		Channels []HUDChannelInfo `json:"channels"`
+	}
+	h.call("test.get_hud", map[string]any{}, &result)
+	return result.Channels
+}
+
+// ConformancePhase holds the results of a conformance test phase.
+type ConformancePhase struct {
+	Phase string           `json:"phase"`
+	Tests []ConformanceTest `json:"tests"`
+}
+
+// ConformanceTest holds a single test result within a phase.
+type ConformanceTest struct {
+	Name   string `json:"name"`
+	Status string `json:"status"`
+	Detail string `json:"detail,omitempty"`
+}
+
+// RunStaticAnalysis runs Phase 1 conformance checks against the loaded plugin.
+func (h *Harness) RunStaticAnalysis() ConformancePhase {
+	h.t.Helper()
+	var result ConformancePhase
+	h.call("test.run_static_analysis", map[string]any{}, &result)
+	return result
+}
+
+// ConformanceResult holds all phases from a full conformance run.
+type ConformanceResult struct {
+	Phases []ConformancePhase `json:"phases"`
+}
+
+// RunAll runs all conformance phases against the loaded plugin and returns
+// structured results. Does not fail the test on conformance failures — inspect
+// the returned phases to assert specific outcomes.
+func (h *Harness) RunAll() ConformanceResult {
+	h.t.Helper()
+	var result ConformanceResult
+	h.call("test.run_all", map[string]any{}, &result)
+	return result
+}
+
 // ActionType extracts the action type string from a SimulateResult's Action field.
 // Returns empty string if the action is nil or doesn't have a type field.
 func (r *SimulateResult) ActionType() string {
