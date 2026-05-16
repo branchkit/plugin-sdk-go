@@ -415,6 +415,22 @@ func (h *Harness) LoadManifest(dirOrName string) {
 	h.call("test.load_manifest", map[string]any{"name": dirOrName}, nil)
 }
 
+// LoadPlugin resolves, spawns, and runs a dependency plugin in the harness.
+// The dependency shares state with the primary plugin, enabling true
+// integration tests. Requires the dependency's binary to be available
+// (installed locally or buildable from source).
+func (h *Harness) LoadPlugin(dirOrName string) {
+	h.t.Helper()
+	absDir, err := filepath.Abs(dirOrName)
+	if err == nil {
+		if _, statErr := os.Stat(filepath.Join(absDir, "plugin.json")); statErr == nil {
+			h.call("test.load_plugin", map[string]any{"dir": absDir}, nil)
+			return
+		}
+	}
+	h.call("test.load_plugin", map[string]any{"name": dirOrName}, nil)
+}
+
 // DepStatus represents the resolution status of a single dependency.
 type DepStatus struct {
 	Plugin  string  `json:"plugin"`
