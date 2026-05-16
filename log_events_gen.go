@@ -34,6 +34,7 @@ const (
 	LogEventNativeHidLifecycle = "native.hid_lifecycle"
 	LogEventNativeWindowSkipped = "native.window_skipped"
 	LogEventNativeWorldPollerEvent = "native.world_poller_event"
+	LogEventOperationCompleted = "operation.completed"
 	LogEventPluginDegraded = "plugin.degraded"
 	LogEventPluginExited = "plugin.exited"
 	LogEventPluginLifecycleOp = "plugin.lifecycle_op"
@@ -44,6 +45,8 @@ const (
 	LogEventPluginSandboxApplied = "plugin.sandbox_applied"
 	LogEventPluginSpawned = "plugin.spawned"
 	LogEventPluginStderrLine = "plugin.stderr_line"
+	LogEventRpcCallCompleted = "rpc.call_completed"
+	LogEventRpcCallReceived = "rpc.call_received"
 	LogEventSessionControlMessage = "session.control_message"
 	LogEventStateRetentionSwept = "state.retention_swept"
 	LogEventStateTagCleared = "state.tag_cleared"
@@ -96,6 +99,7 @@ var LogEventRegistry = map[string]LogEventMeta{
 	"native.hid_lifecycle": {Name: "native.hid_lifecycle", Summary: "Non-Apple HID device lifecycle event (connect, disconnect, seize, release, monitor start).", Since: "0.1.0", Source: "native", Severity: "info", Redaction: "none"},
 	"native.window_skipped": {Name: "native.window_skipped", Summary: "World poller skipped a non-standard window (debug-level).", Since: "0.1.0", Source: "native", Severity: "debug", Redaction: "none"},
 	"native.world_poller_event": {Name: "native.world_poller_event", Summary: "World poller lifecycle event (started, seeded, batch processed, idle).", Since: "0.1.0", Source: "native", Severity: "debug", Redaction: "none"},
+	"operation.completed": {Name: "operation.completed", Summary: "An operation handler completed execution.", Since: "0.1.0", Source: "dispatch", Severity: "debug", Redaction: "none"},
 	"plugin.degraded": {Name: "plugin.degraded", Summary: "A managed plugin's RPC channel hit the consecutive-timeout threshold and was marked degraded.", Since: "0.1.0", Source: "plugins", Severity: "warn", Redaction: "none"},
 	"plugin.exited": {Name: "plugin.exited", Summary: "A managed plugin process exited (clean or crashed).", Since: "0.1.0", Source: "plugins", Severity: "info", Redaction: "none"},
 	"plugin.lifecycle_op": {Name: "plugin.lifecycle_op", Summary: "A plugin lifecycle operation (install, uninstall, update, reload, hot-reload, enable, disable).", Since: "0.1.0", Source: "plugins", Severity: "info", Redaction: "none"},
@@ -106,6 +110,8 @@ var LogEventRegistry = map[string]LogEventMeta{
 	"plugin.sandbox_applied": {Name: "plugin.sandbox_applied", Summary: "Sandbox profile applied (or skipped) for a managed plugin spawn.", Since: "0.1.0", Source: "plugins", Severity: "debug", Redaction: "none"},
 	"plugin.spawned": {Name: "plugin.spawned", Summary: "A managed plugin process was spawned.", Since: "0.1.0", Source: "plugins", Severity: "info", Redaction: "none"},
 	"plugin.stderr_line": {Name: "plugin.stderr_line", Summary: "A managed plugin emitted a stdout/stderr line.", Since: "0.1.0", Source: "plugins", Severity: "info", Redaction: "none"},
+	"rpc.call_completed": {Name: "rpc.call_completed", Summary: "A plugin-to-actuator RPC call completed.", Since: "0.1.0", Source: "plugins", Severity: "debug", Redaction: "none"},
+	"rpc.call_received": {Name: "rpc.call_received", Summary: "A plugin-to-actuator RPC call was received.", Since: "0.1.0", Source: "plugins", Severity: "debug", Redaction: "none"},
 	"session.control_message": {Name: "session.control_message", Summary: "A control message was forwarded to the Swift host (HUD show, mode reset, etc.).", Since: "0.1.0", Source: "dispatch", Severity: "info", Redaction: "none"},
 	"state.retention_swept": {Name: "state.retention_swept", Summary: "Retention sweep removed expired records from a collection.", Since: "0.1.0", Source: "state", Severity: "info", Redaction: "none"},
 	"state.tag_cleared": {Name: "state.tag_cleared", Summary: "One or more tags were cleared via a gate-shape collection mutation.", Since: "0.1.0", Source: "state", Severity: "info", Redaction: "none"},
