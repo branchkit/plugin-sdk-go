@@ -400,17 +400,39 @@ func (h *Harness) Reload() {
 	h.call("test.reload", map[string]any{}, nil)
 }
 
-// LoadManifest loads a dependency plugin's manifest from a local directory
-// without spawning its binary. The dependency's collections, schemas, and
-// data files are registered into the harness state, making them available
-// to the plugin under test.
-func (h *Harness) LoadManifest(dir string) {
+// LoadManifest loads a dependency plugin's manifest without spawning its
+// binary. Accepts a local directory path or a plugin name (resolved via
+// installed plugins, then the catalog).
+func (h *Harness) LoadManifest(dirOrName string) {
 	h.t.Helper()
-	absDir, err := filepath.Abs(dir)
-	if err != nil {
-		h.t.Fatalf("harness: LoadManifest: cannot resolve path %q: %v", dir, err)
+	absDir, err := filepath.Abs(dirOrName)
+	if err == nil {
+		if _, statErr := os.Stat(filepath.Join(absDir, "plugin.json")); statErr == nil {
+			h.call("test.load_manifest", map[string]any{"dir": absDir}, nil)
+			return
+		}
 	}
-	h.call("test.load_manifest", map[string]any{"dir": absDir}, nil)
+	h.call("test.load_manifest", map[string]any{"name": dirOrName}, nil)
+}
+
+// DepStatus represents the resolution status of a single dependency.
+type DepStatus struct {
+	Plugin  string  `json:"plugin"`
+	Status  string  `json:"status"`
+	Version *string `json:"version,omitempty"`
+	Source  *string `json:"source,omitempty"`
+	Reason  *string `json:"reason,omitempty"`
+}
+
+// ResolveDeps resolves all depends_on entries for the running plugin and
+// reports their status.
+func (h *Harness) ResolveDeps() []DepStatus {
+	h.t.Helper()
+	var result struct {
+		Deps []DepStatus `json:"deps"`
+	}
+	h.call("test.resolve_deps", map[string]any{}, &result)
+	return result.Deps
 }
 
 // InjectEvent fires an event on the event bus. For plugin events, use any
