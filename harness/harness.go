@@ -400,6 +400,19 @@ func (h *Harness) Reload() {
 	h.call("test.reload", map[string]any{}, nil)
 }
 
+// LoadManifest loads a dependency plugin's manifest from a local directory
+// without spawning its binary. The dependency's collections, schemas, and
+// data files are registered into the harness state, making them available
+// to the plugin under test.
+func (h *Harness) LoadManifest(dir string) {
+	h.t.Helper()
+	absDir, err := filepath.Abs(dir)
+	if err != nil {
+		h.t.Fatalf("harness: LoadManifest: cannot resolve path %q: %v", dir, err)
+	}
+	h.call("test.load_manifest", map[string]any{"dir": absDir}, nil)
+}
+
 // InjectEvent fires an event on the event bus. For plugin events, use any
 // event_type name. For platform events, use a valid _platform.* event type.
 func (h *Harness) InjectEvent(eventType string, data any) {
