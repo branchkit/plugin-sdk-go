@@ -41,6 +41,7 @@ type Harness struct {
 	scanner *bufio.Scanner
 	mu      sync.Mutex
 	nextID  atomic.Uint64
+	timeout time.Duration
 }
 
 // Start spawns the test harness and loads the plugin at dir.
@@ -77,6 +78,7 @@ func Start(t testing.TB, dir string) *Harness {
 		cmd:     cmd,
 		writer:  json.NewEncoder(stdin),
 		scanner: bufio.NewScanner(stdout),
+		timeout: 30 * time.Second,
 	}
 
 	t.Cleanup(func() {
@@ -130,13 +132,23 @@ func (h *Harness) GetTags(pattern string) []string {
 
 // SimulateResult holds the outcome of a command simulation.
 type SimulateResult struct {
-	Matched      bool              `json:"matched"`
-	Action       json.RawMessage   `json:"action,omitempty"`
-	Args         []json.RawMessage `json:"args,omitempty"`
-	ConsumedCount int              `json:"consumed_count,omitempty"`
-	SetsTags     []string          `json:"sets_tags,omitempty"`
-	ClearsTags   []string          `json:"clears_tags,omitempty"`
-	OwnerPlugin  string            `json:"owner_plugin,omitempty"`
+	Matched        bool              `json:"matched"`
+	Action         json.RawMessage   `json:"action,omitempty"`
+	Args           []json.RawMessage `json:"args,omitempty"`
+	ConsumedCount  int               `json:"consumed_count,omitempty"`
+	SetsTags       []string          `json:"sets_tags,omitempty"`
+	ClearsTags     []string          `json:"clears_tags,omitempty"`
+	OwnerPlugin    string            `json:"owner_plugin,omitempty"`
+	ActionResponse *ActionResponse   `json:"action_response,omitempty"`
+}
+
+// ActionResponse holds the plugin's on_action reply when the matched command
+// has a Plugin action. Nil when the command has no action or the action is
+// not a Plugin type.
+type ActionResponse struct {
+	Status         string          `json:"status,omitempty"`
+	ControlMessage string          `json:"control_message,omitempty"`
+	Result         json.RawMessage `json:"result,omitempty"`
 }
 
 // SimulateCommand feeds a phrase to the matching engine, executes the matched
@@ -215,15 +227,31 @@ type rpcError struct {
 	Message string `json:"message"`
 }
 
+// RpcError represents an error returned by the harness RPC server.
+type RpcError struct {
+	Code    int
+	Message string
+}
+
+func (e *RpcError) Error() string {
+	return fmt.Sprintf("harness: RPC error %d: %s", e.Code, e.Message)
+}
+
 func (h *Harness) call(method string, params any, result any) {
 	h.t.Helper()
+	if err := h.tryCall(method, params, result); err != nil {
+		h.t.Fatalf("harness: %s: %v", method, err)
+	}
+}
+
+func (h *Harness) tryCall(method string, params any, result any) error {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 
 	id := h.nextID.Add(1)
 	paramsBytes, err := json.Marshal(params)
 	if err != nil {
-		h.t.Fatalf("harness: marshal params for %s: %v", method, err)
+		return fmt.Errorf("marshal params: %w", err)
 	}
 
 	req := rpcMessage{
@@ -233,30 +261,56 @@ func (h *Harness) call(method string, params any, result any) {
 		Params:  paramsBytes,
 	}
 	if err := h.writer.Encode(req); err != nil {
-		h.t.Fatalf("harness: write %s: %v", method, err)
+		return fmt.Errorf("write: %w", err)
 	}
 
-	if !h.scanner.Scan() {
+	done := make(chan struct{})
+	var scanOK bool
+	go func() {
+		scanOK = h.scanner.Scan()
+		close(done)
+	}()
+	select {
+	case <-done:
+	case <-time.After(h.timeout):
+		return fmt.Errorf("timeout after %s", h.timeout)
+	}
+
+	if !scanOK {
 		if err := h.scanner.Err(); err != nil {
-			h.t.Fatalf("harness: read response for %s: %v", method, err)
+			return fmt.Errorf("read response: %w", err)
 		}
-		h.t.Fatalf("harness: EOF reading response for %s", method)
+		return fmt.Errorf("EOF reading response")
 	}
 
 	var resp rpcMessage
 	if err := json.Unmarshal(h.scanner.Bytes(), &resp); err != nil {
-		h.t.Fatalf("harness: parse response for %s: %v\nraw: %s", method, err, h.scanner.Text())
+		return fmt.Errorf("parse response: %w (raw: %s)", err, h.scanner.Text())
 	}
 
 	if resp.Error != nil {
-		h.t.Fatalf("harness: %s returned error %d: %s", method, resp.Error.Code, resp.Error.Message)
+		return &RpcError{Code: resp.Error.Code, Message: resp.Error.Message}
 	}
 
 	if result != nil && resp.Result != nil {
 		if err := json.Unmarshal(resp.Result, result); err != nil {
-			h.t.Fatalf("harness: unmarshal result for %s: %v", method, err)
+			return fmt.Errorf("unmarshal result: %w", err)
 		}
 	}
+	return nil
+}
+
+// TrySimulateCommand is like SimulateCommand but returns an error instead of
+// failing the test. Useful for testing that a method returns an expected error.
+func (h *Harness) TrySimulateCommand(phrase string) (SimulateResult, error) {
+	var result SimulateResult
+	err := h.tryCall("test.simulate_command", map[string]any{"phrase": phrase}, &result)
+	return result, err
+}
+
+// TryCallPlugin is like CallPlugin but returns an error instead of failing the test.
+func (h *Harness) TryCallPlugin(method string, params any, result any) error {
+	return h.tryCall("test.call_plugin_method", map[string]any{"method": method, "params": params}, result)
 }
 
 func findHarnessBinary(t testing.TB) string {
@@ -296,15 +350,13 @@ func findHarnessBinary(t testing.TB) string {
 	return ""
 }
 
-// StartWithTimeout is like Start but allows a custom startup timeout.
+// StartWithTimeout is like Start but allows a custom RPC call timeout.
 // The default Start uses 30 seconds.
 func StartWithTimeout(t testing.TB, dir string, timeout time.Duration) *Harness {
 	t.Helper()
-	// For now, timeout is unused since test.start blocks until the plugin
-	// initializes (the harness handles the timeout internally at 10s).
-	// This is here for forward-compatibility.
-	_ = timeout
-	return Start(t, dir)
+	h := Start(t, dir)
+	h.timeout = timeout
+	return h
 }
 
 // MustSimulateCommand is like SimulateCommand but fails the test if no match.
@@ -404,11 +456,61 @@ type ConformanceTest struct {
 	Detail string `json:"detail,omitempty"`
 }
 
+// RpcLogEntry records a single RPC call made by the plugin during its lifecycle.
+type RpcLogEntry struct {
+	Method  string          `json:"method"`
+	Params  json.RawMessage `json:"params"`
+	OK      bool            `json:"ok"`
+	Stubbed bool            `json:"stubbed"`
+}
+
+// GetRpcLog returns the full ordered log of RPC calls made by the plugin.
+func (h *Harness) GetRpcLog() []RpcLogEntry {
+	h.t.Helper()
+	var result struct {
+		Entries []RpcLogEntry `json:"entries"`
+	}
+	h.call("test.get_rpc_log", map[string]any{}, &result)
+	return result.Entries
+}
+
 // RunStaticAnalysis runs Phase 1 conformance checks against the loaded plugin.
 func (h *Harness) RunStaticAnalysis() ConformancePhase {
 	h.t.Helper()
 	var result ConformancePhase
 	h.call("test.run_static_analysis", map[string]any{}, &result)
+	return result
+}
+
+// RunStartupCheck runs grammar/command registration conformance checks.
+func (h *Harness) RunStartupCheck() ConformancePhase {
+	h.t.Helper()
+	var result ConformancePhase
+	h.call("test.run_startup_check", map[string]any{}, &result)
+	return result
+}
+
+// RunRPCContract runs RPC contract conformance checks.
+func (h *Harness) RunRPCContract() ConformancePhase {
+	h.t.Helper()
+	var result ConformancePhase
+	h.call("test.run_rpc_contract", map[string]any{}, &result)
+	return result
+}
+
+// RunSettingsCheck runs settings tab rendering conformance checks.
+func (h *Harness) RunSettingsCheck() ConformancePhase {
+	h.t.Helper()
+	var result ConformancePhase
+	h.call("test.run_settings_check", map[string]any{}, &result)
+	return result
+}
+
+// RunDependencyCheck runs dependency validation conformance checks.
+func (h *Harness) RunDependencyCheck() ConformancePhase {
+	h.t.Helper()
+	var result ConformancePhase
+	h.call("test.run_dependency_check", map[string]any{}, &result)
 	return result
 }
 
