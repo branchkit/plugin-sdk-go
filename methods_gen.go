@@ -274,9 +274,11 @@ func (p *Plugin) CommandsList() (*CommandsListResponse, error) {
 }
 
 // CommandsMatch match words against the command registry.
-func (p *Plugin) CommandsMatch(activeTags json.RawMessage, words []string) (*CommandsMatchResponse, error) {
+func (p *Plugin) CommandsMatch(activeTags json.RawMessage, sessionID json.RawMessage, source json.RawMessage, words []string) (*CommandsMatchResponse, error) {
 	req := &CommandsMatchRequest{
 		ActiveTags: activeTags,
+		SessionID: sessionID,
+		Source: source,
 		Words: words,
 	}
 	var result CommandsMatchResponse
@@ -322,9 +324,10 @@ func (p *Plugin) DiscoveryClosed() error {
 }
 
 // Dispatch dispatch a typed Action to a plugin or platform builtin.
-func (p *Plugin) Dispatch(action json.RawMessage) (*DispatchResponse, error) {
+func (p *Plugin) Dispatch(action json.RawMessage, traceID json.RawMessage) (*DispatchResponse, error) {
 	req := &DispatchRequest{
 		Action: action,
+		TraceID: traceID,
 	}
 	var result DispatchResponse
 	err := p.Call(MethodDispatch, req, &result)

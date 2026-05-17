@@ -965,6 +965,8 @@ type CommandsListResponse struct {
 // CommandsMatchRequest is the request type for commands.match.
 type CommandsMatchRequest struct {
 	ActiveTags json.RawMessage `json:"active_tags,omitempty"`
+	SessionID json.RawMessage `json:"session_id,omitempty"`
+	Source json.RawMessage `json:"source,omitempty"`
 	Words []string `json:"words,omitempty"`
 }
 
@@ -978,8 +980,10 @@ type CommandsMatchResponse struct {
 	Matched bool `json:"matched"`
 	OwnerPlugin json.RawMessage `json:"owner_plugin,omitempty"`
 	RequiresTags []string `json:"requires_tags"`
+	ScopedTags []string `json:"scoped_tags,omitempty"`
 	SetsTagWrites []GateWrite `json:"sets_tag_writes,omitempty"`
 	SetsTags []string `json:"sets_tags"`
+	TraceID *string `json:"trace_id,omitempty"`
 }
 
 // CommandsPushRequest is the request type for commands.push.
@@ -1021,6 +1025,7 @@ type DiscoveryClosedResponse struct {
 // DispatchRequest is the request type for dispatch.
 type DispatchRequest struct {
 	Action json.RawMessage `json:"action"`
+	TraceID json.RawMessage `json:"trace_id,omitempty"`
 }
 
 // DispatchResponse is the response type for dispatch.
