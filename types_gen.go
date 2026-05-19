@@ -4951,6 +4951,11 @@ type SelectionSetResponse struct {
 	Ok bool `json:"ok"`
 }
 
+// SessionBoundaryResponse is the response type for session.boundary.
+type SessionBoundaryResponse struct {
+	Ok bool `json:"ok"`
+}
+
 // SessionEndCleanupResponse is the response type for session.end_cleanup.
 type SessionEndCleanupResponse struct {
 	ControlMessage json.RawMessage `json:"control_message,omitempty"`

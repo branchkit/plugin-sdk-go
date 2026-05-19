@@ -5849,6 +5849,11 @@ func (p *Plugin) SelectionSet(channel json.RawMessage, items json.RawMessage, ti
 	return p.Call(MethodSelectionSet, req, nil)
 }
 
+// SessionBoundary emit _platform.input.session_boundary at actual session boundaries.
+func (p *Plugin) SessionBoundary() error {
+	return p.Call(MethodSessionBoundary, nil, nil)
+}
+
 // SessionEndCleanup tear down input-session HUD/tag state and emit session_ended event.
 func (p *Plugin) SessionEndCleanup() (*SessionEndCleanupResponse, error) {
 	var result SessionEndCleanupResponse

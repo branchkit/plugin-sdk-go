@@ -581,6 +581,7 @@ const (
 	MethodPipelinesStop = "pipelines.stop" // since 0.1.0
 	MethodSelectionPick = "selection.pick" // since 0.1.0
 	MethodSelectionSet = "selection.set" // since 0.1.0
+	MethodSessionBoundary = "session.boundary" // since 0.1.0
 	MethodSessionEndCleanup = "session.end_cleanup" // since 0.1.0
 	MethodSettingsPatchSignals = "settings.patch_signals" // since 0.1.0
 	MethodSettingsRedirect = "settings.redirect" // since 0.1.0
@@ -613,6 +614,7 @@ const (
 	EventHidDisconnected = "_platform.hid.disconnected"
 	EventHidInput = "_platform.hid.input"
 	EventHidReport = "_platform.hid.report"
+	EventInputSessionBoundary = "_platform.input.session_boundary"
 	EventInputSessionEnded = "_platform.input.session_ended"
 	EventKeyboardLayoutChanged = "_platform.keyboard.layout_changed"
 	EventPipelineError = "_platform.pipeline.error"
