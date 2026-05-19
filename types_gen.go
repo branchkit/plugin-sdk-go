@@ -5058,6 +5058,11 @@ type SystemRunShellResponse struct {
 	Ok bool `json:"ok"`
 }
 
+// VocabularyCommitResponse is the response type for vocabulary.commit.
+type VocabularyCommitResponse struct {
+	Ok bool `json:"ok"`
+}
+
 // ===== Actuator → Plugin request/response types =====
 
 // OnActionRequest is the request type for on_action.

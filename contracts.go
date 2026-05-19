@@ -591,6 +591,7 @@ const (
 	MethodSystemLaunchApp = "system.launch_app" // since 0.1.0
 	MethodSystemNotify = "system.notify" // since 0.1.0
 	MethodSystemRunShell = "system.run_shell" // since 0.1.0
+	MethodVocabularyCommit = "vocabulary.commit" // since 0.1.0
 )
 
 // RPC method names: actuator → plugin (use with plugin.Handle()).

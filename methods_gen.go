@@ -5944,3 +5944,8 @@ func (p *Plugin) SystemRunShell(command string) error {
 	}
 	return p.Call(MethodSystemRunShell, req, nil)
 }
+
+// VocabularyCommit commit pending vocabulary additions to the recognition pipeline.
+func (p *Plugin) VocabularyCommit() error {
+	return p.Call(MethodVocabularyCommit, nil, nil)
+}
