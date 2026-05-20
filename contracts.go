@@ -579,6 +579,7 @@ const (
 	MethodPipelinesRun = "pipelines.run" // since 0.1.0
 	MethodPipelinesStatus = "pipelines.status" // since 0.1.0
 	MethodPipelinesStop = "pipelines.stop" // since 0.1.0
+	MethodPluginDebug = "plugin.debug" // since 0.1.0
 	MethodSelectionPick = "selection.pick" // since 0.1.0
 	MethodSelectionSet = "selection.set" // since 0.1.0
 	MethodSessionBoundary = "session.boundary" // since 0.1.0

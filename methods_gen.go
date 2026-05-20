@@ -5826,6 +5826,15 @@ func (p *Plugin) PipelinesStop(name string) (*PipelinesStopResponse, error) {
 	return &result, nil
 }
 
+// PluginDebug write a diagnostic line to this plugin's per-plugin log file. Use shared.Logf instead for cross-cutting coordination lines that belong in actuator.log..
+func (p *Plugin) PluginDebug(data json.RawMessage, tag json.RawMessage) error {
+	req := &PluginDebugRequest{
+		Data: data,
+		Tag: tag,
+	}
+	return p.Call(MethodPluginDebug, req, nil)
+}
+
 // SelectionPick resolve a selection pick by index — clears selection state, emits event, closes HUD.
 func (p *Plugin) SelectionPick(index int) (*SelectionPickResponse, error) {
 	req := &SelectionPickRequest{

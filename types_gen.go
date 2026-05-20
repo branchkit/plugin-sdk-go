@@ -4926,6 +4926,17 @@ type PipelinesStopResponse struct {
 	Stopped bool `json:"stopped"`
 }
 
+// PluginDebugRequest is the request type for plugin.debug.
+type PluginDebugRequest struct {
+	Data json.RawMessage `json:"data,omitempty"`
+	Tag json.RawMessage `json:"tag,omitempty"`
+}
+
+// PluginDebugResponse is the response type for plugin.debug.
+type PluginDebugResponse struct {
+	Ok bool `json:"ok"`
+}
+
 // SelectionPickRequest is the request type for selection.pick.
 type SelectionPickRequest struct {
 	Index int `json:"index"`
