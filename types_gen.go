@@ -4929,6 +4929,7 @@ type PipelinesStopResponse struct {
 // PluginDebugRequest is the request type for plugin.debug.
 type PluginDebugRequest struct {
 	Data json.RawMessage `json:"data,omitempty"`
+	Level json.RawMessage `json:"level,omitempty"`
 	Tag json.RawMessage `json:"tag,omitempty"`
 }
 

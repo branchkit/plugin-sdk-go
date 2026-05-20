@@ -37,6 +37,7 @@ const (
 	LogEventNativeWorldPollerEvent = "native.world_poller_event"
 	LogEventOperationCompleted = "operation.completed"
 	LogEventPluginDegraded = "plugin.degraded"
+	LogEventPluginDiagnostic = "plugin.diagnostic"
 	LogEventPluginExited = "plugin.exited"
 	LogEventPluginLifecycleOp = "plugin.lifecycle_op"
 	LogEventPluginLoaded = "plugin.loaded"
@@ -103,6 +104,7 @@ var LogEventRegistry = map[string]LogEventMeta{
 	"native.world_poller_event": {Name: "native.world_poller_event", Summary: "World poller lifecycle event (started, seeded, batch processed, idle).", Since: "0.1.0", Source: "native", Severity: "debug", Redaction: "none"},
 	"operation.completed": {Name: "operation.completed", Summary: "An operation handler completed execution.", Since: "0.1.0", Source: "dispatch", Severity: "debug", Redaction: "none"},
 	"plugin.degraded": {Name: "plugin.degraded", Summary: "A managed plugin's RPC channel hit the consecutive-timeout threshold and was marked degraded.", Since: "0.1.0", Source: "plugins", Severity: "warn", Redaction: "none"},
+	"plugin.diagnostic": {Name: "plugin.diagnostic", Summary: "A plugin emitted a warn- or error-level diagnostic via plugin.debug; cross-posted to actuator.log so plugin-level failures interleave with the actuator's view of dispatch / coordination.", Since: "0.2.0", Source: "plugins", Severity: "warn", Redaction: "none"},
 	"plugin.exited": {Name: "plugin.exited", Summary: "A managed plugin process exited (clean or crashed).", Since: "0.1.0", Source: "plugins", Severity: "info", Redaction: "none"},
 	"plugin.lifecycle_op": {Name: "plugin.lifecycle_op", Summary: "A plugin lifecycle operation (install, uninstall, update, reload, hot-reload, enable, disable).", Since: "0.1.0", Source: "plugins", Severity: "info", Redaction: "none"},
 	"plugin.loaded": {Name: "plugin.loaded", Summary: "A plugin manifest was discovered and parsed.", Since: "0.1.0", Source: "plugins", Severity: "info", Redaction: "none"},

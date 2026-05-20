@@ -5827,9 +5827,10 @@ func (p *Plugin) PipelinesStop(name string) (*PipelinesStopResponse, error) {
 }
 
 // PluginDebug write a diagnostic line to this plugin's per-plugin log file. Use shared.Logf instead for cross-cutting coordination lines that belong in actuator.log..
-func (p *Plugin) PluginDebug(data json.RawMessage, tag json.RawMessage) error {
+func (p *Plugin) PluginDebug(data json.RawMessage, level json.RawMessage, tag json.RawMessage) error {
 	req := &PluginDebugRequest{
 		Data: data,
+		Level: level,
 		Tag: tag,
 	}
 	return p.Call(MethodPluginDebug, req, nil)
