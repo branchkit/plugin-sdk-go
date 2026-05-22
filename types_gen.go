@@ -973,7 +973,7 @@ type CommandsMatchRequest struct {
 // CommandsMatchResponse is the response type for commands.match.
 type CommandsMatchResponse struct {
 	Action json.RawMessage `json:"action,omitempty"`
-	Args []json.RawMessage `json:"args"`
+	Args map[string]json.RawMessage `json:"args"`
 	ClearsTagWrites []GateWrite `json:"clears_tag_writes,omitempty"`
 	ClearsTags []string `json:"clears_tags"`
 	ConsumedCount int `json:"consumed_count"`
