@@ -5,6 +5,15 @@ import (
 	"fmt"
 )
 
+// derefOr returns *p or the zero value when p is nil.
+func derefOr[T any](p *T) T {
+	if p == nil {
+		var zero T
+		return zero
+	}
+	return *p
+}
+
 // EffectDisplacedEvent is the payload delivered to OnEffectDisplaced
 // callbacks. Mirrors the actuator-side audit event shape — see
 // `actuator/src/operations/registered/effects.rs`.
@@ -38,11 +47,7 @@ func (p *Plugin) AssertEffect(name string) (granted bool, alreadyHeld bool, disp
 	if res == nil {
 		return false, false, "", fmt.Errorf("effects.assert returned nil response")
 	}
-	displacedStr, err := decodeOptionalString(res.Displaced)
-	if err != nil {
-		return false, false, "", fmt.Errorf("effects.assert: decode displaced: %w", err)
-	}
-	return res.Granted, res.AlreadyHeld, displacedStr, nil
+	return res.Granted, res.AlreadyHeld, derefOr(res.Displaced), nil
 }
 
 // RetractEffect releases this plugin's assertion of `name`. Idempotent —
@@ -59,11 +64,7 @@ func (p *Plugin) RetractEffect(name string) (retracted bool, newOwner string, er
 	if res == nil {
 		return false, "", fmt.Errorf("effects.retract returned nil response")
 	}
-	newOwnerStr, err := decodeOptionalString(res.NewOwner)
-	if err != nil {
-		return false, "", fmt.Errorf("effects.retract: decode new_owner: %w", err)
-	}
-	return res.Retracted, newOwnerStr, nil
+	return res.Retracted, derefOr(res.NewOwner), nil
 }
 
 // IsEffectActive returns true when this plugin currently holds top-of-
@@ -82,11 +83,7 @@ func (p *Plugin) IsEffectActive(name string) (active bool, currentOwner string, 
 	if res == nil {
 		return false, "", fmt.Errorf("effects.is_active returned nil response")
 	}
-	currentOwnerStr, err := decodeOptionalString(res.CurrentOwner)
-	if err != nil {
-		return false, "", fmt.Errorf("effects.is_active: decode current_owner: %w", err)
-	}
-	return res.Active, currentOwnerStr, nil
+	return res.Active, derefOr(res.CurrentOwner), nil
 }
 
 // OnEffectDisplaced registers a callback fired when this plugin's
@@ -118,17 +115,3 @@ func (p *Plugin) OnEffectDisplaced(handler func(evt EffectDisplacedEvent)) {
 	})
 }
 
-// decodeOptionalString unmarshals a json.RawMessage that holds either
-// `null`, missing, or a JSON string into a Go string. Empty/null
-// produce "". Used because the Rust emitter routes Option<String>
-// through json.RawMessage for every Optional<T>.
-func decodeOptionalString(raw json.RawMessage) (string, error) {
-	if len(raw) == 0 || string(raw) == "null" {
-		return "", nil
-	}
-	var s string
-	if err := json.Unmarshal(raw, &s); err != nil {
-		return "", err
-	}
-	return s, nil
-}

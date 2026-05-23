@@ -175,7 +175,7 @@ func (p *Plugin) CollectionListLog(name string, opts *LogListOpts) (*CollectionL
 }
 
 // CollectionOverride add, remove, restore, patch, or reset user overrides for a collection.
-func (p *Plugin) CollectionOverride(action string, collection string, fields json.RawMessage, id json.RawMessage) error {
+func (p *Plugin) CollectionOverride(action string, collection string, fields json.RawMessage, id *string) error {
 	req := &CollectionOverrideRequest{
 		Action: action,
 		Collection: collection,
@@ -196,7 +196,7 @@ func (p *Plugin) CollectionPatch(fields json.RawMessage, id string, name string)
 }
 
 // CollectionPush write data to a shared store.
-func (p *Plugin) CollectionPush(data json.RawMessage, label json.RawMessage, name string) error {
+func (p *Plugin) CollectionPush(data json.RawMessage, label *string, name string) error {
 	req := &CollectionPushRequest{
 		Data: data,
 		Label: label,
@@ -225,7 +225,7 @@ func (p *Plugin) CollectionSetRecording(enabled bool, name string) error {
 }
 
 // CollectionsList list collections with entries for display, optionally filtered by kind.
-func (p *Plugin) CollectionsList(kind json.RawMessage) ([]CollectionsListSection, error) {
+func (p *Plugin) CollectionsList(kind *string) ([]CollectionsListSection, error) {
 	req := &CollectionsListRequest{
 		Kind: kind,
 	}
@@ -240,7 +240,7 @@ func (p *Plugin) CollectionsList(kind json.RawMessage) ([]CollectionsListSection
 }
 
 // CommandsCompletions get completions for a command prefix: partial match status, next words for grammar, and display items.
-func (p *Plugin) CommandsCompletions(activeTags json.RawMessage, collections json.RawMessage, requireTag json.RawMessage, words []string) (*CommandsCompletionsResponse, error) {
+func (p *Plugin) CommandsCompletions(activeTags json.RawMessage, collections json.RawMessage, requireTag *string, words []string) (*CommandsCompletionsResponse, error) {
 	req := &CommandsCompletionsRequest{
 		ActiveTags: activeTags,
 		Collections: collections,
@@ -274,7 +274,7 @@ func (p *Plugin) CommandsList() (*CommandsListResponse, error) {
 }
 
 // CommandsMatch match words against the command registry.
-func (p *Plugin) CommandsMatch(activeTags json.RawMessage, sessionID json.RawMessage, source json.RawMessage, words []string) (*CommandsMatchResponse, error) {
+func (p *Plugin) CommandsMatch(activeTags json.RawMessage, sessionID *string, source *string, words []string) (*CommandsMatchResponse, error) {
 	req := &CommandsMatchRequest{
 		ActiveTags: activeTags,
 		SessionID: sessionID,
@@ -324,7 +324,7 @@ func (p *Plugin) DiscoveryClosed() error {
 }
 
 // Dispatch dispatch a typed Action to a plugin or platform builtin.
-func (p *Plugin) Dispatch(action json.RawMessage, traceID json.RawMessage) (*DispatchResponse, error) {
+func (p *Plugin) Dispatch(action json.RawMessage, traceID *string) (*DispatchResponse, error) {
 	req := &DispatchRequest{
 		Action: action,
 		TraceID: traceID,
@@ -387,7 +387,7 @@ func (p *Plugin) EventsAppend(data json.RawMessage, eventType string, sessionID 
 }
 
 // EventsEmit emit a plugin event on the event bus.
-func (p *Plugin) EventsEmit(correlationID json.RawMessage, data json.RawMessage, eventType string) error {
+func (p *Plugin) EventsEmit(correlationID *string, data json.RawMessage, eventType string) error {
 	req := &EventsEmitRequest{
 		CorrelationID: correlationID,
 		Data: data,
@@ -466,7 +466,7 @@ func (p *Plugin) InputClick(button *string) error {
 }
 
 // InputClipboardAction perform a clipboard action (copy, paste, or set text).
-func (p *Plugin) InputClipboardAction(action string, text json.RawMessage) error {
+func (p *Plugin) InputClipboardAction(action string, text *string) error {
 	req := &InputClipboardActionRequest{
 		Action: action,
 		Text: text,
@@ -542,7 +542,7 @@ func (p *Plugin) InputClipboardWriteItems(items []ClipboardWriteItem) error {
 }
 
 // InputDoubleClick double-click at position.
-func (p *Plugin) InputDoubleClick(x json.RawMessage, y json.RawMessage) error {
+func (p *Plugin) InputDoubleClick(x *int, y *int) error {
 	req := &InputDoubleClickRequest{
 		X: x,
 		Y: y,
@@ -584,7 +584,7 @@ func (p *Plugin) InputMouseButton(button *string, direction string) error {
 }
 
 // InputPressKey press a key by raw keycode or name, with optional modifiers.
-func (p *Plugin) InputPressKey(code json.RawMessage, modifiers []string, name json.RawMessage) error {
+func (p *Plugin) InputPressKey(code *int, modifiers []string, name *string) error {
 	req := &InputPressKeyRequest{
 		Code: code,
 		Modifiers: modifiers,
@@ -603,7 +603,7 @@ func (p *Plugin) InputRawKey(code int, direction string) error {
 }
 
 // InputRightClick right-click at position.
-func (p *Plugin) InputRightClick(x json.RawMessage, y json.RawMessage) error {
+func (p *Plugin) InputRightClick(x *int, y *int) error {
 	req := &InputRightClickRequest{
 		X: x,
 		Y: y,
@@ -639,7 +639,7 @@ func (p *Plugin) InputSwitchInputSource(sourceID string) (bool, error) {
 }
 
 // InputTripleClick triple-click at position (select paragraph/line).
-func (p *Plugin) InputTripleClick(x json.RawMessage, y json.RawMessage) error {
+func (p *Plugin) InputTripleClick(x *int, y *int) error {
 	req := &InputTripleClickRequest{
 		X: x,
 		Y: y,
@@ -1346,7 +1346,7 @@ func (p *Plugin) NativeBorders() error {
 }
 
 // NativeBrightness get display brightness (0.0-1.0).
-func (p *Plugin) NativeBrightness(displayID json.RawMessage) (*NativeBrightnessResponse, error) {
+func (p *Plugin) NativeBrightness(displayID *int) (*NativeBrightnessResponse, error) {
 	req := &NativeBrightnessRequest{
 		DisplayID: displayID,
 	}
@@ -3410,7 +3410,7 @@ func (p *Plugin) NativeMountPoints() ([]string, error) {
 }
 
 // NativeMouseButtonClick click a specific mouse button (middle, button4, etc.).
-func (p *Plugin) NativeMouseButtonClick(button int, x json.RawMessage, y json.RawMessage) error {
+func (p *Plugin) NativeMouseButtonClick(button int, x *int, y *int) error {
 	req := &NativeMouseButtonClickRequest{
 		Button: button,
 		X: x,
@@ -3564,7 +3564,7 @@ func (p *Plugin) NativeNotificationSoundEnabled() (*NativeNotificationSoundEnabl
 }
 
 // NativeNotify post a rich notification (osascript fallback).
-func (p *Plugin) NativeNotify(body json.RawMessage, sound json.RawMessage, subtitle json.RawMessage, title string) (*NativeNotifyResponse, error) {
+func (p *Plugin) NativeNotify(body *string, sound *string, subtitle *string, title string) (*NativeNotifyResponse, error) {
 	req := &NativeNotifyRequest{
 		Body: body,
 		Sound: sound,
@@ -3701,7 +3701,7 @@ func (p *Plugin) NativeOpenFinderWindow(path string) error {
 }
 
 // NativeOpenSystemSettings open System Settings to a specific pane (e.g. 'Privacy_Accessibility').
-func (p *Plugin) NativeOpenSystemSettings(pane json.RawMessage) error {
+func (p *Plugin) NativeOpenSystemSettings(pane *string) error {
 	req := &NativeOpenSystemSettingsRequest{
 		Pane: pane,
 	}
@@ -3841,7 +3841,7 @@ func (p *Plugin) NativePressAndHoldEnabled() (*NativePressAndHoldEnabledResponse
 }
 
 // NativePreventSleep assert or release sleep prevention.
-func (p *Plugin) NativePreventSleep(assertionID json.RawMessage, reason *string) (*NativePreventSleepResponse, error) {
+func (p *Plugin) NativePreventSleep(assertionID *string, reason *string) (*NativePreventSleepResponse, error) {
 	req := &NativePreventSleepRequest{
 		AssertionID: assertionID,
 		Reason: reason,
@@ -4089,7 +4089,7 @@ func (p *Plugin) NativeReadFile(path string) (*NativeReadFileResponse, error) {
 }
 
 // NativeReadFileBinary read a file as base64-encoded binary.
-func (p *Plugin) NativeReadFileBinary(maxBytes json.RawMessage, path string) (*NativeReadFileBinaryResponse, error) {
+func (p *Plugin) NativeReadFileBinary(maxBytes *int, path string) (*NativeReadFileBinaryResponse, error) {
 	req := &NativeReadFileBinaryRequest{
 		MaxBytes: maxBytes,
 		Path: path,
@@ -4249,7 +4249,7 @@ func (p *Plugin) NativeRunJxa(script string) (*NativeRunJxaResponse, error) {
 }
 
 // NativeRunShortcut run a Shortcuts.app shortcut by name.
-func (p *Plugin) NativeRunShortcut(input json.RawMessage, name string) (*NativeRunShortcutResponse, error) {
+func (p *Plugin) NativeRunShortcut(input *string, name string) (*NativeRunShortcutResponse, error) {
 	req := &NativeRunShortcutRequest{
 		Input: input,
 		Name: name,
@@ -4360,7 +4360,7 @@ func (p *Plugin) NativeScreenSharingEnabled() (*NativeScreenSharingEnabledRespon
 }
 
 // NativeScreenshot capture a screenshot as base64-encoded PNG.
-func (p *Plugin) NativeScreenshot(displayID json.RawMessage, region json.RawMessage, windowID json.RawMessage) (*NativeScreenshotResponse, error) {
+func (p *Plugin) NativeScreenshot(displayID *int, region json.RawMessage, windowID *string) (*NativeScreenshotResponse, error) {
 	req := &NativeScreenshotRequest{
 		DisplayID: displayID,
 		Region: region,
@@ -4559,7 +4559,7 @@ func (p *Plugin) NativeSetBluetoothPower(on bool) error {
 }
 
 // NativeSetBrightness set display brightness (0.0-1.0).
-func (p *Plugin) NativeSetBrightness(brightness float64, displayID json.RawMessage) error {
+func (p *Plugin) NativeSetBrightness(brightness float64, displayID *int) error {
 	req := &NativeSetBrightnessRequest{
 		Brightness: brightness,
 		DisplayID: displayID,
@@ -5003,7 +5003,7 @@ func (p *Plugin) NativeSpacesSpanDisplays() (*NativeSpacesSpanDisplaysResponse, 
 }
 
 // NativeSpeak speak text using the system text-to-speech engine.
-func (p *Plugin) NativeSpeak(rate json.RawMessage, text string, voice json.RawMessage) error {
+func (p *Plugin) NativeSpeak(rate *float64, text string, voice *string) error {
 	req := &NativeSpeakRequest{
 		Rate: rate,
 		Text: text,
@@ -5827,7 +5827,7 @@ func (p *Plugin) PipelinesStop(name string) (*PipelinesStopResponse, error) {
 }
 
 // PluginDebug write a diagnostic line to this plugin's per-plugin log file. Use shared.Logf instead for cross-cutting coordination lines that belong in actuator.log..
-func (p *Plugin) PluginDebug(data json.RawMessage, level json.RawMessage, tag json.RawMessage) error {
+func (p *Plugin) PluginDebug(data json.RawMessage, level json.RawMessage, tag *string) error {
 	req := &PluginDebugRequest{
 		Data: data,
 		Level: level,
@@ -5850,7 +5850,7 @@ func (p *Plugin) SelectionPick(index int) (*SelectionPickResponse, error) {
 }
 
 // SelectionSet show the selection HUD with items for the user to pick from.
-func (p *Plugin) SelectionSet(channel json.RawMessage, items json.RawMessage, title json.RawMessage) error {
+func (p *Plugin) SelectionSet(channel *string, items json.RawMessage, title *string) error {
 	req := &SelectionSetRequest{
 		Channel: channel,
 		Items: items,
@@ -5896,7 +5896,7 @@ func (p *Plugin) SettingsRefresh() error {
 }
 
 // SettingsRulesCreate create a new user voice command from settings-UI signals.
-func (p *Plugin) SettingsRulesCreate(newruleactionjson json.RawMessage, newruleactiontype json.RawMessage, newruleactionval json.RawMessage, newrulecategory json.RawMessage, newruleclearstags json.RawMessage, newruledescription json.RawMessage, newrulephrase json.RawMessage, newrulerequirestags json.RawMessage, newrulesetstags json.RawMessage) error {
+func (p *Plugin) SettingsRulesCreate(newruleactionjson *string, newruleactiontype *string, newruleactionval *string, newrulecategory *string, newruleclearstags *string, newruledescription *string, newrulephrase *string, newrulerequirestags *string, newrulesetstags *string) error {
 	req := &SettingsRulesCreateRequest{
 		Newruleactionjson: newruleactionjson,
 		Newruleactiontype: newruleactiontype,
@@ -5912,7 +5912,7 @@ func (p *Plugin) SettingsRulesCreate(newruleactionjson json.RawMessage, newrulea
 }
 
 // SettingsRulesUpdate update an existing user voice command from settings-UI signals.
-func (p *Plugin) SettingsRulesUpdate(canonical string, newruleactionjson json.RawMessage, newruleactiontype json.RawMessage, newruleactionval json.RawMessage, newrulecategory json.RawMessage, newruleclearstags json.RawMessage, newruledescription json.RawMessage, newrulephrase json.RawMessage, newrulerequirestags json.RawMessage, newrulesetstags json.RawMessage) error {
+func (p *Plugin) SettingsRulesUpdate(canonical string, newruleactionjson *string, newruleactiontype *string, newruleactionval *string, newrulecategory *string, newruleclearstags *string, newruledescription *string, newrulephrase *string, newrulerequirestags *string, newrulesetstags *string) error {
 	req := &SettingsRulesUpdateRequest{
 		Canonical: canonical,
 		Newruleactionjson: newruleactionjson,
@@ -5938,7 +5938,7 @@ func (p *Plugin) SystemLaunchApp(bundleID string, newInstance *bool) error {
 }
 
 // SystemNotify show a HUD notification with title and body text.
-func (p *Plugin) SystemNotify(body string, durationSecs json.RawMessage, title string) error {
+func (p *Plugin) SystemNotify(body string, durationSecs *int, title string) error {
 	req := &SystemNotifyRequest{
 		Body: body,
 		DurationSecs: durationSecs,

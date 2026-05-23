@@ -9,8 +9,10 @@ import (
 // record with that id exists.
 //
 // CollectionFetchResponse.Record is json.RawMessage because the actuator
-// declares it as Option<CollectionRecord> and the Go emitter routes every
-// Option<T> through RawMessage. Unmarshal here so callers get a typed value.
+// declares it as Option<CollectionRecord> and the Go emitter routes
+// Option<StructType> through RawMessage (the Phase 5 anyOf-null collapser
+// only fires on primitive inner types). Unmarshal here so callers get
+// a typed value.
 func (p *Plugin) Get(name, id string) (*CollectionRecord, error) {
 	res, err := p.CollectionFetch(id, name)
 	if err != nil {
@@ -103,9 +105,8 @@ func (p *Plugin) Delete(name, id string) (bool, error) {
 }
 
 // ListOptsBuilder constructs a typed ListOpts. The auto-generated shape
-// stores all four optional filter fields as json.RawMessage (a codegen
-// artifact for Option<T> fields); this builder marshals typed values so
-// callers don't write JSON literals inline.
+// uses pointer fields for the optional filters (`*int` / `*string`);
+// the builder wraps them so callers don't write `&ms` inline.
 type ListOptsBuilder struct {
 	opts ListOpts
 }
@@ -113,22 +114,24 @@ type ListOptsBuilder struct {
 func NewListOpts() *ListOptsBuilder { return &ListOptsBuilder{} }
 
 func (b *ListOptsBuilder) Since(ms int64) *ListOptsBuilder {
-	b.opts.SinceMs, _ = json.Marshal(ms)
+	v := int(ms)
+	b.opts.SinceMs = &v
 	return b
 }
 
 func (b *ListOptsBuilder) Until(ms int64) *ListOptsBuilder {
-	b.opts.UntilMs, _ = json.Marshal(ms)
+	v := int(ms)
+	b.opts.UntilMs = &v
 	return b
 }
 
 func (b *ListOptsBuilder) Limit(n int) *ListOptsBuilder {
-	b.opts.Limit, _ = json.Marshal(n)
+	b.opts.Limit = &n
 	return b
 }
 
 func (b *ListOptsBuilder) Cursor(id string) *ListOptsBuilder {
-	b.opts.Cursor, _ = json.Marshal(id)
+	b.opts.Cursor = &id
 	return b
 }
 

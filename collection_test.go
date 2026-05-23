@@ -201,21 +201,17 @@ func TestPatchMarshalsFields(t *testing.T) {
 func TestListOptsBuilderEncodesTypedValues(t *testing.T) {
 	opts := NewListOpts().Since(1000).Until(2000).Limit(10).Cursor("k5").Build()
 
-	var since int64
-	if err := json.Unmarshal(opts.SinceMs, &since); err != nil || since != 1000 {
-		t.Errorf("Since not encoded: %v %d", err, since)
+	if opts.SinceMs == nil || *opts.SinceMs != 1000 {
+		t.Errorf("Since not encoded: %v", opts.SinceMs)
 	}
-	var until int64
-	if err := json.Unmarshal(opts.UntilMs, &until); err != nil || until != 2000 {
-		t.Errorf("Until not encoded: %v %d", err, until)
+	if opts.UntilMs == nil || *opts.UntilMs != 2000 {
+		t.Errorf("Until not encoded: %v", opts.UntilMs)
 	}
-	var limit int
-	if err := json.Unmarshal(opts.Limit, &limit); err != nil || limit != 10 {
-		t.Errorf("Limit not encoded: %v %d", err, limit)
+	if opts.Limit == nil || *opts.Limit != 10 {
+		t.Errorf("Limit not encoded: %v", opts.Limit)
 	}
-	var cursor string
-	if err := json.Unmarshal(opts.Cursor, &cursor); err != nil || cursor != "k5" {
-		t.Errorf("Cursor not encoded: %v %q", err, cursor)
+	if opts.Cursor == nil || *opts.Cursor != "k5" {
+		t.Errorf("Cursor not encoded: %v", opts.Cursor)
 	}
 }
 

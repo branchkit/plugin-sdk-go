@@ -216,17 +216,17 @@ func TestListLogPageReturnsTotal(t *testing.T) {
 
 func TestLogListOptsBuilderEncodesTypedValues(t *testing.T) {
 	opts := NewLogListOpts().Since(100).Until(200).Limit(5).Cursor("01H_X").Build()
-	if string(opts.SinceMs) != "100" {
-		t.Errorf("SinceMs: got %q", string(opts.SinceMs))
+	if opts.SinceMs == nil || *opts.SinceMs != 100 {
+		t.Errorf("SinceMs: got %v", opts.SinceMs)
 	}
-	if string(opts.UntilMs) != "200" {
-		t.Errorf("UntilMs: got %q", string(opts.UntilMs))
+	if opts.UntilMs == nil || *opts.UntilMs != 200 {
+		t.Errorf("UntilMs: got %v", opts.UntilMs)
 	}
-	if string(opts.Limit) != "5" {
-		t.Errorf("Limit: got %q", string(opts.Limit))
+	if opts.Limit == nil || *opts.Limit != 5 {
+		t.Errorf("Limit: got %v", opts.Limit)
 	}
-	if string(opts.Cursor) != `"01H_X"` {
-		t.Errorf("Cursor: got %q", string(opts.Cursor))
+	if opts.Cursor == nil || *opts.Cursor != "01H_X" {
+		t.Errorf("Cursor: got %v", opts.Cursor)
 	}
 }
 

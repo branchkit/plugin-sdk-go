@@ -15,15 +15,15 @@ type AXElementInfo struct {
 	Actions []string `json:"actions"`
 	Attributes []string `json:"attributes"`
 	ChildrenCount int `json:"children_count"`
-	Description json.RawMessage `json:"description,omitempty"`
+	Description *string `json:"description,omitempty"`
 	Enabled bool `json:"enabled"`
 	Focused bool `json:"focused"`
 	Path []AXPathSegment `json:"path"`
 	Position json.RawMessage `json:"position,omitempty"`
 	Role string `json:"role"`
 	Size json.RawMessage `json:"size,omitempty"`
-	Subrole json.RawMessage `json:"subrole,omitempty"`
-	Title json.RawMessage `json:"title,omitempty"`
+	Subrole *string `json:"subrole,omitempty"`
+	Title *string `json:"title,omitempty"`
 	Value json.RawMessage `json:"value,omitempty"`
 }
 
@@ -53,7 +53,7 @@ type ActionFieldSchema struct {
 	Fields []ActionFieldSchema `json:"fields"`
 	Key string `json:"key"`
 	Label string `json:"label"`
-	Placeholder json.RawMessage `json:"placeholder,omitempty"`
+	Placeholder *string `json:"placeholder,omitempty"`
 	Required bool `json:"required"`
 }
 
@@ -114,7 +114,7 @@ type BleWriteEntry struct {
 // BluetoothDevice is auto-generated from the OpenRPC spec.
 type BluetoothDevice struct {
 	Address string `json:"address"`
-	DeviceType json.RawMessage `json:"device_type,omitempty"`
+	DeviceType *string `json:"device_type,omitempty"`
 	IsConnected bool `json:"is_connected"`
 	IsPaired bool `json:"is_paired"`
 	Name string `json:"name"`
@@ -122,11 +122,11 @@ type BluetoothDevice struct {
 
 // CalendarEvent is auto-generated from the OpenRPC spec.
 type CalendarEvent struct {
-	Calendar json.RawMessage `json:"calendar,omitempty"`
-	End json.RawMessage `json:"end,omitempty"`
+	Calendar *string `json:"calendar,omitempty"`
+	End *string `json:"end,omitempty"`
 	IsAllDay bool `json:"is_all_day"`
-	Location json.RawMessage `json:"location,omitempty"`
-	Start json.RawMessage `json:"start,omitempty"`
+	Location *string `json:"location,omitempty"`
+	Start *string `json:"start,omitempty"`
 	Title string `json:"title"`
 }
 
@@ -143,16 +143,16 @@ type ClipboardContents struct {
 	AvailableTypes []string `json:"available_types"`
 	ContentType string `json:"content_type"`
 	FileUrls json.RawMessage `json:"file_urls,omitempty"`
-	ImageBase64 json.RawMessage `json:"image_base64,omitempty"`
-	Text json.RawMessage `json:"text,omitempty"`
+	ImageBase64 *string `json:"image_base64,omitempty"`
+	Text *string `json:"text,omitempty"`
 }
 
 // ClipboardWriteItem is auto-generated from the OpenRPC spec.
 type ClipboardWriteItem struct {
 	ContentType string `json:"content_type"`
 	FileUrls json.RawMessage `json:"file_urls,omitempty"`
-	ImageBase64 json.RawMessage `json:"image_base64,omitempty"`
-	Text json.RawMessage `json:"text,omitempty"`
+	ImageBase64 *string `json:"image_base64,omitempty"`
+	Text *string `json:"text,omitempty"`
 }
 
 // CollectionRecord is auto-generated from the OpenRPC spec.
@@ -165,7 +165,7 @@ type CollectionRecord struct {
 type CollectionsListItem struct {
 	ID string `json:"id"`
 	Source string `json:"source"`
-	Subtitle json.RawMessage `json:"subtitle,omitempty"`
+	Subtitle *string `json:"subtitle,omitempty"`
 	Title string `json:"title"`
 }
 
@@ -196,10 +196,10 @@ type CommandRowData struct {
 
 // ContactInfo is auto-generated from the OpenRPC spec.
 type ContactInfo struct {
-	Email json.RawMessage `json:"email,omitempty"`
+	Email *string `json:"email,omitempty"`
 	Name string `json:"name"`
-	Organization json.RawMessage `json:"organization,omitempty"`
-	Phone json.RawMessage `json:"phone,omitempty"`
+	Organization *string `json:"organization,omitempty"`
+	Phone *string `json:"phone,omitempty"`
 }
 
 // CpuInfo is auto-generated from the OpenRPC spec.
@@ -207,13 +207,13 @@ type CpuInfo struct {
 	Architecture string `json:"architecture"`
 	Chip string `json:"chip"`
 	CoreCount int `json:"core_count"`
-	EfficiencyCores json.RawMessage `json:"efficiency_cores,omitempty"`
-	PerformanceCores json.RawMessage `json:"performance_cores,omitempty"`
+	EfficiencyCores *int `json:"efficiency_cores,omitempty"`
+	PerformanceCores *int `json:"performance_cores,omitempty"`
 }
 
 // DeliveredNotification is auto-generated from the OpenRPC spec.
 type DeliveredNotification struct {
-	Body json.RawMessage `json:"body,omitempty"`
+	Body *string `json:"body,omitempty"`
 	DeliveredAt string `json:"delivered_at"`
 	ID string `json:"id"`
 	Title string `json:"title"`
@@ -231,7 +231,7 @@ type DirectoryEntry struct {
 // DiscoverItem is auto-generated from the OpenRPC spec.
 type DiscoverItem struct {
 	ID string `json:"id"`
-	Subtitle json.RawMessage `json:"subtitle,omitempty"`
+	Subtitle *string `json:"subtitle,omitempty"`
 	Tag string `json:"tag"`
 	Title string `json:"title"`
 }
@@ -284,7 +284,7 @@ type DisplayRotation struct {
 
 // ExternalDisk is auto-generated from the OpenRPC spec.
 type ExternalDisk struct {
-	FileSystem json.RawMessage `json:"file_system,omitempty"`
+	FileSystem *string `json:"file_system,omitempty"`
 	FreeBytes int `json:"free_bytes"`
 	IsRemovable bool `json:"is_removable"`
 	MountPoint string `json:"mount_point"`
@@ -344,7 +344,7 @@ type GateWrite struct {
 // HidDeviceEntry is auto-generated from the OpenRPC spec.
 type HidDeviceEntry struct {
 	Axes int `json:"axes"`
-	BleUuid json.RawMessage `json:"ble_uuid,omitempty"`
+	BleUuid *string `json:"ble_uuid,omitempty"`
 	Buttons int `json:"buttons"`
 	ID string `json:"id"`
 	Product string `json:"product"`
@@ -407,8 +407,8 @@ type InstalledApp struct {
 // ListCommandItem is auto-generated from the OpenRPC spec.
 type ListCommandItem struct {
 	ID string `json:"id"`
-	Subtitle json.RawMessage `json:"subtitle,omitempty"`
-	Tag json.RawMessage `json:"tag,omitempty"`
+	Subtitle *string `json:"subtitle,omitempty"`
+	Tag *string `json:"tag,omitempty"`
 	Title string `json:"title"`
 }
 
@@ -420,17 +420,17 @@ type ListCommandSection struct {
 
 // ListOpts is auto-generated from the OpenRPC spec.
 type ListOpts struct {
-	Cursor json.RawMessage `json:"cursor,omitempty"`
-	Limit json.RawMessage `json:"limit,omitempty"`
-	SinceMs json.RawMessage `json:"since_ms,omitempty"`
-	UntilMs json.RawMessage `json:"until_ms,omitempty"`
+	Cursor *string `json:"cursor,omitempty"`
+	Limit *int `json:"limit,omitempty"`
+	SinceMs *int `json:"since_ms,omitempty"`
+	UntilMs *int `json:"until_ms,omitempty"`
 }
 
 // ListeningPort is auto-generated from the OpenRPC spec.
 type ListeningPort struct {
-	Pid json.RawMessage `json:"pid,omitempty"`
+	Pid *int `json:"pid,omitempty"`
 	Port int `json:"port"`
-	ProcessName json.RawMessage `json:"process_name,omitempty"`
+	ProcessName *string `json:"process_name,omitempty"`
 	Protocol string `json:"protocol"`
 }
 
@@ -443,15 +443,15 @@ type LogEntry struct {
 
 // LogListOpts is auto-generated from the OpenRPC spec.
 type LogListOpts struct {
-	Cursor json.RawMessage `json:"cursor,omitempty"`
-	Limit json.RawMessage `json:"limit,omitempty"`
-	SinceMs json.RawMessage `json:"since_ms,omitempty"`
-	UntilMs json.RawMessage `json:"until_ms,omitempty"`
+	Cursor *string `json:"cursor,omitempty"`
+	Limit *int `json:"limit,omitempty"`
+	SinceMs *int `json:"since_ms,omitempty"`
+	UntilMs *int `json:"until_ms,omitempty"`
 }
 
 // LoginItem is auto-generated from the OpenRPC spec.
 type LoginItem struct {
-	BundleID json.RawMessage `json:"bundle_id,omitempty"`
+	BundleID *string `json:"bundle_id,omitempty"`
 	Hidden bool `json:"hidden"`
 	Name string `json:"name"`
 	Path string `json:"path"`
@@ -471,7 +471,7 @@ type MenuItem struct {
 	Children []MenuItem `json:"children"`
 	Enabled bool `json:"enabled"`
 	Index int `json:"index"`
-	Shortcut json.RawMessage `json:"shortcut,omitempty"`
+	Shortcut *string `json:"shortcut,omitempty"`
 	Title string `json:"title"`
 }
 
@@ -488,23 +488,23 @@ const (
 // NetworkInterface is auto-generated from the OpenRPC spec.
 type NetworkInterface struct {
 	DisplayName string `json:"display_name"`
-	Ipv4 json.RawMessage `json:"ipv4,omitempty"`
-	Ipv6 json.RawMessage `json:"ipv6,omitempty"`
+	Ipv4 *string `json:"ipv4,omitempty"`
+	Ipv6 *string `json:"ipv6,omitempty"`
 	IsLoopback bool `json:"is_loopback"`
 	IsUp bool `json:"is_up"`
-	MacAddress json.RawMessage `json:"mac_address,omitempty"`
+	MacAddress *string `json:"mac_address,omitempty"`
 	Name string `json:"name"`
 }
 
 // NowPlayingInfo is auto-generated from the OpenRPC spec.
 type NowPlayingInfo struct {
-	Album json.RawMessage `json:"album,omitempty"`
-	AppBundleID json.RawMessage `json:"app_bundle_id,omitempty"`
-	Artist json.RawMessage `json:"artist,omitempty"`
-	Duration json.RawMessage `json:"duration,omitempty"`
-	Elapsed json.RawMessage `json:"elapsed,omitempty"`
+	Album *string `json:"album,omitempty"`
+	AppBundleID *string `json:"app_bundle_id,omitempty"`
+	Artist *string `json:"artist,omitempty"`
+	Duration *float64 `json:"duration,omitempty"`
+	Elapsed *float64 `json:"elapsed,omitempty"`
 	IsPlaying bool `json:"is_playing"`
-	Title json.RawMessage `json:"title,omitempty"`
+	Title *string `json:"title,omitempty"`
 }
 
 // OcrRegion is auto-generated from the OpenRPC spec.
@@ -538,6 +538,17 @@ type PipelineTranscriptAlternative struct {
 	Text string `json:"text"`
 }
 
+// PluginLogLevel is auto-generated from the OpenRPC spec.
+type PluginLogLevel string
+
+const (
+	PluginLogLevelTrace PluginLogLevel = "trace"
+	PluginLogLevelInfo PluginLogLevel = "info"
+	PluginLogLevelWarn PluginLogLevel = "warn"
+	PluginLogLevelError PluginLogLevel = "error"
+	PluginLogLevelDebug PluginLogLevel = "debug"
+)
+
 // PoolStageStatusEntry is auto-generated from the OpenRPC spec.
 type PoolStageStatusEntry struct {
 	Alive bool `json:"alive"`
@@ -555,26 +566,26 @@ type PrinterInfo struct {
 
 // ProcessInfo is auto-generated from the OpenRPC spec.
 type ProcessInfo struct {
-	CpuPercent json.RawMessage `json:"cpu_percent,omitempty"`
-	MemoryBytes json.RawMessage `json:"memory_bytes,omitempty"`
+	CpuPercent *float64 `json:"cpu_percent,omitempty"`
+	MemoryBytes *int `json:"memory_bytes,omitempty"`
 	Name string `json:"name"`
-	Path json.RawMessage `json:"path,omitempty"`
+	Path *string `json:"path,omitempty"`
 	Pid int `json:"pid"`
-	User json.RawMessage `json:"user,omitempty"`
+	User *string `json:"user,omitempty"`
 }
 
 // ReminderItem is auto-generated from the OpenRPC spec.
 type ReminderItem struct {
-	DueDate json.RawMessage `json:"due_date,omitempty"`
+	DueDate *string `json:"due_date,omitempty"`
 	IsCompleted bool `json:"is_completed"`
-	ListName json.RawMessage `json:"list_name,omitempty"`
+	ListName *string `json:"list_name,omitempty"`
 	Priority int `json:"priority"`
 	Title string `json:"title"`
 }
 
 // RunningApp is auto-generated from the OpenRPC spec.
 type RunningApp struct {
-	BundleID json.RawMessage `json:"bundle_id,omitempty"`
+	BundleID *string `json:"bundle_id,omitempty"`
 	IsActive bool `json:"is_active"`
 	IsHidden bool `json:"is_hidden"`
 	Name string `json:"name"`
@@ -606,7 +617,7 @@ type SettingsTagSchemaInfo struct {
 
 // ShortcutInfo is auto-generated from the OpenRPC spec.
 type ShortcutInfo struct {
-	Folder json.RawMessage `json:"folder,omitempty"`
+	Folder *string `json:"folder,omitempty"`
 	Name string `json:"name"`
 }
 
@@ -631,13 +642,13 @@ type SpotlightResult struct {
 	Modified string `json:"modified"`
 	Name string `json:"name"`
 	Path string `json:"path"`
-	Size json.RawMessage `json:"size,omitempty"`
+	Size *int `json:"size,omitempty"`
 }
 
 // SystemAppearance is auto-generated from the OpenRPC spec.
 type SystemAppearance struct {
-	AccentColor json.RawMessage `json:"accent_color,omitempty"`
-	HighlightColor json.RawMessage `json:"highlight_color,omitempty"`
+	AccentColor *string `json:"accent_color,omitempty"`
+	HighlightColor *string `json:"highlight_color,omitempty"`
 	IncreaseContrast bool `json:"increase_contrast"`
 	ReduceMotion bool `json:"reduce_motion"`
 	ReduceTransparency bool `json:"reduce_transparency"`
@@ -659,11 +670,11 @@ type TtsVoice struct {
 
 // UsbDevice is auto-generated from the OpenRPC spec.
 type UsbDevice struct {
-	Manufacturer json.RawMessage `json:"manufacturer,omitempty"`
+	Manufacturer *string `json:"manufacturer,omitempty"`
 	Name string `json:"name"`
-	ProductID json.RawMessage `json:"product_id,omitempty"`
-	SerialNumber json.RawMessage `json:"serial_number,omitempty"`
-	VendorID json.RawMessage `json:"vendor_id,omitempty"`
+	ProductID *string `json:"product_id,omitempty"`
+	SerialNumber *string `json:"serial_number,omitempty"`
+	VendorID *string `json:"vendor_id,omitempty"`
 }
 
 // WindowBounds is auto-generated from the OpenRPC spec.
@@ -676,14 +687,14 @@ type WindowBounds struct {
 
 // WindowDetail is auto-generated from the OpenRPC spec.
 type WindowDetail struct {
-	Alpha json.RawMessage `json:"alpha,omitempty"`
+	Alpha *float64 `json:"alpha,omitempty"`
 	Bounds WindowBounds `json:"bounds"`
 	DisplayID int `json:"display_id"`
 	IsFocused bool `json:"is_focused"`
 	IsFullscreen bool `json:"is_fullscreen"`
 	IsMinimized bool `json:"is_minimized"`
-	Subrole json.RawMessage `json:"subrole,omitempty"`
-	Title json.RawMessage `json:"title,omitempty"`
+	Subrole *string `json:"subrole,omitempty"`
+	Title *string `json:"title,omitempty"`
 	WindowID string `json:"window_id"`
 }
 
@@ -864,7 +875,7 @@ type CollectionOverrideRequest struct {
 	Action string `json:"action"`
 	Collection string `json:"collection"`
 	Fields json.RawMessage `json:"fields,omitempty"`
-	ID json.RawMessage `json:"id,omitempty"`
+	ID *string `json:"id,omitempty"`
 }
 
 // CollectionOverrideResponse is the response type for collection.override.
@@ -887,7 +898,7 @@ type CollectionPatchResponse struct {
 // CollectionPushRequest is the request type for collection.push.
 type CollectionPushRequest struct {
 	Data json.RawMessage `json:"data"`
-	Label json.RawMessage `json:"label,omitempty"`
+	Label *string `json:"label,omitempty"`
 	Name string `json:"name"`
 }
 
@@ -921,7 +932,7 @@ type CollectionSetRecordingResponse struct {
 
 // CollectionsListRequest is the request type for collections.list.
 type CollectionsListRequest struct {
-	Kind json.RawMessage `json:"kind,omitempty"`
+	Kind *string `json:"kind,omitempty"`
 }
 
 // CollectionsListResponse is the response type for collections.list.
@@ -933,7 +944,7 @@ type CollectionsListResponse struct {
 type CommandsCompletionsRequest struct {
 	ActiveTags json.RawMessage `json:"active_tags,omitempty"`
 	Collections json.RawMessage `json:"collections,omitempty"`
-	RequireTag json.RawMessage `json:"require_tag,omitempty"`
+	RequireTag *string `json:"require_tag,omitempty"`
 	Words []string `json:"words,omitempty"`
 }
 
@@ -965,8 +976,8 @@ type CommandsListResponse struct {
 // CommandsMatchRequest is the request type for commands.match.
 type CommandsMatchRequest struct {
 	ActiveTags json.RawMessage `json:"active_tags,omitempty"`
-	SessionID json.RawMessage `json:"session_id,omitempty"`
-	Source json.RawMessage `json:"source,omitempty"`
+	SessionID *string `json:"session_id,omitempty"`
+	Source *string `json:"source,omitempty"`
 	Words []string `json:"words,omitempty"`
 }
 
@@ -978,7 +989,7 @@ type CommandsMatchResponse struct {
 	ClearsTags []string `json:"clears_tags"`
 	ConsumedCount int `json:"consumed_count"`
 	Matched bool `json:"matched"`
-	OwnerPlugin json.RawMessage `json:"owner_plugin,omitempty"`
+	OwnerPlugin *string `json:"owner_plugin,omitempty"`
 	RequiresTags []string `json:"requires_tags"`
 	ScopedTags []string `json:"scoped_tags,omitempty"`
 	SetsTagWrites []GateWrite `json:"sets_tag_writes,omitempty"`
@@ -1025,14 +1036,14 @@ type DiscoveryClosedResponse struct {
 // DispatchRequest is the request type for dispatch.
 type DispatchRequest struct {
 	Action json.RawMessage `json:"action"`
-	TraceID json.RawMessage `json:"trace_id,omitempty"`
+	TraceID *string `json:"trace_id,omitempty"`
 }
 
 // DispatchResponse is the response type for dispatch.
 type DispatchResponse struct {
-	ControlMessage json.RawMessage `json:"control_message,omitempty"`
-	Handler json.RawMessage `json:"handler,omitempty"`
-	Message json.RawMessage `json:"message,omitempty"`
+	ControlMessage *string `json:"control_message,omitempty"`
+	Handler *string `json:"handler,omitempty"`
+	Message *string `json:"message,omitempty"`
 	Result json.RawMessage `json:"result,omitempty"`
 	Status string `json:"status"`
 }
@@ -1045,7 +1056,7 @@ type EffectsAssertRequest struct {
 // EffectsAssertResponse is the response type for effects.assert.
 type EffectsAssertResponse struct {
 	AlreadyHeld bool `json:"already_held"`
-	Displaced json.RawMessage `json:"displaced,omitempty"`
+	Displaced *string `json:"displaced,omitempty"`
 	Granted bool `json:"granted"`
 }
 
@@ -1057,7 +1068,7 @@ type EffectsIsActiveRequest struct {
 // EffectsIsActiveResponse is the response type for effects.is_active.
 type EffectsIsActiveResponse struct {
 	Active bool `json:"active"`
-	CurrentOwner json.RawMessage `json:"current_owner,omitempty"`
+	CurrentOwner *string `json:"current_owner,omitempty"`
 }
 
 // EffectsRetractRequest is the request type for effects.retract.
@@ -1067,7 +1078,7 @@ type EffectsRetractRequest struct {
 
 // EffectsRetractResponse is the response type for effects.retract.
 type EffectsRetractResponse struct {
-	NewOwner json.RawMessage `json:"new_owner,omitempty"`
+	NewOwner *string `json:"new_owner,omitempty"`
 	Retracted bool `json:"retracted"`
 }
 
@@ -1085,7 +1096,7 @@ type EventsAppendResponse struct {
 
 // EventsEmitRequest is the request type for events.emit.
 type EventsEmitRequest struct {
-	CorrelationID json.RawMessage `json:"correlation_id,omitempty"`
+	CorrelationID *string `json:"correlation_id,omitempty"`
 	Data json.RawMessage `json:"data,omitempty"`
 	EventType string `json:"event_type"`
 }
@@ -1177,7 +1188,7 @@ type InputClickResponse struct {
 // InputClipboardActionRequest is the request type for input.clipboard_action.
 type InputClipboardActionRequest struct {
 	Action string `json:"action"`
-	Text json.RawMessage `json:"text,omitempty"`
+	Text *string `json:"text,omitempty"`
 }
 
 // InputClipboardActionResponse is the response type for input.clipboard_action.
@@ -1200,8 +1211,8 @@ type InputClipboardReadResponse struct {
 	AvailableTypes []string `json:"available_types"`
 	ContentType string `json:"content_type"`
 	FileUrls json.RawMessage `json:"file_urls,omitempty"`
-	ImageBase64 json.RawMessage `json:"image_base64,omitempty"`
-	Text json.RawMessage `json:"text,omitempty"`
+	ImageBase64 *string `json:"image_base64,omitempty"`
+	Text *string `json:"text,omitempty"`
 }
 
 // InputClipboardReadAllResponse is the response type for input.clipboard_read_all.
@@ -1242,8 +1253,8 @@ type InputClipboardWriteItemsResponse struct {
 
 // InputDoubleClickRequest is the request type for input.double_click.
 type InputDoubleClickRequest struct {
-	X json.RawMessage `json:"x,omitempty"`
-	Y json.RawMessage `json:"y,omitempty"`
+	X *int `json:"x,omitempty"`
+	Y *int `json:"y,omitempty"`
 }
 
 // InputDoubleClickResponse is the response type for input.double_click.
@@ -1283,9 +1294,9 @@ type InputMouseButtonResponse struct {
 
 // InputPressKeyRequest is the request type for input.press_key.
 type InputPressKeyRequest struct {
-	Code json.RawMessage `json:"code,omitempty"`
+	Code *int `json:"code,omitempty"`
 	Modifiers []string `json:"modifiers,omitempty"`
-	Name json.RawMessage `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
 // InputPressKeyResponse is the response type for input.press_key.
@@ -1306,8 +1317,8 @@ type InputRawKeyResponse struct {
 
 // InputRightClickRequest is the request type for input.right_click.
 type InputRightClickRequest struct {
-	X json.RawMessage `json:"x,omitempty"`
-	Y json.RawMessage `json:"y,omitempty"`
+	X *int `json:"x,omitempty"`
+	Y *int `json:"y,omitempty"`
 }
 
 // InputRightClickResponse is the response type for input.right_click.
@@ -1344,8 +1355,8 @@ type InputSwitchInputSourceResponse struct {
 
 // InputTripleClickRequest is the request type for input.triple_click.
 type InputTripleClickRequest struct {
-	X json.RawMessage `json:"x,omitempty"`
-	Y json.RawMessage `json:"y,omitempty"`
+	X *int `json:"x,omitempty"`
+	Y *int `json:"y,omitempty"`
 }
 
 // InputTripleClickResponse is the response type for input.triple_click.
@@ -1530,13 +1541,13 @@ type NativeAppMetadataRequest struct {
 
 // NativeAppMetadataResponse is the response type for native.app_metadata.
 type NativeAppMetadataResponse struct {
-	Build json.RawMessage `json:"build,omitempty"`
+	Build *string `json:"build,omitempty"`
 	BundleID string `json:"bundle_id"`
-	Category json.RawMessage `json:"category,omitempty"`
-	MinOSVersion json.RawMessage `json:"min_os_version,omitempty"`
+	Category *string `json:"category,omitempty"`
+	MinOSVersion *string `json:"min_os_version,omitempty"`
 	Name string `json:"name"`
 	Path string `json:"path"`
-	Version json.RawMessage `json:"version,omitempty"`
+	Version *string `json:"version,omitempty"`
 }
 
 // NativeAppPathRequest is the request type for native.app_path.
@@ -1647,15 +1658,15 @@ type NativeAxElementAtPointResponse struct {
 	Actions []string `json:"actions"`
 	Attributes []string `json:"attributes"`
 	ChildrenCount int `json:"children_count"`
-	Description json.RawMessage `json:"description,omitempty"`
+	Description *string `json:"description,omitempty"`
 	Enabled bool `json:"enabled"`
 	Focused bool `json:"focused"`
 	Path []AXPathSegment `json:"path"`
 	Position json.RawMessage `json:"position,omitempty"`
 	Role string `json:"role"`
 	Size json.RawMessage `json:"size,omitempty"`
-	Subrole json.RawMessage `json:"subrole,omitempty"`
-	Title json.RawMessage `json:"title,omitempty"`
+	Subrole *string `json:"subrole,omitempty"`
+	Title *string `json:"title,omitempty"`
 	Value json.RawMessage `json:"value,omitempty"`
 }
 
@@ -1742,7 +1753,7 @@ type NativeBatteryResponse struct {
 	IsPluggedIn bool `json:"is_plugged_in"`
 	IsPresent bool `json:"is_present"`
 	Level float64 `json:"level"`
-	TimeRemainingMinutes json.RawMessage `json:"time_remaining_minutes,omitempty"`
+	TimeRemainingMinutes *int `json:"time_remaining_minutes,omitempty"`
 }
 
 // NativeBatteryHealthResponse is the response type for native.battery_health.
@@ -1825,7 +1836,7 @@ type NativeBordersResponse struct {
 
 // NativeBrightnessRequest is the request type for native.brightness.
 type NativeBrightnessRequest struct {
-	DisplayID json.RawMessage `json:"display_id,omitempty"`
+	DisplayID *int `json:"display_id,omitempty"`
 }
 
 // NativeBrightnessResponse is the response type for native.brightness.
@@ -2280,7 +2291,7 @@ type NativeDisplaysResponse struct {
 // NativeDndResponse is the response type for native.dnd.
 type NativeDndResponse struct {
 	Enabled bool `json:"enabled"`
-	FocusName json.RawMessage `json:"focus_name,omitempty"`
+	FocusName *string `json:"focus_name,omitempty"`
 }
 
 // NativeDnsServersResponse is the response type for native.dns_servers.
@@ -2436,11 +2447,11 @@ type NativeFileMetadataRequest struct {
 
 // NativeFileMetadataResponse is the response type for native.file_metadata.
 type NativeFileMetadataResponse struct {
-	Accessed json.RawMessage `json:"accessed,omitempty"`
-	Created json.RawMessage `json:"created,omitempty"`
+	Accessed *int `json:"accessed,omitempty"`
+	Created *int `json:"created,omitempty"`
 	IsDir bool `json:"is_dir"`
 	IsSymlink bool `json:"is_symlink"`
-	Modified json.RawMessage `json:"modified,omitempty"`
+	Modified *int `json:"modified,omitempty"`
 	Readonly bool `json:"readonly"`
 	Size int `json:"size"`
 }
@@ -2634,14 +2645,14 @@ type NativeGetWindowInfoRequest struct {
 
 // NativeGetWindowInfoResponse is the response type for native.get_window_info.
 type NativeGetWindowInfoResponse struct {
-	Alpha json.RawMessage `json:"alpha,omitempty"`
+	Alpha *float64 `json:"alpha,omitempty"`
 	Bounds WindowBounds `json:"bounds"`
 	DisplayID int `json:"display_id"`
 	IsFocused bool `json:"is_focused"`
 	IsFullscreen bool `json:"is_fullscreen"`
 	IsMinimized bool `json:"is_minimized"`
-	Subrole json.RawMessage `json:"subrole,omitempty"`
-	Title json.RawMessage `json:"title,omitempty"`
+	Subrole *string `json:"subrole,omitempty"`
+	Title *string `json:"title,omitempty"`
 	WindowID string `json:"window_id"`
 }
 
@@ -3100,8 +3111,8 @@ type NativeMountPointsResponse struct {
 // NativeMouseButtonClickRequest is the request type for native.mouse_button_click.
 type NativeMouseButtonClickRequest struct {
 	Button int `json:"button"`
-	X json.RawMessage `json:"x,omitempty"`
-	Y json.RawMessage `json:"y,omitempty"`
+	X *int `json:"x,omitempty"`
+	Y *int `json:"y,omitempty"`
 }
 
 // NativeMouseButtonClickResponse is the response type for native.mouse_button_click.
@@ -3204,15 +3215,15 @@ type NativeNotificationSoundEnabledResponse struct {
 
 // NativeNotifyRequest is the request type for native.notify.
 type NativeNotifyRequest struct {
-	Body json.RawMessage `json:"body,omitempty"`
-	Sound json.RawMessage `json:"sound,omitempty"`
-	Subtitle json.RawMessage `json:"subtitle,omitempty"`
+	Body *string `json:"body,omitempty"`
+	Sound *string `json:"sound,omitempty"`
+	Subtitle *string `json:"subtitle,omitempty"`
 	Title string `json:"title"`
 }
 
 // NativeNotifyResponse is the response type for native.notify.
 type NativeNotifyResponse struct {
-	ID json.RawMessage `json:"id,omitempty"`
+	ID *string `json:"id,omitempty"`
 }
 
 // NativeNowPlayingResponse is the response type for native.now_playing.
@@ -3300,7 +3311,7 @@ type NativeOpenFinderWindowResponse struct {
 
 // NativeOpenSystemSettingsRequest is the request type for native.open_system_settings.
 type NativeOpenSystemSettingsRequest struct {
-	Pane json.RawMessage `json:"pane,omitempty"`
+	Pane *string `json:"pane,omitempty"`
 }
 
 // NativeOpenSystemSettingsResponse is the response type for native.open_system_settings.
@@ -3413,7 +3424,7 @@ type NativePressAndHoldEnabledResponse struct {
 
 // NativePreventSleepRequest is the request type for native.prevent_sleep.
 type NativePreventSleepRequest struct {
-	AssertionID json.RawMessage `json:"assertion_id,omitempty"`
+	AssertionID *string `json:"assertion_id,omitempty"`
 	Reason *string `json:"reason,omitempty"`
 }
 
@@ -3469,12 +3480,12 @@ type NativeProcessInfoRequest struct {
 
 // NativeProcessInfoResponse is the response type for native.process_info.
 type NativeProcessInfoResponse struct {
-	CpuPercent json.RawMessage `json:"cpu_percent,omitempty"`
-	MemoryBytes json.RawMessage `json:"memory_bytes,omitempty"`
+	CpuPercent *float64 `json:"cpu_percent,omitempty"`
+	MemoryBytes *int `json:"memory_bytes,omitempty"`
 	Name string `json:"name"`
-	Path json.RawMessage `json:"path,omitempty"`
+	Path *string `json:"path,omitempty"`
 	Pid int `json:"pid"`
-	User json.RawMessage `json:"user,omitempty"`
+	User *string `json:"user,omitempty"`
 }
 
 // NativeProcessListResponse is the response type for native.process_list.
@@ -3577,7 +3588,7 @@ type NativeReadFileResponse struct {
 
 // NativeReadFileBinaryRequest is the request type for native.read_file_binary.
 type NativeReadFileBinaryRequest struct {
-	MaxBytes json.RawMessage `json:"max_bytes,omitempty"`
+	MaxBytes *int `json:"max_bytes,omitempty"`
 	Path string `json:"path"`
 }
 
@@ -3694,7 +3705,7 @@ type NativeRunJxaResponse struct {
 
 // NativeRunShortcutRequest is the request type for native.run_shortcut.
 type NativeRunShortcutRequest struct {
-	Input json.RawMessage `json:"input,omitempty"`
+	Input *string `json:"input,omitempty"`
 	Name string `json:"name"`
 }
 
@@ -3755,9 +3766,9 @@ type NativeScreenSharingEnabledResponse struct {
 
 // NativeScreenshotRequest is the request type for native.screenshot.
 type NativeScreenshotRequest struct {
-	DisplayID json.RawMessage `json:"display_id,omitempty"`
+	DisplayID *int `json:"display_id,omitempty"`
 	Region json.RawMessage `json:"region,omitempty"`
-	WindowID json.RawMessage `json:"window_id,omitempty"`
+	WindowID *string `json:"window_id,omitempty"`
 }
 
 // NativeScreenshotResponse is the response type for native.screenshot.
@@ -3912,7 +3923,7 @@ type NativeSetBluetoothPowerResponse struct {
 // NativeSetBrightnessRequest is the request type for native.set_brightness.
 type NativeSetBrightnessRequest struct {
 	Brightness float64 `json:"brightness"`
-	DisplayID json.RawMessage `json:"display_id,omitempty"`
+	DisplayID *int `json:"display_id,omitempty"`
 }
 
 // NativeSetBrightnessResponse is the response type for native.set_brightness.
@@ -4381,9 +4392,9 @@ type NativeSpacesSpanDisplaysResponse struct {
 
 // NativeSpeakRequest is the request type for native.speak.
 type NativeSpeakRequest struct {
-	Rate json.RawMessage `json:"rate,omitempty"`
+	Rate *float64 `json:"rate,omitempty"`
 	Text string `json:"text"`
-	Voice json.RawMessage `json:"voice,omitempty"`
+	Voice *string `json:"voice,omitempty"`
 }
 
 // NativeSpeakResponse is the response type for native.speak.
@@ -4486,7 +4497,7 @@ type NativeSystemInfoResponse struct {
 	ModelIdentifier string `json:"model_identifier"`
 	OSBuild string `json:"os_build"`
 	OSVersion string `json:"os_version"`
-	SerialNumber json.RawMessage `json:"serial_number,omitempty"`
+	SerialNumber *string `json:"serial_number,omitempty"`
 }
 
 // NativeSystemIntegrityInfoResponse is the response type for native.system_integrity_info.
@@ -4740,11 +4751,11 @@ type NativeWarpCursorResponse struct {
 
 // NativeWifiResponse is the response type for native.wifi.
 type NativeWifiResponse struct {
-	Bssid json.RawMessage `json:"bssid,omitempty"`
+	Bssid *string `json:"bssid,omitempty"`
 	IsConnected bool `json:"is_connected"`
 	IsEnabled bool `json:"is_enabled"`
-	Rssi json.RawMessage `json:"rssi,omitempty"`
-	Ssid json.RawMessage `json:"ssid,omitempty"`
+	Rssi *int `json:"rssi,omitempty"`
+	Ssid *string `json:"ssid,omitempty"`
 }
 
 // NativeWifiNetworksResponse is the response type for native.wifi_networks.
@@ -4905,7 +4916,7 @@ type PipelinesRunRequest struct {
 
 // PipelinesRunResponse is the response type for pipelines.run.
 type PipelinesRunResponse struct {
-	Reason json.RawMessage `json:"reason,omitempty"`
+	Reason *string `json:"reason,omitempty"`
 	Started bool `json:"started"`
 }
 
@@ -4930,7 +4941,7 @@ type PipelinesStopResponse struct {
 type PluginDebugRequest struct {
 	Data json.RawMessage `json:"data,omitempty"`
 	Level json.RawMessage `json:"level,omitempty"`
-	Tag json.RawMessage `json:"tag,omitempty"`
+	Tag *string `json:"tag,omitempty"`
 }
 
 // PluginDebugResponse is the response type for plugin.debug.
@@ -4953,9 +4964,9 @@ type SelectionPickResponse struct {
 
 // SelectionSetRequest is the request type for selection.set.
 type SelectionSetRequest struct {
-	Channel json.RawMessage `json:"channel,omitempty"`
+	Channel *string `json:"channel,omitempty"`
 	Items json.RawMessage `json:"items,omitempty"`
-	Title json.RawMessage `json:"title,omitempty"`
+	Title *string `json:"title,omitempty"`
 }
 
 // SelectionSetResponse is the response type for selection.set.
@@ -4970,7 +4981,7 @@ type SessionBoundaryResponse struct {
 
 // SessionEndCleanupResponse is the response type for session.end_cleanup.
 type SessionEndCleanupResponse struct {
-	ControlMessage json.RawMessage `json:"control_message,omitempty"`
+	ControlMessage *string `json:"control_message,omitempty"`
 	Ok bool `json:"ok"`
 	ResetEngine bool `json:"reset_engine"`
 }
@@ -5002,15 +5013,15 @@ type SettingsRefreshResponse struct {
 
 // SettingsRulesCreateRequest is the request type for settings.rules_create.
 type SettingsRulesCreateRequest struct {
-	Newruleactionjson json.RawMessage `json:"newruleactionjson,omitempty"`
-	Newruleactiontype json.RawMessage `json:"newruleactiontype,omitempty"`
-	Newruleactionval json.RawMessage `json:"newruleactionval,omitempty"`
-	Newrulecategory json.RawMessage `json:"newrulecategory,omitempty"`
-	Newruleclearstags json.RawMessage `json:"newruleclearstags,omitempty"`
-	Newruledescription json.RawMessage `json:"newruledescription,omitempty"`
-	Newrulephrase json.RawMessage `json:"newrulephrase,omitempty"`
-	Newrulerequirestags json.RawMessage `json:"newrulerequirestags,omitempty"`
-	Newrulesetstags json.RawMessage `json:"newrulesetstags,omitempty"`
+	Newruleactionjson *string `json:"newruleactionjson,omitempty"`
+	Newruleactiontype *string `json:"newruleactiontype,omitempty"`
+	Newruleactionval *string `json:"newruleactionval,omitempty"`
+	Newrulecategory *string `json:"newrulecategory,omitempty"`
+	Newruleclearstags *string `json:"newruleclearstags,omitempty"`
+	Newruledescription *string `json:"newruledescription,omitempty"`
+	Newrulephrase *string `json:"newrulephrase,omitempty"`
+	Newrulerequirestags *string `json:"newrulerequirestags,omitempty"`
+	Newrulesetstags *string `json:"newrulesetstags,omitempty"`
 }
 
 // SettingsRulesCreateResponse is the response type for settings.rules_create.
@@ -5021,15 +5032,15 @@ type SettingsRulesCreateResponse struct {
 // SettingsRulesUpdateRequest is the request type for settings.rules_update.
 type SettingsRulesUpdateRequest struct {
 	Canonical string `json:"canonical"`
-	Newruleactionjson json.RawMessage `json:"newruleactionjson,omitempty"`
-	Newruleactiontype json.RawMessage `json:"newruleactiontype,omitempty"`
-	Newruleactionval json.RawMessage `json:"newruleactionval,omitempty"`
-	Newrulecategory json.RawMessage `json:"newrulecategory,omitempty"`
-	Newruleclearstags json.RawMessage `json:"newruleclearstags,omitempty"`
-	Newruledescription json.RawMessage `json:"newruledescription,omitempty"`
-	Newrulephrase json.RawMessage `json:"newrulephrase,omitempty"`
-	Newrulerequirestags json.RawMessage `json:"newrulerequirestags,omitempty"`
-	Newrulesetstags json.RawMessage `json:"newrulesetstags,omitempty"`
+	Newruleactionjson *string `json:"newruleactionjson,omitempty"`
+	Newruleactiontype *string `json:"newruleactiontype,omitempty"`
+	Newruleactionval *string `json:"newruleactionval,omitempty"`
+	Newrulecategory *string `json:"newrulecategory,omitempty"`
+	Newruleclearstags *string `json:"newruleclearstags,omitempty"`
+	Newruledescription *string `json:"newruledescription,omitempty"`
+	Newrulephrase *string `json:"newrulephrase,omitempty"`
+	Newrulerequirestags *string `json:"newrulerequirestags,omitempty"`
+	Newrulesetstags *string `json:"newrulesetstags,omitempty"`
 }
 
 // SettingsRulesUpdateResponse is the response type for settings.rules_update.
@@ -5051,7 +5062,7 @@ type SystemLaunchAppResponse struct {
 // SystemNotifyRequest is the request type for system.notify.
 type SystemNotifyRequest struct {
 	Body string `json:"body"`
-	DurationSecs json.RawMessage `json:"duration_secs,omitempty"`
+	DurationSecs *int `json:"duration_secs,omitempty"`
 	Title string `json:"title"`
 }
 

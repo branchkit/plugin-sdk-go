@@ -98,10 +98,11 @@ func (p *Plugin) ListLogPage(name string, opts *LogListOpts) (entries []LogEntry
 // GetLogEntry fetches one entry by id. Returns (nil, nil) if no entry with
 // that id exists in the collection.
 //
-// Codegen note: the auto-generated response carries the entry as
-// `json.RawMessage` because the actuator declares it as `Option<LogEntry>`
-// and the Go emitter routes every `Option<T>` through RawMessage. We
-// unmarshal to `*LogEntry` here so callers get a typed value.
+// CollectionGetLogEntryResponse.Entry is json.RawMessage because the
+// actuator declares it as Option<LogEntry> and the Go emitter routes
+// Option<StructType> through RawMessage (the Phase 5 anyOf-null
+// collapser only fires on primitive inner types). Unmarshal here so
+// callers get a typed value.
 func (p *Plugin) GetLogEntry(name, id string) (*LogEntry, error) {
 	res, err := p.CollectionGetLogEntry(id, name)
 	if err != nil {
@@ -118,9 +119,8 @@ func (p *Plugin) GetLogEntry(name, id string) (*LogEntry, error) {
 }
 
 // LogListOptsBuilder constructs a typed LogListOpts. The auto-generated
-// shape stores all four optional filter fields as `json.RawMessage` (a
-// codegen artifact for `Option<T>` fields); this builder marshals typed
-// values for callers so they don't write JSON literals inline.
+// shape uses pointer fields for the optional filters (`*int` / `*string`);
+// the builder wraps them so callers don't write `&ms` inline.
 type LogListOptsBuilder struct {
 	opts LogListOpts
 }
@@ -130,26 +130,28 @@ func NewLogListOpts() *LogListOptsBuilder { return &LogListOptsBuilder{} }
 
 // Since sets the lower-bound timestamp filter (Unix milliseconds, inclusive).
 func (b *LogListOptsBuilder) Since(ms int64) *LogListOptsBuilder {
-	b.opts.SinceMs, _ = json.Marshal(ms)
+	v := int(ms)
+	b.opts.SinceMs = &v
 	return b
 }
 
 // Until sets the upper-bound timestamp filter (Unix milliseconds, inclusive).
 func (b *LogListOptsBuilder) Until(ms int64) *LogListOptsBuilder {
-	b.opts.UntilMs, _ = json.Marshal(ms)
+	v := int(ms)
+	b.opts.UntilMs = &v
 	return b
 }
 
 // Limit caps the returned page size.
 func (b *LogListOptsBuilder) Limit(n int) *LogListOptsBuilder {
-	b.opts.Limit, _ = json.Marshal(n)
+	b.opts.Limit = &n
 	return b
 }
 
 // Cursor sets a pagination cursor — pass the last id returned to fetch
 // the next page.
 func (b *LogListOptsBuilder) Cursor(id string) *LogListOptsBuilder {
-	b.opts.Cursor, _ = json.Marshal(id)
+	b.opts.Cursor = &id
 	return b
 }
 
