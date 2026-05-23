@@ -16,6 +16,7 @@ const (
 	LogEventBridgeLifecycle = "bridge.lifecycle"
 	LogEventCommandMatched = "command.matched"
 	LogEventCommandNoMatch = "command.no_match"
+	LogEventDependentCaptureProgress = "dependent_capture.progress"
 	LogEventDiagnosticMessage = "diagnostic.message"
 	LogEventDispatchActionDispatched = "dispatch.action_dispatched"
 	LogEventDispatchActionPanicked = "dispatch.action_panicked"
@@ -83,6 +84,7 @@ var LogEventRegistry = map[string]LogEventMeta{
 	"bridge.lifecycle": {Name: "bridge.lifecycle", Summary: "FFI bridge lifecycle event (init, shutdown, UI server bind, callback registration).", Since: "0.1.0", Source: "lifecycle", Severity: "info", Redaction: "none"},
 	"command.matched": {Name: "command.matched", Summary: "Speech recognition produced a match against a registered command.", Since: "0.1.0", Source: "dispatch", Severity: "info", Redaction: "none"},
 	"command.no_match": {Name: "command.no_match", Summary: "Speech input did not match any registered command.", Since: "0.1.0", Source: "dispatch", Severity: "debug", Redaction: "none"},
+	"dependent_capture.progress": {Name: "dependent_capture.progress", Summary: "Partial match reached a DependentCapture whose deps are bound and whose resolved collection exists — plugins can react to the intermediate step (e.g. browser hint grayout).", Since: "0.1.0", Source: "dispatch", Severity: "info", Redaction: "none"},
 	"diagnostic.message": {Name: "diagnostic.message", Summary: "Catch-all for ad-hoc operational text that doesn't fit a typed variant.", Since: "0.1.0", Source: "generic", Severity: "debug", Redaction: "none"},
 	"dispatch.action_dispatched": {Name: "dispatch.action_dispatched", Summary: "An action entered the dispatch pipeline.", Since: "0.1.0", Source: "dispatch", Severity: "debug", Redaction: "none"},
 	"dispatch.action_panicked": {Name: "dispatch.action_panicked", Summary: "A dispatch handler panicked. Process likely degraded; investigate.", Since: "0.1.0", Source: "dispatch", Severity: "error", Redaction: "none"},

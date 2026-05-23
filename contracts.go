@@ -609,6 +609,7 @@ const (
 	EventAppFocused = "_platform.app.focused"
 	EventBleNotification = "_platform.ble.notification"
 	EventCollectionUpdated = "_platform.collection.updated"
+	EventDependentCaptureProgress = "_platform.dependent_capture.progress"
 	EventDiscoveryClosed = "_platform.discovery.closed"
 	EventDisplayChanged = "_platform.display.changed"
 	EventEffectDisplaced = "_platform.effect.displaced"
