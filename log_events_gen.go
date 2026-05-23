@@ -37,7 +37,6 @@ const (
 	LogEventNativeWindowSkipped = "native.window_skipped"
 	LogEventNativeWorldPollerEvent = "native.world_poller_event"
 	LogEventOperationCompleted = "operation.completed"
-	LogEventPlatformBroadcast = "platform.broadcast"
 	LogEventPluginDegraded = "plugin.degraded"
 	LogEventPluginDiagnostic = "plugin.diagnostic"
 	LogEventPluginExited = "plugin.exited"
@@ -106,7 +105,6 @@ var LogEventRegistry = map[string]LogEventMeta{
 	"native.window_skipped": {Name: "native.window_skipped", Summary: "World poller skipped a non-standard window (debug-level).", Since: "0.1.0", Source: "native", Severity: "debug", Redaction: "none"},
 	"native.world_poller_event": {Name: "native.world_poller_event", Summary: "World poller lifecycle event (started, seeded, batch processed, idle).", Since: "0.1.0", Source: "native", Severity: "debug", Redaction: "none"},
 	"operation.completed": {Name: "operation.completed", Summary: "An operation handler completed execution.", Since: "0.1.0", Source: "dispatch", Severity: "debug", Redaction: "none"},
-	"platform.broadcast": {Name: "platform.broadcast", Summary: "A `_platform.*` plugin notification routed through the unified event bus. The inner `name` field carries the wire event type (validated against the `PlatformEvent` inventory at the emit boundary); `payload` carries the JSON params plugin subscribers receive.", Since: "0.1.0", Source: "generic", Severity: "info", Redaction: "none"},
 	"plugin.degraded": {Name: "plugin.degraded", Summary: "A managed plugin's RPC channel hit the consecutive-timeout threshold and was marked degraded.", Since: "0.1.0", Source: "plugins", Severity: "warn", Redaction: "none"},
 	"plugin.diagnostic": {Name: "plugin.diagnostic", Summary: "A plugin emitted a warn- or error-level diagnostic via plugin.debug; cross-posted to actuator.log so plugin-level failures interleave with the actuator's view of dispatch / coordination.", Since: "0.2.0", Source: "plugins", Severity: "warn", Redaction: "none"},
 	"plugin.exited": {Name: "plugin.exited", Summary: "A managed plugin process exited (clean or crashed).", Since: "0.1.0", Source: "plugins", Severity: "info", Redaction: "none"},
