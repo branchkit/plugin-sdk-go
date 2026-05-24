@@ -15,13 +15,18 @@ func derefOr[T any](p *T) T {
 }
 
 // EffectDisplacedEvent is the payload delivered to OnEffectDisplaced
-// callbacks. Mirrors the actuator-side audit event shape — see
+// callbacks. Mirrors the actuator-side broadcast shape — see
 // `actuator/src/operations/registered/effects.rs`.
 type EffectDisplacedEvent struct {
 	// Effect that was displaced (e.g. "suppress_notifications").
 	Effect string `json:"effect"`
 	// Plugin that displaced this one and now holds top-of-stack.
 	NewOwner string `json:"new_owner"`
+	// Plugin that lost top-of-stack ownership. The SDK filters on this
+	// so `OnEffectDisplaced` only fires when *this* plugin was displaced;
+	// the field is exposed for plugins that subscribe to the underlying
+	// event directly via `On(EventEffectDisplaced, ...)`.
+	DisplacedOwner string `json:"displaced_owner"`
 }
 
 // AssertEffect declares this plugin is asserting `name`. The plugin must
@@ -89,12 +94,15 @@ func (p *Plugin) IsEffectActive(name string) (active bool, currentOwner string, 
 // OnEffectDisplaced registers a callback fired when this plugin's
 // assertion is overridden by a later asserter.
 //
-// IMPORTANT: the actuator-side emit of `_platform.effect.displaced` is
-// stubbed pending the notification-path session — assertions are
-// audited and logged today, but the event-bus emit hasn't been wired
-// yet. Plugins can safely register callbacks now; they'll start
-// firing once the actuator path lands. See
-// `notes/DESIGN_CAPABILITY_MECHANISM.md` section 10.2.
+// Delivery is broadcast — every plugin subscribed to
+// `_platform.effect.displaced` receives every displacement event. This
+// helper filters on `displaced_owner == this plugin's id` so the
+// callback only fires for *this* plugin's displacements. Plugins that
+// want to observe all displacements (e.g. a UI showing system effect
+// state) should subscribe directly via
+// `On(EventEffectDisplaced, ...)`.
+//
+// See `notes/DESIGN_CAPABILITY_MECHANISM.md` section 10.2.
 //
 // Multiple callbacks can be registered; each fires for every event.
 func (p *Plugin) OnEffectDisplaced(handler func(evt EffectDisplacedEvent)) {
@@ -109,6 +117,9 @@ func (p *Plugin) OnEffectDisplaced(handler func(evt EffectDisplacedEvent)) {
 			// the source and any change goes through codegen, so a
 			// shape mismatch here means the SDK is older than the
 			// actuator and the plugin should be rebuilt.
+			return
+		}
+		if evt.DisplacedOwner != p.pluginID {
 			return
 		}
 		handler(evt)
