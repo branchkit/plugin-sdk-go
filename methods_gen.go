@@ -239,22 +239,6 @@ func (p *Plugin) CollectionsList(kind *string) ([]CollectionsListSection, error)
 	return result.Sections, nil
 }
 
-// CommandsCompletions get completions for a command prefix: partial match status, next words for grammar, and display items.
-func (p *Plugin) CommandsCompletions(activeTags json.RawMessage, collections json.RawMessage, requireTag *string, words []string) (*CommandsCompletionsResponse, error) {
-	req := &CommandsCompletionsRequest{
-		ActiveTags: activeTags,
-		Collections: collections,
-		RequireTag: requireTag,
-		Words: words,
-	}
-	var result CommandsCompletionsResponse
-	err := p.Call(MethodCommandsCompletions, req, &result)
-	if err != nil {
-		return nil, err
-	}
-	return &result, nil
-}
-
 // CommandsDelete delete a user command by canonical name.
 func (p *Plugin) CommandsDelete(canonical string) error {
 	req := &CommandsDeleteRequest{
@@ -267,22 +251,6 @@ func (p *Plugin) CommandsDelete(canonical string) error {
 func (p *Plugin) CommandsList() (*CommandsListResponse, error) {
 	var result CommandsListResponse
 	err := p.Call(MethodCommandsList, nil, &result)
-	if err != nil {
-		return nil, err
-	}
-	return &result, nil
-}
-
-// CommandsMatch match words against the command registry.
-func (p *Plugin) CommandsMatch(activeTags json.RawMessage, sessionID *string, source *string, words []string) (*CommandsMatchResponse, error) {
-	req := &CommandsMatchRequest{
-		ActiveTags: activeTags,
-		SessionID: sessionID,
-		Source: source,
-		Words: words,
-	}
-	var result CommandsMatchResponse
-	err := p.Call(MethodCommandsMatch, req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -308,6 +276,24 @@ func (p *Plugin) CommandsReset(canonical string) error {
 		Canonical: canonical,
 	}
 	return p.Call(MethodCommandsReset, req, nil)
+}
+
+// CommandsResolve resolve words against the command registry — returns dispatch decision, partial-match feedback, and tiebreaker telemetry in one envelope.
+func (p *Plugin) CommandsResolve(activeTags json.RawMessage, collections json.RawMessage, requireTag *string, sessionID *string, source *string, words []string) (*CommandsResolveResponse, error) {
+	req := &CommandsResolveRequest{
+		ActiveTags: activeTags,
+		Collections: collections,
+		RequireTag: requireTag,
+		SessionID: sessionID,
+		Source: source,
+		Words: words,
+	}
+	var result CommandsResolveResponse
+	err := p.Call(MethodCommandsResolve, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
 }
 
 // ControlSignal send a control signal to the Swift shell via the control stream.

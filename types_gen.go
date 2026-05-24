@@ -333,14 +333,6 @@ type Frame struct {
 	Y int `json:"y"`
 }
 
-// GateWrite is auto-generated from the OpenRPC spec.
-type GateWrite struct {
-	Collection string `json:"collection"`
-	ID string `json:"id"`
-	Payload json.RawMessage `json:"payload,omitempty"`
-	Tag string `json:"tag"`
-}
-
 // HidDeviceEntry is auto-generated from the OpenRPC spec.
 type HidDeviceEntry struct {
 	Axes int `json:"axes"`
@@ -456,6 +448,21 @@ type LoginItem struct {
 	Name string `json:"name"`
 	Path string `json:"path"`
 }
+
+// MatchWinner is auto-generated from the OpenRPC spec.
+// Which category the matcher's tiebreaker chose. Mirrors the four
+// branches of `find_match_at_start_impl`: gated Completes win over
+// ungated Completes (scoped beats unscoped within the gated set), an
+// ungated Complete loses if any gated command had a Partial in flight
+// (`suppress_ungated`), and `NoMatch` is the fall-through.
+type MatchWinner string
+
+const (
+	MatchWinnerGatedScoped MatchWinner = "gated_scoped"
+	MatchWinnerGatedUnscoped MatchWinner = "gated_unscoped"
+	MatchWinnerUngated MatchWinner = "ungated"
+	MatchWinnerNoMatch MatchWinner = "no_match"
+)
 
 // MemoryInfo is auto-generated from the OpenRPC spec.
 type MemoryInfo struct {
@@ -581,6 +588,12 @@ type ReminderItem struct {
 	ListName *string `json:"list_name,omitempty"`
 	Priority int `json:"priority"`
 	Title string `json:"title"`
+}
+
+// ResolveTelemetry is auto-generated from the OpenRPC spec.
+type ResolveTelemetry struct {
+	GatedPartialSeen bool `json:"gated_partial_seen"`
+	Winner MatchWinner `json:"winner"`
 }
 
 // RunningApp is auto-generated from the OpenRPC spec.
@@ -940,22 +953,6 @@ type CollectionsListResponse struct {
 	Sections []CollectionsListSection `json:"sections"`
 }
 
-// CommandsCompletionsRequest is the request type for commands.completions.
-type CommandsCompletionsRequest struct {
-	ActiveTags json.RawMessage `json:"active_tags,omitempty"`
-	Collections json.RawMessage `json:"collections,omitempty"`
-	RequireTag *string `json:"require_tag,omitempty"`
-	Words []string `json:"words,omitempty"`
-}
-
-// CommandsCompletionsResponse is the response type for commands.completions.
-type CommandsCompletionsResponse struct {
-	HasCompletions bool `json:"has_completions"`
-	Items []DiscoverItem `json:"items"`
-	NextWords []string `json:"next_words"`
-	Title string `json:"title"`
-}
-
 // CommandsDeleteRequest is the request type for commands.delete.
 type CommandsDeleteRequest struct {
 	Canonical string `json:"canonical"`
@@ -971,30 +968,6 @@ type CommandsListResponse struct {
 	Footer string `json:"footer"`
 	Sections []ListCommandSection `json:"sections"`
 	Title string `json:"title"`
-}
-
-// CommandsMatchRequest is the request type for commands.match.
-type CommandsMatchRequest struct {
-	ActiveTags json.RawMessage `json:"active_tags,omitempty"`
-	SessionID *string `json:"session_id,omitempty"`
-	Source *string `json:"source,omitempty"`
-	Words []string `json:"words,omitempty"`
-}
-
-// CommandsMatchResponse is the response type for commands.match.
-type CommandsMatchResponse struct {
-	Action json.RawMessage `json:"action,omitempty"`
-	Args map[string]json.RawMessage `json:"args"`
-	ClearsTagWrites []GateWrite `json:"clears_tag_writes,omitempty"`
-	ClearsTags []string `json:"clears_tags"`
-	ConsumedCount int `json:"consumed_count"`
-	Matched bool `json:"matched"`
-	OwnerPlugin *string `json:"owner_plugin,omitempty"`
-	RequiresTags []string `json:"requires_tags"`
-	ScopedTags []string `json:"scoped_tags,omitempty"`
-	SetsTagWrites []GateWrite `json:"sets_tag_writes,omitempty"`
-	SetsTags []string `json:"sets_tags"`
-	TraceID *string `json:"trace_id,omitempty"`
 }
 
 // CommandsPushRequest is the request type for commands.push.
@@ -1016,6 +989,35 @@ type CommandsResetRequest struct {
 // CommandsResetResponse is the response type for commands.reset.
 type CommandsResetResponse struct {
 	Ok bool `json:"ok"`
+}
+
+// CommandsResolveRequest is the request type for commands.resolve.
+type CommandsResolveRequest struct {
+	ActiveTags json.RawMessage `json:"active_tags,omitempty"`
+	Collections json.RawMessage `json:"collections,omitempty"`
+	RequireTag *string `json:"require_tag,omitempty"`
+	SessionID *string `json:"session_id,omitempty"`
+	Source *string `json:"source,omitempty"`
+	Words []string `json:"words,omitempty"`
+}
+
+// CommandsResolveResponse is the response type for commands.resolve.
+type CommandsResolveResponse struct {
+	Action json.RawMessage `json:"action,omitempty"`
+	Args map[string]json.RawMessage `json:"args"`
+	ClearsTags []string `json:"clears_tags"`
+	ConsumedCount int `json:"consumed_count"`
+	HasCompletions bool `json:"has_completions"`
+	Items []DiscoverItem `json:"items"`
+	Matched bool `json:"matched"`
+	NextWords []string `json:"next_words"`
+	OwnerPlugin *string `json:"owner_plugin,omitempty"`
+	RequiresTags []string `json:"requires_tags"`
+	ScopedTags []string `json:"scoped_tags,omitempty"`
+	SetsTags []string `json:"sets_tags"`
+	Telemetry ResolveTelemetry `json:"telemetry"`
+	Title string `json:"title"`
+	TraceID *string `json:"trace_id,omitempty"`
 }
 
 // ControlSignalRequest is the request type for control.signal.

@@ -27,12 +27,11 @@ const (
 	MethodCollectionPut = "collection.put" // since 0.1.0
 	MethodCollectionSetRecording = "collection.set_recording" // since 0.1.0
 	MethodCollectionsList = "collections.list" // since 0.1.0
-	MethodCommandsCompletions = "commands.completions" // since 0.1.0
 	MethodCommandsDelete = "commands.delete" // since 0.1.0
 	MethodCommandsList = "commands.list" // since 0.1.0
-	MethodCommandsMatch = "commands.match" // since 0.1.0
 	MethodCommandsPush = "commands.push" // since 0.1.0
 	MethodCommandsReset = "commands.reset" // since 0.1.0
+	MethodCommandsResolve = "commands.resolve" // since 0.1.0
 	MethodControlSignal = "control.signal" // since 0.1.0
 	MethodDiscoveryClosed = "discovery.closed" // since 0.1.0
 	MethodDispatch = "dispatch" // since 0.1.0
