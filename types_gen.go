@@ -1004,6 +1004,7 @@ type CommandsResolveRequest struct {
 // CommandsResolveResponse is the response type for commands.resolve.
 type CommandsResolveResponse struct {
 	Action json.RawMessage `json:"action,omitempty"`
+	ActivePluginGates []string `json:"active_plugin_gates,omitempty"`
 	Args map[string]json.RawMessage `json:"args"`
 	ClearsTags []string `json:"clears_tags"`
 	ConsumedCount int `json:"consumed_count"`
