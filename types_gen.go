@@ -1014,6 +1014,7 @@ type CommandsResolveResponse struct {
 	NextWords []string `json:"next_words"`
 	OwnerPlugin *string `json:"owner_plugin,omitempty"`
 	RequiresTags []string `json:"requires_tags"`
+	ScopedPrefixes []string `json:"scoped_prefixes,omitempty"`
 	ScopedTags []string `json:"scoped_tags,omitempty"`
 	SetsTags []string `json:"sets_tags"`
 	Telemetry ResolveTelemetry `json:"telemetry"`
