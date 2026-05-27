@@ -27,6 +27,39 @@ func (p *Plugin) BridgeEmitObservabilityEvent(eventType string, params json.RawM
 	return p.Call(MethodBridgeEmitObservabilityEvent, req, nil)
 }
 
+// CalibrationRegisterFixtureHandle register a fixture handle under an open trial so trial_end can release it.
+func (p *Plugin) CalibrationRegisterFixtureHandle(fixtureHandle string, ownerPluginID string, trialID string) error {
+	req := &CalibrationRegisterFixtureHandleRequest{
+		FixtureHandle: fixtureHandle,
+		OwnerPluginID: ownerPluginID,
+		TrialID: trialID,
+	}
+	return p.Call(MethodCalibrationRegisterFixtureHandle, req, nil)
+}
+
+// CalibrationTrialBegin open a calibration trial — writes _platform.calibration.active, returns a trial_id.
+func (p *Plugin) CalibrationTrialBegin() (*CalibrationTrialBeginResponse, error) {
+	var result CalibrationTrialBeginResponse
+	err := p.Call(MethodCalibrationTrialBegin, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// CalibrationTrialEnd close a calibration trial — clears the tag and spawns release RPCs to fixture owners.
+func (p *Plugin) CalibrationTrialEnd(trialID string) (*CalibrationTrialEndResponse, error) {
+	req := &CalibrationTrialEndRequest{
+		TrialID: trialID,
+	}
+	var result CalibrationTrialEndResponse
+	err := p.Call(MethodCalibrationTrialEnd, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // CollectionAppend append an entry to a log-kind collection.
 func (p *Plugin) CollectionAppend(name string, payload json.RawMessage) (*LogEntry, error) {
 	req := &CollectionAppendRequest{

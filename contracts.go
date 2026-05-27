@@ -10,6 +10,9 @@ const APIVersion = "0.1.0"
 const (
 	MethodActionsList = "actions.list" // since 0.1.0
 	MethodBridgeEmitObservabilityEvent = "bridge.emit_observability_event" // since 0.1.0
+	MethodCalibrationRegisterFixtureHandle = "calibration.register_fixture_handle" // since 0.1.0
+	MethodCalibrationTrialBegin = "calibration.trial_begin" // since 0.1.0
+	MethodCalibrationTrialEnd = "calibration.trial_end" // since 0.1.0
 	MethodCollectionAppend = "collection.append" // since 0.1.0
 	MethodCollectionCount = "collection.count" // since 0.1.0
 	MethodCollectionDelete = "collection.delete" // since 0.1.0

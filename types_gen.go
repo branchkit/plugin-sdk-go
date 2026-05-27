@@ -773,6 +773,28 @@ type BridgeEmitObservabilityEventResponse struct {
 	Ok bool `json:"ok"`
 }
 
+// CalibrationRegisterFixtureHandleRequest is the request type for calibration.register_fixture_handle.
+type CalibrationRegisterFixtureHandleRequest struct {
+	FixtureHandle string `json:"fixture_handle"`
+	OwnerPluginID string `json:"owner_plugin_id"`
+	TrialID string `json:"trial_id"`
+}
+
+// CalibrationTrialBeginResponse is the response type for calibration.trial_begin.
+type CalibrationTrialBeginResponse struct {
+	TrialID string `json:"trial_id"`
+}
+
+// CalibrationTrialEndRequest is the request type for calibration.trial_end.
+type CalibrationTrialEndRequest struct {
+	TrialID string `json:"trial_id"`
+}
+
+// CalibrationTrialEndResponse is the response type for calibration.trial_end.
+type CalibrationTrialEndResponse struct {
+	ReleasedHandleCount int `json:"released_handle_count"`
+}
+
 // CollectionAppendRequest is the request type for collection.append.
 type CollectionAppendRequest struct {
 	Name string `json:"name"`
