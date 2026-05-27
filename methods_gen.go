@@ -247,6 +247,18 @@ func (p *Plugin) CommandsDelete(canonical string) error {
 	return p.Call(MethodCommandsDelete, req, nil)
 }
 
+// CommandsEnumerate flat enumeration of every registered command with dynamic/static classification — calibration host source of truth.
+func (p *Plugin) CommandsEnumerate() ([]EnumeratedCommand, error) {
+	var result struct {
+		Commands []EnumeratedCommand `json:"commands"`
+	}
+	err := p.Call(MethodCommandsEnumerate, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Commands, nil
+}
+
 // CommandsList return all commands grouped by category for HUD display.
 func (p *Plugin) CommandsList() (*CommandsListResponse, error) {
 	var result CommandsListResponse

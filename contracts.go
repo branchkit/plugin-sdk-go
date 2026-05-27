@@ -28,6 +28,7 @@ const (
 	MethodCollectionSetRecording = "collection.set_recording" // since 0.1.0
 	MethodCollectionsList = "collections.list" // since 0.1.0
 	MethodCommandsDelete = "commands.delete" // since 0.1.0
+	MethodCommandsEnumerate = "commands.enumerate" // since 0.1.0
 	MethodCommandsList = "commands.list" // since 0.1.0
 	MethodCommandsPush = "commands.push" // since 0.1.0
 	MethodCommandsReset = "commands.reset" // since 0.1.0

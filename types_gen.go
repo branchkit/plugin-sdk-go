@@ -282,6 +282,17 @@ type DisplayRotation struct {
 	DisplayID int `json:"display_id"`
 }
 
+// EnumeratedCommand is auto-generated from the OpenRPC spec.
+type EnumeratedCommand struct {
+	Dynamic bool `json:"dynamic"`
+	DynamicOwner *string `json:"dynamic_owner,omitempty"`
+	ID string `json:"id"`
+	OwnerPlugin string `json:"owner_plugin"`
+	Pattern string `json:"pattern"`
+	RequiresTags []string `json:"requires_tags"`
+	SetsTags []string `json:"sets_tags"`
+}
+
 // ExternalDisk is auto-generated from the OpenRPC spec.
 type ExternalDisk struct {
 	FileSystem *string `json:"file_system,omitempty"`
@@ -398,6 +409,8 @@ type InstalledApp struct {
 
 // ListCommandItem is auto-generated from the OpenRPC spec.
 type ListCommandItem struct {
+	Dynamic bool `json:"dynamic"`
+	DynamicOwner *string `json:"dynamic_owner,omitempty"`
 	ID string `json:"id"`
 	Subtitle *string `json:"subtitle,omitempty"`
 	Tag *string `json:"tag,omitempty"`
@@ -961,6 +974,11 @@ type CommandsDeleteRequest struct {
 // CommandsDeleteResponse is the response type for commands.delete.
 type CommandsDeleteResponse struct {
 	Ok bool `json:"ok"`
+}
+
+// CommandsEnumerateResponse is the response type for commands.enumerate.
+type CommandsEnumerateResponse struct {
+	Commands []EnumeratedCommand `json:"commands"`
 }
 
 // CommandsListResponse is the response type for commands.list.
