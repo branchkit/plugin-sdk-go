@@ -51,6 +51,10 @@ const (
 	LogEventPluginStderrLine = "plugin.stderr_line"
 	LogEventRpcCallCompleted = "rpc.call_completed"
 	LogEventRpcCallReceived = "rpc.call_received"
+	LogEventRpcNotifyReceived = "rpc.notify_received"
+	LogEventRpcOutboundCallCompleted = "rpc.outbound_call_completed"
+	LogEventRpcOutboundCallSent = "rpc.outbound_call_sent"
+	LogEventRpcOutboundNotify = "rpc.outbound_notify"
 	LogEventSessionControlMessage = "session.control_message"
 	LogEventStateRetentionSwept = "state.retention_swept"
 	LogEventStateTagCleared = "state.tag_cleared"
@@ -120,6 +124,10 @@ var LogEventRegistry = map[string]LogEventMeta{
 	"plugin.stderr_line": {Name: "plugin.stderr_line", Summary: "A managed plugin emitted a stdout/stderr line.", Since: "0.1.0", Source: "plugins", Severity: "info", Redaction: "none"},
 	"rpc.call_completed": {Name: "rpc.call_completed", Summary: "A plugin-to-actuator RPC call completed.", Since: "0.1.0", Source: "plugins", Severity: "debug", Redaction: "none"},
 	"rpc.call_received": {Name: "rpc.call_received", Summary: "A plugin-to-actuator RPC call was received.", Since: "0.1.0", Source: "plugins", Severity: "debug", Redaction: "none"},
+	"rpc.notify_received": {Name: "rpc.notify_received", Summary: "A plugin-to-actuator RPC notification (fire-and-forget) was received.", Since: "0.1.0", Source: "plugins", Severity: "debug", Redaction: "none"},
+	"rpc.outbound_call_completed": {Name: "rpc.outbound_call_completed", Summary: "An actuator-to-plugin RPC call completed (response received or timed out).", Since: "0.1.0", Source: "plugins", Severity: "debug", Redaction: "none"},
+	"rpc.outbound_call_sent": {Name: "rpc.outbound_call_sent", Summary: "An actuator-to-plugin RPC call was sent (awaiting response).", Since: "0.1.0", Source: "plugins", Severity: "debug", Redaction: "none"},
+	"rpc.outbound_notify": {Name: "rpc.outbound_notify", Summary: "An actuator-to-plugin RPC notification (fire-and-forget) was sent.", Since: "0.1.0", Source: "plugins", Severity: "debug", Redaction: "none"},
 	"session.control_message": {Name: "session.control_message", Summary: "A control message was forwarded to the Swift host (HUD show, mode reset, etc.).", Since: "0.1.0", Source: "dispatch", Severity: "info", Redaction: "none"},
 	"state.retention_swept": {Name: "state.retention_swept", Summary: "Retention sweep removed expired records from a collection.", Since: "0.1.0", Source: "state", Severity: "info", Redaction: "none"},
 	"state.tag_cleared": {Name: "state.tag_cleared", Summary: "One or more tags were cleared via a gate-shape collection mutation.", Since: "0.1.0", Source: "state", Severity: "info", Redaction: "none"},

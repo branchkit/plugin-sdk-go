@@ -214,12 +214,13 @@ func (h *Harness) GetPluginState() PluginState {
 // --- JSON-RPC transport ---
 
 type rpcMessage struct {
-	JSONRPC string          `json:"jsonrpc"`
-	ID      *uint64         `json:"id,omitempty"`
-	Method  string          `json:"method,omitempty"`
-	Params  json.RawMessage `json:"params,omitempty"`
-	Result  json.RawMessage `json:"result,omitempty"`
-	Error   *rpcError       `json:"error,omitempty"`
+	JSONRPC       string          `json:"jsonrpc"`
+	ID            *uint64         `json:"id,omitempty"`
+	Method        string          `json:"method,omitempty"`
+	Params        json.RawMessage `json:"params,omitempty"`
+	Result        json.RawMessage `json:"result,omitempty"`
+	Error         *rpcError       `json:"error,omitempty"`
+	CorrelationID string          `json:"correlation_id,omitempty"`
 }
 
 type rpcError struct {

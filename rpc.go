@@ -22,6 +22,11 @@ type rpcMessage struct {
 	Params  json.RawMessage `json:"params,omitempty"`
 	Result  json.RawMessage `json:"result,omitempty"`
 	Error   *rpcError       `json:"error,omitempty"`
+	// CorrelationID lives at the envelope level (not inside Params) so
+	// both methods and notifies carry it uniformly. The actuator stamps
+	// outbound calls from its current scope; inbound calls preserve the
+	// id from the wire for handlers that want to thread it forward.
+	CorrelationID string `json:"correlation_id,omitempty"`
 }
 
 type rpcError struct {
