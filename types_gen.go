@@ -773,6 +773,18 @@ type BridgeEmitObservabilityEventResponse struct {
 	Ok bool `json:"ok"`
 }
 
+// CalibrationApplyRequest is the request type for calibration.apply.
+type CalibrationApplyRequest struct {
+	CommandID string `json:"command_id"`
+	TrialID string `json:"trial_id"`
+}
+
+// CalibrationApplyResponse is the response type for calibration.apply.
+type CalibrationApplyResponse struct {
+	FixtureHandle string `json:"fixture_handle"`
+	OwnerPlugin string `json:"owner_plugin"`
+}
+
 // CalibrationRegisterFixtureHandleRequest is the request type for calibration.register_fixture_handle.
 type CalibrationRegisterFixtureHandleRequest struct {
 	FixtureHandle string `json:"fixture_handle"`
@@ -5131,6 +5143,21 @@ type VocabularyCommitResponse struct {
 }
 
 // ===== Actuator → Plugin request/response types =====
+
+// CalibrationApplyFixtureRequest is the request type for calibration_apply_fixture.
+type CalibrationApplyFixtureRequest struct {
+	CommandID string `json:"command_id"`
+}
+
+// CalibrationApplyFixtureResponse is the response type for calibration_apply_fixture.
+type CalibrationApplyFixtureResponse struct {
+	FixtureHandle string `json:"fixture_handle"`
+}
+
+// CalibrationReleaseFixtureRequest is the request type for calibration_release_fixture.
+type CalibrationReleaseFixtureRequest struct {
+	FixtureHandle string `json:"fixture_handle"`
+}
 
 // OnActionRequest is the request type for on_action.
 type OnActionRequest struct {
