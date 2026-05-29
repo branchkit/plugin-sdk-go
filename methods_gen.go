@@ -243,11 +243,12 @@ func (p *Plugin) CollectionPatch(fields json.RawMessage, id string, name string)
 }
 
 // CollectionPush write data to a shared store.
-func (p *Plugin) CollectionPush(data json.RawMessage, label *string, name string) error {
+func (p *Plugin) CollectionPush(data json.RawMessage, label *string, name string, roles json.RawMessage) error {
 	req := &CollectionPushRequest{
 		Data: data,
 		Label: label,
 		Name: name,
+		Roles: roles,
 	}
 	return p.Call(MethodCollectionPush, req, nil)
 }

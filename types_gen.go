@@ -304,14 +304,22 @@ type ExternalDisk struct {
 }
 
 // FieldDisplay is auto-generated from the OpenRPC spec.
-// Where a field appears in generic UI rendering. Currently used by
-// `kind: "log"` collections in the Collections tab to drive the timeline
-// row summary line. Extending this enum is how new generic display roles
-// get added (detail-only, hidden, etc.) without smuggling presentation
-// hints into freeform strings.
+// Where a field appears in generic UI rendering. Each field on a
+// collection declares at most one role; surfaces (discovery HUD,
+// settings UI, etc.) interpret roles on their own terms.
+// 
+// See `notes/DESIGN_COLLECTION_FIELD_ROLES.md` for the full vocabulary
+// rationale. Roles `primary`, `secondary`, `description`, `payload` are
+// consumed by `services::matching_service::expand_collections_to_items`
+// for discovery items; `summary` is consumed by the settings UI's
+// log-kind timeline rows.
 type FieldDisplay string
 
 const (
+	FieldDisplayPrimary FieldDisplay = "primary"
+	FieldDisplaySecondary FieldDisplay = "secondary"
+	FieldDisplayDescription FieldDisplay = "description"
+	FieldDisplayPayload FieldDisplay = "payload"
 	FieldDisplaySummary FieldDisplay = "summary"
 )
 
@@ -960,6 +968,7 @@ type CollectionPushRequest struct {
 	Data json.RawMessage `json:"data"`
 	Label *string `json:"label,omitempty"`
 	Name string `json:"name"`
+	Roles json.RawMessage `json:"roles,omitempty"`
 }
 
 // CollectionPushResponse is the response type for collection.push.
