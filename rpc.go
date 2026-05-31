@@ -235,10 +235,11 @@ func (p *Plugin) CallWithTimeout(method string, params any, result any, timeout 
 	p.mu.Lock()
 	p.pending[id] = pc
 	err := p.writer.Encode(rpcMessage{
-		JSONRPC: "2.0",
-		ID:      &id,
-		Method:  method,
-		Params:  paramsRaw,
+		JSONRPC:       "2.0",
+		ID:            &id,
+		Method:        method,
+		Params:        paramsRaw,
+		CorrelationID: currentCorrelation(),
 	})
 	p.mu.Unlock()
 
@@ -288,9 +289,10 @@ func (p *Plugin) Notify(method string, params any) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	return p.writer.Encode(rpcMessage{
-		JSONRPC: "2.0",
-		Method:  method,
-		Params:  paramsRaw,
+		JSONRPC:       "2.0",
+		Method:        method,
+		Params:        paramsRaw,
+		CorrelationID: currentCorrelation(),
 	})
 }
 
@@ -391,6 +393,11 @@ func (p *Plugin) handleRequest(msg rpcMessage) {
 		return
 	}
 
+	// Make the inbound envelope correlation ambient for this goroutine so the
+	// handler (and any outbound call it makes) joins the upstream causal chain.
+	setAmbientCorrelation(msg.CorrelationID)
+	defer clearAmbientCorrelation()
+
 	// Run handler with panic recovery
 	func() {
 		defer func() {
@@ -426,6 +433,9 @@ func (p *Plugin) handleRequest(msg rpcMessage) {
 
 // handleNotification processes an actuator→plugin notification.
 func (p *Plugin) handleNotification(msg rpcMessage) {
+	setAmbientCorrelation(msg.CorrelationID)
+	defer clearAmbientCorrelation()
+
 	listeners := p.listeners[msg.Method]
 	for _, fn := range listeners {
 		func() {
