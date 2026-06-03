@@ -125,14 +125,14 @@ func (p *Plugin) CollectionDeleteLogEntry(id string, name string) (*CollectionDe
 	return &result, nil
 }
 
-// CollectionDeleteRecord delete one record from a collection by id.
-func (p *Plugin) CollectionDeleteRecord(id string, name string) (*CollectionDeleteRecordResponse, error) {
-	req := &CollectionDeleteRecordRequest{
-		ID: id,
+// CollectionDeleteRecords delete records from a collection by id (bulk)..
+func (p *Plugin) CollectionDeleteRecords(ids []string, name string) (*CollectionDeleteRecordsResponse, error) {
+	req := &CollectionDeleteRecordsRequest{
+		Ids: ids,
 		Name: name,
 	}
-	var result CollectionDeleteRecordResponse
-	err := p.Call(MethodCollectionDeleteRecord, req, &result)
+	var result CollectionDeleteRecordsResponse
+	err := p.Call(MethodCollectionDeleteRecords, req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -253,14 +253,18 @@ func (p *Plugin) CollectionPush(data json.RawMessage, label *string, name string
 	return p.Call(MethodCollectionPush, req, nil)
 }
 
-// CollectionPut upsert a record at the given id.
-func (p *Plugin) CollectionPut(id string, name string, payload json.RawMessage) error {
+// CollectionPut upsert records by id (bulk). Auto-registers the target as a record-keyed dynamic collection on first plugin call to an unknown name..
+func (p *Plugin) CollectionPut(entries []CollectionPutEntry, name string) (*CollectionPutResponse, error) {
 	req := &CollectionPutRequest{
-		ID: id,
+		Entries: entries,
 		Name: name,
-		Payload: payload,
 	}
-	return p.Call(MethodCollectionPut, req, nil)
+	var result CollectionPutResponse
+	err := p.Call(MethodCollectionPut, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
 }
 
 // CollectionSetRecording toggle the recording flag on a log-kind collection.

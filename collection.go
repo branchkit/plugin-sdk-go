@@ -68,14 +68,45 @@ func (p *Plugin) Count(name string) (int, error) {
 	return res.Count, nil
 }
 
-// Put upserts a record at the given id. The payload is JSON-marshaled —
-// pass any struct or map matching the collection's field schema.
+// Put upserts a single record at the given id. The payload is
+// JSON-marshaled — pass any struct or map matching the collection's
+// field schema. Single-record sugar over the bulk wire shape; calls
+// `collection.put` with a 1-element entries array.
+//
+// If the target collection name isn't in the registry yet, the platform
+// auto-registers it as a record-keyed dynamic collection with this
+// plugin as the introducer. The act of calling Put against an unknown
+// name IS the opt-in to per-key write semantics — see
+// notes/DESIGN_BROWSER_HINT_SILENT_EVICTION.md.
 func (p *Plugin) Put(name, id string, payload any) error {
 	raw, err := json.Marshal(payload)
 	if err != nil {
 		return fmt.Errorf("marshal payload: %w", err)
 	}
-	return p.CollectionPut(id, name, raw)
+	_, err = p.CollectionPut([]CollectionPutEntry{{ID: id, Payload: raw}}, name)
+	return err
+}
+
+// PutMany upserts a batch of records in one call. Each entry's
+// payload should already be JSON-marshaled (use `json.Marshal` on
+// the inner value). Returns the number of records upserted (always
+// `len(entries)` on success — the count is informational, useful
+// for telemetry).
+//
+// Validation runs across all entries before any commit, so a partial
+// batch with one invalid entry leaves the backend untouched.
+func (p *Plugin) PutMany(name string, entries []CollectionPutEntry) (int, error) {
+	if len(entries) == 0 {
+		return 0, nil
+	}
+	res, err := p.CollectionPut(entries, name)
+	if err != nil {
+		return 0, err
+	}
+	if res == nil {
+		return 0, nil
+	}
+	return res.Count, nil
 }
 
 // Patch merges fields into an existing record. The fields argument is
@@ -92,16 +123,37 @@ func (p *Plugin) Patch(name, id string, fields any) error {
 }
 
 // Delete removes one record by id. Returns true if it existed and was
-// removed, false if it was already gone.
+// removed, false if it was already gone. Single-record sugar over the
+// bulk wire shape.
 func (p *Plugin) Delete(name, id string) (bool, error) {
-	res, err := p.CollectionDeleteRecord(id, name)
+	res, err := p.CollectionDeleteRecords([]string{id}, name)
 	if err != nil {
 		return false, err
 	}
 	if res == nil {
 		return false, nil
 	}
-	return res.Deleted, nil
+	return res.Deleted > 0, nil
+}
+
+// DeleteMany removes a batch of records by id. Returns the count
+// that actually existed and were removed, separately from those
+// already absent. The split is useful for detecting drift between
+// the plugin's view of the collection and the platform's: a high
+// `alreadyAbsent` count suggests something is wiping records the
+// plugin didn't intend to remove.
+func (p *Plugin) DeleteMany(name string, ids []string) (deleted, alreadyAbsent int, err error) {
+	if len(ids) == 0 {
+		return 0, 0, nil
+	}
+	res, err := p.CollectionDeleteRecords(ids, name)
+	if err != nil {
+		return 0, 0, err
+	}
+	if res == nil {
+		return 0, 0, nil
+	}
+	return res.Deleted, res.AlreadyAbsent, nil
 }
 
 // ListOptsBuilder constructs a typed ListOpts. The auto-generated shape

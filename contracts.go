@@ -18,7 +18,7 @@ const (
 	MethodCollectionCount = "collection.count" // since 0.1.0
 	MethodCollectionDelete = "collection.delete" // since 0.1.0
 	MethodCollectionDeleteLogEntry = "collection.delete_log_entry" // since 0.1.0
-	MethodCollectionDeleteRecord = "collection.delete_record" // since 0.1.0
+	MethodCollectionDeleteRecords = "collection.delete_records" // since 0.1.0
 	MethodCollectionFetch = "collection.fetch" // since 0.1.0
 	MethodCollectionGet = "collection.get" // since 0.1.0
 	MethodCollectionGetLogEntry = "collection.get_log_entry" // since 0.1.0

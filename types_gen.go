@@ -155,6 +155,12 @@ type ClipboardWriteItem struct {
 	Text *string `json:"text,omitempty"`
 }
 
+// CollectionPutEntry is auto-generated from the OpenRPC spec.
+type CollectionPutEntry struct {
+	ID string `json:"id"`
+	Payload json.RawMessage `json:"payload,omitempty"`
+}
+
 // CollectionRecord is auto-generated from the OpenRPC spec.
 type CollectionRecord struct {
 	ID string `json:"id"`
@@ -857,15 +863,16 @@ type CollectionDeleteLogEntryResponse struct {
 	Deleted bool `json:"deleted"`
 }
 
-// CollectionDeleteRecordRequest is the request type for collection.delete_record.
-type CollectionDeleteRecordRequest struct {
-	ID string `json:"id"`
+// CollectionDeleteRecordsRequest is the request type for collection.delete_records.
+type CollectionDeleteRecordsRequest struct {
+	Ids []string `json:"ids"`
 	Name string `json:"name"`
 }
 
-// CollectionDeleteRecordResponse is the response type for collection.delete_record.
-type CollectionDeleteRecordResponse struct {
-	Deleted bool `json:"deleted"`
+// CollectionDeleteRecordsResponse is the response type for collection.delete_records.
+type CollectionDeleteRecordsResponse struct {
+	AlreadyAbsent int `json:"already_absent"`
+	Deleted int `json:"deleted"`
 }
 
 // CollectionFetchRequest is the request type for collection.fetch.
@@ -978,13 +985,13 @@ type CollectionPushResponse struct {
 
 // CollectionPutRequest is the request type for collection.put.
 type CollectionPutRequest struct {
-	ID string `json:"id"`
+	Entries []CollectionPutEntry `json:"entries"`
 	Name string `json:"name"`
-	Payload json.RawMessage `json:"payload"`
 }
 
 // CollectionPutResponse is the response type for collection.put.
 type CollectionPutResponse struct {
+	Count int `json:"count"`
 	Ok bool `json:"ok"`
 }
 
@@ -1067,6 +1074,7 @@ type CommandsResolveResponse struct {
 	Action json.RawMessage `json:"action,omitempty"`
 	ActivePluginGates []string `json:"active_plugin_gates,omitempty"`
 	Args map[string]json.RawMessage `json:"args"`
+	BridgeActive *bool `json:"bridge_active,omitempty"`
 	ClearsTags []string `json:"clears_tags"`
 	ConsumedCount int `json:"consumed_count"`
 	HasCompletions bool `json:"has_completions"`
