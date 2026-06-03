@@ -987,6 +987,7 @@ type CollectionPushResponse struct {
 type CollectionPutRequest struct {
 	Entries []CollectionPutEntry `json:"entries"`
 	Name string `json:"name"`
+	Roles json.RawMessage `json:"roles,omitempty"`
 }
 
 // CollectionPutResponse is the response type for collection.put.

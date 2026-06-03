@@ -83,7 +83,7 @@ func (p *Plugin) Put(name, id string, payload any) error {
 	if err != nil {
 		return fmt.Errorf("marshal payload: %w", err)
 	}
-	_, err = p.CollectionPut([]CollectionPutEntry{{ID: id, Payload: raw}}, name)
+	_, err = p.CollectionPut([]CollectionPutEntry{{ID: id, Payload: raw}}, name, nil)
 	return err
 }
 
@@ -96,10 +96,33 @@ func (p *Plugin) Put(name, id string, payload any) error {
 // Validation runs across all entries before any commit, so a partial
 // batch with one invalid entry leaves the backend untouched.
 func (p *Plugin) PutMany(name string, entries []CollectionPutEntry) (int, error) {
+	return p.PutManyWithRoles(name, entries, nil)
+}
+
+// PutManyWithRoles is like PutMany but also sets per-payload-field
+// display roles on the collection. Used by plugins that auto-register
+// dynamic collections and want the discovery HUD / Settings UI to
+// know which payload field is the subtitle, primary label, etc.
+// Equivalent to the `roles` argument on `collection.push`. Roles
+// persist on the collection — pass nil after the first call to leave
+// them unchanged.
+func (p *Plugin) PutManyWithRoles(
+	name string,
+	entries []CollectionPutEntry,
+	roles map[string]FieldDisplay,
+) (int, error) {
 	if len(entries) == 0 {
 		return 0, nil
 	}
-	res, err := p.CollectionPut(entries, name)
+	var rolesRaw json.RawMessage
+	if roles != nil {
+		raw, err := json.Marshal(roles)
+		if err != nil {
+			return 0, fmt.Errorf("marshal roles: %w", err)
+		}
+		rolesRaw = raw
+	}
+	res, err := p.CollectionPut(entries, name, rolesRaw)
 	if err != nil {
 		return 0, err
 	}
