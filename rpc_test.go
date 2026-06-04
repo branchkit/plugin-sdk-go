@@ -13,11 +13,65 @@ import (
 	"time"
 )
 
+// scanRPC reads from the actuator-side scanner, skipping notifications
+// (id == nil) until it sees a request or response with an id. Run()
+// emits `plugin.initialized` as its first outbound notification; tests
+// that wait for a specific response/request must drain it (and any
+// other future notifications) rather than asserting on the first frame.
+//
+// Spawns a background pump that keeps draining notifications after
+// the caller has the message it wanted — required because Notify and
+// Call serialize through p.mu *during* writer.Encode, so a late
+// plugin.initialized blocked on a pipe write will hold mu and deadlock
+// readLoop's dispatch when the test sends a response. See the deadlock
+// discussion in the Tier C review fixes for the full picture.
+func scanRPC(t testing.TB, scanner *bufio.Scanner) rpcMessage {
+	t.Helper()
+	type framed struct {
+		msg rpcMessage
+		ok  bool
+	}
+	frames := make(chan framed, 8)
+	go func() {
+		for scanner.Scan() {
+			var msg rpcMessage
+			if err := json.Unmarshal(scanner.Bytes(), &msg); err != nil {
+				continue
+			}
+			select {
+			case frames <- framed{msg, true}:
+			default:
+				// channel full — receiver gone; just discard so
+				// the pipe write that emitted this frame can complete.
+			}
+		}
+	}()
+	for f := range frames {
+		if !f.ok {
+			break
+		}
+		if f.msg.ID == nil {
+			continue
+		}
+		return f.msg
+	}
+	t.Fatal("expected RPC message with id, got EOF")
+	return rpcMessage{}
+}
+
 // newTestPlugin creates a Plugin wired to in-memory pipes for testing.
 // Returns (plugin, actuatorWriter, actuatorReader).
 // actuatorWriter: write JSON-RPC messages as if you're the actuator sending to the plugin's stdin.
 // actuatorReader: read JSON-RPC messages that the plugin writes to its stdout.
+//
+// When `t` is provided, registers a `t.Cleanup` that closes both pipe
+// ends so leaked drain/scanner goroutines exit when the test ends.
+// Pass `nil` to opt out (callers that manage cleanup explicitly).
 func newTestPlugin() (*Plugin, io.Writer, *bufio.Scanner) {
+	return newTestPluginT(nil)
+}
+
+func newTestPluginT(t testing.TB) (*Plugin, io.Writer, *bufio.Scanner) {
 	// plugin reads from stdinR, actuator writes to stdinW
 	stdinR, stdinW := io.Pipe()
 	// plugin writes to stdoutW, actuator reads from stdoutR
@@ -42,6 +96,18 @@ func newTestPlugin() (*Plugin, io.Writer, *bufio.Scanner) {
 
 	// Start read loop (matches NewPlugin behavior)
 	go p.readLoop()
+
+	if t != nil {
+		t.Cleanup(func() {
+			// Closing both pipe ends unblocks any leaked
+			// scanner/drain goroutines (e.g. TestCallTimeout's
+			// `for actuatorR.Scan()`). Without this, goroutine
+			// scheduling between leaked drains and the next test's
+			// Plugin.Run() can deadlock TestCallRPCError below.
+			_ = stdinW.Close()
+			_ = stdoutW.Close()
+		})
+	}
 
 	return p, stdinW, actuatorScanner
 }
@@ -75,12 +141,8 @@ func TestHandleRequest(t *testing.T) {
 	data, _ := json.Marshal(msg)
 	actuatorW.Write(append(data, '\n'))
 
-	// Read the response
-	if !actuatorR.Scan() {
-		t.Fatal("expected response")
-	}
-	var resp rpcMessage
-	json.Unmarshal(actuatorR.Bytes(), &resp)
+	// Read the response (skipping plugin.initialized + any other notifications)
+	resp := scanRPC(t, actuatorR)
 
 	if resp.ID == nil || *resp.ID != 1 {
 		t.Fatalf("expected id=1, got %v", resp.ID)
@@ -133,12 +195,8 @@ func TestReadyGateHoldsRequestsBeforeRun(t *testing.T) {
 		p.Run()
 	}()
 
-	// Read the response — should be a success, not a -32601 error
-	if !actuatorR.Scan() {
-		t.Fatal("expected response")
-	}
-	var resp rpcMessage
-	json.Unmarshal(actuatorR.Bytes(), &resp)
+	// Read the response (skipping plugin.initialized + any other notifications)
+	resp := scanRPC(t, actuatorR)
 
 	if resp.Error != nil {
 		t.Fatalf("request before Run() should succeed, got error: %d %s",
@@ -183,11 +241,7 @@ func TestReadyGateRejectsUnknownAfterRun(t *testing.T) {
 	data, _ := json.Marshal(msg)
 	actuatorW.Write(append(data, '\n'))
 
-	if !actuatorR.Scan() {
-		t.Fatal("expected response")
-	}
-	var resp rpcMessage
-	json.Unmarshal(actuatorR.Bytes(), &resp)
+	resp := scanRPC(t, actuatorR)
 
 	if resp.Error == nil {
 		t.Fatal("expected -32601 error for unknown method after Run()")
@@ -245,7 +299,7 @@ func TestHandleNotification(t *testing.T) {
 }
 
 func TestCallSuccess(t *testing.T) {
-	p, actuatorW, actuatorR := newTestPlugin()
+	p, actuatorW, actuatorR := newTestPluginT(t)
 
 	go p.Run()
 
@@ -260,12 +314,8 @@ func TestCallSuccess(t *testing.T) {
 		close(callDone)
 	}()
 
-	// Actuator reads the request
-	if !actuatorR.Scan() {
-		t.Fatal("expected request from plugin")
-	}
-	var req rpcMessage
-	json.Unmarshal(actuatorR.Bytes(), &req)
+	// Actuator reads the request (skipping plugin.initialized + any other notifications)
+	req := scanRPC(t, actuatorR)
 
 	if req.Method != "collection.get" {
 		t.Fatalf("expected method=collection.get, got %q", req.Method)
@@ -300,7 +350,7 @@ func TestCallSuccess(t *testing.T) {
 }
 
 func TestCallTimeout(t *testing.T) {
-	p, actuatorW, actuatorR := newTestPlugin()
+	p, actuatorW, actuatorR := newTestPluginT(t)
 
 	go p.Run()
 
@@ -323,7 +373,7 @@ func TestCallTimeout(t *testing.T) {
 }
 
 func TestCallRPCError(t *testing.T) {
-	p, actuatorW, actuatorR := newTestPlugin()
+	p, actuatorW, actuatorR := newTestPluginT(t)
 
 	go p.Run()
 
@@ -332,12 +382,8 @@ func TestCallRPCError(t *testing.T) {
 		callDone <- p.Call("collection.get", nil, nil)
 	}()
 
-	// Read request
-	if !actuatorR.Scan() {
-		t.Fatal("expected request")
-	}
-	var req rpcMessage
-	json.Unmarshal(actuatorR.Bytes(), &req)
+	// Read request (skipping plugin.initialized + any other notifications)
+	req := scanRPC(t, actuatorR)
 
 	// Send error response
 	resp := rpcMessage{
@@ -374,12 +420,8 @@ func TestMethodNotFound(t *testing.T) {
 	data, _ := json.Marshal(msg)
 	actuatorW.Write(append(data, '\n'))
 
-	// Read error response
-	if !actuatorR.Scan() {
-		t.Fatal("expected error response")
-	}
-	var resp rpcMessage
-	json.Unmarshal(actuatorR.Bytes(), &resp)
+	// Read error response (skipping plugin.initialized + any other notifications)
+	resp := scanRPC(t, actuatorR)
 
 	if resp.Error == nil {
 		t.Fatal("expected error in response")
@@ -392,17 +434,24 @@ func TestMethodNotFound(t *testing.T) {
 }
 
 func TestNotify(t *testing.T) {
-	p, actuatorW, actuatorR := newTestPlugin()
+	p, actuatorW, actuatorR := newTestPluginT(t)
 
 	go p.Run()
 
-	// Read from actuator side concurrently (pipe blocks writer until reader reads)
-	msgCh := make(chan rpcMessage, 1)
+	// Drain frames concurrently so Run()'s plugin.initialized and our
+	// subsequent Notify both unblock their writes. Look for the specific
+	// "events.emit" frame the test cares about.
+	msgCh := make(chan rpcMessage, 4)
 	go func() {
-		if actuatorR.Scan() {
+		for actuatorR.Scan() {
 			var msg rpcMessage
-			json.Unmarshal(actuatorR.Bytes(), &msg)
-			msgCh <- msg
+			if err := json.Unmarshal(actuatorR.Bytes(), &msg); err != nil {
+				continue
+			}
+			select {
+			case msgCh <- msg:
+			default:
+			}
 		}
 	}()
 
@@ -411,23 +460,26 @@ func TestNotify(t *testing.T) {
 		t.Fatalf("Notify failed: %v", err)
 	}
 
-	select {
-	case msg := <-msgCh:
-		if msg.ID != nil {
-			t.Fatal("notification should not have id")
+	deadline := time.After(2 * time.Second)
+	for {
+		select {
+		case msg := <-msgCh:
+			if msg.Method != "events.emit" {
+				continue
+			}
+			if msg.ID != nil {
+				t.Fatal("notification should not have id")
+			}
+			actuatorW.(io.Closer).Close()
+			return
+		case <-deadline:
+			t.Fatal("timed out waiting for events.emit notification")
 		}
-		if msg.Method != "events.emit" {
-			t.Fatalf("expected method=events.emit, got %q", msg.Method)
-		}
-	case <-time.After(2 * time.Second):
-		t.Fatal("timed out waiting for notification")
 	}
-
-	actuatorW.(io.Closer).Close()
 }
 
 func TestHandlerPanicRecovery(t *testing.T) {
-	p, actuatorW, actuatorR := newTestPlugin()
+	p, actuatorW, actuatorR := newTestPluginT(t)
 
 	p.Handle("panic_method", func(params json.RawMessage) (any, error) {
 		panic("test panic")
@@ -444,11 +496,8 @@ func TestHandlerPanicRecovery(t *testing.T) {
 	data, _ := json.Marshal(msg)
 	actuatorW.Write(append(data, '\n'))
 
-	if !actuatorR.Scan() {
-		t.Fatal("expected error response after panic")
-	}
-	var resp rpcMessage
-	json.Unmarshal(actuatorR.Bytes(), &resp)
+	// scanRPC drains plugin.initialized + any other notifications.
+	resp := scanRPC(t, actuatorR)
 
 	if resp.Error == nil {
 		t.Fatal("expected error response")

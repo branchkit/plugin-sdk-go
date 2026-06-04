@@ -59,21 +59,28 @@ func TestPutMarshalsPayload(t *testing.T) {
 			if method != "collection.put" {
 				return nil, "unexpected method " + method
 			}
+			// Post-unification wire shape: {name, entries:[{id,payload}], roles?}.
+			// Put() wraps the single record into one entry.
 			var req struct {
-				Name    string          `json:"name"`
-				ID      string          `json:"id"`
-				Payload json.RawMessage `json:"payload"`
+				Name    string `json:"name"`
+				Entries []struct {
+					ID      string          `json:"id"`
+					Payload json.RawMessage `json:"payload"`
+				} `json:"entries"`
 			}
 			json.Unmarshal(params, &req)
-			if req.Name != "things" || req.ID != "k1" {
-				return nil, "wrong name/id"
+			if req.Name != "things" {
+				return nil, "wrong name"
+			}
+			if len(req.Entries) != 1 || req.Entries[0].ID != "k1" {
+				return nil, "expected one entry id=k1"
 			}
 			var p map[string]int
-			json.Unmarshal(req.Payload, &p)
+			json.Unmarshal(req.Entries[0].Payload, &p)
 			if p["v"] != 7 {
 				return nil, "payload not forwarded"
 			}
-			return map[string]any{"ok": true}, ""
+			return map[string]any{"ok": true, "count": 1}, ""
 		},
 		func(p *Plugin) {
 			if err := p.Put("things", "k1", map[string]int{"v": 7}); err != nil {

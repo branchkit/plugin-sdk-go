@@ -27,14 +27,9 @@ func sendAction(t *testing.T, w io.Writer, r *bufio.Scanner, action string, para
 	data, _ := json.Marshal(msg)
 	w.Write(append(data, '\n'))
 
-	if !r.Scan() {
-		t.Fatal("expected response")
-	}
-	var resp rpcMessage
-	if err := json.Unmarshal(r.Bytes(), &resp); err != nil {
-		t.Fatalf("bad response: %v (raw=%s)", err, string(r.Bytes()))
-	}
-	return resp
+	// Drain notifications (plugin.initialized + any others) before
+	// reading the response. scanRPC is defined in rpc_test.go.
+	return scanRPC(t, r)
 }
 
 func TestHandleActionDispatchesByAction(t *testing.T) {
