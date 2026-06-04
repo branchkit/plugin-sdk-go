@@ -871,7 +871,7 @@ type CollectionDeleteLogEntryResponse struct {
 
 // CollectionDeleteRecordsRequest is the request type for collection.delete_records.
 type CollectionDeleteRecordsRequest struct {
-	Ids []string `json:"ids"`
+	Ids []string `json:"ids,omitempty"`
 	Name string `json:"name"`
 }
 
@@ -976,22 +976,9 @@ type CollectionPatchResponse struct {
 	Ok bool `json:"ok"`
 }
 
-// CollectionPushRequest is the request type for collection.push.
-type CollectionPushRequest struct {
-	Data json.RawMessage `json:"data"`
-	Label *string `json:"label,omitempty"`
-	Name string `json:"name"`
-	Roles json.RawMessage `json:"roles,omitempty"`
-}
-
-// CollectionPushResponse is the response type for collection.push.
-type CollectionPushResponse struct {
-	Ok bool `json:"ok"`
-}
-
 // CollectionPutRequest is the request type for collection.put.
 type CollectionPutRequest struct {
-	Entries []CollectionPutEntry `json:"entries"`
+	Entries []CollectionPutEntry `json:"entries,omitempty"`
 	Name string `json:"name"`
 	Roles json.RawMessage `json:"roles,omitempty"`
 }

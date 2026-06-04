@@ -27,7 +27,6 @@ const (
 	MethodCollectionListLog = "collection.list_log" // since 0.1.0
 	MethodCollectionOverride = "collection.override" // since 0.1.0
 	MethodCollectionPatch = "collection.patch" // since 0.1.0
-	MethodCollectionPush = "collection.push" // since 0.1.0
 	MethodCollectionPut = "collection.put" // since 0.1.0
 	MethodCollectionSetRecording = "collection.set_recording" // since 0.1.0
 	MethodCollectionsList = "collections.list" // since 0.1.0

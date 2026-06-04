@@ -242,17 +242,6 @@ func (p *Plugin) CollectionPatch(fields json.RawMessage, id string, name string)
 	return p.Call(MethodCollectionPatch, req, nil)
 }
 
-// CollectionPush write data to a shared store.
-func (p *Plugin) CollectionPush(data json.RawMessage, label *string, name string, roles json.RawMessage) error {
-	req := &CollectionPushRequest{
-		Data: data,
-		Label: label,
-		Name: name,
-		Roles: roles,
-	}
-	return p.Call(MethodCollectionPush, req, nil)
-}
-
 // CollectionPut upsert records by id (bulk). Auto-registers the target as a record-keyed dynamic collection on first plugin call to an unknown name..
 func (p *Plugin) CollectionPut(entries []CollectionPutEntry, name string, roles json.RawMessage) (*CollectionPutResponse, error) {
 	req := &CollectionPutRequest{
