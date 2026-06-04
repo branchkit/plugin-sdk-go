@@ -74,7 +74,18 @@ type Plugin struct {
 	pending map[uint64]*pendingCall
 	nextID  atomic.Uint64
 
-	mu        sync.Mutex // protects writer, pending
+	// mu protects pending / handlers / listeners — the bookkeeping
+	// maps. Never held during an outbound write.
+	mu sync.Mutex
+	// writeMu serializes p.writer.Encode (json.Encoder isn't safe for
+	// concurrent use). Held ONLY around the Encode call, never during
+	// pending-map mutation. This split is load-bearing: io.Pipe and
+	// the real actuator's stdin can both back-pressure a write, and
+	// before the split, a blocked Encode held mu and deadlocked
+	// dispatch (which needs mu to look up the pending entry that
+	// would let the in-flight Call return).
+	writeMu sync.Mutex
+
 	closed    chan struct{}
 	closeOnce sync.Once
 	ready     chan struct{} // closed when Run() is called, gates incoming requests
@@ -232,8 +243,15 @@ func (p *Plugin) CallWithTimeout(method string, params any, result any, timeout 
 
 	pc := &pendingCall{ch: make(chan callResult, 1)}
 
+	// Register pending BEFORE writing so the response (which can
+	// arrive arbitrarily fast once the actuator sees the request)
+	// always finds the channel. Two locks, not one: mu for the map,
+	// writeMu for the encoder. See the writeMu doc comment for why.
 	p.mu.Lock()
 	p.pending[id] = pc
+	p.mu.Unlock()
+
+	p.writeMu.Lock()
 	err := p.writer.Encode(rpcMessage{
 		JSONRPC:       "2.0",
 		ID:            &id,
@@ -241,7 +259,7 @@ func (p *Plugin) CallWithTimeout(method string, params any, result any, timeout 
 		Params:        paramsRaw,
 		CorrelationID: currentCorrelation(),
 	})
-	p.mu.Unlock()
+	p.writeMu.Unlock()
 
 	if err != nil {
 		p.mu.Lock()
@@ -286,8 +304,8 @@ func (p *Plugin) Notify(method string, params any) error {
 		paramsRaw = data
 	}
 
-	p.mu.Lock()
-	defer p.mu.Unlock()
+	p.writeMu.Lock()
+	defer p.writeMu.Unlock()
 	return p.writer.Encode(rpcMessage{
 		JSONRPC:       "2.0",
 		Method:        method,
@@ -419,8 +437,8 @@ func (p *Plugin) handleRequest(msg rpcMessage) {
 			return
 		}
 
-		p.mu.Lock()
-		defer p.mu.Unlock()
+		p.writeMu.Lock()
+		defer p.writeMu.Unlock()
 		if err := p.writer.Encode(rpcMessage{
 			JSONRPC: "2.0",
 			ID:      msg.ID,
@@ -451,8 +469,8 @@ func (p *Plugin) handleNotification(msg rpcMessage) {
 
 // sendError sends a JSON-RPC error response.
 func (p *Plugin) sendError(id uint64, code int, message string) {
-	p.mu.Lock()
-	defer p.mu.Unlock()
+	p.writeMu.Lock()
+	defer p.writeMu.Unlock()
 	if err := p.writer.Encode(rpcMessage{
 		JSONRPC: "2.0",
 		ID:      &id,

@@ -648,6 +648,67 @@ func TestConcurrentCalls(t *testing.T) {
 	actuatorW.(io.Closer).Close()
 }
 
+// TestWriterLockDoesNotBlockDispatch is the regression test for the
+// deadlock that surfaced during the post-unification SDK review:
+// before the writeMu/mu split, every outbound write held the same
+// mutex that dispatch needed to look up pending Call entries. When
+// a write wedged on a slow/stuck pipe, dispatch starved waiting on
+// mu — incoming responses sat in the pipe undelivered.
+//
+// The test forces the deadlock condition deterministically by
+// grabbing the writer lock directly (no need to actually wedge a
+// pipe). With the bug, dispatch can't process a fabricated response
+// while a "fake" Notify holds the writer lock. With the fix,
+// dispatch acquires mu independently, removes the pending entry,
+// and delivers to pc.ch — observable by the entry's disappearance
+// from the pending map.
+func TestWriterLockDoesNotBlockDispatch(t *testing.T) {
+	p, actuatorW, actuatorR := newTestPluginT(t)
+
+	// Background pump so Run()'s plugin.initialized completes.
+	go func() {
+		for actuatorR.Scan() {
+		}
+	}()
+
+	go p.Run()
+	time.Sleep(30 * time.Millisecond) // let plugin.initialized clear
+
+	// Manually register a pending entry — bypasses Call's writer.Encode
+	// step entirely so we control exactly what's in pending.
+	pc := &pendingCall{ch: make(chan callResult, 1)}
+	const fakeID uint64 = 42
+	p.mu.Lock()
+	p.pending[fakeID] = pc
+	p.mu.Unlock()
+
+	// Hold writeMu indefinitely — simulates a wedged writer.Encode.
+	// Before the lock split, dispatch needed the SAME lock to look
+	// up pending, so this would have stalled response delivery.
+	p.writeMu.Lock()
+	defer p.writeMu.Unlock()
+
+	// Inject a response via the independent inbound pipe.
+	resp := rpcMessage{
+		JSONRPC: "2.0",
+		ID:      func() *uint64 { id := fakeID; return &id }(),
+		Result:  json.RawMessage(`{}`),
+	}
+	data, _ := json.Marshal(resp)
+	if _, err := actuatorW.Write(append(data, '\n')); err != nil {
+		t.Fatalf("write response: %v", err)
+	}
+
+	// Wait for dispatch to deliver. The observable signal is
+	// pc.ch receiving the result (buffered, send is non-blocking).
+	select {
+	case <-pc.ch:
+		// dispatch ran while writeMu was held — the lock split works.
+	case <-time.After(2 * time.Second):
+		t.Fatal("dispatch did not deliver response within 2s while writeMu was held — lock split regression")
+	}
+}
+
 // TestResponseWithUnknownID verifies unknown response IDs are silently dropped.
 func TestResponseWithUnknownID(t *testing.T) {
 	p, actuatorW, _ := newTestPlugin()
