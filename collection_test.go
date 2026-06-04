@@ -155,10 +155,10 @@ func TestCountReturnsCount(t *testing.T) {
 func TestDeleteReturnsBool(t *testing.T) {
 	runPluginCall(t,
 		func(method string, _ json.RawMessage) (any, string) {
-			if method != "collection.delete_record" {
+			if method != "collection.delete_records" {
 				return nil, "unexpected method " + method
 			}
-			return map[string]any{"deleted": true}, ""
+			return map[string]any{"deleted": 1, "already_absent": 0}, ""
 		},
 		func(p *Plugin) {
 			ok, err := p.Delete("things", "k1")
