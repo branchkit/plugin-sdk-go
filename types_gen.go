@@ -511,12 +511,18 @@ type MenuItem struct {
 
 // MergeStrategy is auto-generated from the OpenRPC spec.
 // How contributions to a shared store are merged when read.
+// 
+// `Keyed` was removed in Phase 3d of the collection-primitive
+// unification — it had no legitimate multi-contributor users in
+// practice; the implicit `Preset::Data` default flipped to
+// `Authoritative` (matches the dominant single-writer pattern).
+// `Collect` remains for genuine multi-contributor pooling (keybinds,
+// `Preset::Tag` multi-cardinality tag collections).
 type MergeStrategy string
 
 const (
 	MergeStrategyAuthoritative MergeStrategy = "authoritative"
 	MergeStrategyCollect MergeStrategy = "collect"
-	MergeStrategyKeyed MergeStrategy = "keyed"
 )
 
 // NetworkInterface is auto-generated from the OpenRPC spec.
