@@ -200,6 +200,20 @@ type CommandRowData struct {
 	Variants []string `json:"variants"`
 }
 
+// CommandSpec is auto-generated from the OpenRPC spec.
+type CommandSpec struct {
+	Action json.RawMessage `json:"action,omitempty"`
+	CancelsBridge bool `json:"cancels_bridge"`
+	Category *string `json:"category,omitempty"`
+	ClearsTags []string `json:"clears_tags"`
+	Description *string `json:"description,omitempty"`
+	Pattern []json.RawMessage `json:"pattern"`
+	RequiresTags []string `json:"requires_tags"`
+	SetsOnPartial []string `json:"sets_on_partial"`
+	SetsTags []string `json:"sets_tags"`
+	Variants []json.RawMessage `json:"variants"`
+}
+
 // ContactInfo is auto-generated from the OpenRPC spec.
 type ContactInfo struct {
 	Email *string `json:"email,omitempty"`
