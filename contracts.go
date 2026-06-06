@@ -134,6 +134,7 @@ const (
 	MethodNativeBootVolume = "native.boot_volume" // since 0.1.0
 	MethodNativeBorders = "native.borders" // since 0.1.0
 	MethodNativeBrightness = "native.brightness" // since 0.1.0
+	MethodNativeBundleForRemotePort = "native.bundle_for_remote_port" // since 0.1.0
 	MethodNativeCalendarEventsRange = "native.calendar_events_range" // since 0.1.0
 	MethodNativeCalendarEventsToday = "native.calendar_events_today" // since 0.1.0
 	MethodNativeCalendarPermission = "native.calendar_permission" // since 0.1.0

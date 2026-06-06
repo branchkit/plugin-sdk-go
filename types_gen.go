@@ -1926,6 +1926,16 @@ type NativeBrightnessResponse struct {
 	Brightness float64 `json:"brightness"`
 }
 
+// NativeBundleForRemotePortRequest is the request type for native.bundle_for_remote_port.
+type NativeBundleForRemotePortRequest struct {
+	RemotePort int `json:"remote_port"`
+}
+
+// NativeBundleForRemotePortResponse is the response type for native.bundle_for_remote_port.
+type NativeBundleForRemotePortResponse struct {
+	BundleID string `json:"bundle_id"`
+}
+
 // NativeCalendarEventsRangeRequest is the request type for native.calendar_events_range.
 type NativeCalendarEventsRangeRequest struct {
 	End string `json:"end"`

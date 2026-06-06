@@ -1399,6 +1399,19 @@ func (p *Plugin) NativeBrightness(displayID *int) (*NativeBrightnessResponse, er
 	return &result, nil
 }
 
+// NativeBundleForRemotePort resolve a loopback TCP connection's remote port to the owning process's app bundle ID.
+func (p *Plugin) NativeBundleForRemotePort(remotePort int) (*NativeBundleForRemotePortResponse, error) {
+	req := &NativeBundleForRemotePortRequest{
+		RemotePort: remotePort,
+	}
+	var result NativeBundleForRemotePortResponse
+	err := p.Call(MethodNativeBundleForRemotePort, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // NativeCalendarEventsRange get calendar events in a date range (ISO 8601).
 func (p *Plugin) NativeCalendarEventsRange(end string, start string) ([]CalendarEvent, error) {
 	req := &NativeCalendarEventsRangeRequest{
