@@ -1083,6 +1083,7 @@ type CommandsResetResponse struct {
 type CommandsResolveRequest struct {
 	ActiveTags json.RawMessage `json:"active_tags,omitempty"`
 	Collections json.RawMessage `json:"collections,omitempty"`
+	PreferOwner *string `json:"prefer_owner,omitempty"`
 	RequireTag *string `json:"require_tag,omitempty"`
 	SessionID *string `json:"session_id,omitempty"`
 	Source *string `json:"source,omitempty"`
