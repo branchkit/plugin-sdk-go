@@ -714,6 +714,18 @@ type SystemAppearance struct {
 	ReduceTransparency bool `json:"reduce_transparency"`
 }
 
+// TiedCandidate is auto-generated from the OpenRPC spec.
+type TiedCandidate struct {
+	Action json.RawMessage `json:"action,omitempty"`
+	Args map[string]json.RawMessage `json:"args"`
+	ClearsTags []string `json:"clears_tags"`
+	ConsumedCount int `json:"consumed_count"`
+	Label string `json:"label"`
+	OwnerPlugin string `json:"owner_plugin"`
+	RequiresTags []string `json:"requires_tags"`
+	SetsTags []string `json:"sets_tags"`
+}
+
 // TileableEntry is auto-generated from the OpenRPC spec.
 type TileableEntry struct {
 	Tileable bool `json:"tileable"`
@@ -1095,6 +1107,7 @@ type CommandsResolveResponse struct {
 	ScopedTags []string `json:"scoped_tags,omitempty"`
 	SetsTags []string `json:"sets_tags"`
 	Telemetry ResolveTelemetry `json:"telemetry"`
+	TiedCandidates []TiedCandidate `json:"tied_candidates,omitempty"`
 	Title string `json:"title"`
 	TraceID *string `json:"trace_id,omitempty"`
 }
