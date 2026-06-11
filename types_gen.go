@@ -476,14 +476,6 @@ type LogEntry struct {
 	TimestampMs int `json:"timestamp_ms"`
 }
 
-// LogListOpts is auto-generated from the OpenRPC spec.
-type LogListOpts struct {
-	Cursor *string `json:"cursor,omitempty"`
-	Limit *int `json:"limit,omitempty"`
-	SinceMs *int `json:"since_ms,omitempty"`
-	UntilMs *int `json:"until_ms,omitempty"`
-}
-
 // LoginItem is auto-generated from the OpenRPC spec.
 type LoginItem struct {
 	BundleID *string `json:"bundle_id,omitempty"`
@@ -876,17 +868,6 @@ type CollectionCountResponse struct {
 	Count int `json:"count"`
 }
 
-// CollectionDeleteLogEntryRequest is the request type for collection.delete_log_entry.
-type CollectionDeleteLogEntryRequest struct {
-	ID string `json:"id"`
-	Name string `json:"name"`
-}
-
-// CollectionDeleteLogEntryResponse is the response type for collection.delete_log_entry.
-type CollectionDeleteLogEntryResponse struct {
-	Deleted bool `json:"deleted"`
-}
-
 // CollectionDeleteRecordsRequest is the request type for collection.delete_records.
 type CollectionDeleteRecordsRequest struct {
 	Ids []string `json:"ids,omitempty"`
@@ -924,27 +905,6 @@ type CollectionGetResponse struct {
 	Name string `json:"name"`
 }
 
-// CollectionGetLogEntryRequest is the request type for collection.get_log_entry.
-type CollectionGetLogEntryRequest struct {
-	ID string `json:"id"`
-	Name string `json:"name"`
-}
-
-// CollectionGetLogEntryResponse is the response type for collection.get_log_entry.
-type CollectionGetLogEntryResponse struct {
-	Entry json.RawMessage `json:"entry,omitempty"`
-}
-
-// CollectionGetRecordingRequest is the request type for collection.get_recording.
-type CollectionGetRecordingRequest struct {
-	Name string `json:"name"`
-}
-
-// CollectionGetRecordingResponse is the response type for collection.get_recording.
-type CollectionGetRecordingResponse struct {
-	Enabled bool `json:"enabled"`
-}
-
 // CollectionListRequest is the request type for collection.list.
 type CollectionListRequest struct {
 	Name string `json:"name"`
@@ -955,31 +915,6 @@ type CollectionListRequest struct {
 type CollectionListResponse struct {
 	Records []CollectionRecord `json:"records"`
 	Total int `json:"total"`
-}
-
-// CollectionListLogRequest is the request type for collection.list_log.
-type CollectionListLogRequest struct {
-	Name string `json:"name"`
-	Opts *LogListOpts `json:"opts,omitempty"`
-}
-
-// CollectionListLogResponse is the response type for collection.list_log.
-type CollectionListLogResponse struct {
-	Entries []LogEntry `json:"entries"`
-	Total int `json:"total"`
-}
-
-// CollectionOverrideRequest is the request type for collection.override.
-type CollectionOverrideRequest struct {
-	Action string `json:"action"`
-	Collection string `json:"collection"`
-	Fields json.RawMessage `json:"fields,omitempty"`
-	ID *string `json:"id,omitempty"`
-}
-
-// CollectionOverrideResponse is the response type for collection.override.
-type CollectionOverrideResponse struct {
-	Ok bool `json:"ok"`
 }
 
 // CollectionPatchRequest is the request type for collection.patch.
@@ -1004,17 +939,6 @@ type CollectionPutRequest struct {
 // CollectionPutResponse is the response type for collection.put.
 type CollectionPutResponse struct {
 	Count int `json:"count"`
-	Ok bool `json:"ok"`
-}
-
-// CollectionSetRecordingRequest is the request type for collection.set_recording.
-type CollectionSetRecordingRequest struct {
-	Enabled bool `json:"enabled"`
-	Name string `json:"name"`
-}
-
-// CollectionSetRecordingResponse is the response type for collection.set_recording.
-type CollectionSetRecordingResponse struct {
 	Ok bool `json:"ok"`
 }
 
@@ -4988,6 +4912,19 @@ type NativeZoomEnabledResponse struct {
 	Enabled bool `json:"enabled"`
 }
 
+// OverridesApplyRequest is the request type for overrides.apply.
+type OverridesApplyRequest struct {
+	Action string `json:"action"`
+	Collection string `json:"collection"`
+	Fields json.RawMessage `json:"fields,omitempty"`
+	ID *string `json:"id,omitempty"`
+}
+
+// OverridesApplyResponse is the response type for overrides.apply.
+type OverridesApplyResponse struct {
+	Ok bool `json:"ok"`
+}
+
 // PipelinesGrammarResponse is the response type for pipelines.grammar.
 type PipelinesGrammarResponse struct {
 	Words []string `json:"words"`
@@ -5044,6 +4981,27 @@ type PluginDebugRequest struct {
 
 // PluginDebugResponse is the response type for plugin.debug.
 type PluginDebugResponse struct {
+	Ok bool `json:"ok"`
+}
+
+// PrivacyGetRecordingRequest is the request type for privacy.get_recording.
+type PrivacyGetRecordingRequest struct {
+	Name string `json:"name"`
+}
+
+// PrivacyGetRecordingResponse is the response type for privacy.get_recording.
+type PrivacyGetRecordingResponse struct {
+	Enabled bool `json:"enabled"`
+}
+
+// PrivacySetRecordingRequest is the request type for privacy.set_recording.
+type PrivacySetRecordingRequest struct {
+	Enabled bool `json:"enabled"`
+	Name string `json:"name"`
+}
+
+// PrivacySetRecordingResponse is the response type for privacy.set_recording.
+type PrivacySetRecordingResponse struct {
 	Ok bool `json:"ok"`
 }
 

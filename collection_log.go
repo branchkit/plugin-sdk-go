@@ -67,54 +67,62 @@ func (p *Plugin) AppendEntry(name string, payload any) (*LogEntry, error) {
 	return entry, nil
 }
 
+// LogListOpts filters ListLog / ListLogPage. SDK-level type — the wire
+// carries the unified ListOpts (the former collection.list_log op was
+// folded into collection.list); the fields are identical by design.
+type LogListOpts struct {
+	SinceMs *int    `json:"since_ms,omitempty"`
+	UntilMs *int    `json:"until_ms,omitempty"`
+	Limit   *int    `json:"limit,omitempty"`
+	Cursor  *string `json:"cursor,omitempty"`
+}
+
+// recordToLogEntry projects the unified record envelope onto the log
+// view. Lossless: log records carry their append time in timestamp_ms.
+func recordToLogEntry(r CollectionRecord) LogEntry {
+	return LogEntry{ID: r.ID, TimestampMs: r.TimestampMs, Payload: r.Payload}
+}
+
+// logOptsToListOpts maps the log opts onto the unified list opts —
+// field-identical by design.
+func logOptsToListOpts(o *LogListOpts) *ListOpts {
+	if o == nil {
+		return nil
+	}
+	return &ListOpts{SinceMs: o.SinceMs, UntilMs: o.UntilMs, Limit: o.Limit, Cursor: o.Cursor}
+}
+
 // ListLog returns log entries newest-first. Pass nil for default options
-// (no filter, no limit, no cursor). The total field on the response is
-// the unfiltered entry count, useful for pagers.
+// (no filter, no limit, no cursor). Sugar over `collection.list` — the
+// wire surface is the unified verb set; log-shaped reads are the same
+// list with time-window opts.
 func (p *Plugin) ListLog(name string, opts *LogListOpts) ([]LogEntry, error) {
-	res, err := p.CollectionListLog(name, opts)
-	if err != nil {
-		return nil, err
-	}
-	if res == nil {
-		return nil, nil
-	}
-	return res.Entries, nil
+	entries, _, err := p.ListLogPage(name, opts)
+	return entries, err
 }
 
 // ListLogPage is like ListLog but also returns the unfiltered total count
-// so callers building paginated UIs don't need to call CollectionListLog
-// directly to read it off the response.
+// so callers building paginated UIs don't need a second call.
 func (p *Plugin) ListLogPage(name string, opts *LogListOpts) (entries []LogEntry, total int, err error) {
-	res, err := p.CollectionListLog(name, opts)
+	records, total, err := p.ListPage(name, logOptsToListOpts(opts))
 	if err != nil {
 		return nil, 0, err
 	}
-	if res == nil {
-		return nil, 0, nil
+	out := make([]LogEntry, 0, len(records))
+	for _, r := range records {
+		out = append(out, recordToLogEntry(r))
 	}
-	return res.Entries, res.Total, nil
+	return out, total, nil
 }
 
 // GetLogEntry fetches one entry by id. Returns (nil, nil) if no entry with
-// that id exists in the collection.
-//
-// CollectionGetLogEntryResponse.Entry is json.RawMessage because the
-// actuator declares it as Option<LogEntry> and the Go emitter routes
-// Option<StructType> through RawMessage (the Phase 5 anyOf-null
-// collapser only fires on primitive inner types). Unmarshal here so
-// callers get a typed value.
+// that id exists in the collection. Sugar over `collection.fetch`.
 func (p *Plugin) GetLogEntry(name, id string) (*LogEntry, error) {
-	res, err := p.CollectionGetLogEntry(id, name)
-	if err != nil {
+	rec, err := p.Get(name, id)
+	if err != nil || rec == nil {
 		return nil, err
 	}
-	if res == nil || len(res.Entry) == 0 || string(res.Entry) == "null" {
-		return nil, nil
-	}
-	var entry LogEntry
-	if err := json.Unmarshal(res.Entry, &entry); err != nil {
-		return nil, fmt.Errorf("decode log entry: %w", err)
-	}
+	entry := recordToLogEntry(*rec)
 	return &entry, nil
 }
 
@@ -161,29 +169,23 @@ func (b *LogListOptsBuilder) Build() *LogListOpts { return &b.opts }
 // DeleteLogEntry removes one entry by id. Returns true if it existed and
 // was removed, false if it was already gone (a no-op delete is not an
 // error — a separate plugin or the user's UI may have removed it).
+// Sugar over `collection.delete_records`.
 func (p *Plugin) DeleteLogEntry(name, id string) (bool, error) {
-	res, err := p.CollectionDeleteLogEntry(id, name)
-	if err != nil {
-		return false, err
-	}
-	if res == nil {
-		return false, nil
-	}
-	return res.Deleted, nil
+	return p.Delete(name, id)
 }
 
 // SetCollectionRecording toggles the recording flag on a log-kind
 // collection. When false, subsequent Append calls fail with
 // ErrRecordingDisabled until re-enabled.
 func (p *Plugin) SetCollectionRecording(name string, enabled bool) error {
-	return p.CollectionSetRecording(enabled, name)
+	return p.PrivacySetRecording(enabled, name)
 }
 
 // GetCollectionRecording reads the effective recording flag for a
 // log-kind collection — the user override if set, otherwise the
 // manifest's `default_recording_enabled`.
 func (p *Plugin) GetCollectionRecording(name string) (bool, error) {
-	res, err := p.CollectionGetRecording(name)
+	res, err := p.PrivacyGetRecording(name)
 	if err != nil {
 		return false, err
 	}

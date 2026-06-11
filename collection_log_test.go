@@ -164,13 +164,13 @@ func TestAppendEntryReturnsFullEntry(t *testing.T) {
 func TestListLogReturnsEntries(t *testing.T) {
 	runPluginCall(t,
 		func(method string, params json.RawMessage) (any, string) {
-			if method != "collection.list_log" {
+			if method != "collection.list" {
 				return nil, "unexpected method " + method
 			}
 			return map[string]any{
-				"entries": []map[string]any{
-					{"id": "01H_B", "timestamp_ms": 200, "payload": map[string]any{"i": 1}},
-					{"id": "01H_A", "timestamp_ms": 100, "payload": map[string]any{"i": 0}},
+				"records": []map[string]any{
+					{"id": "01H_B", "timestamp_ms": 200, "revision": 1, "payload": map[string]any{"i": 1}},
+					{"id": "01H_A", "timestamp_ms": 100, "revision": 1, "payload": map[string]any{"i": 0}},
 				},
 				"total": 2,
 			}, ""
@@ -192,8 +192,8 @@ func TestListLogPageReturnsTotal(t *testing.T) {
 	runPluginCall(t,
 		func(method string, params json.RawMessage) (any, string) {
 			return map[string]any{
-				"entries": []map[string]any{
-					{"id": "01H_one", "timestamp_ms": 100, "payload": map[string]any{}},
+				"records": []map[string]any{
+					{"id": "01H_one", "timestamp_ms": 100, "revision": 1, "payload": map[string]any{}},
 				},
 				"total": 17,
 			}, ""
@@ -233,7 +233,7 @@ func TestLogListOptsBuilderEncodesTypedValues(t *testing.T) {
 func TestGetLogEntryReturnsNilWhenAbsent(t *testing.T) {
 	runPluginCall(t,
 		func(method string, params json.RawMessage) (any, string) {
-			return map[string]any{"entry": nil}, ""
+			return map[string]any{"record": nil}, ""
 		},
 		func(p *Plugin) {
 			entry, err := p.GetLogEntry("any", "missing")
@@ -251,7 +251,7 @@ func TestGetLogEntryReturnsNilWhenAbsent(t *testing.T) {
 func TestDeleteLogEntryReturnsBool(t *testing.T) {
 	runPluginCall(t,
 		func(method string, params json.RawMessage) (any, string) {
-			return map[string]any{"deleted": true}, ""
+			return map[string]any{"deleted": 1, "already_absent": 0}, ""
 		},
 		func(p *Plugin) {
 			ok, err := p.DeleteLogEntry("any", "01H")
@@ -269,7 +269,7 @@ func TestDeleteLogEntryReturnsBool(t *testing.T) {
 func TestSetCollectionRecording(t *testing.T) {
 	runPluginCall(t,
 		func(method string, params json.RawMessage) (any, string) {
-			if method != "collection.set_recording" {
+			if method != "privacy.set_recording" {
 				return nil, "unexpected method " + method
 			}
 			var req struct {
@@ -312,9 +312,10 @@ func TestGetLogEntryReturnsTypedEntry(t *testing.T) {
 	runPluginCall(t,
 		func(method string, params json.RawMessage) (any, string) {
 			return map[string]any{
-				"entry": map[string]any{
+				"record": map[string]any{
 					"id":           "01H_typed",
 					"timestamp_ms": 12345,
+					"revision":     1,
 					"payload":      map[string]any{"k": "v"},
 				},
 			}, ""

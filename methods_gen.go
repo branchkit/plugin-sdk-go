@@ -103,20 +103,6 @@ func (p *Plugin) CollectionCount(name string) (*CollectionCountResponse, error) 
 	return &result, nil
 }
 
-// CollectionDeleteLogEntry delete one entry from a log-kind collection by id.
-func (p *Plugin) CollectionDeleteLogEntry(id string, name string) (*CollectionDeleteLogEntryResponse, error) {
-	req := &CollectionDeleteLogEntryRequest{
-		ID: id,
-		Name: name,
-	}
-	var result CollectionDeleteLogEntryResponse
-	err := p.Call(MethodCollectionDeleteLogEntry, req, &result)
-	if err != nil {
-		return nil, err
-	}
-	return &result, nil
-}
-
 // CollectionDeleteRecords delete records from a collection by id (bulk)..
 func (p *Plugin) CollectionDeleteRecords(ids []string, name string) (*CollectionDeleteRecordsResponse, error) {
 	req := &CollectionDeleteRecordsRequest{
@@ -158,33 +144,6 @@ func (p *Plugin) CollectionGet(name string) (*CollectionGetResponse, error) {
 	return &result, nil
 }
 
-// CollectionGetLogEntry fetch one entry from a log-kind collection by id.
-func (p *Plugin) CollectionGetLogEntry(id string, name string) (*CollectionGetLogEntryResponse, error) {
-	req := &CollectionGetLogEntryRequest{
-		ID: id,
-		Name: name,
-	}
-	var result CollectionGetLogEntryResponse
-	err := p.Call(MethodCollectionGetLogEntry, req, &result)
-	if err != nil {
-		return nil, err
-	}
-	return &result, nil
-}
-
-// CollectionGetRecording read the effective recording flag for a log-kind collection.
-func (p *Plugin) CollectionGetRecording(name string) (*CollectionGetRecordingResponse, error) {
-	req := &CollectionGetRecordingRequest{
-		Name: name,
-	}
-	var result CollectionGetRecordingResponse
-	err := p.Call(MethodCollectionGetRecording, req, &result)
-	if err != nil {
-		return nil, err
-	}
-	return &result, nil
-}
-
 // CollectionList list records in a collection (paginated).
 func (p *Plugin) CollectionList(name string, opts *ListOpts) (*CollectionListResponse, error) {
 	req := &CollectionListRequest{
@@ -197,31 +156,6 @@ func (p *Plugin) CollectionList(name string, opts *ListOpts) (*CollectionListRes
 		return nil, err
 	}
 	return &result, nil
-}
-
-// CollectionListLog list entries in a log-kind collection (paginated, newest first).
-func (p *Plugin) CollectionListLog(name string, opts *LogListOpts) (*CollectionListLogResponse, error) {
-	req := &CollectionListLogRequest{
-		Name: name,
-		Opts: opts,
-	}
-	var result CollectionListLogResponse
-	err := p.Call(MethodCollectionListLog, req, &result)
-	if err != nil {
-		return nil, err
-	}
-	return &result, nil
-}
-
-// CollectionOverride add, remove, restore, patch, or reset user overrides for a collection.
-func (p *Plugin) CollectionOverride(action string, collection string, fields json.RawMessage, id *string) error {
-	req := &CollectionOverrideRequest{
-		Action: action,
-		Collection: collection,
-		Fields: fields,
-		ID: id,
-	}
-	return p.Call(MethodCollectionOverride, req, nil)
 }
 
 // CollectionPatch partial update of an existing record.
@@ -247,15 +181,6 @@ func (p *Plugin) CollectionPut(entries []CollectionPutEntry, name string, roles 
 		return nil, err
 	}
 	return &result, nil
-}
-
-// CollectionSetRecording toggle the recording flag on a log-kind collection.
-func (p *Plugin) CollectionSetRecording(enabled bool, name string) error {
-	req := &CollectionSetRecordingRequest{
-		Enabled: enabled,
-		Name: name,
-	}
-	return p.Call(MethodCollectionSetRecording, req, nil)
 }
 
 // CollectionsList list collections with entries for display, optionally filtered by kind.
@@ -5808,6 +5733,17 @@ func (p *Plugin) NativeZoomEnabled() (*NativeZoomEnabledResponse, error) {
 	return &result, nil
 }
 
+// OverridesApply add, remove, restore, patch, or reset user overrides for a collection.
+func (p *Plugin) OverridesApply(action string, collection string, fields json.RawMessage, id *string) error {
+	req := &OverridesApplyRequest{
+		Action: action,
+		Collection: collection,
+		Fields: fields,
+		ID: id,
+	}
+	return p.Call(MethodOverridesApply, req, nil)
+}
+
 // PipelinesGrammar get the current command grammar word list for speech recognition.
 func (p *Plugin) PipelinesGrammar() ([]string, error) {
 	var result struct {
@@ -5881,6 +5817,28 @@ func (p *Plugin) PluginDebug(data json.RawMessage, level json.RawMessage, tag *s
 		Tag: tag,
 	}
 	return p.Call(MethodPluginDebug, req, nil)
+}
+
+// PrivacyGetRecording read the effective recording flag for a log-kind collection (privacy control plane).
+func (p *Plugin) PrivacyGetRecording(name string) (*PrivacyGetRecordingResponse, error) {
+	req := &PrivacyGetRecordingRequest{
+		Name: name,
+	}
+	var result PrivacyGetRecordingResponse
+	err := p.Call(MethodPrivacyGetRecording, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// PrivacySetRecording toggle the recording flag on a log-kind collection (privacy control plane).
+func (p *Plugin) PrivacySetRecording(enabled bool, name string) error {
+	req := &PrivacySetRecordingRequest{
+		Enabled: enabled,
+		Name: name,
+	}
+	return p.Call(MethodPrivacySetRecording, req, nil)
 }
 
 // SelectionPick resolve a selection pick by index — clears selection state, emits event, closes HUD.
