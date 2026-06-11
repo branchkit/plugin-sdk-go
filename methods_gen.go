@@ -103,14 +103,6 @@ func (p *Plugin) CollectionCount(name string) (*CollectionCountResponse, error) 
 	return &result, nil
 }
 
-// CollectionDelete delete a dynamic collection.
-func (p *Plugin) CollectionDelete(name string) error {
-	req := &CollectionDeleteRequest{
-		Name: name,
-	}
-	return p.Call(MethodCollectionDelete, req, nil)
-}
-
 // CollectionDeleteLogEntry delete one entry from a log-kind collection by id.
 func (p *Plugin) CollectionDeleteLogEntry(id string, name string) (*CollectionDeleteLogEntryResponse, error) {
 	req := &CollectionDeleteLogEntryRequest{

@@ -16,7 +16,6 @@ const (
 	MethodCalibrationTrialEnd = "calibration.trial_end" // since 0.1.0
 	MethodCollectionAppend = "collection.append" // since 0.1.0
 	MethodCollectionCount = "collection.count" // since 0.1.0
-	MethodCollectionDelete = "collection.delete" // since 0.1.0
 	MethodCollectionDeleteLogEntry = "collection.delete_log_entry" // since 0.1.0
 	MethodCollectionDeleteRecords = "collection.delete_records" // since 0.1.0
 	MethodCollectionFetch = "collection.fetch" // since 0.1.0

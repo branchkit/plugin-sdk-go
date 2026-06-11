@@ -165,6 +165,8 @@ type CollectionPutEntry struct {
 type CollectionRecord struct {
 	ID string `json:"id"`
 	Payload json.RawMessage `json:"payload,omitempty"`
+	Revision int `json:"revision"`
+	TimestampMs int `json:"timestamp_ms"`
 }
 
 // CollectionsListItem is auto-generated from the OpenRPC spec.
@@ -872,16 +874,6 @@ type CollectionCountRequest struct {
 // CollectionCountResponse is the response type for collection.count.
 type CollectionCountResponse struct {
 	Count int `json:"count"`
-}
-
-// CollectionDeleteRequest is the request type for collection.delete.
-type CollectionDeleteRequest struct {
-	Name string `json:"name"`
-}
-
-// CollectionDeleteResponse is the response type for collection.delete.
-type CollectionDeleteResponse struct {
-	Ok bool `json:"ok"`
 }
 
 // CollectionDeleteLogEntryRequest is the request type for collection.delete_log_entry.
