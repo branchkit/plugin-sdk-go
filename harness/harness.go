@@ -132,14 +132,28 @@ func (h *Harness) GetTags(pattern string) []string {
 
 // SimulateResult holds the outcome of a command simulation.
 type SimulateResult struct {
-	Matched        bool              `json:"matched"`
-	Action         json.RawMessage   `json:"action,omitempty"`
-	Args           []json.RawMessage `json:"args,omitempty"`
-	ConsumedCount  int               `json:"consumed_count,omitempty"`
-	SetsTags       []string          `json:"sets_tags,omitempty"`
-	ClearsTags     []string          `json:"clears_tags,omitempty"`
-	OwnerPlugin    string            `json:"owner_plugin,omitempty"`
-	ActionResponse *ActionResponse   `json:"action_response,omitempty"`
+	Matched bool            `json:"matched"`
+	Action  json.RawMessage `json:"action,omitempty"`
+	// Captured pattern arguments, keyed by capture name (e.g. {"text": "world"}
+	// for a `<text>` capture).
+	Args           map[string]json.RawMessage `json:"args,omitempty"`
+	ConsumedCount  int                        `json:"consumed_count,omitempty"`
+	SetsTags       []string                   `json:"sets_tags,omitempty"`
+	ClearsTags     []string                   `json:"clears_tags,omitempty"`
+	OwnerPlugin    string                     `json:"owner_plugin,omitempty"`
+	ActionResponse *ActionResponse            `json:"action_response,omitempty"`
+	// Populated when the matcher declined to act because 2+ equally-eligible
+	// commands tied on the phrase (Matched stays false; in production the
+	// voice plugin opens the disambiguation HUD). Overlapping patterns like a
+	// literal and a same-length capture from the same plugin tie too — see
+	// DESIGN_MATCHER_COLLISION_RESOLUTION section 8.
+	TiedCandidates []TiedCandidate `json:"tied_candidates,omitempty"`
+}
+
+// TiedCandidate identifies one command in a surfaced tie.
+type TiedCandidate struct {
+	OwnerPlugin string `json:"owner_plugin"`
+	Label       string `json:"label"`
 }
 
 // ActionResponse holds the plugin's on_action reply when the matched command
@@ -162,9 +176,9 @@ func (h *Harness) SimulateCommand(phrase string) SimulateResult {
 
 // CollectionResult holds the data returned by GetCollection.
 type CollectionResult struct {
-	Name          string                        `json:"name"`
-	Introducer    string                        `json:"introducer"`
-	Contributions map[string]json.RawMessage    `json:"contributions"`
+	Name          string                     `json:"name"`
+	Introducer    string                     `json:"introducer"`
+	Contributions map[string]json.RawMessage `json:"contributions"`
 }
 
 // GetCollection reads a collection's contributions.
@@ -196,10 +210,10 @@ func (h *Harness) CallPlugin(method string, params any, result any) {
 
 // PluginState holds process health and RPC statistics.
 type PluginState struct {
-	Alive         bool     `json:"alive"`
-	PluginID      string   `json:"plugin_id"`
-	RPCCallCount  int      `json:"rpc_call_count"`
-	RPCErrorCount int      `json:"rpc_error_count"`
+	Alive          bool     `json:"alive"`
+	PluginID       string   `json:"plugin_id"`
+	RPCCallCount   int      `json:"rpc_call_count"`
+	RPCErrorCount  int      `json:"rpc_error_count"`
 	RPCMethodsSeen []string `json:"rpc_methods_seen"`
 }
 
@@ -497,7 +511,7 @@ func (h *Harness) ListHUDChannels() []HUDChannelInfo {
 
 // ConformancePhase holds the results of a conformance test phase.
 type ConformancePhase struct {
-	Phase string           `json:"phase"`
+	Phase string            `json:"phase"`
 	Tests []ConformanceTest `json:"tests"`
 }
 

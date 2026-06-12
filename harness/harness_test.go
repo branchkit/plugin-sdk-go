@@ -17,22 +17,25 @@ func TestStartStop(t *testing.T) {
 	}
 }
 
-func TestSimulateCommand(t *testing.T) {
+func TestSimulateCommandTie(t *testing.T) {
 	h := harness.Start(t, "../../plugins/helloworld")
 
-	result := h.MustSimulateCommand("hello branchkit")
-	if result.ActionType() != "helloworld.greet" {
-		t.Fatalf("expected action_type=helloworld.greet, got %s", result.ActionType())
+	// "hello branchkit" completes BOTH helloworld commands at the same length
+	// (the ["hello","branchkit"] literal and the ["hello","<text>"] capture).
+	// Equally-eligible same-length candidates are a genuine tie: the matcher
+	// declines to act and surfaces the tied set for disambiguation
+	// (DESIGN_MATCHER_COLLISION_RESOLUTION step 2, shipped 2026-06-08).
+	result := h.SimulateCommand("hello branchkit")
+	if result.Matched {
+		t.Fatal("expected a surfaced tie (matched=false), got a single winner")
 	}
-
-	var params struct {
-		Name string `json:"name"`
+	if len(result.TiedCandidates) != 2 {
+		t.Fatalf("expected 2 tied candidates, got %d: %+v", len(result.TiedCandidates), result.TiedCandidates)
 	}
-	if err := result.ActionParams(&params); err != nil {
-		t.Fatalf("unmarshal action params: %v", err)
-	}
-	if params.Name != "BranchKit" {
-		t.Fatalf("expected name=BranchKit, got %s", params.Name)
+	for _, c := range result.TiedCandidates {
+		if c.OwnerPlugin != "helloworld" {
+			t.Fatalf("expected tied candidate owned by helloworld, got %q", c.OwnerPlugin)
+		}
 	}
 }
 
