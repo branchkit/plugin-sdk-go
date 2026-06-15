@@ -5901,7 +5901,7 @@ func (p *Plugin) SettingsRefresh() error {
 }
 
 // SettingsRulesCreate create a new user voice command from settings-UI signals.
-func (p *Plugin) SettingsRulesCreate(newruleactionjson *string, newruleactiontype *string, newruleactionval *string, newrulecategory *string, newruleclearstags *string, newruledescription *string, newrulephrase *string, newrulerequirestags *string, newrulesetstags *string) error {
+func (p *Plugin) SettingsRulesCreate(newruleactionjson *string, newruleactiontype *string, newruleactionval *string, newrulecategory *string, newruleclearstags *string, newruledescription *string, newrulephrase *string, newrulerequirestags *string, newrulesetstags *string) (*SettingsRulesCreateResponse, error) {
 	req := &SettingsRulesCreateRequest{
 		Newruleactionjson: newruleactionjson,
 		Newruleactiontype: newruleactiontype,
@@ -5913,11 +5913,16 @@ func (p *Plugin) SettingsRulesCreate(newruleactionjson *string, newruleactiontyp
 		Newrulerequirestags: newrulerequirestags,
 		Newrulesetstags: newrulesetstags,
 	}
-	return p.Call(MethodSettingsRulesCreate, req, nil)
+	var result SettingsRulesCreateResponse
+	err := p.Call(MethodSettingsRulesCreate, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
 }
 
 // SettingsRulesUpdate update an existing user voice command from settings-UI signals.
-func (p *Plugin) SettingsRulesUpdate(canonical string, newruleactionjson *string, newruleactiontype *string, newruleactionval *string, newrulecategory *string, newruleclearstags *string, newruledescription *string, newrulephrase *string, newrulerequirestags *string, newrulesetstags *string) error {
+func (p *Plugin) SettingsRulesUpdate(canonical string, newruleactionjson *string, newruleactiontype *string, newruleactionval *string, newrulecategory *string, newruleclearstags *string, newruledescription *string, newrulephrase *string, newrulerequirestags *string, newrulesetstags *string) (*SettingsRulesUpdateResponse, error) {
 	req := &SettingsRulesUpdateRequest{
 		Canonical: canonical,
 		Newruleactionjson: newruleactionjson,
@@ -5930,7 +5935,12 @@ func (p *Plugin) SettingsRulesUpdate(canonical string, newruleactionjson *string
 		Newrulerequirestags: newrulerequirestags,
 		Newrulesetstags: newrulesetstags,
 	}
-	return p.Call(MethodSettingsRulesUpdate, req, nil)
+	var result SettingsRulesUpdateResponse
+	err := p.Call(MethodSettingsRulesUpdate, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
 }
 
 // SystemLaunchApp launch an app and post a 'Launching' notification to the HUD.

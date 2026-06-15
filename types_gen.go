@@ -5082,6 +5082,7 @@ type SettingsRulesCreateRequest struct {
 
 // SettingsRulesCreateResponse is the response type for settings.rules_create.
 type SettingsRulesCreateResponse struct {
+	Conflict *string `json:"conflict,omitempty"`
 	Ok bool `json:"ok"`
 }
 
@@ -5101,6 +5102,7 @@ type SettingsRulesUpdateRequest struct {
 
 // SettingsRulesUpdateResponse is the response type for settings.rules_update.
 type SettingsRulesUpdateResponse struct {
+	Conflict *string `json:"conflict,omitempty"`
 	Ok bool `json:"ok"`
 }
 
