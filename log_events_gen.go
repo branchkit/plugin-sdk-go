@@ -56,6 +56,7 @@ const (
 	LogEventRpcOutboundCallSent = "rpc.outbound_call_sent"
 	LogEventRpcOutboundNotify = "rpc.outbound_notify"
 	LogEventSessionControlMessage = "session.control_message"
+	LogEventStageDiagnostic = "stage.diagnostic"
 	LogEventStateRetentionSwept = "state.retention_swept"
 	LogEventStateTagCleared = "state.tag_cleared"
 	LogEventStateTagLifecycleClear = "state.tag_lifecycle_clear"
@@ -129,6 +130,7 @@ var LogEventRegistry = map[string]LogEventMeta{
 	"rpc.outbound_call_sent": {Name: "rpc.outbound_call_sent", Summary: "An actuator-to-plugin RPC call was sent (awaiting response).", Since: "0.1.0", Source: "plugins", Severity: "debug", Redaction: "none"},
 	"rpc.outbound_notify": {Name: "rpc.outbound_notify", Summary: "An actuator-to-plugin RPC notification (fire-and-forget) was sent.", Since: "0.1.0", Source: "plugins", Severity: "debug", Redaction: "none"},
 	"session.control_message": {Name: "session.control_message", Summary: "A control message was forwarded to the Swift host (HUD show, mode reset, etc.).", Since: "0.1.0", Source: "dispatch", Severity: "info", Redaction: "none"},
+	"stage.diagnostic": {Name: "stage.diagnostic", Summary: "A pipeline stage emitted a diagnostic line (e.g. a [PERF] latency measurement); correlated to the command via tr_ derived from the stage's session id.", Since: "0.2.0", Source: "generic", Severity: "info", Redaction: "none"},
 	"state.retention_swept": {Name: "state.retention_swept", Summary: "Retention sweep removed expired records from a collection.", Since: "0.1.0", Source: "state", Severity: "info", Redaction: "none"},
 	"state.tag_cleared": {Name: "state.tag_cleared", Summary: "One or more tags were cleared via a gate-shape collection mutation.", Since: "0.1.0", Source: "state", Severity: "info", Redaction: "none"},
 	"state.tag_lifecycle_clear": {Name: "state.tag_lifecycle_clear", Summary: "Lifecycle policy cleared transient tags after a triggering event.", Since: "0.1.0", Source: "state", Severity: "debug", Redaction: "none"},
