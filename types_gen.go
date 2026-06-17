@@ -306,6 +306,7 @@ type DisplayRotation struct {
 
 // EnumeratedCommand is auto-generated from the OpenRPC spec.
 type EnumeratedCommand struct {
+	Action string `json:"action"`
 	Dynamic bool `json:"dynamic"`
 	DynamicOwner *string `json:"dynamic_owner,omitempty"`
 	ID string `json:"id"`
