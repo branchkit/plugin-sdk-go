@@ -636,6 +636,7 @@ type ReminderItem struct {
 type ResolveTelemetry struct {
 	GatedPartialSeen bool `json:"gated_partial_seen"`
 	Winner MatchWinner `json:"winner"`
+	WinningPattern *string `json:"winning_pattern,omitempty"`
 }
 
 // RunningApp is auto-generated from the OpenRPC spec.
@@ -1001,6 +1002,7 @@ type CommandsResolveRequest struct {
 	ActiveTags json.RawMessage `json:"active_tags,omitempty"`
 	Collections json.RawMessage `json:"collections,omitempty"`
 	PreferOwner *string `json:"prefer_owner,omitempty"`
+	Preview *bool `json:"preview,omitempty"`
 	RequireTag *string `json:"require_tag,omitempty"`
 	SessionID *string `json:"session_id,omitempty"`
 	Source *string `json:"source,omitempty"`

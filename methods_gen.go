@@ -250,11 +250,12 @@ func (p *Plugin) CommandsReset(canonical string) error {
 }
 
 // CommandsResolve resolve words against the command registry — returns dispatch decision, partial-match feedback, and tiebreaker telemetry in one envelope.
-func (p *Plugin) CommandsResolve(activeTags json.RawMessage, collections json.RawMessage, preferOwner *string, requireTag *string, sessionID *string, source *string, words []string) (*CommandsResolveResponse, error) {
+func (p *Plugin) CommandsResolve(activeTags json.RawMessage, collections json.RawMessage, preferOwner *string, preview *bool, requireTag *string, sessionID *string, source *string, words []string) (*CommandsResolveResponse, error) {
 	req := &CommandsResolveRequest{
 		ActiveTags: activeTags,
 		Collections: collections,
 		PreferOwner: preferOwner,
+		Preview: preview,
 		RequireTag: requireTag,
 		SessionID: sessionID,
 		Source: source,
