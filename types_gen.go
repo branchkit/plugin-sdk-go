@@ -824,7 +824,8 @@ type CalibrationApplyRequest struct {
 // CalibrationApplyResponse is the response type for calibration.apply.
 type CalibrationApplyResponse struct {
 	FixtureHandle string `json:"fixture_handle"`
-	OwnerPlugin string `json:"owner_plugin"`
+	Kind string `json:"kind"`
+	Tags []string `json:"tags"`
 }
 
 // CalibrationRegisterFixtureHandleRequest is the request type for calibration.register_fixture_handle.

@@ -27,7 +27,7 @@ func (p *Plugin) BridgeEmitObservabilityEvent(eventType string, params json.RawM
 	return p.Call(MethodBridgeEmitObservabilityEvent, req, nil)
 }
 
-// CalibrationApply forward calibration_apply_fixture to the command's owner plugin and register the returned handle under the named trial — one RPC instead of two for the host.
+// CalibrationApply enter a command's context for a trial — writes mode-gated requires_tags (platform write) or forwards calibration_apply_fixture to a dynamic command's owner — and returns the entered context (kind + tags + fixture_handle).
 func (p *Plugin) CalibrationApply(commandID string, trialID string) (*CalibrationApplyResponse, error) {
 	req := &CalibrationApplyRequest{
 		CommandID: commandID,
