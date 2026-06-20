@@ -193,6 +193,7 @@ type CommandRowData struct {
 	Canonical string `json:"canonical"`
 	Category string `json:"category"`
 	ClearsTags []string `json:"clears_tags"`
+	Description *string `json:"description,omitempty"`
 	IsUser bool `json:"is_user"`
 	Pattern string `json:"pattern"`
 	PluginName string `json:"plugin_name"`
