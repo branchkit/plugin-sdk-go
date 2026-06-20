@@ -5734,13 +5734,14 @@ func (p *Plugin) NativeZoomEnabled() (*NativeZoomEnabledResponse, error) {
 	return &result, nil
 }
 
-// OverridesApply add, remove, restore, patch, or reset user overrides for a collection.
-func (p *Plugin) OverridesApply(action string, collection string, fields json.RawMessage, id *string) error {
+// OverridesApply add, remove, restore, patch, rename, or reset user overrides for a collection.
+func (p *Plugin) OverridesApply(action string, collection string, fields json.RawMessage, id *string, newID *string) error {
 	req := &OverridesApplyRequest{
 		Action: action,
 		Collection: collection,
 		Fields: fields,
 		ID: id,
+		NewID: newID,
 	}
 	return p.Call(MethodOverridesApply, req, nil)
 }

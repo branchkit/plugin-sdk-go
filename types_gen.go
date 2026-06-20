@@ -4925,6 +4925,7 @@ type OverridesApplyRequest struct {
 	Collection string `json:"collection"`
 	Fields json.RawMessage `json:"fields,omitempty"`
 	ID *string `json:"id,omitempty"`
+	NewID *string `json:"new_id,omitempty"`
 }
 
 // OverridesApplyResponse is the response type for overrides.apply.
