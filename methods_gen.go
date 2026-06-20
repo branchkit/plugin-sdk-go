@@ -5734,8 +5734,8 @@ func (p *Plugin) NativeZoomEnabled() (*NativeZoomEnabledResponse, error) {
 	return &result, nil
 }
 
-// OverridesApply add, remove, restore, patch, rename, or reset user overrides for a collection.
-func (p *Plugin) OverridesApply(action string, collection string, fields json.RawMessage, id *string, newID *string) error {
+// OverridesApply add, remove, restore, patch, rename, revert (reset one entry to its plugin default), or reset user overrides for a collection.
+func (p *Plugin) OverridesApply(action string, collection string, fields json.RawMessage, id *string, newID *string) (*OverridesApplyResponse, error) {
 	req := &OverridesApplyRequest{
 		Action: action,
 		Collection: collection,
@@ -5743,7 +5743,12 @@ func (p *Plugin) OverridesApply(action string, collection string, fields json.Ra
 		ID: id,
 		NewID: newID,
 	}
-	return p.Call(MethodOverridesApply, req, nil)
+	var result OverridesApplyResponse
+	err := p.Call(MethodOverridesApply, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
 }
 
 // PipelinesGrammar get the current command grammar word list for speech recognition.

@@ -4930,6 +4930,7 @@ type OverridesApplyRequest struct {
 
 // OverridesApplyResponse is the response type for overrides.apply.
 type OverridesApplyResponse struct {
+	Key *string `json:"key,omitempty"`
 	Ok bool `json:"ok"`
 }
 
