@@ -12,6 +12,7 @@ const (
 	MethodBridgeEmitObservabilityEvent = "bridge.emit_observability_event" // since 0.1.0
 	MethodCalibrationApply = "calibration.apply" // since 0.1.0
 	MethodCalibrationRegisterFixtureHandle = "calibration.register_fixture_handle" // since 0.1.0
+	MethodCalibrationResolveSamples = "calibration.resolve_samples" // since 0.1.0
 	MethodCalibrationTrialBegin = "calibration.trial_begin" // since 0.1.0
 	MethodCalibrationTrialEnd = "calibration.trial_end" // since 0.1.0
 	MethodCollectionAppend = "collection.append" // since 0.1.0
@@ -599,6 +600,7 @@ const (
 const (
 	HookCalibrationApplyFixture = "calibration_apply_fixture" // since 0.1.0
 	HookCalibrationReleaseFixture = "calibration_release_fixture" // since 0.1.0
+	HookCalibrationSamples = "calibration_samples" // since 0.1.0
 	HookOnAction = "on_action" // since 0.1.0
 	HookOnCommandsChanged = "on_commands_changed" // since 0.1.0
 	HookRenderHud = "render_hud" // since 0.1.0

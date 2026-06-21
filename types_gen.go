@@ -838,6 +838,16 @@ type CalibrationRegisterFixtureHandleRequest struct {
 	TrialID string `json:"trial_id"`
 }
 
+// CalibrationResolveSamplesRequest is the request type for calibration.resolve_samples.
+type CalibrationResolveSamplesRequest struct {
+	CommandID string `json:"command_id"`
+}
+
+// CalibrationResolveSamplesResponse is the response type for calibration.resolve_samples.
+type CalibrationResolveSamplesResponse struct {
+	Prompts []string `json:"prompts"`
+}
+
 // CalibrationTrialBeginResponse is the response type for calibration.trial_begin.
 type CalibrationTrialBeginResponse struct {
 	TrialID string `json:"trial_id"`
@@ -5168,6 +5178,16 @@ type CalibrationApplyFixtureResponse struct {
 // CalibrationReleaseFixtureRequest is the request type for calibration_release_fixture.
 type CalibrationReleaseFixtureRequest struct {
 	FixtureHandle string `json:"fixture_handle"`
+}
+
+// CalibrationSamplesRequest is the request type for calibration_samples.
+type CalibrationSamplesRequest struct {
+	CommandID string `json:"command_id"`
+}
+
+// CalibrationSamplesResponse is the response type for calibration_samples.
+type CalibrationSamplesResponse struct {
+	Prompts []string `json:"prompts"`
 }
 
 // OnActionRequest is the request type for on_action.

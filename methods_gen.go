@@ -51,6 +51,21 @@ func (p *Plugin) CalibrationRegisterFixtureHandle(fixtureHandle string, ownerPlu
 	return p.Call(MethodCalibrationRegisterFixtureHandle, req, nil)
 }
 
+// CalibrationResolveSamples resolve the concrete calibration prompts for a command whose vocabulary the host can't derive — forwards calibration_samples to a dynamic command's owner (empty when the owner doesn't implement the optional hook; the host then falls back to its own default)..
+func (p *Plugin) CalibrationResolveSamples(commandID string) ([]string, error) {
+	req := &CalibrationResolveSamplesRequest{
+		CommandID: commandID,
+	}
+	var result struct {
+		Prompts []string `json:"prompts"`
+	}
+	err := p.Call(MethodCalibrationResolveSamples, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Prompts, nil
+}
+
 // CalibrationTrialBegin open a calibration trial — writes _platform.calibration.active, returns a trial_id.
 func (p *Plugin) CalibrationTrialBegin() (*CalibrationTrialBeginResponse, error) {
 	var result CalibrationTrialBeginResponse
