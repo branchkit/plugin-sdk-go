@@ -11,6 +11,14 @@ const (
 	MethodActionsList = "actions.list" // since 0.1.0
 	MethodBridgeEmitObservabilityEvent = "bridge.emit_observability_event" // since 0.1.0
 	MethodCalibrationApply = "calibration.apply" // since 0.1.0
+	MethodCalibrationCaptureReadCorpus = "calibration.capture.read_corpus" // since 0.1.0
+	MethodCalibrationCaptureReadManifest = "calibration.capture.read_manifest" // since 0.1.0
+	MethodCalibrationCaptureWriteCorpus = "calibration.capture.write_corpus" // since 0.1.0
+	MethodCalibrationRecordingsClear = "calibration.recordings.clear" // since 0.1.0
+	MethodCalibrationRecordingsDelete = "calibration.recordings.delete" // since 0.1.0
+	MethodCalibrationRecordingsList = "calibration.recordings.list" // since 0.1.0
+	MethodCalibrationRecordingsSetDisposition = "calibration.recordings.set_disposition" // since 0.1.0
+	MethodCalibrationRecordingsSweep = "calibration.recordings.sweep" // since 0.1.0
 	MethodCalibrationRegisterFixtureHandle = "calibration.register_fixture_handle" // since 0.1.0
 	MethodCalibrationResolveSamples = "calibration.resolve_samples" // since 0.1.0
 	MethodCalibrationTrialBegin = "calibration.trial_begin" // since 0.1.0

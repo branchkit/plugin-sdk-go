@@ -138,6 +138,13 @@ type CameraDevice struct {
 	UniqueID string `json:"unique_id"`
 }
 
+// CaptureManifestRow is auto-generated from the OpenRPC spec.
+type CaptureManifestRow struct {
+	File string `json:"file"`
+	Text string `json:"text"`
+	Ts string `json:"ts"`
+}
+
 // ClipboardContents is auto-generated from the OpenRPC spec.
 type ClipboardContents struct {
 	AvailableTypes []string `json:"available_types"`
@@ -626,6 +633,17 @@ type ProcessInfo struct {
 	User *string `json:"user,omitempty"`
 }
 
+// RecordingRow is auto-generated from the OpenRPC spec.
+type RecordingRow struct {
+	Disposition string `json:"disposition"`
+	Engine string `json:"engine"`
+	File string `json:"file"`
+	Heard string `json:"heard"`
+	Matched bool `json:"matched"`
+	Target string `json:"target"`
+	Ts string `json:"ts"`
+}
+
 // ReminderItem is auto-generated from the OpenRPC spec.
 type ReminderItem struct {
 	DueDate *string `json:"due_date,omitempty"`
@@ -829,6 +847,79 @@ type CalibrationApplyResponse struct {
 	FixtureHandle string `json:"fixture_handle"`
 	Kind string `json:"kind"`
 	Tags []string `json:"tags"`
+}
+
+// CalibrationCaptureReadCorpusResponse is the response type for calibration.capture.read_corpus.
+type CalibrationCaptureReadCorpusResponse struct {
+	Rows []RecordingRow `json:"rows"`
+}
+
+// CalibrationCaptureReadManifestRequest is the request type for calibration.capture.read_manifest.
+type CalibrationCaptureReadManifestRequest struct {
+	Game string `json:"game"`
+}
+
+// CalibrationCaptureReadManifestResponse is the response type for calibration.capture.read_manifest.
+type CalibrationCaptureReadManifestResponse struct {
+	Lines []CaptureManifestRow `json:"lines"`
+}
+
+// CalibrationCaptureWriteCorpusRequest is the request type for calibration.capture.write_corpus.
+type CalibrationCaptureWriteCorpusRequest struct {
+	Mode string `json:"mode"`
+	Rows []RecordingRow `json:"rows"`
+}
+
+// CalibrationCaptureWriteCorpusResponse is the response type for calibration.capture.write_corpus.
+type CalibrationCaptureWriteCorpusResponse struct {
+	Total int `json:"total"`
+}
+
+// CalibrationRecordingsClearResponse is the response type for calibration.recordings.clear.
+type CalibrationRecordingsClearResponse struct {
+	Removed int `json:"removed"`
+}
+
+// CalibrationRecordingsDeleteRequest is the request type for calibration.recordings.delete.
+type CalibrationRecordingsDeleteRequest struct {
+	File string `json:"file"`
+}
+
+// CalibrationRecordingsDeleteResponse is the response type for calibration.recordings.delete.
+type CalibrationRecordingsDeleteResponse struct {
+	Deleted bool `json:"deleted"`
+}
+
+// CalibrationRecordingsListRequest is the request type for calibration.recordings.list.
+type CalibrationRecordingsListRequest struct {
+	Limit *int `json:"limit,omitempty"`
+}
+
+// CalibrationRecordingsListResponse is the response type for calibration.recordings.list.
+type CalibrationRecordingsListResponse struct {
+	Recordings []RecordingRow `json:"recordings"`
+	Total int `json:"total"`
+}
+
+// CalibrationRecordingsSetDispositionRequest is the request type for calibration.recordings.set_disposition.
+type CalibrationRecordingsSetDispositionRequest struct {
+	Disposition string `json:"disposition"`
+	File string `json:"file"`
+}
+
+// CalibrationRecordingsSetDispositionResponse is the response type for calibration.recordings.set_disposition.
+type CalibrationRecordingsSetDispositionResponse struct {
+	Ok bool `json:"ok"`
+}
+
+// CalibrationRecordingsSweepRequest is the request type for calibration.recordings.sweep.
+type CalibrationRecordingsSweepRequest struct {
+	Game *string `json:"game,omitempty"`
+}
+
+// CalibrationRecordingsSweepResponse is the response type for calibration.recordings.sweep.
+type CalibrationRecordingsSweepResponse struct {
+	Removed int `json:"removed"`
 }
 
 // CalibrationRegisterFixtureHandleRequest is the request type for calibration.register_fixture_handle.
