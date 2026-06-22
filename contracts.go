@@ -11,6 +11,7 @@ const (
 	MethodActionsList = "actions.list" // since 0.1.0
 	MethodBridgeEmitObservabilityEvent = "bridge.emit_observability_event" // since 0.1.0
 	MethodCalibrationApply = "calibration.apply" // since 0.1.0
+	MethodCalibrationCaptureProbe = "calibration.capture.probe" // since 0.1.0
 	MethodCalibrationCaptureReadCorpus = "calibration.capture.read_corpus" // since 0.1.0
 	MethodCalibrationCaptureReadManifest = "calibration.capture.read_manifest" // since 0.1.0
 	MethodCalibrationCaptureWriteCorpus = "calibration.capture.write_corpus" // since 0.1.0

@@ -41,6 +41,24 @@ func (p *Plugin) CalibrationApply(commandID string, trialID string) (*Calibratio
 	return &result, nil
 }
 
+// CalibrationCaptureProbe run a registered recognizer stage's `probe` re-decode over captured clips (the fragility ladder) — the actuator runs it because the sandboxed plugin can't reach the model/capture dirs.
+func (p *Plugin) CalibrationCaptureProbe(items []ProbeItem, maxActive *int, model string, stage string) ([]ProbeLine, error) {
+	req := &CalibrationCaptureProbeRequest{
+		Items: items,
+		MaxActive: maxActive,
+		Model: model,
+		Stage: stage,
+	}
+	var result struct {
+		Lines []ProbeLine `json:"lines"`
+	}
+	err := p.Call(MethodCalibrationCaptureProbe, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Lines, nil
+}
+
 // CalibrationCaptureReadCorpus read the full corpus index (so the plugin can prune the bounded-retention set, which needs the accumulated index).
 func (p *Plugin) CalibrationCaptureReadCorpus() ([]RecordingRow, error) {
 	var result struct {

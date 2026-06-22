@@ -623,6 +623,27 @@ type PrinterInfo struct {
 	State string `json:"state"`
 }
 
+// ProbeItem is auto-generated from the OpenRPC spec.
+type ProbeItem struct {
+	Audio string `json:"audio"`
+	ID string `json:"id"`
+	Noise json.RawMessage `json:"noise,omitempty"`
+	Words []string `json:"words"`
+}
+
+// ProbeLine is auto-generated from the OpenRPC spec.
+type ProbeLine struct {
+	Error string `json:"error"`
+	ID string `json:"id"`
+	Text string `json:"text"`
+}
+
+// ProbeNoise is auto-generated from the OpenRPC spec.
+type ProbeNoise struct {
+	Seed int `json:"seed"`
+	SnrDb float64 `json:"snr_db"`
+}
+
 // ProcessInfo is auto-generated from the OpenRPC spec.
 type ProcessInfo struct {
 	CpuPercent *float64 `json:"cpu_percent,omitempty"`
@@ -847,6 +868,19 @@ type CalibrationApplyResponse struct {
 	FixtureHandle string `json:"fixture_handle"`
 	Kind string `json:"kind"`
 	Tags []string `json:"tags"`
+}
+
+// CalibrationCaptureProbeRequest is the request type for calibration.capture.probe.
+type CalibrationCaptureProbeRequest struct {
+	Items []ProbeItem `json:"items"`
+	MaxActive *int `json:"max_active,omitempty"`
+	Model string `json:"model"`
+	Stage string `json:"stage"`
+}
+
+// CalibrationCaptureProbeResponse is the response type for calibration.capture.probe.
+type CalibrationCaptureProbeResponse struct {
+	Lines []ProbeLine `json:"lines"`
 }
 
 // CalibrationCaptureReadCorpusResponse is the response type for calibration.capture.read_corpus.
