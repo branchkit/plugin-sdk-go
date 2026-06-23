@@ -881,6 +881,7 @@ type CalibrationCaptureProbeRequest struct {
 // CalibrationCaptureProbeResponse is the response type for calibration.capture.probe.
 type CalibrationCaptureProbeResponse struct {
 	Lines []ProbeLine `json:"lines"`
+	ModelVersion *string `json:"model_version,omitempty"`
 }
 
 // CalibrationCaptureReadCorpusResponse is the response type for calibration.capture.read_corpus.
@@ -922,6 +923,17 @@ type CalibrationRecordingsDeleteRequest struct {
 // CalibrationRecordingsDeleteResponse is the response type for calibration.recordings.delete.
 type CalibrationRecordingsDeleteResponse struct {
 	Deleted bool `json:"deleted"`
+}
+
+// CalibrationRecordingsExportRequest is the request type for calibration.recordings.export.
+type CalibrationRecordingsExportRequest struct {
+	ConfirmedOnly *bool `json:"confirmed_only,omitempty"`
+}
+
+// CalibrationRecordingsExportResponse is the response type for calibration.recordings.export.
+type CalibrationRecordingsExportResponse struct {
+	Count int `json:"count"`
+	Path string `json:"path"`
 }
 
 // CalibrationRecordingsListRequest is the request type for calibration.recordings.list.

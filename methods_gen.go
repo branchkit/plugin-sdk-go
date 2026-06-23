@@ -42,21 +42,19 @@ func (p *Plugin) CalibrationApply(commandID string, trialID string) (*Calibratio
 }
 
 // CalibrationCaptureProbe run a registered recognizer stage's `probe` re-decode over captured clips (the fragility ladder) — the actuator runs it because the sandboxed plugin can't reach the model/capture dirs.
-func (p *Plugin) CalibrationCaptureProbe(items []ProbeItem, maxActive *int, model string, stage string) ([]ProbeLine, error) {
+func (p *Plugin) CalibrationCaptureProbe(items []ProbeItem, maxActive *int, model string, stage string) (*CalibrationCaptureProbeResponse, error) {
 	req := &CalibrationCaptureProbeRequest{
 		Items: items,
 		MaxActive: maxActive,
 		Model: model,
 		Stage: stage,
 	}
-	var result struct {
-		Lines []ProbeLine `json:"lines"`
-	}
+	var result CalibrationCaptureProbeResponse
 	err := p.Call(MethodCalibrationCaptureProbe, req, &result)
 	if err != nil {
 		return nil, err
 	}
-	return result.Lines, nil
+	return &result, nil
 }
 
 // CalibrationCaptureReadCorpus read the full corpus index (so the plugin can prune the bounded-retention set, which needs the accumulated index).
@@ -123,6 +121,19 @@ func (p *Plugin) CalibrationRecordingsDelete(file string) (*CalibrationRecording
 	return &result, nil
 }
 
+// CalibrationRecordingsExport bundle kept calibration clips + a NeMo-format manifest into a tar.gz in Downloads (training / contribution).
+func (p *Plugin) CalibrationRecordingsExport(confirmedOnly *bool) (*CalibrationRecordingsExportResponse, error) {
+	req := &CalibrationRecordingsExportRequest{
+		ConfirmedOnly: confirmedOnly,
+	}
+	var result CalibrationRecordingsExportResponse
+	err := p.Call(MethodCalibrationRecordingsExport, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // CalibrationRecordingsList list captured calibration recordings (newest first, capped by limit) — the actuator-owned scan of the capture dir the plugin subprocess can't read.
 func (p *Plugin) CalibrationRecordingsList(limit *int) (*CalibrationRecordingsListResponse, error) {
 	req := &CalibrationRecordingsListRequest{
@@ -136,7 +147,7 @@ func (p *Plugin) CalibrationRecordingsList(limit *int) (*CalibrationRecordingsLi
 	return &result, nil
 }
 
-// CalibrationRecordingsSetDisposition stamp a human curation verdict (good / genuine_fail / mistake) on a captured clip's corpus row.
+// CalibrationRecordingsSetDisposition stamp a review verdict ("", confirmed, or misspoke) on a captured clip's corpus row.
 func (p *Plugin) CalibrationRecordingsSetDisposition(disposition string, file string) error {
 	req := &CalibrationRecordingsSetDispositionRequest{
 		Disposition: disposition,

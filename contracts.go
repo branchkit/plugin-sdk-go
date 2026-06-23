@@ -17,6 +17,7 @@ const (
 	MethodCalibrationCaptureWriteCorpus = "calibration.capture.write_corpus" // since 0.1.0
 	MethodCalibrationRecordingsClear = "calibration.recordings.clear" // since 0.1.0
 	MethodCalibrationRecordingsDelete = "calibration.recordings.delete" // since 0.1.0
+	MethodCalibrationRecordingsExport = "calibration.recordings.export" // since 0.1.0
 	MethodCalibrationRecordingsList = "calibration.recordings.list" // since 0.1.0
 	MethodCalibrationRecordingsSetDisposition = "calibration.recordings.set_disposition" // since 0.1.0
 	MethodCalibrationRecordingsSweep = "calibration.recordings.sweep" // since 0.1.0
