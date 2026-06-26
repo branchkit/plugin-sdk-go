@@ -53,6 +53,66 @@ type callResult struct {
 	Error  *rpcError
 }
 
+// --- Ordered notification delivery ---
+
+// notifyQueue is an unbounded FIFO of inbound notifications drained by a single
+// worker goroutine, so a plugin's listeners observe notifications in wire order
+// (notes/DESIGN_SDK_EVENT_ORDERING.md). Unbounded + non-blocking push is
+// load-bearing: the read loop must never block enqueuing, or a listener that is
+// mid-`plugin.Call()` would deadlock waiting for a response the read loop can no
+// longer read. Responses are matched inline in the read loop, not through this
+// queue, so serializing notifications cannot reintroduce that deadlock.
+type notifyQueue struct {
+	mu     sync.Mutex
+	cond   *sync.Cond
+	items  []rpcMessage
+	closed bool
+}
+
+func newNotifyQueue() *notifyQueue {
+	q := &notifyQueue{}
+	q.cond = sync.NewCond(&q.mu)
+	return q
+}
+
+// push appends a notification. Never blocks (the backing slice grows as needed).
+func (q *notifyQueue) push(m rpcMessage) {
+	q.mu.Lock()
+	if !q.closed {
+		q.items = append(q.items, m)
+	}
+	q.mu.Unlock()
+	q.cond.Signal()
+}
+
+// pop blocks until a notification is available, returning ok=false once the
+// queue is closed and fully drained.
+func (q *notifyQueue) pop() (rpcMessage, bool) {
+	q.mu.Lock()
+	defer q.mu.Unlock()
+	for len(q.items) == 0 && !q.closed {
+		q.cond.Wait()
+	}
+	if len(q.items) == 0 {
+		return rpcMessage{}, false
+	}
+	m := q.items[0]
+	q.items[0] = rpcMessage{} // drop the reference so it can be GC'd
+	q.items = q.items[1:]
+	if len(q.items) == 0 {
+		q.items = nil // release the backing array once drained
+	}
+	return m, true
+}
+
+// close lets a drained pop() return ok=false so the worker can exit.
+func (q *notifyQueue) close() {
+	q.mu.Lock()
+	q.closed = true
+	q.mu.Unlock()
+	q.cond.Broadcast()
+}
+
 // --- Plugin struct ---
 
 // Plugin manages bidirectional JSON-RPC 2.0 communication over stdin/stdout.
@@ -91,6 +151,10 @@ type Plugin struct {
 	ready     chan struct{} // closed when Run() is called, gates incoming requests
 	readyOnce sync.Once
 
+	// notifyQ serializes inbound notifications through one worker goroutine so
+	// listeners observe them in wire order. See notes/DESIGN_SDK_EVENT_ORDERING.md.
+	notifyQ *notifyQueue
+
 	// Lazily initialized when HandleAction is first called. See actions.go.
 	actionRegistry *actionRegistry
 }
@@ -116,6 +180,7 @@ func NewPlugin() *Plugin {
 		pending:   make(map[uint64]*pendingCall),
 		closed:    make(chan struct{}),
 		ready:     make(chan struct{}),
+		notifyQ:   newNotifyQueue(),
 	}
 
 	// Handle SIGTERM gracefully
@@ -140,9 +205,24 @@ func NewPlugin() *Plugin {
 	}
 
 	Log(pluginID, "started (JSON-RPC over stdio)")
+	go p.notifyWorker()
 	go p.readLoop()
 
 	return p
+}
+
+// notifyWorker drains the notification queue one at a time, so listeners run in
+// wire order. A listener may block on an outbound plugin.Call(); the read loop
+// keeps running and delivers the response, then this worker proceeds to the
+// next notification. See notes/DESIGN_SDK_EVENT_ORDERING.md.
+func (p *Plugin) notifyWorker() {
+	for {
+		msg, ok := p.notifyQ.pop()
+		if !ok {
+			return
+		}
+		p.handleNotification(msg)
+	}
 }
 
 // Handle registers a handler for actuator→plugin requests.
@@ -350,6 +430,9 @@ func (p *Plugin) readLoop() {
 	// Signal shutdown to any in-flight Call() waiters
 	p.closeOnce.Do(func() { close(p.closed) })
 
+	// Let the notification worker drain what's queued, then exit.
+	p.notifyQ.close()
+
 	// Resolve all pending calls with error
 	p.mu.Lock()
 	for id, pc := range p.pending {
@@ -386,10 +469,11 @@ func (p *Plugin) dispatch(msg rpcMessage) {
 	}
 
 	// Notification from actuator — has method, no id.
-	// Run in goroutine so listeners can call plugin.Call() without
-	// blocking the read loop (same pattern as handleRequest).
+	// Enqueue for the single notification worker so listeners run in wire
+	// order (notes/DESIGN_SDK_EVENT_ORDERING.md). push never blocks, so the
+	// read loop stays free to deliver responses to a listener mid-Call().
 	if msg.ID == nil && msg.Method != "" {
-		go p.handleNotification(msg)
+		p.notifyQ.push(msg)
 		return
 	}
 }

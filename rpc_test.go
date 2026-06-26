@@ -89,12 +89,14 @@ func newTestPluginT(t testing.TB) (*Plugin, io.Writer, *bufio.Scanner) {
 		pending:   make(map[uint64]*pendingCall),
 		closed:    make(chan struct{}),
 		ready:     make(chan struct{}),
+		notifyQ:   newNotifyQueue(),
 	}
 
 	actuatorScanner := bufio.NewScanner(stdoutR)
 	actuatorScanner.Buffer(make([]byte, 0, 64*1024), 1024*1024)
 
-	// Start read loop (matches NewPlugin behavior)
+	// Start the notification worker + read loop (matches NewPlugin behavior)
+	go p.notifyWorker()
 	go p.readLoop()
 
 	if t != nil {
@@ -110,6 +112,66 @@ func newTestPluginT(t testing.TB) (*Plugin, io.Writer, *bufio.Scanner) {
 	}
 
 	return p, stdinW, actuatorScanner
+}
+
+// TestNotificationsDeliveredInOrder pins the ordering contract in
+// notes/DESIGN_SDK_EVENT_ORDERING.md: a plugin's listener observes
+// notifications in wire order even when a handler is slow. The first handler
+// sleeps; under the old goroutine-per-notification dispatch the later
+// notifications would record while it slept, producing out-of-order results.
+func TestNotificationsDeliveredInOrder(t *testing.T) {
+	p, actuatorW, _ := newTestPluginT(t)
+
+	const n = 20
+	var mu sync.Mutex
+	got := make([]int, 0, n)
+	done := make(chan struct{})
+
+	p.On("seq.tick", func(params json.RawMessage) {
+		var msg struct {
+			Seq int `json:"seq"`
+		}
+		json.Unmarshal(params, &msg)
+		if msg.Seq == 0 {
+			// Slow the first handler: concurrent dispatch would let the
+			// later ticks overtake it here.
+			time.Sleep(50 * time.Millisecond)
+		}
+		mu.Lock()
+		got = append(got, msg.Seq)
+		full := len(got) == n
+		mu.Unlock()
+		if full {
+			close(done)
+		}
+	})
+
+	go p.Run()
+
+	for i := 0; i < n; i++ {
+		data, _ := json.Marshal(rpcMessage{
+			JSONRPC: "2.0",
+			Method:  "seq.tick",
+			Params:  json.RawMessage(fmt.Sprintf(`{"seq":%d}`, i)),
+		})
+		actuatorW.Write(append(data, '\n'))
+	}
+
+	select {
+	case <-done:
+	case <-time.After(2 * time.Second):
+		mu.Lock()
+		defer mu.Unlock()
+		t.Fatalf("timed out; received %d/%d notifications: %v", len(got), n, got)
+	}
+
+	mu.Lock()
+	defer mu.Unlock()
+	for i := 0; i < n; i++ {
+		if got[i] != i {
+			t.Fatalf("notifications out of order at index %d: %v", i, got)
+		}
+	}
 }
 
 func TestHandleRequest(t *testing.T) {
