@@ -622,6 +622,7 @@ const (
 const (
 	EventActionExecuted = "_platform.action.executed"
 	EventAppFocused = "_platform.app.focused"
+	EventAudioDevicesChanged = "_platform.audio_devices.changed"
 	EventBleNotification = "_platform.ble.notification"
 	EventCollectionUpdated = "_platform.collection.updated"
 	EventDependentCaptureProgress = "_platform.dependent_capture.progress"
