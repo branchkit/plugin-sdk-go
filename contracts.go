@@ -588,6 +588,7 @@ const (
 	MethodPipelinesRun = "pipelines.run" // since 0.1.0
 	MethodPipelinesStatus = "pipelines.status" // since 0.1.0
 	MethodPipelinesStop = "pipelines.stop" // since 0.1.0
+	MethodPipelinesWarm = "pipelines.warm" // since 0.1.0
 	MethodPluginDebug = "plugin.debug" // since 0.1.0
 	MethodPrivacyGetRecording = "privacy.get_recording" // since 0.1.0
 	MethodPrivacySetRecording = "privacy.set_recording" // since 0.1.0

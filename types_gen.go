@@ -625,7 +625,9 @@ type PrinterInfo struct {
 
 // ProbeItem is auto-generated from the OpenRPC spec.
 type ProbeItem struct {
+	ApplyBias bool `json:"apply_bias"`
 	Audio string `json:"audio"`
+	BiasStrength *float64 `json:"bias_strength,omitempty"`
 	ID string `json:"id"`
 	Noise json.RawMessage `json:"noise,omitempty"`
 	Words []string `json:"words"`
@@ -5126,6 +5128,16 @@ type PipelinesStopRequest struct {
 // PipelinesStopResponse is the response type for pipelines.stop.
 type PipelinesStopResponse struct {
 	Stopped bool `json:"stopped"`
+}
+
+// PipelinesWarmRequest is the request type for pipelines.warm.
+type PipelinesWarmRequest struct {
+	Name string `json:"name"`
+}
+
+// PipelinesWarmResponse is the response type for pipelines.warm.
+type PipelinesWarmResponse struct {
+	Warmed bool `json:"warmed"`
 }
 
 // PluginDebugRequest is the request type for plugin.debug.

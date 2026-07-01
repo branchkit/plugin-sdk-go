@@ -5959,6 +5959,19 @@ func (p *Plugin) PipelinesStop(name string) (*PipelinesStopResponse, error) {
 	return &result, nil
 }
 
+// PipelinesWarm pre-spawn + pre-load a pipeline's recognizer stages (grammar built off the hold path).
+func (p *Plugin) PipelinesWarm(name string) (*PipelinesWarmResponse, error) {
+	req := &PipelinesWarmRequest{
+		Name: name,
+	}
+	var result PipelinesWarmResponse
+	err := p.Call(MethodPipelinesWarm, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // PluginDebug write a diagnostic line to this plugin's per-plugin log file. Use shared.Logf instead for cross-cutting coordination lines that belong in actuator.log..
 func (p *Plugin) PluginDebug(data json.RawMessage, level json.RawMessage, tag *string) error {
 	req := &PluginDebugRequest{
