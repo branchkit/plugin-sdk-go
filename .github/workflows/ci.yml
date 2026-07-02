@@ -1,0 +1,19 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+      - run: go vet ./...
+      # Harness-backed integration tests skip when the Rust test-harness binary
+      # is absent (not built in this standalone repo). See harness.findHarnessBinary.
+      - run: CGO_ENABLED=1 go test -race ./...

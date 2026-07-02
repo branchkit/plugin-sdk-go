@@ -360,8 +360,12 @@ func findHarnessBinary(t testing.TB) string {
 		return p
 	}
 
-	t.Fatal("harness: cannot find branchkit-test-harness binary. " +
-		"Set BRANCHKIT_TEST_HARNESS or run 'cargo build -p branchkit-test-harness'")
+	// Skip (not fail) when the binary is absent: these are integration tests
+	// that need the Rust `branchkit-test-harness`, which isn't built from this
+	// SDK's standalone checkout. They run in the app-repo conformance context
+	// where the binary exists. Mirrors the TS SDK's skipIf(harnessBinaryAvailable).
+	t.Skip("harness: branchkit-test-harness binary not found; " +
+		"set BRANCHKIT_TEST_HARNESS or run 'cargo build -p branchkit-test-harness' to enable these tests")
 	return ""
 }
 
