@@ -784,7 +784,7 @@ func (p *Plugin) KeybindsRegister(snapshot json.RawMessage) (*KeybindsRegisterRe
 	return &result, nil
 }
 
-// ModelDelete delete a speech model (Vosk: filesystem removal; WhisperKit: control message).
+// ModelDelete delete a speech model.
 func (p *Plugin) ModelDelete(ref string) error {
 	req := &ModelDeleteRequest{
 		Ref: ref,
