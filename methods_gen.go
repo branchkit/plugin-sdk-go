@@ -2162,7 +2162,7 @@ func (p *Plugin) NativeDisplays() ([]DisplayMetadata, error) {
 	return result.Displays, nil
 }
 
-// NativeDnd get Do Not Disturb / Focus state.
+// NativeDnd get Do Not Disturb / Focus state (via the BranchKit Focus helper shortcut).
 func (p *Plugin) NativeDnd() (*NativeDndResponse, error) {
 	var result NativeDndResponse
 	err := p.Call(MethodNativeDnd, nil, &result)
@@ -4699,7 +4699,7 @@ func (p *Plugin) NativeSetDarkMode(dark bool) error {
 	return p.Call(MethodNativeSetDarkMode, req, nil)
 }
 
-// NativeSetDnd toggle Do Not Disturb.
+// NativeSetDnd set Do Not Disturb on or off (idempotent; via the BranchKit Focus helper shortcut).
 func (p *Plugin) NativeSetDnd(enabled bool) error {
 	req := &NativeSetDndRequest{
 		Enabled: enabled,
