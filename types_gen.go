@@ -1225,6 +1225,7 @@ type EffectsAssertRequest struct {
 type EffectsAssertResponse struct {
 	AlreadyHeld bool `json:"already_held"`
 	Displaced *string `json:"displaced,omitempty"`
+	Enforced bool `json:"enforced"`
 	Granted bool `json:"granted"`
 }
 

@@ -29,30 +29,52 @@ type EffectDisplacedEvent struct {
 	DisplacedOwner string `json:"displaced_owner"`
 }
 
+// EffectAssertOutcome is the result of AssertEffect.
+type EffectAssertOutcome struct {
+	// Granted is true when the assertion is now top-of-stack OR the
+	// plugin already held it (idempotent re-assert). False once
+	// user-consent revocation lands and the user has revoked this
+	// effect on this plugin (consent surface is post-Step-2 work).
+	Granted bool
+	// AlreadyHeld is true when the plugin already had an active
+	// assertion on this effect. Implies Granted.
+	AlreadyHeld bool
+	// Displaced names the previous top-of-stack owner if this
+	// assertion overrode someone, "" otherwise.
+	Displaced string
+	// Enforced is true when the platform actually delivers this
+	// effect's semantics while you hold ownership. Signal-shape
+	// effects (e.g. signal_recording_active, whose entire meaning is
+	// the queryable ownership stack) are always enforced. False means
+	// the OS handler for this effect is not implemented yet: you get
+	// ownership bookkeeping, displacement events, and IsEffectActive
+	// queries, but the OS-level behavior (actual notification muting,
+	// focus-steal blocking, …) does NOT happen.
+	Enforced bool
+}
+
 // AssertEffect declares this plugin is asserting `name`. The plugin must
 // have declared this effect in its manifest's `provides.effects[*].asserts`
 // — undeclared effects return an error.
 //
-// Returns:
-//   - granted: true when the assertion is now top-of-stack OR the plugin
-//     already held it (idempotent re-assert). False once user-consent
-//     revocation lands and the user has revoked this effect on this
-//     plugin (consent surface is post-Step-2 work).
-//   - alreadyHeld: true when the plugin already had an active assertion
-//     on this effect. Implies granted=true.
-//   - displaced: name of the previous top-of-stack owner if this assertion
-//     overrode someone, "" otherwise.
+// Check Enforced on the result: Granted means ownership bookkeeping,
+// not necessarily OS-level delivery.
 //
 // See notes/DESIGN_CAPABILITY_MECHANISM.md for the mechanism design.
-func (p *Plugin) AssertEffect(name string) (granted bool, alreadyHeld bool, displaced string, err error) {
+func (p *Plugin) AssertEffect(name string) (EffectAssertOutcome, error) {
 	res, err := p.EffectsAssert(name)
 	if err != nil {
-		return false, false, "", err
+		return EffectAssertOutcome{}, err
 	}
 	if res == nil {
-		return false, false, "", fmt.Errorf("effects.assert returned nil response")
+		return EffectAssertOutcome{}, fmt.Errorf("effects.assert returned nil response")
 	}
-	return res.Granted, res.AlreadyHeld, derefOr(res.Displaced), nil
+	return EffectAssertOutcome{
+		Granted:     res.Granted,
+		AlreadyHeld: res.AlreadyHeld,
+		Displaced:   derefOr(res.Displaced),
+		Enforced:    res.Enforced,
+	}, nil
 }
 
 // RetractEffect releases this plugin's assertion of `name`. Idempotent —
