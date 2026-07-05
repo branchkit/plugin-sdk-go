@@ -872,6 +872,18 @@ type CalibrationApplyResponse struct {
 	Tags []string `json:"tags"`
 }
 
+// CalibrationBiasApplyRequest is the request type for calibration.bias.apply.
+type CalibrationBiasApplyRequest struct {
+	Force *bool `json:"force,omitempty"`
+	Strength float64 `json:"strength"`
+}
+
+// CalibrationBiasApplyResponse is the response type for calibration.bias.apply.
+type CalibrationBiasApplyResponse struct {
+	Applied bool `json:"applied"`
+	PreviousProvenance string `json:"previous_provenance"`
+}
+
 // CalibrationCaptureProbeRequest is the request type for calibration.capture.probe.
 type CalibrationCaptureProbeRequest struct {
 	Items []ProbeItem `json:"items"`

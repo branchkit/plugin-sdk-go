@@ -41,6 +41,20 @@ func (p *Plugin) CalibrationApply(commandID string, trialID string) (*Calibratio
 	return &result, nil
 }
 
+// CalibrationBiasApply apply a calibration-measured strength to the never-standalone recognition bias (provenance: calibration); refuses over a manually-set value unless force.
+func (p *Plugin) CalibrationBiasApply(force *bool, strength float64) (*CalibrationBiasApplyResponse, error) {
+	req := &CalibrationBiasApplyRequest{
+		Force: force,
+		Strength: strength,
+	}
+	var result CalibrationBiasApplyResponse
+	err := p.Call(MethodCalibrationBiasApply, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // CalibrationCaptureProbe run a registered recognizer stage's `probe` re-decode over captured clips (the fragility ladder) — the actuator runs it because the sandboxed plugin can't reach the model/capture dirs.
 func (p *Plugin) CalibrationCaptureProbe(items []ProbeItem, maxActive *int, model string, stage string) (*CalibrationCaptureProbeResponse, error) {
 	req := &CalibrationCaptureProbeRequest{
