@@ -1126,6 +1126,18 @@ type CollectionsListResponse struct {
 	Sections []CollectionsListSection `json:"sections"`
 }
 
+// CommandsAddAliasRequest is the request type for commands.add_alias.
+type CommandsAddAliasRequest struct {
+	Action string `json:"action"`
+	DefaultPattern string `json:"default_pattern"`
+	NewPattern string `json:"new_pattern"`
+}
+
+// CommandsAddAliasResponse is the response type for commands.add_alias.
+type CommandsAddAliasResponse struct {
+	Ok bool `json:"ok"`
+}
+
 // CommandsDeleteRequest is the request type for commands.delete.
 type CommandsDeleteRequest struct {
 	Canonical string `json:"canonical"`
@@ -1148,6 +1160,11 @@ type CommandsListResponse struct {
 	Title string `json:"title"`
 }
 
+// CommandsListAliasesResponse is the response type for commands.list_aliases.
+type CommandsListAliasesResponse struct {
+	Aliases []CommandOverride `json:"aliases"`
+}
+
 // CommandsListOverridesResponse is the response type for commands.list_overrides.
 type CommandsListOverridesResponse struct {
 	Overrides []CommandOverride `json:"overrides"`
@@ -1162,6 +1179,19 @@ type CommandsPushRequest struct {
 type CommandsPushResponse struct {
 	Count int `json:"count"`
 	Ok bool `json:"ok"`
+}
+
+// CommandsRemoveAliasRequest is the request type for commands.remove_alias.
+type CommandsRemoveAliasRequest struct {
+	Action string `json:"action"`
+	DefaultPattern string `json:"default_pattern"`
+	NewPattern string `json:"new_pattern"`
+}
+
+// CommandsRemoveAliasResponse is the response type for commands.remove_alias.
+type CommandsRemoveAliasResponse struct {
+	Ok bool `json:"ok"`
+	Removed bool `json:"removed"`
 }
 
 // CommandsResetRequest is the request type for commands.reset.

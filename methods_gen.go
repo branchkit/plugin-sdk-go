@@ -355,6 +355,16 @@ func (p *Plugin) CollectionsList(kind *string) ([]CollectionsListSection, error)
 	return result.Sections, nil
 }
 
+// CommandsAddAlias add an extra spoken form (alias) for an existing command.
+func (p *Plugin) CommandsAddAlias(action string, defaultPattern string, newPattern string) error {
+	req := &CommandsAddAliasRequest{
+		Action: action,
+		DefaultPattern: defaultPattern,
+		NewPattern: newPattern,
+	}
+	return p.Call(MethodCommandsAddAlias, req, nil)
+}
+
 // CommandsDelete delete a user command by canonical name.
 func (p *Plugin) CommandsDelete(canonical string) error {
 	req := &CommandsDeleteRequest{
@@ -385,6 +395,18 @@ func (p *Plugin) CommandsList() (*CommandsListResponse, error) {
 	return &result, nil
 }
 
+// CommandsListAliases list the current user command-phrase aliases (added spoken forms).
+func (p *Plugin) CommandsListAliases() ([]CommandOverride, error) {
+	var result struct {
+		Aliases []CommandOverride `json:"aliases"`
+	}
+	err := p.Call(MethodCommandsListAliases, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Aliases, nil
+}
+
 // CommandsListOverrides list the current user command-phrase overrides.
 func (p *Plugin) CommandsListOverrides() ([]CommandOverride, error) {
 	var result struct {
@@ -404,6 +426,21 @@ func (p *Plugin) CommandsPush(commands json.RawMessage) (*CommandsPushResponse, 
 	}
 	var result CommandsPushResponse
 	err := p.Call(MethodCommandsPush, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// CommandsRemoveAlias remove an added spoken form (alias) from a command.
+func (p *Plugin) CommandsRemoveAlias(action string, defaultPattern string, newPattern string) (*CommandsRemoveAliasResponse, error) {
+	req := &CommandsRemoveAliasRequest{
+		Action: action,
+		DefaultPattern: defaultPattern,
+		NewPattern: newPattern,
+	}
+	var result CommandsRemoveAliasResponse
+	err := p.Call(MethodCommandsRemoveAlias, req, &result)
 	if err != nil {
 		return nil, err
 	}
