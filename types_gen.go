@@ -193,6 +193,13 @@ type CollectionsListSection struct {
 	Plugin string `json:"plugin"`
 }
 
+// CommandOverride is auto-generated from the OpenRPC spec.
+type CommandOverride struct {
+	Action string `json:"action"`
+	DefaultPattern string `json:"default_pattern"`
+	NewPattern string `json:"new_pattern"`
+}
+
 // CommandRowData is auto-generated from the OpenRPC spec.
 type CommandRowData struct {
 	Action string `json:"action"`
@@ -1141,6 +1148,11 @@ type CommandsListResponse struct {
 	Title string `json:"title"`
 }
 
+// CommandsListOverridesResponse is the response type for commands.list_overrides.
+type CommandsListOverridesResponse struct {
+	Overrides []CommandOverride `json:"overrides"`
+}
+
 // CommandsPushRequest is the request type for commands.push.
 type CommandsPushRequest struct {
 	Commands json.RawMessage `json:"commands,omitempty"`
@@ -1160,6 +1172,18 @@ type CommandsResetRequest struct {
 // CommandsResetResponse is the response type for commands.reset.
 type CommandsResetResponse struct {
 	Ok bool `json:"ok"`
+}
+
+// CommandsResetOverrideRequest is the request type for commands.reset_override.
+type CommandsResetOverrideRequest struct {
+	Action string `json:"action"`
+	DefaultPattern string `json:"default_pattern"`
+}
+
+// CommandsResetOverrideResponse is the response type for commands.reset_override.
+type CommandsResetOverrideResponse struct {
+	Ok bool `json:"ok"`
+	Removed bool `json:"removed"`
 }
 
 // CommandsResolveRequest is the request type for commands.resolve.
@@ -1195,6 +1219,18 @@ type CommandsResolveResponse struct {
 	TiedCandidates []TiedCandidate `json:"tied_candidates,omitempty"`
 	Title string `json:"title"`
 	TraceID *string `json:"trace_id,omitempty"`
+}
+
+// CommandsSetOverrideRequest is the request type for commands.set_override.
+type CommandsSetOverrideRequest struct {
+	Action string `json:"action"`
+	DefaultPattern string `json:"default_pattern"`
+	NewPattern string `json:"new_pattern"`
+}
+
+// CommandsSetOverrideResponse is the response type for commands.set_override.
+type CommandsSetOverrideResponse struct {
+	Ok bool `json:"ok"`
 }
 
 // ControlSignalRequest is the request type for control.signal.

@@ -38,9 +38,12 @@ const (
 	MethodCommandsDelete = "commands.delete" // since 0.1.0
 	MethodCommandsEnumerate = "commands.enumerate" // since 0.1.0
 	MethodCommandsList = "commands.list" // since 0.1.0
+	MethodCommandsListOverrides = "commands.list_overrides" // since 0.1.0
 	MethodCommandsPush = "commands.push" // since 0.1.0
 	MethodCommandsReset = "commands.reset" // since 0.1.0
+	MethodCommandsResetOverride = "commands.reset_override" // since 0.1.0
 	MethodCommandsResolve = "commands.resolve" // since 0.1.0
+	MethodCommandsSetOverride = "commands.set_override" // since 0.1.0
 	MethodControlSignal = "control.signal" // since 0.1.0
 	MethodDiscoveryClosed = "discovery.closed" // since 0.1.0
 	MethodDispatch = "dispatch" // since 0.1.0

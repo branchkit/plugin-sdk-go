@@ -385,6 +385,18 @@ func (p *Plugin) CommandsList() (*CommandsListResponse, error) {
 	return &result, nil
 }
 
+// CommandsListOverrides list the current user command-phrase overrides.
+func (p *Plugin) CommandsListOverrides() ([]CommandOverride, error) {
+	var result struct {
+		Overrides []CommandOverride `json:"overrides"`
+	}
+	err := p.Call(MethodCommandsListOverrides, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Overrides, nil
+}
+
 // CommandsPush register commands with the matching engine to the matching engine.
 func (p *Plugin) CommandsPush(commands json.RawMessage) (*CommandsPushResponse, error) {
 	req := &CommandsPushRequest{
@@ -406,6 +418,20 @@ func (p *Plugin) CommandsReset(canonical string) error {
 	return p.Call(MethodCommandsReset, req, nil)
 }
 
+// CommandsResetOverride remove a user command-phrase override (revert to the plugin default).
+func (p *Plugin) CommandsResetOverride(action string, defaultPattern string) (*CommandsResetOverrideResponse, error) {
+	req := &CommandsResetOverrideRequest{
+		Action: action,
+		DefaultPattern: defaultPattern,
+	}
+	var result CommandsResetOverrideResponse
+	err := p.Call(MethodCommandsResetOverride, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // CommandsResolve resolve words against the command registry — returns dispatch decision, partial-match feedback, and tiebreaker telemetry in one envelope.
 func (p *Plugin) CommandsResolve(activeTags json.RawMessage, collections json.RawMessage, preferOwner *string, preview *bool, requireTag *string, sessionID *string, source *string, words []string) (*CommandsResolveResponse, error) {
 	req := &CommandsResolveRequest{
@@ -424,6 +450,16 @@ func (p *Plugin) CommandsResolve(activeTags json.RawMessage, collections json.Ra
 		return nil, err
 	}
 	return &result, nil
+}
+
+// CommandsSetOverride set a user command-phrase override (replace a command's spoken form).
+func (p *Plugin) CommandsSetOverride(action string, defaultPattern string, newPattern string) error {
+	req := &CommandsSetOverrideRequest{
+		Action: action,
+		DefaultPattern: defaultPattern,
+		NewPattern: newPattern,
+	}
+	return p.Call(MethodCommandsSetOverride, req, nil)
 }
 
 // ControlSignal send a control signal to the Swift shell via the control stream.
