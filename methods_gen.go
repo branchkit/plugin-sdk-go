@@ -326,9 +326,10 @@ func (p *Plugin) CollectionPatch(fields json.RawMessage, id string, name string)
 }
 
 // CollectionPut upsert records by id (bulk). Auto-registers the target as a record-keyed dynamic collection on first plugin call to an unknown name..
-func (p *Plugin) CollectionPut(entries []CollectionPutEntry, name string, roles json.RawMessage) (*CollectionPutResponse, error) {
+func (p *Plugin) CollectionPut(entries []CollectionPutEntry, label *string, name string, roles json.RawMessage) (*CollectionPutResponse, error) {
 	req := &CollectionPutRequest{
 		Entries: entries,
+		Label: label,
 		Name: name,
 		Roles: roles,
 	}

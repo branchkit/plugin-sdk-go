@@ -83,7 +83,7 @@ func (p *Plugin) Put(name, id string, payload any) error {
 	if err != nil {
 		return fmt.Errorf("marshal payload: %w", err)
 	}
-	_, err = p.CollectionPut([]CollectionPutEntry{{ID: id, Payload: raw}}, name, nil)
+	_, err = p.CollectionPut([]CollectionPutEntry{{ID: id, Payload: raw}}, nil, name, nil)
 	return err
 }
 
@@ -111,6 +111,22 @@ func (p *Plugin) PutManyWithRoles(
 	entries []CollectionPutEntry,
 	roles map[string]FieldDisplay,
 ) (int, error) {
+	return p.PutManyWithDisplay(name, entries, roles, "")
+}
+
+// PutManyWithDisplay is like PutManyWithRoles but also sets the collection's
+// human-readable label — the friendly category name shown on the Discovery
+// HUD's tag badge and in the Settings UI, in place of the raw collection id
+// (e.g. "Badge" instead of "browser_hints_arch_strict"). Pass "" to leave the
+// label unchanged; like roles, it persists on the collection, so plugins
+// typically set it on the first put and pass "" thereafter. See the `label`
+// argument on collection.put.
+func (p *Plugin) PutManyWithDisplay(
+	name string,
+	entries []CollectionPutEntry,
+	roles map[string]FieldDisplay,
+	label string,
+) (int, error) {
 	if len(entries) == 0 {
 		return 0, nil
 	}
@@ -122,7 +138,11 @@ func (p *Plugin) PutManyWithRoles(
 		}
 		rolesRaw = raw
 	}
-	res, err := p.CollectionPut(entries, name, rolesRaw)
+	var labelPtr *string
+	if label != "" {
+		labelPtr = &label
+	}
+	res, err := p.CollectionPut(entries, labelPtr, name, rolesRaw)
 	if err != nil {
 		return 0, err
 	}

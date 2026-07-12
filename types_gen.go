@@ -1106,6 +1106,7 @@ type CollectionPatchResponse struct {
 // CollectionPutRequest is the request type for collection.put.
 type CollectionPutRequest struct {
 	Entries []CollectionPutEntry `json:"entries,omitempty"`
+	Label *string `json:"label,omitempty"`
 	Name string `json:"name"`
 	Roles json.RawMessage `json:"roles,omitempty"`
 }
