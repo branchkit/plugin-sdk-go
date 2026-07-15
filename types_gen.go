@@ -5198,8 +5198,14 @@ type OverridesApplyResponse struct {
 	Ok bool `json:"ok"`
 }
 
+// PipelinesGrammarRequest is the request type for pipelines.grammar.
+type PipelinesGrammarRequest struct {
+	Full *bool `json:"full,omitempty"`
+}
+
 // PipelinesGrammarResponse is the response type for pipelines.grammar.
 type PipelinesGrammarResponse struct {
+	VocabularyUpdate json.RawMessage `json:"vocabulary_update,omitempty"`
 	Words []string `json:"words"`
 }
 

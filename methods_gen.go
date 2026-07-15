@@ -5997,16 +5997,17 @@ func (p *Plugin) OverridesApply(action string, collection string, fields json.Ra
 	return &result, nil
 }
 
-// PipelinesGrammar get the current command grammar word list for speech recognition.
-func (p *Plugin) PipelinesGrammar() ([]string, error) {
-	var result struct {
-		Words []string `json:"words"`
+// PipelinesGrammar get the current command grammar word list — or, with full=true, the complete vocabulary_update seed payload (words, narrow_to, weights, DAG).
+func (p *Plugin) PipelinesGrammar(full *bool) (*PipelinesGrammarResponse, error) {
+	req := &PipelinesGrammarRequest{
+		Full: full,
 	}
-	err := p.Call(MethodPipelinesGrammar, nil, &result)
+	var result PipelinesGrammarResponse
+	err := p.Call(MethodPipelinesGrammar, req, &result)
 	if err != nil {
 		return nil, err
 	}
-	return result.Words, nil
+	return &result, nil
 }
 
 // PipelinesIngestTranscript feed a synthetic transcript through a pipeline's post-recognition path — the full command path without audio, for dev-loop and e2e verification.
