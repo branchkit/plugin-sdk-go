@@ -1360,6 +1360,7 @@ type HUDCreateChannelRequest struct {
 	Anchor json.RawMessage `json:"anchor,omitempty"`
 	Channel string `json:"channel"`
 	Description *string `json:"description,omitempty"`
+	Draggable *bool `json:"draggable,omitempty"`
 	FollowsFocus *bool `json:"follows_focus,omitempty"`
 	MinHeight *int `json:"min_height,omitempty"`
 	Width *int `json:"width,omitempty"`
@@ -5166,6 +5167,22 @@ type OverridesApplyResponse struct {
 // PipelinesGrammarResponse is the response type for pipelines.grammar.
 type PipelinesGrammarResponse struct {
 	Words []string `json:"words"`
+}
+
+// PipelinesIngestTranscriptRequest is the request type for pipelines.ingest_transcript.
+type PipelinesIngestTranscriptRequest struct {
+	Confidence *float64 `json:"confidence,omitempty"`
+	IsFinal *bool `json:"is_final,omitempty"`
+	Name string `json:"name"`
+	Text string `json:"text"`
+}
+
+// PipelinesIngestTranscriptResponse is the response type for pipelines.ingest_transcript.
+type PipelinesIngestTranscriptResponse struct {
+	Ingested bool `json:"ingested"`
+	Matched *bool `json:"matched,omitempty"`
+	OwnerPlugin *string `json:"owner_plugin,omitempty"`
+	PluginDispatched bool `json:"plugin_dispatched"`
 }
 
 // PipelinesInjectRequest is the request type for pipelines.inject.

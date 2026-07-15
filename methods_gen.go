@@ -588,12 +588,13 @@ func (p *Plugin) EventsEmit(correlationID *string, data json.RawMessage, eventTy
 }
 
 // HUDCreateChannel create a new HUD broadcast channel at runtime.
-func (p *Plugin) HUDCreateChannel(acceptsInput *bool, anchor json.RawMessage, channel string, description *string, followsFocus *bool, minHeight *int, width *int) error {
+func (p *Plugin) HUDCreateChannel(acceptsInput *bool, anchor json.RawMessage, channel string, description *string, draggable *bool, followsFocus *bool, minHeight *int, width *int) error {
 	req := &HUDCreateChannelRequest{
 		AcceptsInput: acceptsInput,
 		Anchor: anchor,
 		Channel: channel,
 		Description: description,
+		Draggable: draggable,
 		FollowsFocus: followsFocus,
 		MinHeight: minHeight,
 		Width: width,
@@ -5992,6 +5993,22 @@ func (p *Plugin) PipelinesGrammar() ([]string, error) {
 		return nil, err
 	}
 	return result.Words, nil
+}
+
+// PipelinesIngestTranscript feed a synthetic transcript through a pipeline's post-recognition path — the full command path without audio, for dev-loop and e2e verification.
+func (p *Plugin) PipelinesIngestTranscript(confidence *float64, isFinal *bool, name string, text string) (*PipelinesIngestTranscriptResponse, error) {
+	req := &PipelinesIngestTranscriptRequest{
+		Confidence: confidence,
+		IsFinal: isFinal,
+		Name: name,
+		Text: text,
+	}
+	var result PipelinesIngestTranscriptResponse
+	err := p.Call(MethodPipelinesIngestTranscript, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
 }
 
 // PipelinesInject inject an event into a running pipeline.

@@ -591,6 +591,7 @@ const (
 	MethodNativeZoomEnabled = "native.zoom_enabled" // since 0.1.0
 	MethodOverridesApply = "overrides.apply" // since 0.1.0
 	MethodPipelinesGrammar = "pipelines.grammar" // since 0.1.0
+	MethodPipelinesIngestTranscript = "pipelines.ingest_transcript" // since 0.1.0
 	MethodPipelinesInject = "pipelines.inject" // since 0.1.0
 	MethodPipelinesRun = "pipelines.run" // since 0.1.0
 	MethodPipelinesStatus = "pipelines.status" // since 0.1.0
