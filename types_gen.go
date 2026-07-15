@@ -333,27 +333,6 @@ type EnumeratedCommand struct {
 	SetsTags []string `json:"sets_tags"`
 }
 
-// EventsQueryChainSummary is auto-generated from the OpenRPC spec.
-type EventsQueryChainSummary struct {
-	CorrelationID string `json:"correlation_id"`
-	HeadlineEvent string `json:"headline_event"`
-	HeadlineParams json.RawMessage `json:"headline_params,omitempty"`
-	MaxSeverity string `json:"max_severity"`
-	RecordCount int `json:"record_count"`
-	Sources []string `json:"sources"`
-	When string `json:"when"`
-}
-
-// EventsQueryRecord is auto-generated from the OpenRPC spec.
-type EventsQueryRecord struct {
-	Caller string `json:"caller"`
-	EventType string `json:"event_type"`
-	Params json.RawMessage `json:"params,omitempty"`
-	Severity string `json:"severity"`
-	Source string `json:"source"`
-	TsUtc string `json:"ts_utc"`
-}
-
 // ExternalDisk is auto-generated from the OpenRPC spec.
 type ExternalDisk struct {
 	FileSystem *string `json:"file_system,omitempty"`
@@ -885,17 +864,6 @@ type ActionsListResponse struct {
 	Actions map[string]ActionTypeSchema `json:"actions"`
 }
 
-// BridgeEmitObservabilityEventRequest is the request type for bridge.emit_observability_event.
-type BridgeEmitObservabilityEventRequest struct {
-	EventType string `json:"event_type"`
-	Params json.RawMessage `json:"params"`
-}
-
-// BridgeEmitObservabilityEventResponse is the response type for bridge.emit_observability_event.
-type BridgeEmitObservabilityEventResponse struct {
-	Ok bool `json:"ok"`
-}
-
 // CalibrationApplyRequest is the request type for calibration.apply.
 type CalibrationApplyRequest struct {
 	CommandID string `json:"command_id"`
@@ -1382,19 +1350,6 @@ type EventsEmitRequest struct {
 // EventsEmitResponse is the response type for events.emit.
 type EventsEmitResponse struct {
 	Ok bool `json:"ok"`
-}
-
-// EventsQueryRequest is the request type for events.query.
-type EventsQueryRequest struct {
-	CorrelationID *string `json:"correlation_id,omitempty"`
-	Limit *int `json:"limit,omitempty"`
-}
-
-// EventsQueryResponse is the response type for events.query.
-type EventsQueryResponse struct {
-	Chains []EventsQueryChainSummary `json:"chains"`
-	PluginCallers []string `json:"plugin_callers"`
-	Records []EventsQueryRecord `json:"records"`
 }
 
 // HUDCreateChannelRequest is the request type for hud.create_channel.
@@ -5218,22 +5173,6 @@ type PipelinesGrammarRequest struct {
 type PipelinesGrammarResponse struct {
 	VocabularyUpdate json.RawMessage `json:"vocabulary_update,omitempty"`
 	Words []string `json:"words"`
-}
-
-// PipelinesIngestTranscriptRequest is the request type for pipelines.ingest_transcript.
-type PipelinesIngestTranscriptRequest struct {
-	Confidence *float64 `json:"confidence,omitempty"`
-	IsFinal *bool `json:"is_final,omitempty"`
-	Name string `json:"name"`
-	Text string `json:"text"`
-}
-
-// PipelinesIngestTranscriptResponse is the response type for pipelines.ingest_transcript.
-type PipelinesIngestTranscriptResponse struct {
-	Ingested bool `json:"ingested"`
-	Matched *bool `json:"matched,omitempty"`
-	OwnerPlugin *string `json:"owner_plugin,omitempty"`
-	PluginDispatched bool `json:"plugin_dispatched"`
 }
 
 // PipelinesInjectRequest is the request type for pipelines.inject.

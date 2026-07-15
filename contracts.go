@@ -9,7 +9,6 @@ const APIVersion = "0.1.0"
 // RPC method names: plugin → actuator (use with plugin.Call()).
 const (
 	MethodActionsList = "actions.list" // since 0.1.0
-	MethodBridgeEmitObservabilityEvent = "bridge.emit_observability_event" // since 0.1.0
 	MethodCalibrationApply = "calibration.apply" // since 0.1.0
 	MethodCalibrationBiasApply = "calibration.bias.apply" // since 0.1.0
 	MethodCalibrationCaptureProbe = "calibration.capture.probe" // since 0.1.0
@@ -55,7 +54,6 @@ const (
 	MethodEffectsRetract = "effects.retract" // since 0.1.0
 	MethodEventsAppend = "events.append" // since 0.1.0
 	MethodEventsEmit = "events.emit" // since 0.1.0
-	MethodEventsQuery = "events.query" // since 0.1.0
 	MethodHudCreateChannel = "hud.create_channel" // since 0.1.0
 	MethodHudHide = "hud.hide" // since 0.1.0
 	MethodHudPush = "hud.push" // since 0.1.0
@@ -592,7 +590,6 @@ const (
 	MethodNativeZoomEnabled = "native.zoom_enabled" // since 0.1.0
 	MethodOverridesApply = "overrides.apply" // since 0.1.0
 	MethodPipelinesGrammar = "pipelines.grammar" // since 0.1.0
-	MethodPipelinesIngestTranscript = "pipelines.ingest_transcript" // since 0.1.0
 	MethodPipelinesInject = "pipelines.inject" // since 0.1.0
 	MethodPipelinesRun = "pipelines.run" // since 0.1.0
 	MethodPipelinesStatus = "pipelines.status" // since 0.1.0

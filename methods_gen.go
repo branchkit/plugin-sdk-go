@@ -18,15 +18,6 @@ func (p *Plugin) ActionsList() (*ActionsListResponse, error) {
 	return &result, nil
 }
 
-// BridgeEmitObservabilityEvent inject a Swift-originated observability event onto the actuator's bus..
-func (p *Plugin) BridgeEmitObservabilityEvent(eventType string, params json.RawMessage) error {
-	req := &BridgeEmitObservabilityEventRequest{
-		EventType: eventType,
-		Params: params,
-	}
-	return p.Call(MethodBridgeEmitObservabilityEvent, req, nil)
-}
-
 // CalibrationApply enter a command's context for a trial — writes mode-gated requires_tags (platform write) or forwards calibration_apply_fixture to a dynamic command's owner — and returns the entered context (kind + tags + fixture_handle).
 func (p *Plugin) CalibrationApply(commandID string, trialID string) (*CalibrationApplyResponse, error) {
 	req := &CalibrationApplyRequest{
@@ -585,20 +576,6 @@ func (p *Plugin) EventsEmit(correlationID *string, data json.RawMessage, eventTy
 		EventType: eventType,
 	}
 	return p.Call(MethodEventsEmit, req, nil)
-}
-
-// EventsQuery query correlated chains from the structured event stream — a tr_ id returns its causal chain; no id returns recent-chain summaries.
-func (p *Plugin) EventsQuery(correlationID *string, limit *int) (*EventsQueryResponse, error) {
-	req := &EventsQueryRequest{
-		CorrelationID: correlationID,
-		Limit: limit,
-	}
-	var result EventsQueryResponse
-	err := p.Call(MethodEventsQuery, req, &result)
-	if err != nil {
-		return nil, err
-	}
-	return &result, nil
 }
 
 // HUDCreateChannel create a new HUD broadcast channel at runtime.
@@ -6006,22 +5983,6 @@ func (p *Plugin) PipelinesGrammar(full *bool) (*PipelinesGrammarResponse, error)
 	}
 	var result PipelinesGrammarResponse
 	err := p.Call(MethodPipelinesGrammar, req, &result)
-	if err != nil {
-		return nil, err
-	}
-	return &result, nil
-}
-
-// PipelinesIngestTranscript feed a synthetic transcript through a pipeline's post-recognition path — the full command path without audio, for dev-loop and e2e verification.
-func (p *Plugin) PipelinesIngestTranscript(confidence *float64, isFinal *bool, name string, text string) (*PipelinesIngestTranscriptResponse, error) {
-	req := &PipelinesIngestTranscriptRequest{
-		Confidence: confidence,
-		IsFinal: isFinal,
-		Name: name,
-		Text: text,
-	}
-	var result PipelinesIngestTranscriptResponse
-	err := p.Call(MethodPipelinesIngestTranscript, req, &result)
 	if err != nil {
 		return nil, err
 	}
