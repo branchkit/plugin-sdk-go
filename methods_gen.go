@@ -587,6 +587,20 @@ func (p *Plugin) EventsEmit(correlationID *string, data json.RawMessage, eventTy
 	return p.Call(MethodEventsEmit, req, nil)
 }
 
+// EventsQuery query correlated chains from the structured event stream — a tr_ id returns its causal chain; no id returns recent-chain summaries.
+func (p *Plugin) EventsQuery(correlationID *string, limit *int) (*EventsQueryResponse, error) {
+	req := &EventsQueryRequest{
+		CorrelationID: correlationID,
+		Limit: limit,
+	}
+	var result EventsQueryResponse
+	err := p.Call(MethodEventsQuery, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // HUDCreateChannel create a new HUD broadcast channel at runtime.
 func (p *Plugin) HUDCreateChannel(acceptsInput *bool, anchor json.RawMessage, channel string, description *string, draggable *bool, followsFocus *bool, minHeight *int, width *int) error {
 	req := &HUDCreateChannelRequest{

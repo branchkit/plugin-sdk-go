@@ -333,6 +333,27 @@ type EnumeratedCommand struct {
 	SetsTags []string `json:"sets_tags"`
 }
 
+// EventsQueryChainSummary is auto-generated from the OpenRPC spec.
+type EventsQueryChainSummary struct {
+	CorrelationID string `json:"correlation_id"`
+	HeadlineEvent string `json:"headline_event"`
+	HeadlineParams json.RawMessage `json:"headline_params,omitempty"`
+	MaxSeverity string `json:"max_severity"`
+	RecordCount int `json:"record_count"`
+	Sources []string `json:"sources"`
+	When string `json:"when"`
+}
+
+// EventsQueryRecord is auto-generated from the OpenRPC spec.
+type EventsQueryRecord struct {
+	Caller string `json:"caller"`
+	EventType string `json:"event_type"`
+	Params json.RawMessage `json:"params,omitempty"`
+	Severity string `json:"severity"`
+	Source string `json:"source"`
+	TsUtc string `json:"ts_utc"`
+}
+
 // ExternalDisk is auto-generated from the OpenRPC spec.
 type ExternalDisk struct {
 	FileSystem *string `json:"file_system,omitempty"`
@@ -1352,6 +1373,19 @@ type EventsEmitRequest struct {
 // EventsEmitResponse is the response type for events.emit.
 type EventsEmitResponse struct {
 	Ok bool `json:"ok"`
+}
+
+// EventsQueryRequest is the request type for events.query.
+type EventsQueryRequest struct {
+	CorrelationID *string `json:"correlation_id,omitempty"`
+	Limit *int `json:"limit,omitempty"`
+}
+
+// EventsQueryResponse is the response type for events.query.
+type EventsQueryResponse struct {
+	Chains []EventsQueryChainSummary `json:"chains"`
+	PluginCallers []string `json:"plugin_callers"`
+	Records []EventsQueryRecord `json:"records"`
 }
 
 // HUDCreateChannelRequest is the request type for hud.create_channel.

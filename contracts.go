@@ -55,6 +55,7 @@ const (
 	MethodEffectsRetract = "effects.retract" // since 0.1.0
 	MethodEventsAppend = "events.append" // since 0.1.0
 	MethodEventsEmit = "events.emit" // since 0.1.0
+	MethodEventsQuery = "events.query" // since 0.1.0
 	MethodHudCreateChannel = "hud.create_channel" // since 0.1.0
 	MethodHudHide = "hud.hide" // since 0.1.0
 	MethodHudPush = "hud.push" // since 0.1.0
