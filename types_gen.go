@@ -1397,6 +1397,7 @@ type HUDCreateChannelRequest struct {
 	Draggable *bool `json:"draggable,omitempty"`
 	FollowsFocus *bool `json:"follows_focus,omitempty"`
 	MinHeight *int `json:"min_height,omitempty"`
+	Transparent *bool `json:"transparent,omitempty"`
 	Width *int `json:"width,omitempty"`
 }
 
