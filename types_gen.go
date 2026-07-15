@@ -613,6 +613,15 @@ const (
 	OnActionStatusNotHandled OnActionStatus = "not_handled"
 )
 
+// OnPointer is auto-generated from the OpenRPC spec.
+// What a HUD window does when the pointer moves into its frame.
+type OnPointer string
+
+const (
+	OnPointerNone OnPointer = "none"
+	OnPointerFade OnPointer = "fade"
+)
+
 // PipelineStatusEntry is auto-generated from the OpenRPC spec.
 type PipelineStatusEntry struct {
 	Ephemeral bool `json:"ephemeral"`
@@ -1397,6 +1406,7 @@ type HUDCreateChannelRequest struct {
 	Draggable *bool `json:"draggable,omitempty"`
 	FollowsFocus *bool `json:"follows_focus,omitempty"`
 	MinHeight *int `json:"min_height,omitempty"`
+	OnPointer *OnPointer `json:"on_pointer,omitempty"`
 	Transparent *bool `json:"transparent,omitempty"`
 	Width *int `json:"width,omitempty"`
 }
