@@ -224,6 +224,7 @@ type CommandSpec struct {
 	Category *string `json:"category,omitempty"`
 	ClearsTags []string `json:"clears_tags"`
 	Description *string `json:"description,omitempty"`
+	DisplaySources map[string]string `json:"display_sources"`
 	Pattern []json.RawMessage `json:"pattern"`
 	RequiresTags []string `json:"requires_tags"`
 	SetsOnPartial []string `json:"sets_on_partial"`

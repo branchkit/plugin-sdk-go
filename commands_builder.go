@@ -132,6 +132,18 @@ func (b *CommandBuilder) ClearsTags(tags ...string) *CommandBuilder {
 // SetsOnPartial sets these mid-capture mode tags while a dependent-capture
 // pattern is bridging across utterances. Only meaningful on commands whose
 // pattern carries a dependent capture.
+// DisplaySource sets the Discovery-HUD display override for one capture:
+// the HUD enumerates `collection` instead of the capture's matching
+// collection. Matching is untouched — pair a sealed/static matching
+// collection with a live menu. (notes/DESIGN_CAPTURE_DISPLAY_FORMS.md.)
+func (b *CommandBuilder) DisplaySource(capture, collection string) *CommandBuilder {
+	if b.spec.DisplaySources == nil {
+		b.spec.DisplaySources = map[string]string{}
+	}
+	b.spec.DisplaySources[capture] = collection
+	return b
+}
+
 func (b *CommandBuilder) SetsOnPartial(tags ...string) *CommandBuilder {
 	b.spec.SetsOnPartial = append(b.spec.SetsOnPartial, tags...)
 	return b
