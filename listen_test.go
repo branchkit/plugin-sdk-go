@@ -149,3 +149,18 @@ func TestListenLocalNoPluginDir(t *testing.T) {
 		t.Error("expected non-empty address")
 	}
 }
+
+func TestInheritedListenersAbsentOrInvalid(t *testing.T) {
+	// No LISTEN_FDS (or nonsense) must mean "none granted", never an error —
+	// ListenLocal then falls back to self-binding.
+	for _, v := range []string{"", "0", "garbage", "-2"} {
+		t.Setenv("LISTEN_FDS", v)
+		lns, err := InheritedListeners()
+		if err != nil {
+			t.Fatalf("LISTEN_FDS=%q: unexpected error: %v", v, err)
+		}
+		if len(lns) != 0 {
+			t.Fatalf("LISTEN_FDS=%q: expected no listeners, got %d", v, len(lns))
+		}
+	}
+}

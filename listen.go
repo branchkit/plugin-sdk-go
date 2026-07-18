@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 )
 
@@ -38,11 +39,25 @@ type Listener struct {
 // It generates a pairing token and writes a connect.json discovery file to
 // BRANCHKIT_PLUGIN_DIR so the external service can find the port and token.
 //
+// When the actuator granted listener sockets (manifest `sockets.listen`,
+// delivered per the LISTEN_FDS convention at fds 3+), the FIRST granted
+// listener is used instead of self-binding. This is not an optimization:
+// inside the Linux sandbox the plugin runs in an empty network namespace,
+// where a self-bound "127.0.0.1" is a private dead loopback — the
+// inherited host-loopback listener is the only reachable surface. See the
+// actuator's notes/DESIGN_SANDBOX_LOOPBACK_FDPASS.md.
+//
 // The caller must register handlers with HandleFunc before calling Serve.
 func ListenLocal(plugin *Plugin) (*Listener, error) {
-	ln, err := net.Listen("tcp", "127.0.0.1:0")
+	ln, err := inheritedListener(0)
 	if err != nil {
-		return nil, fmt.Errorf("listen: %w", err)
+		return nil, fmt.Errorf("inherited listener: %w", err)
+	}
+	if ln == nil {
+		ln, err = net.Listen("tcp", "127.0.0.1:0")
+		if err != nil {
+			return nil, fmt.Errorf("listen: %w", err)
+		}
 	}
 
 	token, err := generateToken()
@@ -85,6 +100,61 @@ func ListenLocal(plugin *Plugin) (*Listener, error) {
 // Patterns follow Go 1.22+ syntax: "POST /path", "GET /path", etc.
 func (l *Listener) HandleFunc(pattern string, handler http.HandlerFunc) {
 	l.mux.HandleFunc(pattern, handler)
+}
+
+// InheritedListeners returns every actuator-granted loopback listener
+// declared in the manifest's `sockets.listen`, in declaration order
+// (fd 3 = first entry). Returns an empty slice when none were granted —
+// e.g. old actuators, unsandboxed dev runs, or no manifest declaration.
+// Resolved ports are also published in BRANCHKIT_LISTEN_PORTS as
+// comma-separated `id=port` pairs, but Addr() on the returned listeners
+// is the simpler source of truth.
+//
+// Unlike systemd's convention, LISTEN_PID is deliberately NOT set or
+// checked: the actuator cannot know the child pid before spawn, and
+// plugin identity is already established by fd ownership.
+func InheritedListeners() ([]net.Listener, error) {
+	n, err := strconv.Atoi(os.Getenv("LISTEN_FDS"))
+	if err != nil || n <= 0 {
+		return nil, nil
+	}
+	listeners := make([]net.Listener, 0, n)
+	for i := range n {
+		f := os.NewFile(uintptr(3+i), fmt.Sprintf("branchkit-listener-%d", i))
+		if f == nil {
+			return nil, fmt.Errorf("inherited fd %d is not open", 3+i)
+		}
+		ln, err := net.FileListener(f)
+		// FileListener dups the fd; release our handle either way.
+		f.Close()
+		if err != nil {
+			return nil, fmt.Errorf("inherited fd %d: %w", 3+i, err)
+		}
+		listeners = append(listeners, ln)
+	}
+	return listeners, nil
+}
+
+// inheritedListener returns the i-th granted listener, or (nil, nil) when
+// the actuator granted none (callers then self-bind).
+func inheritedListener(i int) (net.Listener, error) {
+	listeners, err := InheritedListeners()
+	if err != nil {
+		return nil, err
+	}
+	if i >= len(listeners) {
+		// Close any listeners we're not returning to avoid fd leaks.
+		for _, ln := range listeners {
+			ln.Close()
+		}
+		return nil, nil
+	}
+	for j, ln := range listeners {
+		if j != i {
+			ln.Close()
+		}
+	}
+	return listeners[i], nil
 }
 
 // Addr returns the listener's address (e.g., "127.0.0.1:52431").
