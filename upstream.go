@@ -29,17 +29,24 @@ type UpstreamClient struct {
 // If the URL uses HTTPS on localhost, TLS certificate verification is skipped
 // to support self-signed certs (common for local services).
 func NewUpstreamClient(baseURL string) *UpstreamClient {
+	transport := &http.Transport{
+		// Allow self-signed certs for localhost services.
+		// Safe: upstream is always localhost, visible in plugin settings.
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true,
+		},
+	}
+	// Sandboxed per-host plugins have no direct egress — the platform's
+	// CONNECT proxy (BRANCHKIT_PROXY) is the only route, same as the
+	// default transport (see proxy.go). Direct when unset.
+	if dial, err := proxyDialContextFromEnv(); err == nil && dial != nil {
+		transport.DialContext = dial
+	}
 	return &UpstreamClient{
 		baseURL: baseURL,
 		client: &http.Client{
-			Timeout: 10 * time.Second,
-			Transport: &http.Transport{
-				// Allow self-signed certs for localhost services.
-				// Safe: upstream is always localhost, visible in plugin settings.
-				TLSClientConfig: &tls.Config{
-					InsecureSkipVerify: true,
-				},
-			},
+			Timeout:   10 * time.Second,
+			Transport: transport,
 		},
 	}
 }
