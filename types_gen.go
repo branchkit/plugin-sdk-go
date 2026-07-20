@@ -5221,6 +5221,7 @@ type PipelinesStopResponse struct {
 // PipelinesWarmRequest is the request type for pipelines.warm.
 type PipelinesWarmRequest struct {
 	Name string `json:"name"`
+	ParamOverrides map[string]json.RawMessage `json:"param_overrides,omitempty"`
 }
 
 // PipelinesWarmResponse is the response type for pipelines.warm.

@@ -6043,9 +6043,10 @@ func (p *Plugin) PipelinesStop(name string) (*PipelinesStopResponse, error) {
 }
 
 // PipelinesWarm pre-spawn + pre-load a pipeline's recognizer stages (grammar built off the hold path).
-func (p *Plugin) PipelinesWarm(name string) (*PipelinesWarmResponse, error) {
+func (p *Plugin) PipelinesWarm(name string, paramOverrides map[string]json.RawMessage) (*PipelinesWarmResponse, error) {
 	req := &PipelinesWarmRequest{
 		Name: name,
+		ParamOverrides: paramOverrides,
 	}
 	var result PipelinesWarmResponse
 	err := p.Call(MethodPipelinesWarm, req, &result)
