@@ -224,6 +224,7 @@ type CommandSpec struct {
 	Category *string `json:"category,omitempty"`
 	ClearsTags []string `json:"clears_tags"`
 	Description *string `json:"description,omitempty"`
+	DictatedParam json.RawMessage `json:"dictated_param,omitempty"`
 	DisplaySources map[string]string `json:"display_sources"`
 	Pattern []json.RawMessage `json:"pattern"`
 	RequiresTags []string `json:"requires_tags"`
@@ -255,6 +256,15 @@ type DeliveredNotification struct {
 	DeliveredAt string `json:"delivered_at"`
 	ID string `json:"id"`
 	Title string `json:"title"`
+}
+
+// DictatedParamSpec is auto-generated from the OpenRPC spec.
+type DictatedParamSpec struct {
+	ArmAction json.RawMessage `json:"arm_action,omitempty"`
+	CueBody *string `json:"cue_body,omitempty"`
+	CueTitle *string `json:"cue_title,omitempty"`
+	DisarmAction json.RawMessage `json:"disarm_action,omitempty"`
+	Param string `json:"param"`
 }
 
 // DirectoryEntry is auto-generated from the OpenRPC spec.
@@ -1236,6 +1246,7 @@ type CommandsResolveResponse struct {
 	BridgeActive *bool `json:"bridge_active,omitempty"`
 	ClearsTags []string `json:"clears_tags"`
 	ConsumedCount int `json:"consumed_count"`
+	DictatedParam json.RawMessage `json:"dictated_param,omitempty"`
 	HasCompletions bool `json:"has_completions"`
 	Items []DiscoverItem `json:"items"`
 	Matched bool `json:"matched"`
