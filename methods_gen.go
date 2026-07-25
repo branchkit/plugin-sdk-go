@@ -5318,7 +5318,7 @@ func (p *Plugin) NativeSwipeBetweenPages() (*NativeSwipeBetweenPagesResponse, er
 	return &result, nil
 }
 
-// NativeSwitchSpace switch to a specific Mission Control space by ID.
+// NativeSwitchSpace switch to a Mission Control desktop by number (1-16) via the user's Switch-to-Desktop symbolic hotkey (respects remaps, auto-enables disabled shortcuts; falls back to default Ctrl+N).
 func (p *Plugin) NativeSwitchSpace(spaceID int) error {
 	req := &NativeSwitchSpaceRequest{
 		SpaceID: spaceID,
