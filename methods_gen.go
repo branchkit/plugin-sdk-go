@@ -759,7 +759,7 @@ func (p *Plugin) InputListInputSources() ([]InputSource, error) {
 	return result.Sources, nil
 }
 
-// InputMouseButton press or release a mouse button (for drag operations, etc.).
+// InputMouseButton press, release, or drag-latch a mouse button (for drag operations, etc.).
 func (p *Plugin) InputMouseButton(button *string, direction string) error {
 	req := &InputMouseButtonRequest{
 		Button: button,
@@ -5871,21 +5871,6 @@ func (p *Plugin) NativeWindowTitle(windowID string) error {
 		WindowID: windowID,
 	}
 	return p.Call(MethodNativeWindowTitle, req, nil)
-}
-
-// NativeWindowsOnSpace list window IDs on a specific space.
-func (p *Plugin) NativeWindowsOnSpace(spaceID int) ([]string, error) {
-	req := &NativeWindowsOnSpaceRequest{
-		SpaceID: spaceID,
-	}
-	var result struct {
-		WindowIds []string `json:"window_ids"`
-	}
-	err := p.Call(MethodNativeWindowsOnSpace, req, &result)
-	if err != nil {
-		return nil, err
-	}
-	return result.WindowIds, nil
 }
 
 // NativeWorldModel get a snapshot of all windows and displays (with managed HUD windows).

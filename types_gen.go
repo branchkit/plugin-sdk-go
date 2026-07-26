@@ -850,9 +850,11 @@ type WindowFrame struct {
 type WindowInfo struct {
 	AppID string `json:"app_id"`
 	AppName string `json:"app_name"`
+	Desk *int `json:"desk,omitempty"`
 	H int `json:"h"`
 	ID string `json:"id"`
 	Source string `json:"source"`
+	SpaceIds []int `json:"space_ids"`
 	Title string `json:"title"`
 	W int `json:"w"`
 	X int `json:"x"`
@@ -5095,16 +5097,6 @@ type NativeWindowSubroleRequest struct {
 // NativeWindowTitleRequest is the request type for native.window_title.
 type NativeWindowTitleRequest struct {
 	WindowID string `json:"window_id"`
-}
-
-// NativeWindowsOnSpaceRequest is the request type for native.windows_on_space.
-type NativeWindowsOnSpaceRequest struct {
-	SpaceID int `json:"space_id"`
-}
-
-// NativeWindowsOnSpaceResponse is the response type for native.windows_on_space.
-type NativeWindowsOnSpaceResponse struct {
-	WindowIds []string `json:"window_ids"`
 }
 
 // NativeWorldModelRequest is the request type for native.world_model.
