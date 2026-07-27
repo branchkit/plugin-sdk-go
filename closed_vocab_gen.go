@@ -16,13 +16,13 @@ const (
 // any other name. Source of truth:
 // `actuator/src/effects.rs::EffectDef` inventory entries.
 const (
-	EffectDisableScreenDim = "disable_screen_dim"
-	EffectMuteAudioToOtherApps = "mute_audio_to_other_apps"
+	EffectDisableScreenDim         = "disable_screen_dim"
+	EffectMuteAudioToOtherApps     = "mute_audio_to_other_apps"
 	EffectPauseMicrophoneIndicator = "pause_microphone_indicator"
-	EffectPreventFocusSteal = "prevent_focus_steal"
-	EffectSignalRecordingActive = "signal_recording_active"
-	EffectSuppressHuds = "suppress_huds"
-	EffectSuppressNotifications = "suppress_notifications"
+	EffectPreventFocusSteal        = "prevent_focus_steal"
+	EffectSignalRecordingActive    = "signal_recording_active"
+	EffectSuppressHuds             = "suppress_huds"
+	EffectSuppressNotifications    = "suppress_notifications"
 )
 
 // KnownInputDirectives lists the full closed-vocabulary set of

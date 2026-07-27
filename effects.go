@@ -147,4 +147,3 @@ func (p *Plugin) OnEffectDisplaced(handler func(evt EffectDisplacedEvent)) {
 		handler(evt)
 	})
 }
-

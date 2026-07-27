@@ -22,7 +22,7 @@ func (p *Plugin) ActionsList() (*ActionsListResponse, error) {
 func (p *Plugin) CalibrationApply(commandID string, trialID string) (*CalibrationApplyResponse, error) {
 	req := &CalibrationApplyRequest{
 		CommandID: commandID,
-		TrialID: trialID,
+		TrialID:   trialID,
 	}
 	var result CalibrationApplyResponse
 	err := p.Call(MethodCalibrationApply, req, &result)
@@ -35,7 +35,7 @@ func (p *Plugin) CalibrationApply(commandID string, trialID string) (*Calibratio
 // CalibrationBiasApply apply a calibration-measured strength to the never-standalone recognition bias (provenance: calibration); refuses over a manually-set value unless force.
 func (p *Plugin) CalibrationBiasApply(force *bool, strength float64) (*CalibrationBiasApplyResponse, error) {
 	req := &CalibrationBiasApplyRequest{
-		Force: force,
+		Force:    force,
 		Strength: strength,
 	}
 	var result CalibrationBiasApplyResponse
@@ -49,10 +49,10 @@ func (p *Plugin) CalibrationBiasApply(force *bool, strength float64) (*Calibrati
 // CalibrationCaptureProbe run a registered recognizer stage's `probe` re-decode over captured clips (the fragility ladder) — the actuator runs it because the sandboxed plugin can't reach the model/capture dirs.
 func (p *Plugin) CalibrationCaptureProbe(items []ProbeItem, maxActive *int, model string, stage string) (*CalibrationCaptureProbeResponse, error) {
 	req := &CalibrationCaptureProbeRequest{
-		Items: items,
+		Items:     items,
 		MaxActive: maxActive,
-		Model: model,
-		Stage: stage,
+		Model:     model,
+		Stage:     stage,
 	}
 	var result CalibrationCaptureProbeResponse
 	err := p.Call(MethodCalibrationCaptureProbe, req, &result)
@@ -156,7 +156,7 @@ func (p *Plugin) CalibrationRecordingsList(limit *int) (*CalibrationRecordingsLi
 func (p *Plugin) CalibrationRecordingsSetDisposition(disposition string, file string) error {
 	req := &CalibrationRecordingsSetDispositionRequest{
 		Disposition: disposition,
-		File: file,
+		File:        file,
 	}
 	return p.Call(MethodCalibrationRecordingsSetDisposition, req, nil)
 }
@@ -179,7 +179,7 @@ func (p *Plugin) CalibrationRegisterFixtureHandle(fixtureHandle string, ownerPlu
 	req := &CalibrationRegisterFixtureHandleRequest{
 		FixtureHandle: fixtureHandle,
 		OwnerPluginID: ownerPluginID,
-		TrialID: trialID,
+		TrialID:       trialID,
 	}
 	return p.Call(MethodCalibrationRegisterFixtureHandle, req, nil)
 }
@@ -250,7 +250,7 @@ func (p *Plugin) CodewordLabReportsRead(slot string) (*CodewordLabReportsReadRes
 // CollectionAppend append an entry to a log-kind collection.
 func (p *Plugin) CollectionAppend(name string, payload json.RawMessage) (*LogEntry, error) {
 	req := &CollectionAppendRequest{
-		Name: name,
+		Name:    name,
 		Payload: payload,
 	}
 	var result struct {
@@ -279,7 +279,7 @@ func (p *Plugin) CollectionCount(name string) (*CollectionCountResponse, error) 
 // CollectionDeleteRecords delete records from a collection by id (bulk)..
 func (p *Plugin) CollectionDeleteRecords(ids []string, name string) (*CollectionDeleteRecordsResponse, error) {
 	req := &CollectionDeleteRecordsRequest{
-		Ids: ids,
+		Ids:  ids,
 		Name: name,
 	}
 	var result CollectionDeleteRecordsResponse
@@ -293,7 +293,7 @@ func (p *Plugin) CollectionDeleteRecords(ids []string, name string) (*Collection
 // CollectionFetch fetch a single record from a collection by id.
 func (p *Plugin) CollectionFetch(id string, name string) (*CollectionFetchResponse, error) {
 	req := &CollectionFetchRequest{
-		ID: id,
+		ID:   id,
 		Name: name,
 	}
 	var result CollectionFetchResponse
@@ -335,8 +335,8 @@ func (p *Plugin) CollectionList(name string, opts *ListOpts) (*CollectionListRes
 func (p *Plugin) CollectionPatch(fields json.RawMessage, id string, name string) error {
 	req := &CollectionPatchRequest{
 		Fields: fields,
-		ID: id,
-		Name: name,
+		ID:     id,
+		Name:   name,
 	}
 	return p.Call(MethodCollectionPatch, req, nil)
 }
@@ -345,9 +345,9 @@ func (p *Plugin) CollectionPatch(fields json.RawMessage, id string, name string)
 func (p *Plugin) CollectionPut(entries []CollectionPutEntry, label *string, name string, roles json.RawMessage) (*CollectionPutResponse, error) {
 	req := &CollectionPutRequest{
 		Entries: entries,
-		Label: label,
-		Name: name,
-		Roles: roles,
+		Label:   label,
+		Name:    name,
+		Roles:   roles,
 	}
 	var result CollectionPutResponse
 	err := p.Call(MethodCollectionPut, req, &result)
@@ -375,9 +375,9 @@ func (p *Plugin) CollectionsList(kind *string) ([]CollectionsListSection, error)
 // CommandsAddAlias add an extra spoken form (alias) for an existing command.
 func (p *Plugin) CommandsAddAlias(action string, defaultPattern string, newPattern string) error {
 	req := &CommandsAddAliasRequest{
-		Action: action,
+		Action:         action,
 		DefaultPattern: defaultPattern,
-		NewPattern: newPattern,
+		NewPattern:     newPattern,
 	}
 	return p.Call(MethodCommandsAddAlias, req, nil)
 }
@@ -452,9 +452,9 @@ func (p *Plugin) CommandsPush(commands json.RawMessage) (*CommandsPushResponse, 
 // CommandsRemoveAlias remove an added spoken form (alias) from a command.
 func (p *Plugin) CommandsRemoveAlias(action string, defaultPattern string, newPattern string) (*CommandsRemoveAliasResponse, error) {
 	req := &CommandsRemoveAliasRequest{
-		Action: action,
+		Action:         action,
 		DefaultPattern: defaultPattern,
-		NewPattern: newPattern,
+		NewPattern:     newPattern,
 	}
 	var result CommandsRemoveAliasResponse
 	err := p.Call(MethodCommandsRemoveAlias, req, &result)
@@ -475,7 +475,7 @@ func (p *Plugin) CommandsReset(canonical string) error {
 // CommandsResetOverride remove a user command-phrase override (revert to the plugin default).
 func (p *Plugin) CommandsResetOverride(action string, defaultPattern string) (*CommandsResetOverrideResponse, error) {
 	req := &CommandsResetOverrideRequest{
-		Action: action,
+		Action:         action,
 		DefaultPattern: defaultPattern,
 	}
 	var result CommandsResetOverrideResponse
@@ -489,14 +489,14 @@ func (p *Plugin) CommandsResetOverride(action string, defaultPattern string) (*C
 // CommandsResolve resolve words against the command registry — returns dispatch decision, partial-match feedback, and tiebreaker telemetry in one envelope.
 func (p *Plugin) CommandsResolve(activeTags json.RawMessage, collections json.RawMessage, preferOwner *string, preview *bool, requireTag *string, sessionID *string, source *string, words []string) (*CommandsResolveResponse, error) {
 	req := &CommandsResolveRequest{
-		ActiveTags: activeTags,
+		ActiveTags:  activeTags,
 		Collections: collections,
 		PreferOwner: preferOwner,
-		Preview: preview,
-		RequireTag: requireTag,
-		SessionID: sessionID,
-		Source: source,
-		Words: words,
+		Preview:     preview,
+		RequireTag:  requireTag,
+		SessionID:   sessionID,
+		Source:      source,
+		Words:       words,
 	}
 	var result CommandsResolveResponse
 	err := p.Call(MethodCommandsResolve, req, &result)
@@ -509,9 +509,9 @@ func (p *Plugin) CommandsResolve(activeTags json.RawMessage, collections json.Ra
 // CommandsSetOverride set a user command-phrase override (replace a command's spoken form).
 func (p *Plugin) CommandsSetOverride(action string, defaultPattern string, newPattern string) error {
 	req := &CommandsSetOverrideRequest{
-		Action: action,
+		Action:         action,
 		DefaultPattern: defaultPattern,
-		NewPattern: newPattern,
+		NewPattern:     newPattern,
 	}
 	return p.Call(MethodCommandsSetOverride, req, nil)
 }
@@ -532,9 +532,9 @@ func (p *Plugin) DiscoveryClosed() error {
 // Dispatch dispatch a typed Action to a plugin or platform builtin.
 func (p *Plugin) Dispatch(action json.RawMessage, sessionID *string, traceID *string) (*DispatchResponse, error) {
 	req := &DispatchRequest{
-		Action: action,
+		Action:    action,
 		SessionID: sessionID,
-		TraceID: traceID,
+		TraceID:   traceID,
 	}
 	var result DispatchResponse
 	err := p.Call(MethodDispatch, req, &result)
@@ -586,7 +586,7 @@ func (p *Plugin) EffectsRetract(name string) (*EffectsRetractResponse, error) {
 // EventsAppend append an event to the structured event log.
 func (p *Plugin) EventsAppend(data json.RawMessage, eventType string, sessionID *string) error {
 	req := &EventsAppendRequest{
-		Data: data,
+		Data:      data,
 		EventType: eventType,
 		SessionID: sessionID,
 	}
@@ -597,8 +597,8 @@ func (p *Plugin) EventsAppend(data json.RawMessage, eventType string, sessionID 
 func (p *Plugin) EventsEmit(correlationID *string, data json.RawMessage, eventType string) error {
 	req := &EventsEmitRequest{
 		CorrelationID: correlationID,
-		Data: data,
-		EventType: eventType,
+		Data:          data,
+		EventType:     eventType,
 	}
 	return p.Call(MethodEventsEmit, req, nil)
 }
@@ -607,15 +607,15 @@ func (p *Plugin) EventsEmit(correlationID *string, data json.RawMessage, eventTy
 func (p *Plugin) HUDCreateChannel(acceptsInput *bool, anchor json.RawMessage, channel string, description *string, draggable *bool, followsFocus *bool, minHeight *int, onPointer *OnPointer, transparent *bool, width *int) error {
 	req := &HUDCreateChannelRequest{
 		AcceptsInput: acceptsInput,
-		Anchor: anchor,
-		Channel: channel,
-		Description: description,
-		Draggable: draggable,
+		Anchor:       anchor,
+		Channel:      channel,
+		Description:  description,
+		Draggable:    draggable,
 		FollowsFocus: followsFocus,
-		MinHeight: minHeight,
-		OnPointer: onPointer,
-		Transparent: transparent,
-		Width: width,
+		MinHeight:    minHeight,
+		OnPointer:    onPointer,
+		Transparent:  transparent,
+		Width:        width,
 	}
 	return p.Call(MethodHudCreateChannel, req, nil)
 }
@@ -631,7 +631,7 @@ func (p *Plugin) HUDHide(channel string) error {
 // HUDPush push HTML fragments to a named HUD channel.
 func (p *Plugin) HUDPush(channel string, fragments json.RawMessage) error {
 	req := &HUDPushRequest{
-		Channel: channel,
+		Channel:   channel,
 		Fragments: fragments,
 	}
 	return p.Call(MethodHudPush, req, nil)
@@ -654,7 +654,7 @@ func (p *Plugin) HUDRemoveChannel(channel string) (*HUDRemoveChannelResponse, er
 func (p *Plugin) HUDSetSize(channel string, height int) error {
 	req := &HUDSetSizeRequest{
 		Channel: channel,
-		Height: height,
+		Height:  height,
 	}
 	return p.Call(MethodHudSetSize, req, nil)
 }
@@ -679,7 +679,7 @@ func (p *Plugin) InputClick(button *string) error {
 func (p *Plugin) InputClipboardAction(action string, text *string) error {
 	req := &InputClipboardActionRequest{
 		Action: action,
-		Text: text,
+		Text:   text,
 	}
 	return p.Call(MethodInputClipboardAction, req, nil)
 }
@@ -738,7 +738,7 @@ func (p *Plugin) InputClipboardReadFormat(format string) (*InputClipboardReadFor
 func (p *Plugin) InputClipboardWrite(contentType string, data string) error {
 	req := &InputClipboardWriteRequest{
 		ContentType: contentType,
-		Data: data,
+		Data:        data,
 	}
 	return p.Call(MethodInputClipboardWrite, req, nil)
 }
@@ -764,10 +764,10 @@ func (p *Plugin) InputDoubleClick(x *int, y *int) error {
 func (p *Plugin) InputDrag(durationMs *int, fromX int, fromY int, toX int, toY int) error {
 	req := &InputDragRequest{
 		DurationMs: durationMs,
-		FromX: fromX,
-		FromY: fromY,
-		ToX: toX,
-		ToY: toY,
+		FromX:      fromX,
+		FromY:      fromY,
+		ToX:        toX,
+		ToY:        toY,
 	}
 	return p.Call(MethodInputDrag, req, nil)
 }
@@ -787,7 +787,7 @@ func (p *Plugin) InputListInputSources() ([]InputSource, error) {
 // InputMouseButton press, release, or drag-latch a mouse button (for drag operations, etc.).
 func (p *Plugin) InputMouseButton(button *string, direction string) error {
 	req := &InputMouseButtonRequest{
-		Button: button,
+		Button:    button,
 		Direction: direction,
 	}
 	return p.Call(MethodInputMouseButton, req, nil)
@@ -796,9 +796,9 @@ func (p *Plugin) InputMouseButton(button *string, direction string) error {
 // InputPressKey press a key by raw keycode or name, with optional modifiers.
 func (p *Plugin) InputPressKey(code *int, modifiers []string, name *string) error {
 	req := &InputPressKeyRequest{
-		Code: code,
+		Code:      code,
 		Modifiers: modifiers,
-		Name: name,
+		Name:      name,
 	}
 	return p.Call(MethodInputPressKey, req, nil)
 }
@@ -806,7 +806,7 @@ func (p *Plugin) InputPressKey(code *int, modifiers []string, name *string) erro
 // InputRawKey send a raw key event (press, release, or click) without modifier lifting.
 func (p *Plugin) InputRawKey(code int, direction string) error {
 	req := &InputRawKeyRequest{
-		Code: code,
+		Code:      code,
 		Direction: direction,
 	}
 	return p.Call(MethodInputRawKey, req, nil)
@@ -824,9 +824,9 @@ func (p *Plugin) InputRightClick(x *int, y *int) error {
 // InputScroll scroll the mouse wheel.
 func (p *Plugin) InputScroll(amount *int, direction string, unit *string) error {
 	req := &InputScrollRequest{
-		Amount: amount,
+		Amount:    amount,
 		Direction: direction,
-		Unit: unit,
+		Unit:      unit,
 	}
 	return p.Call(MethodInputScroll, req, nil)
 }
@@ -933,7 +933,7 @@ func (p *Plugin) NativeAccessibilityEnabled() (*NativeAccessibilityEnabledRespon
 func (p *Plugin) NativeActivateApp(allWindows *bool, bundleID string) error {
 	req := &NativeActivateAppRequest{
 		AllWindows: allWindows,
-		BundleID: bundleID,
+		BundleID:   bundleID,
 	}
 	return p.Call(MethodNativeActivateApp, req, nil)
 }
@@ -1054,7 +1054,7 @@ func (p *Plugin) NativeAppFocusedWindowID(bundleID string) error {
 func (p *Plugin) NativeAppIcon(bundleID string, size *int) (*NativeAppIconResponse, error) {
 	req := &NativeAppIconRequest{
 		BundleID: bundleID,
-		Size: size,
+		Size:     size,
 	}
 	var result NativeAppIconResponse
 	err := p.Call(MethodNativeAppIcon, req, &result)
@@ -1298,8 +1298,8 @@ func (p *Plugin) NativeAutomationPermission(bundleID string) (*NativeAutomationP
 func (p *Plugin) NativeAxElementAtPoint(pid int, x int, y int) (*NativeAxElementAtPointResponse, error) {
 	req := &NativeAxElementAtPointRequest{
 		Pid: pid,
-		X: x,
-		Y: y,
+		X:   x,
+		Y:   y,
 	}
 	var result NativeAxElementAtPointResponse
 	err := p.Call(MethodNativeAxElementAtPoint, req, &result)
@@ -1312,7 +1312,7 @@ func (p *Plugin) NativeAxElementAtPoint(pid int, x int, y int) (*NativeAxElement
 // NativeAxElementTree get the accessibility element tree rooted at an element.
 func (p *Plugin) NativeAxElementTree(depth *int, element AXElementRef) (*AXElementNode, error) {
 	req := &NativeAxElementTreeRequest{
-		Depth: depth,
+		Depth:   depth,
 		Element: element,
 	}
 	var result AXElementNode
@@ -1327,7 +1327,7 @@ func (p *Plugin) NativeAxElementTree(depth *int, element AXElementRef) (*AXEleme
 func (p *Plugin) NativeAxObserve(notifications []string, pid int) (*NativeAxObserveResponse, error) {
 	req := &NativeAxObserveRequest{
 		Notifications: notifications,
-		Pid: pid,
+		Pid:           pid,
 	}
 	var result NativeAxObserveResponse
 	err := p.Call(MethodNativeAxObserve, req, &result)
@@ -1340,7 +1340,7 @@ func (p *Plugin) NativeAxObserve(notifications []string, pid int) (*NativeAxObse
 // NativeAxPerformAction perform an action on an accessibility element.
 func (p *Plugin) NativeAxPerformAction(action string, element AXElementRef) (bool, error) {
 	req := &NativeAxPerformActionRequest{
-		Action: action,
+		Action:  action,
 		Element: element,
 	}
 	var result struct {
@@ -1354,7 +1354,7 @@ func (p *Plugin) NativeAxPerformAction(action string, element AXElementRef) (boo
 func (p *Plugin) NativeAxReadAttributes(attributes []string, element AXElementRef) error {
 	req := &NativeAxReadAttributesRequest{
 		Attributes: attributes,
-		Element: element,
+		Element:    element,
 	}
 	return p.Call(MethodNativeAxReadAttributes, req, nil)
 }
@@ -1363,8 +1363,8 @@ func (p *Plugin) NativeAxReadAttributes(attributes []string, element AXElementRe
 func (p *Plugin) NativeAxSetAttribute(attribute string, element AXElementRef, value json.RawMessage) (bool, error) {
 	req := &NativeAxSetAttributeRequest{
 		Attribute: attribute,
-		Element: element,
-		Value: value,
+		Element:   element,
+		Value:     value,
 	}
 	var result struct {
 		Result bool `json:"result"`
@@ -1403,7 +1403,7 @@ func (p *Plugin) NativeBatchIsTileable(windowIds []string) ([]TileableEntry, err
 // NativeBatchSetFrames set positions/sizes for multiple windows.
 func (p *Plugin) NativeBatchSetFrames(frames []WindowFrame, readback *bool) ([]WindowFrame, error) {
 	req := &NativeBatchSetFramesRequest{
-		Frames: frames,
+		Frames:   frames,
 		Readback: readback,
 	}
 	var result struct {
@@ -1465,8 +1465,8 @@ func (p *Plugin) NativeBleDiscoverServices(deviceIdentifier string) ([]BleServic
 func (p *Plugin) NativeBleSubscribe(characteristicUuid string, deviceIdentifier string, serviceUuid string) (*NativeBleSubscribeResponse, error) {
 	req := &NativeBleSubscribeRequest{
 		CharacteristicUuid: characteristicUuid,
-		DeviceIdentifier: deviceIdentifier,
-		ServiceUuid: serviceUuid,
+		DeviceIdentifier:   deviceIdentifier,
+		ServiceUuid:        serviceUuid,
 	}
 	var result NativeBleSubscribeResponse
 	err := p.Call(MethodNativeBleSubscribe, req, &result)
@@ -1479,9 +1479,9 @@ func (p *Plugin) NativeBleSubscribe(characteristicUuid string, deviceIdentifier 
 // NativeBleSubscribeAllThenWrite subscribe to all notify characteristics on listed services, then write — single GATT cycle.
 func (p *Plugin) NativeBleSubscribeAllThenWrite(deviceIdentifier string, subscribeServices []string, writes []BleWriteEntry) (*NativeBleSubscribeAllThenWriteResponse, error) {
 	req := &NativeBleSubscribeAllThenWriteRequest{
-		DeviceIdentifier: deviceIdentifier,
+		DeviceIdentifier:  deviceIdentifier,
 		SubscribeServices: subscribeServices,
-		Writes: writes,
+		Writes:            writes,
 	}
 	var result NativeBleSubscribeAllThenWriteResponse
 	err := p.Call(MethodNativeBleSubscribeAllThenWrite, req, &result)
@@ -1495,10 +1495,10 @@ func (p *Plugin) NativeBleSubscribeAllThenWrite(deviceIdentifier string, subscri
 func (p *Plugin) NativeBleWrite(characteristicUuid string, data []int, deviceIdentifier string, serviceUuid string, writeType *string) (*NativeBleWriteResponse, error) {
 	req := &NativeBleWriteRequest{
 		CharacteristicUuid: characteristicUuid,
-		Data: data,
-		DeviceIdentifier: deviceIdentifier,
-		ServiceUuid: serviceUuid,
-		WriteType: writeType,
+		Data:               data,
+		DeviceIdentifier:   deviceIdentifier,
+		ServiceUuid:        serviceUuid,
+		WriteType:          writeType,
 	}
 	var result NativeBleWriteResponse
 	err := p.Call(MethodNativeBleWrite, req, &result)
@@ -1584,7 +1584,7 @@ func (p *Plugin) NativeBundleForRemotePort(remotePort int) (*NativeBundleForRemo
 // NativeCalendarEventsRange get calendar events in a date range (ISO 8601).
 func (p *Plugin) NativeCalendarEventsRange(end string, start string) ([]CalendarEvent, error) {
 	req := &NativeCalendarEventsRangeRequest{
-		End: end,
+		End:   end,
 		Start: start,
 	}
 	var result struct {
@@ -1713,7 +1713,7 @@ func (p *Plugin) NativeClearNotifications(bundleID string) error {
 func (p *Plugin) NativeClickMenuItem(path []string, pid int) (bool, error) {
 	req := &NativeClickMenuItemRequest{
 		Path: path,
-		Pid: pid,
+		Pid:  pid,
 	}
 	var result struct {
 		Result bool `json:"result"`
@@ -1874,7 +1874,7 @@ func (p *Plugin) NativeContactsPermission() (*NativeContactsPermissionResponse, 
 func (p *Plugin) NativeCopyFile(destination string, source string) error {
 	req := &NativeCopyFileRequest{
 		Destination: destination,
-		Source: source,
+		Source:      source,
 	}
 	return p.Call(MethodNativeCopyFile, req, nil)
 }
@@ -2131,7 +2131,7 @@ func (p *Plugin) NativeDifferentiateWithoutColor() (*NativeDifferentiateWithoutC
 func (p *Plugin) NativeDirectoryContents(includeHidden *bool, path string) ([]DirectoryEntry, error) {
 	req := &NativeDirectoryContentsRequest{
 		IncludeHidden: includeHidden,
-		Path: path,
+		Path:          path,
 	}
 	var result struct {
 		Entries []DirectoryEntry `json:"entries"`
@@ -2522,7 +2522,7 @@ func (p *Plugin) NativeFileExtendedAttributes(path string) ([]string, error) {
 func (p *Plugin) NativeFileHash(algorithm *string, path string) (*NativeFileHashResponse, error) {
 	req := &NativeFileHashRequest{
 		Algorithm: algorithm,
-		Path: path,
+		Path:      path,
 	}
 	var result NativeFileHashResponse
 	err := p.Call(MethodNativeFileHash, req, &result)
@@ -2854,7 +2854,7 @@ func (p *Plugin) NativeGatewayAddress() (*NativeGatewayAddressResponse, error) {
 // NativeGeneratePdf generate a PDF from HTML content.
 func (p *Plugin) NativeGeneratePdf(html string, outputPath string) error {
 	req := &NativeGeneratePdfRequest{
-		HTML: html,
+		HTML:       html,
 		OutputPath: outputPath,
 	}
 	return p.Call(MethodNativeGeneratePdf, req, nil)
@@ -2877,7 +2877,7 @@ func (p *Plugin) NativeGetWindowInfo(windowID string) (*NativeGetWindowInfoRespo
 func (p *Plugin) NativeGlobFiles(maxResults *int, pattern string) ([]string, error) {
 	req := &NativeGlobFilesRequest{
 		MaxResults: maxResults,
-		Pattern: pattern,
+		Pattern:    pattern,
 	}
 	var result struct {
 		Paths []string `json:"paths"`
@@ -3005,9 +3005,9 @@ func (p *Plugin) NativeHidRelease(deviceID string) (*NativeHidReleaseResponse, e
 // NativeHidSendReport send an output or feature report to a connected HID device.
 func (p *Plugin) NativeHidSendReport(data []int, deviceID string, reportID int, reportType string) (*NativeHidSendReportResponse, error) {
 	req := &NativeHidSendReportRequest{
-		Data: data,
-		DeviceID: deviceID,
-		ReportID: reportID,
+		Data:       data,
+		DeviceID:   deviceID,
+		ReportID:   reportID,
 		ReportType: reportType,
 	}
 	var result NativeHidSendReportResponse
@@ -3274,9 +3274,9 @@ func (p *Plugin) NativeKeychainRead(account string, service string) (*NativeKeyc
 // NativeKeychainWrite store a password in the keychain for a service and account.
 func (p *Plugin) NativeKeychainWrite(account string, password string, service string) error {
 	req := &NativeKeychainWriteRequest{
-		Account: account,
+		Account:  account,
 		Password: password,
-		Service: service,
+		Service:  service,
 	}
 	return p.Call(MethodNativeKeychainWrite, req, nil)
 }
@@ -3284,7 +3284,7 @@ func (p *Plugin) NativeKeychainWrite(account string, password string, service st
 // NativeKillProcess send a signal to a process by PID.
 func (p *Plugin) NativeKillProcess(pid int, signal *int) error {
 	req := &NativeKillProcessRequest{
-		Pid: pid,
+		Pid:    pid,
 		Signal: signal,
 	}
 	return p.Call(MethodNativeKillProcess, req, nil)
@@ -3303,7 +3303,7 @@ func (p *Plugin) NativeLastReboot() (*NativeLastRebootResponse, error) {
 // NativeLaunchApp launch an application by bundle ID.
 func (p *Plugin) NativeLaunchApp(bundleID string, newInstance *bool) error {
 	req := &NativeLaunchAppRequest{
-		BundleID: bundleID,
+		BundleID:    bundleID,
 		NewInstance: newInstance,
 	}
 	return p.Call(MethodNativeLaunchApp, req, nil)
@@ -3636,8 +3636,8 @@ func (p *Plugin) NativeMountPoints() ([]string, error) {
 func (p *Plugin) NativeMouseButtonClick(button int, x *int, y *int) error {
 	req := &NativeMouseButtonClickRequest{
 		Button: button,
-		X: x,
-		Y: y,
+		X:      x,
+		Y:      y,
 	}
 	return p.Call(MethodNativeMouseButtonClick, req, nil)
 }
@@ -3651,7 +3651,7 @@ func (p *Plugin) NativeMouseSpeed() error {
 func (p *Plugin) NativeMoveFile(destination string, source string) error {
 	req := &NativeMoveFileRequest{
 		Destination: destination,
-		Source: source,
+		Source:      source,
 	}
 	return p.Call(MethodNativeMoveFile, req, nil)
 }
@@ -3660,7 +3660,7 @@ func (p *Plugin) NativeMoveFile(destination string, source string) error {
 func (p *Plugin) NativeMoveWindowToDisplay(displayID int, windowID string) error {
 	req := &NativeMoveWindowToDisplayRequest{
 		DisplayID: displayID,
-		WindowID: windowID,
+		WindowID:  windowID,
 	}
 	return p.Call(MethodNativeMoveWindowToDisplay, req, nil)
 }
@@ -3668,7 +3668,7 @@ func (p *Plugin) NativeMoveWindowToDisplay(displayID int, windowID string) error
 // NativeMoveWindowToSpace move a window to a specific space.
 func (p *Plugin) NativeMoveWindowToSpace(spaceID int, windowID string) (bool, error) {
 	req := &NativeMoveWindowToSpaceRequest{
-		SpaceID: spaceID,
+		SpaceID:  spaceID,
 		WindowID: windowID,
 	}
 	var result struct {
@@ -3789,10 +3789,10 @@ func (p *Plugin) NativeNotificationSoundEnabled() (*NativeNotificationSoundEnabl
 // NativeNotify post a rich notification (osascript fallback).
 func (p *Plugin) NativeNotify(body *string, sound *string, subtitle *string, title string) (*NativeNotifyResponse, error) {
 	req := &NativeNotifyRequest{
-		Body: body,
-		Sound: sound,
+		Body:     body,
+		Sound:    sound,
 		Subtitle: subtitle,
-		Title: title,
+		Title:    title,
 	}
 	var result NativeNotifyResponse
 	err := p.Call(MethodNativeNotify, req, &result)
@@ -3878,9 +3878,9 @@ func (p *Plugin) NativeOcrScreen() ([]OcrRegion, error) {
 func (p *Plugin) NativeOcrScreenRegion(height float64, width float64, x float64, y float64) ([]OcrRegion, error) {
 	req := &NativeOcrScreenRegionRequest{
 		Height: height,
-		Width: width,
-		X: x,
-		Y: y,
+		Width:  width,
+		X:      x,
+		Y:      y,
 	}
 	var result struct {
 		Regions []OcrRegion `json:"regions"`
@@ -3951,7 +3951,7 @@ func (p *Plugin) NativeOpenURL(url string) error {
 func (p *Plugin) NativeOpenWithApp(bundleID string, target string) error {
 	req := &NativeOpenWithAppRequest{
 		BundleID: bundleID,
-		Target: target,
+		Target:   target,
 	}
 	return p.Call(MethodNativeOpenWithApp, req, nil)
 }
@@ -3986,7 +3986,7 @@ func (p *Plugin) NativePdfPageCount(path string) error {
 // NativePinWindowAbove pin or unpin a window above all others.
 func (p *Plugin) NativePinWindowAbove(pinned bool, windowID string) error {
 	req := &NativePinWindowAboveRequest{
-		Pinned: pinned,
+		Pinned:   pinned,
 		WindowID: windowID,
 	}
 	return p.Call(MethodNativePinWindowAbove, req, nil)
@@ -4067,7 +4067,7 @@ func (p *Plugin) NativePressAndHoldEnabled() (*NativePressAndHoldEnabledResponse
 func (p *Plugin) NativePreventSleep(assertionID *string, reason *string) (*NativePreventSleepResponse, error) {
 	req := &NativePreventSleepRequest{
 		AssertionID: assertionID,
-		Reason: reason,
+		Reason:      reason,
 	}
 	var result NativePreventSleepResponse
 	err := p.Call(MethodNativePreventSleep, req, &result)
@@ -4293,7 +4293,7 @@ func (p *Plugin) NativeRandomUuid() (*NativeRandomUuidResponse, error) {
 func (p *Plugin) NativeReadAppPreference(domain string, key string) error {
 	req := &NativeReadAppPreferenceRequest{
 		Domain: domain,
-		Key: key,
+		Key:    key,
 	}
 	return p.Call(MethodNativeReadAppPreference, req, nil)
 }
@@ -4315,7 +4315,7 @@ func (p *Plugin) NativeReadFile(path string) (*NativeReadFileResponse, error) {
 func (p *Plugin) NativeReadFileBinary(maxBytes *int, path string) (*NativeReadFileBinaryResponse, error) {
 	req := &NativeReadFileBinaryRequest{
 		MaxBytes: maxBytes,
-		Path: path,
+		Path:     path,
 	}
 	var result NativeReadFileBinaryResponse
 	err := p.Call(MethodNativeReadFileBinary, req, &result)
@@ -4394,7 +4394,7 @@ func (p *Plugin) NativeRemoteLoginEnabled() (*NativeRemoteLoginEnabledResponse, 
 func (p *Plugin) NativeRenameFile(newName string, path string) error {
 	req := &NativeRenameFileRequest{
 		NewName: newName,
-		Path: path,
+		Path:    path,
 	}
 	return p.Call(MethodNativeRenameFile, req, nil)
 }
@@ -4475,7 +4475,7 @@ func (p *Plugin) NativeRunJxa(script string) (*NativeRunJxaResponse, error) {
 func (p *Plugin) NativeRunShortcut(input *string, name string) (*NativeRunShortcutResponse, error) {
 	req := &NativeRunShortcutRequest{
 		Input: input,
-		Name: name,
+		Name:  name,
 	}
 	var result NativeRunShortcutResponse
 	err := p.Call(MethodNativeRunShortcut, req, &result)
@@ -4586,8 +4586,8 @@ func (p *Plugin) NativeScreenSharingEnabled() (*NativeScreenSharingEnabledRespon
 func (p *Plugin) NativeScreenshot(displayID *int, region json.RawMessage, windowID *string) (*NativeScreenshotResponse, error) {
 	req := &NativeScreenshotRequest{
 		DisplayID: displayID,
-		Region: region,
-		WindowID: windowID,
+		Region:    region,
+		WindowID:  windowID,
 	}
 	var result NativeScreenshotResponse
 	err := p.Call(MethodNativeScreenshot, req, &result)
@@ -4726,7 +4726,7 @@ func (p *Plugin) NativeSetAirportPower(on bool) error {
 func (p *Plugin) NativeSetAppHidden(bundleID string, hidden bool) error {
 	req := &NativeSetAppHiddenRequest{
 		BundleID: bundleID,
-		Hidden: hidden,
+		Hidden:   hidden,
 	}
 	return p.Call(MethodNativeSetAppHidden, req, nil)
 }
@@ -4735,7 +4735,7 @@ func (p *Plugin) NativeSetAppHidden(bundleID string, hidden bool) error {
 func (p *Plugin) NativeSetAudioDevice(deviceType string, uid string) error {
 	req := &NativeSetAudioDeviceRequest{
 		DeviceType: deviceType,
-		UID: uid,
+		UID:        uid,
 	}
 	return p.Call(MethodNativeSetAudioDevice, req, nil)
 }
@@ -4744,7 +4744,7 @@ func (p *Plugin) NativeSetAudioDevice(deviceType string, uid string) error {
 func (p *Plugin) NativeSetAudioDeviceVolume(deviceUID string, volume float64) error {
 	req := &NativeSetAudioDeviceVolumeRequest{
 		DeviceUID: deviceUID,
-		Volume: volume,
+		Volume:    volume,
 	}
 	return p.Call(MethodNativeSetAudioDeviceVolume, req, nil)
 }
@@ -4785,7 +4785,7 @@ func (p *Plugin) NativeSetBluetoothPower(on bool) error {
 func (p *Plugin) NativeSetBrightness(brightness float64, displayID *int) error {
 	req := &NativeSetBrightnessRequest{
 		Brightness: brightness,
-		DisplayID: displayID,
+		DisplayID:  displayID,
 	}
 	return p.Call(MethodNativeSetBrightness, req, nil)
 }
@@ -4865,8 +4865,8 @@ func (p *Plugin) NativeSetDockSize(size float64) error {
 // NativeSetExtendedAttribute set an extended attribute on a file.
 func (p *Plugin) NativeSetExtendedAttribute(name string, path string, value string) error {
 	req := &NativeSetExtendedAttributeRequest{
-		Name: name,
-		Path: path,
+		Name:  name,
+		Path:  path,
 		Value: value,
 	}
 	return p.Call(MethodNativeSetExtendedAttribute, req, nil)
@@ -4876,7 +4876,7 @@ func (p *Plugin) NativeSetExtendedAttribute(name string, path string, value stri
 func (p *Plugin) NativeSetFileHidden(hidden bool, path string) error {
 	req := &NativeSetFileHiddenRequest{
 		Hidden: hidden,
-		Path: path,
+		Path:   path,
 	}
 	return p.Call(MethodNativeSetFileHidden, req, nil)
 }
@@ -5039,7 +5039,7 @@ func (p *Plugin) NativeSetTrackpadSpeed(speed float64) error {
 func (p *Plugin) NativeSetURLSchemeHandler(bundleID string, scheme string) error {
 	req := &NativeSetURLSchemeHandlerRequest{
 		BundleID: bundleID,
-		Scheme: scheme,
+		Scheme:   scheme,
 	}
 	return p.Call(MethodNativeSetUrlSchemeHandler, req, nil)
 }
@@ -5063,7 +5063,7 @@ func (p *Plugin) NativeSetWallpaper(path string) error {
 // NativeSetWindowAlpha set window transparency.
 func (p *Plugin) NativeSetWindowAlpha(alpha float64, windowID string) error {
 	req := &NativeSetWindowAlphaRequest{
-		Alpha: alpha,
+		Alpha:    alpha,
 		WindowID: windowID,
 	}
 	return p.Call(MethodNativeSetWindowAlpha, req, nil)
@@ -5072,7 +5072,7 @@ func (p *Plugin) NativeSetWindowAlpha(alpha float64, windowID string) error {
 // NativeSetWindowLevel set a window's level (floating, normal, below).
 func (p *Plugin) NativeSetWindowLevel(level string, windowID string) (bool, error) {
 	req := &NativeSetWindowLevelRequest{
-		Level: level,
+		Level:    level,
 		WindowID: windowID,
 	}
 	var result struct {
@@ -5086,8 +5086,8 @@ func (p *Plugin) NativeSetWindowLevel(level string, windowID string) (bool, erro
 func (p *Plugin) NativeSetWindowPosition(windowID string, x int, y int) error {
 	req := &NativeSetWindowPositionRequest{
 		WindowID: windowID,
-		X: x,
-		Y: y,
+		X:        x,
+		Y:        y,
 	}
 	return p.Call(MethodNativeSetWindowPosition, req, nil)
 }
@@ -5095,7 +5095,7 @@ func (p *Plugin) NativeSetWindowPosition(windowID string, x int, y int) error {
 // NativeSetWindowShadow enable or disable the drop shadow for a window.
 func (p *Plugin) NativeSetWindowShadow(enabled bool, windowID string) error {
 	req := &NativeSetWindowShadowRequest{
-		Enabled: enabled,
+		Enabled:  enabled,
 		WindowID: windowID,
 	}
 	return p.Call(MethodNativeSetWindowShadow, req, nil)
@@ -5104,8 +5104,8 @@ func (p *Plugin) NativeSetWindowShadow(enabled bool, windowID string) error {
 // NativeSetWindowSize resize a window without changing position.
 func (p *Plugin) NativeSetWindowSize(h int, w int, windowID string) error {
 	req := &NativeSetWindowSizeRequest{
-		H: h,
-		W: w,
+		H:        h,
+		W:        w,
 		WindowID: windowID,
 	}
 	return p.Call(MethodNativeSetWindowSize, req, nil)
@@ -5114,7 +5114,7 @@ func (p *Plugin) NativeSetWindowSize(h int, w int, windowID string) error {
 // NativeSetWindowSticky set a window to appear on all spaces (sticky).
 func (p *Plugin) NativeSetWindowSticky(sticky bool, windowID string) error {
 	req := &NativeSetWindowStickyRequest{
-		Sticky: sticky,
+		Sticky:   sticky,
 		WindowID: windowID,
 	}
 	return p.Call(MethodNativeSetWindowSticky, req, nil)
@@ -5228,8 +5228,8 @@ func (p *Plugin) NativeSpacesSpanDisplays() (*NativeSpacesSpanDisplaysResponse, 
 // NativeSpeak speak text using the system text-to-speech engine.
 func (p *Plugin) NativeSpeak(rate *float64, text string, voice *string) error {
 	req := &NativeSpeakRequest{
-		Rate: rate,
-		Text: text,
+		Rate:  rate,
+		Text:  text,
 		Voice: voice,
 	}
 	return p.Call(MethodNativeSpeak, req, nil)
@@ -5261,7 +5261,7 @@ func (p *Plugin) NativeSpeechRecognitionAvailable() (*NativeSpeechRecognitionAva
 func (p *Plugin) NativeSpeechRecognizeFile(locale *string, path string) error {
 	req := &NativeSpeechRecognizeFileRequest{
 		Locale: locale,
-		Path: path,
+		Path:   path,
 	}
 	return p.Call(MethodNativeSpeechRecognizeFile, req, nil)
 }
@@ -5364,7 +5364,7 @@ func (p *Plugin) NativeSwitchSpaceWhenSwitchingApp() (*NativeSwitchSpaceWhenSwit
 // NativeSymlink create a symbolic link.
 func (p *Plugin) NativeSymlink(link string, source string) error {
 	req := &NativeSymlinkRequest{
-		Link: link,
+		Link:   link,
 		Source: source,
 	}
 	return p.Call(MethodNativeSymlink, req, nil)
@@ -5690,7 +5690,7 @@ func (p *Plugin) NativeUnobserveWindows(subscriptionID string) (bool, error) {
 func (p *Plugin) NativeUnzip(destination string, source string) error {
 	req := &NativeUnzipRequest{
 		Destination: destination,
-		Source: source,
+		Source:      source,
 	}
 	return p.Call(MethodNativeUnzip, req, nil)
 }
@@ -5915,8 +5915,8 @@ func (p *Plugin) NativeWorldModel(onScreen *bool) (*WorldModel, error) {
 func (p *Plugin) NativeWriteAppPreference(domain string, key string, value json.RawMessage) error {
 	req := &NativeWriteAppPreferenceRequest{
 		Domain: domain,
-		Key: key,
-		Value: value,
+		Key:    key,
+		Value:  value,
 	}
 	return p.Call(MethodNativeWriteAppPreference, req, nil)
 }
@@ -5925,7 +5925,7 @@ func (p *Plugin) NativeWriteAppPreference(domain string, key string, value json.
 func (p *Plugin) NativeWriteFile(contents string, path string) error {
 	req := &NativeWriteFileRequest{
 		Contents: contents,
-		Path: path,
+		Path:     path,
 	}
 	return p.Call(MethodNativeWriteFile, req, nil)
 }
@@ -5954,7 +5954,7 @@ func (p *Plugin) NativeXcodeVersion() (*NativeXcodeVersionResponse, error) {
 func (p *Plugin) NativeZip(destination string, source string) error {
 	req := &NativeZipRequest{
 		Destination: destination,
-		Source: source,
+		Source:      source,
 	}
 	return p.Call(MethodNativeZip, req, nil)
 }
@@ -5972,11 +5972,11 @@ func (p *Plugin) NativeZoomEnabled() (*NativeZoomEnabledResponse, error) {
 // OverridesApply add, remove, restore, patch, rename, revert (reset one entry to its plugin default), or reset user overrides for a collection.
 func (p *Plugin) OverridesApply(action string, collection string, fields json.RawMessage, id *string, newID *string) (*OverridesApplyResponse, error) {
 	req := &OverridesApplyRequest{
-		Action: action,
+		Action:     action,
 		Collection: collection,
-		Fields: fields,
-		ID: id,
-		NewID: newID,
+		Fields:     fields,
+		ID:         id,
+		NewID:      newID,
 	}
 	var result OverridesApplyResponse
 	err := p.Call(MethodOverridesApply, req, &result)
@@ -6002,9 +6002,9 @@ func (p *Plugin) PipelinesGrammar(full *bool) (*PipelinesGrammarResponse, error)
 // PipelinesInject inject an event into a running pipeline.
 func (p *Plugin) PipelinesInject(data json.RawMessage, eventType string, name string) (*PipelinesInjectResponse, error) {
 	req := &PipelinesInjectRequest{
-		Data: data,
+		Data:      data,
 		EventType: eventType,
-		Name: name,
+		Name:      name,
 	}
 	var result PipelinesInjectResponse
 	err := p.Call(MethodPipelinesInject, req, &result)
@@ -6017,8 +6017,8 @@ func (p *Plugin) PipelinesInject(data json.RawMessage, eventType string, name st
 // PipelinesRun start a named pipeline.
 func (p *Plugin) PipelinesRun(ephemeral *bool, name string, paramOverrides map[string]json.RawMessage) (*PipelinesRunResponse, error) {
 	req := &PipelinesRunRequest{
-		Ephemeral: ephemeral,
-		Name: name,
+		Ephemeral:      ephemeral,
+		Name:           name,
 		ParamOverrides: paramOverrides,
 	}
 	var result PipelinesRunResponse
@@ -6055,7 +6055,7 @@ func (p *Plugin) PipelinesStop(name string) (*PipelinesStopResponse, error) {
 // PipelinesWarm pre-spawn + pre-load a pipeline's recognizer stages (grammar built off the hold path).
 func (p *Plugin) PipelinesWarm(name string, paramOverrides map[string]json.RawMessage) (*PipelinesWarmResponse, error) {
 	req := &PipelinesWarmRequest{
-		Name: name,
+		Name:           name,
 		ParamOverrides: paramOverrides,
 	}
 	var result PipelinesWarmResponse
@@ -6069,9 +6069,9 @@ func (p *Plugin) PipelinesWarm(name string, paramOverrides map[string]json.RawMe
 // PluginDebug write a diagnostic line to this plugin's per-plugin log file. Use shared.Logf instead for cross-cutting coordination lines that belong in actuator.log..
 func (p *Plugin) PluginDebug(data json.RawMessage, level json.RawMessage, tag *string) error {
 	req := &PluginDebugRequest{
-		Data: data,
+		Data:  data,
 		Level: level,
-		Tag: tag,
+		Tag:   tag,
 	}
 	return p.Call(MethodPluginDebug, req, nil)
 }
@@ -6093,7 +6093,7 @@ func (p *Plugin) PrivacyGetRecording(name string) (*PrivacyGetRecordingResponse,
 func (p *Plugin) PrivacySetRecording(enabled bool, name string) error {
 	req := &PrivacySetRecordingRequest{
 		Enabled: enabled,
-		Name: name,
+		Name:    name,
 	}
 	return p.Call(MethodPrivacySetRecording, req, nil)
 }
@@ -6115,8 +6115,8 @@ func (p *Plugin) SelectionPick(index int) (*SelectionPickResponse, error) {
 func (p *Plugin) SelectionSet(channel *string, items json.RawMessage, title *string) error {
 	req := &SelectionSetRequest{
 		Channel: channel,
-		Items: items,
-		Title: title,
+		Items:   items,
+		Title:   title,
 	}
 	return p.Call(MethodSelectionSet, req, nil)
 }
@@ -6160,15 +6160,15 @@ func (p *Plugin) SettingsRefresh() error {
 // SettingsRulesCreate create a new user voice command from settings-UI signals.
 func (p *Plugin) SettingsRulesCreate(newruleactionjson *string, newruleactiontype *string, newruleactionval *string, newrulecategory *string, newruleclearstags *string, newruledescription *string, newrulephrase *string, newrulerequirestags *string, newrulesetstags *string) (*SettingsRulesCreateResponse, error) {
 	req := &SettingsRulesCreateRequest{
-		Newruleactionjson: newruleactionjson,
-		Newruleactiontype: newruleactiontype,
-		Newruleactionval: newruleactionval,
-		Newrulecategory: newrulecategory,
-		Newruleclearstags: newruleclearstags,
-		Newruledescription: newruledescription,
-		Newrulephrase: newrulephrase,
+		Newruleactionjson:   newruleactionjson,
+		Newruleactiontype:   newruleactiontype,
+		Newruleactionval:    newruleactionval,
+		Newrulecategory:     newrulecategory,
+		Newruleclearstags:   newruleclearstags,
+		Newruledescription:  newruledescription,
+		Newrulephrase:       newrulephrase,
 		Newrulerequirestags: newrulerequirestags,
-		Newrulesetstags: newrulesetstags,
+		Newrulesetstags:     newrulesetstags,
 	}
 	var result SettingsRulesCreateResponse
 	err := p.Call(MethodSettingsRulesCreate, req, &result)
@@ -6181,16 +6181,16 @@ func (p *Plugin) SettingsRulesCreate(newruleactionjson *string, newruleactiontyp
 // SettingsRulesUpdate update an existing user voice command from settings-UI signals.
 func (p *Plugin) SettingsRulesUpdate(canonical string, newruleactionjson *string, newruleactiontype *string, newruleactionval *string, newrulecategory *string, newruleclearstags *string, newruledescription *string, newrulephrase *string, newrulerequirestags *string, newrulesetstags *string) (*SettingsRulesUpdateResponse, error) {
 	req := &SettingsRulesUpdateRequest{
-		Canonical: canonical,
-		Newruleactionjson: newruleactionjson,
-		Newruleactiontype: newruleactiontype,
-		Newruleactionval: newruleactionval,
-		Newrulecategory: newrulecategory,
-		Newruleclearstags: newruleclearstags,
-		Newruledescription: newruledescription,
-		Newrulephrase: newrulephrase,
+		Canonical:           canonical,
+		Newruleactionjson:   newruleactionjson,
+		Newruleactiontype:   newruleactiontype,
+		Newruleactionval:    newruleactionval,
+		Newrulecategory:     newrulecategory,
+		Newruleclearstags:   newruleclearstags,
+		Newruledescription:  newruledescription,
+		Newrulephrase:       newrulephrase,
 		Newrulerequirestags: newrulerequirestags,
-		Newrulesetstags: newrulesetstags,
+		Newrulesetstags:     newrulesetstags,
 	}
 	var result SettingsRulesUpdateResponse
 	err := p.Call(MethodSettingsRulesUpdate, req, &result)
@@ -6203,7 +6203,7 @@ func (p *Plugin) SettingsRulesUpdate(canonical string, newruleactionjson *string
 // SystemLaunchApp launch an app and post a 'Launching' notification to the HUD.
 func (p *Plugin) SystemLaunchApp(bundleID string, newInstance *bool) error {
 	req := &SystemLaunchAppRequest{
-		BundleID: bundleID,
+		BundleID:    bundleID,
 		NewInstance: newInstance,
 	}
 	return p.Call(MethodSystemLaunchApp, req, nil)
@@ -6212,9 +6212,9 @@ func (p *Plugin) SystemLaunchApp(bundleID string, newInstance *bool) error {
 // SystemNotify show a HUD notification with title and body text.
 func (p *Plugin) SystemNotify(body string, durationSecs *int, title string) error {
 	req := &SystemNotifyRequest{
-		Body: body,
+		Body:         body,
 		DurationSecs: durationSecs,
-		Title: title,
+		Title:        title,
 	}
 	return p.Call(MethodSystemNotify, req, nil)
 }

@@ -9,66 +9,66 @@ package shared
 // Log event name constants. Use these instead of string literals so
 // vocabulary drift is a compile error.
 const (
-	LogEventAudioKeybindTriggered = "audio.keybind_triggered"
-	LogEventAudioSessionEnded = "audio.session_ended"
-	LogEventAudioSessionStarted = "audio.session_started"
-	LogEventAudioSpeechTranscript = "audio.speech_transcript"
-	LogEventBridgeLifecycle = "bridge.lifecycle"
-	LogEventCaptureProgress = "capture.progress"
-	LogEventCommandMatchDecision = "command.match_decision"
-	LogEventCommandMatched = "command.matched"
-	LogEventCommandNoMatch = "command.no_match"
-	LogEventDiagnosticMessage = "diagnostic.message"
+	LogEventAudioKeybindTriggered    = "audio.keybind_triggered"
+	LogEventAudioSessionEnded        = "audio.session_ended"
+	LogEventAudioSessionStarted      = "audio.session_started"
+	LogEventAudioSpeechTranscript    = "audio.speech_transcript"
+	LogEventBridgeLifecycle          = "bridge.lifecycle"
+	LogEventCaptureProgress          = "capture.progress"
+	LogEventCommandMatchDecision     = "command.match_decision"
+	LogEventCommandMatched           = "command.matched"
+	LogEventCommandNoMatch           = "command.no_match"
+	LogEventDiagnosticMessage        = "diagnostic.message"
 	LogEventDispatchActionDispatched = "dispatch.action_dispatched"
-	LogEventDispatchActionPanicked = "dispatch.action_panicked"
-	LogEventDispatchActionRouted = "dispatch.action_routed"
-	LogEventDispatchActionUnhandled = "dispatch.action_unhandled"
-	LogEventDispatchTiming = "dispatch.timing"
-	LogEventEffectAsserted = "effect.asserted"
-	LogEventEffectRetracted = "effect.retracted"
-	LogEventEventBusLagged = "event_bus.lagged"
-	LogEventHudClosed = "hud.closed"
-	LogEventHudFragmentPushed = "hud.fragment_pushed"
-	LogEventHudOpened = "hud.opened"
-	LogEventKeybindFired = "keybind.fired"
-	LogEventKeybindUnresolved = "keybind.unresolved"
-	LogEventNativeActionStubFired = "native.action_stub_fired"
-	LogEventNativeBleLifecycle = "native.ble_lifecycle"
-	LogEventNativeHidLifecycle = "native.hid_lifecycle"
-	LogEventNativeWindowSkipped = "native.window_skipped"
-	LogEventNativeWorldPollerEvent = "native.world_poller_event"
-	LogEventOperationCompleted = "operation.completed"
-	LogEventPluginDegraded = "plugin.degraded"
-	LogEventPluginDiagnostic = "plugin.diagnostic"
-	LogEventPluginExited = "plugin.exited"
-	LogEventPluginLifecycleOp = "plugin.lifecycle_op"
-	LogEventPluginLoaded = "plugin.loaded"
-	LogEventPluginReady = "plugin.ready"
-	LogEventPluginRecovered = "plugin.recovered"
-	LogEventPluginRpcFailed = "plugin.rpc_failed"
-	LogEventPluginSandboxApplied = "plugin.sandbox_applied"
-	LogEventPluginSpawned = "plugin.spawned"
-	LogEventPluginStderrLine = "plugin.stderr_line"
-	LogEventRpcCallCompleted = "rpc.call_completed"
-	LogEventRpcCallReceived = "rpc.call_received"
-	LogEventRpcNotifyReceived = "rpc.notify_received"
+	LogEventDispatchActionPanicked   = "dispatch.action_panicked"
+	LogEventDispatchActionRouted     = "dispatch.action_routed"
+	LogEventDispatchActionUnhandled  = "dispatch.action_unhandled"
+	LogEventDispatchTiming           = "dispatch.timing"
+	LogEventEffectAsserted           = "effect.asserted"
+	LogEventEffectRetracted          = "effect.retracted"
+	LogEventEventBusLagged           = "event_bus.lagged"
+	LogEventHudClosed                = "hud.closed"
+	LogEventHudFragmentPushed        = "hud.fragment_pushed"
+	LogEventHudOpened                = "hud.opened"
+	LogEventKeybindFired             = "keybind.fired"
+	LogEventKeybindUnresolved        = "keybind.unresolved"
+	LogEventNativeActionStubFired    = "native.action_stub_fired"
+	LogEventNativeBleLifecycle       = "native.ble_lifecycle"
+	LogEventNativeHidLifecycle       = "native.hid_lifecycle"
+	LogEventNativeWindowSkipped      = "native.window_skipped"
+	LogEventNativeWorldPollerEvent   = "native.world_poller_event"
+	LogEventOperationCompleted       = "operation.completed"
+	LogEventPluginDegraded           = "plugin.degraded"
+	LogEventPluginDiagnostic         = "plugin.diagnostic"
+	LogEventPluginExited             = "plugin.exited"
+	LogEventPluginLifecycleOp        = "plugin.lifecycle_op"
+	LogEventPluginLoaded             = "plugin.loaded"
+	LogEventPluginReady              = "plugin.ready"
+	LogEventPluginRecovered          = "plugin.recovered"
+	LogEventPluginRpcFailed          = "plugin.rpc_failed"
+	LogEventPluginSandboxApplied     = "plugin.sandbox_applied"
+	LogEventPluginSpawned            = "plugin.spawned"
+	LogEventPluginStderrLine         = "plugin.stderr_line"
+	LogEventRpcCallCompleted         = "rpc.call_completed"
+	LogEventRpcCallReceived          = "rpc.call_received"
+	LogEventRpcNotifyReceived        = "rpc.notify_received"
 	LogEventRpcOutboundCallCompleted = "rpc.outbound_call_completed"
-	LogEventRpcOutboundCallSent = "rpc.outbound_call_sent"
-	LogEventRpcOutboundNotify = "rpc.outbound_notify"
-	LogEventSessionControlMessage = "session.control_message"
-	LogEventStageDiagnostic = "stage.diagnostic"
-	LogEventStateRetentionSwept = "state.retention_swept"
-	LogEventStateTagCleared = "state.tag_cleared"
-	LogEventStateTagLifecycleClear = "state.tag_lifecycle_clear"
-	LogEventStateTagSet = "state.tag_set"
-	LogEventStateTtlSwept = "state.ttl_swept"
-	LogEventStateWriteAttempted = "state.write_attempted"
-	LogEventStateWriteDenied = "state.write_denied"
-	LogEventStateWriteSucceeded = "state.write_succeeded"
-	LogEventValidationError = "validation.error"
-	LogEventValidationStartupPass = "validation.startup_pass"
-	LogEventValidationWarning = "validation.warning"
-	LogEventWatchdogWarning = "watchdog.warning"
+	LogEventRpcOutboundCallSent      = "rpc.outbound_call_sent"
+	LogEventRpcOutboundNotify        = "rpc.outbound_notify"
+	LogEventSessionControlMessage    = "session.control_message"
+	LogEventStageDiagnostic          = "stage.diagnostic"
+	LogEventStateRetentionSwept      = "state.retention_swept"
+	LogEventStateTagCleared          = "state.tag_cleared"
+	LogEventStateTagLifecycleClear   = "state.tag_lifecycle_clear"
+	LogEventStateTagSet              = "state.tag_set"
+	LogEventStateTtlSwept            = "state.ttl_swept"
+	LogEventStateWriteAttempted      = "state.write_attempted"
+	LogEventStateWriteDenied         = "state.write_denied"
+	LogEventStateWriteSucceeded      = "state.write_succeeded"
+	LogEventValidationError          = "validation.error"
+	LogEventValidationStartupPass    = "validation.startup_pass"
+	LogEventValidationWarning        = "validation.warning"
+	LogEventWatchdogWarning          = "watchdog.warning"
 )
 
 // LogEventMeta carries the registration metadata for one log event.
@@ -83,64 +83,64 @@ type LogEventMeta struct {
 
 // LogEventRegistry is the closed vocabulary keyed by event name.
 var LogEventRegistry = map[string]LogEventMeta{
-	"audio.keybind_triggered": {Name: "audio.keybind_triggered", Summary: "Global keybind triggered an action via the Swift shell.", Since: "0.1.0", Source: "audio", Severity: "info", Redaction: "none"},
-	"audio.session_ended": {Name: "audio.session_ended", Summary: "A speech session ended (hold-to-talk released or continuous mode terminated).", Since: "0.1.0", Source: "audio", Severity: "info", Redaction: "none"},
-	"audio.session_started": {Name: "audio.session_started", Summary: "A speech session began (hold-to-talk pressed or continuous mode entered).", Since: "0.1.0", Source: "audio", Severity: "info", Redaction: "none"},
-	"audio.speech_transcript": {Name: "audio.speech_transcript", Summary: "Final or interim speech recognition transcript for a session.", Since: "0.1.0", Source: "audio", Severity: "info", Redaction: "full"},
-	"bridge.lifecycle": {Name: "bridge.lifecycle", Summary: "FFI bridge lifecycle event (init, shutdown, UI server bind, callback registration).", Since: "0.1.0", Source: "lifecycle", Severity: "info", Redaction: "none"},
-	"capture.progress": {Name: "capture.progress", Summary: "Partial match reached a DependentCapture whose deps are bound and whose resolved collection exists — plugins can react to the intermediate step (e.g. browser hint grayout).", Since: "0.1.0", Source: "dispatch", Severity: "info", Redaction: "none"},
-	"command.match_decision": {Name: "command.match_decision", Summary: "Diagnostic snapshot of the matcher's tiebreaker choice — which category won, which gates were active, whether a gated Partial was suppressed.", Since: "0.1.0", Source: "dispatch", Severity: "debug", Redaction: "none"},
-	"command.matched": {Name: "command.matched", Summary: "Speech recognition produced a match against a registered command.", Since: "0.1.0", Source: "dispatch", Severity: "info", Redaction: "none"},
-	"command.no_match": {Name: "command.no_match", Summary: "Speech input did not match any registered command.", Since: "0.1.0", Source: "dispatch", Severity: "debug", Redaction: "none"},
-	"diagnostic.message": {Name: "diagnostic.message", Summary: "Catch-all for ad-hoc operational text that doesn't fit a typed variant.", Since: "0.1.0", Source: "generic", Severity: "debug", Redaction: "none"},
-	"dispatch.action_dispatched": {Name: "dispatch.action_dispatched", Summary: "An action entered the dispatch pipeline.", Since: "0.1.0", Source: "dispatch", Severity: "debug", Redaction: "none"},
-	"dispatch.action_panicked": {Name: "dispatch.action_panicked", Summary: "A dispatch handler panicked. Process likely degraded; investigate.", Since: "0.1.0", Source: "dispatch", Severity: "error", Redaction: "none"},
-	"dispatch.action_routed": {Name: "dispatch.action_routed", Summary: "Dispatch resolved an action to a target plugin or builtin handler.", Since: "0.1.0", Source: "dispatch", Severity: "debug", Redaction: "none"},
-	"dispatch.action_unhandled": {Name: "dispatch.action_unhandled", Summary: "An action reached dispatch but no handler claimed it.", Since: "0.1.0", Source: "dispatch", Severity: "warn", Redaction: "none"},
-	"dispatch.timing": {Name: "dispatch.timing", Summary: "Timing marker for dispatch / ingest / keybind operations.", Since: "0.1.0", Source: "dispatch", Severity: "debug", Redaction: "none"},
-	"effect.asserted": {Name: "effect.asserted", Summary: "A plugin asserted ownership of an exclusive effect (granted / already-held / displaced).", Since: "0.1.0", Source: "effects", Severity: "info", Redaction: "none"},
-	"effect.retracted": {Name: "effect.retracted", Summary: "A plugin retracted an effect assertion; ownership may transfer to a queued asserter.", Since: "0.1.0", Source: "effects", Severity: "info", Redaction: "none"},
-	"event_bus.lagged": {Name: "event_bus.lagged", Summary: "An event-bus subscriber fell behind and dropped events.", Since: "0.1.0", Source: "lifecycle", Severity: "warn", Redaction: "none"},
-	"hud.closed": {Name: "hud.closed", Summary: "A HUD channel was hidden.", Since: "0.1.0", Source: "hud", Severity: "info", Redaction: "none"},
-	"hud.fragment_pushed": {Name: "hud.fragment_pushed", Summary: "Fragments were pushed to a HUD channel (high-volume; debug-level).", Since: "0.1.0", Source: "hud", Severity: "debug", Redaction: "none"},
-	"hud.opened": {Name: "hud.opened", Summary: "A HUD channel became visible.", Since: "0.1.0", Source: "hud", Severity: "info", Redaction: "none"},
-	"keybind.fired": {Name: "keybind.fired", Summary: "A global keybind resolved to an action.", Since: "0.1.0", Source: "dispatch", Severity: "info", Redaction: "none"},
-	"keybind.unresolved": {Name: "keybind.unresolved", Summary: "A keybind was pressed but no binding existed.", Since: "0.1.0", Source: "dispatch", Severity: "debug", Redaction: "none"},
-	"native.action_stub_fired": {Name: "native.action_stub_fired", Summary: "The stub native backend received an action (debug-only; not wired in production).", Since: "0.1.0", Source: "native", Severity: "debug", Redaction: "none"},
-	"native.ble_lifecycle": {Name: "native.ble_lifecycle", Summary: "Bluetooth lifecycle event (manager init, power state, connect / discover / write errors).", Since: "0.1.0", Source: "native", Severity: "info", Redaction: "none"},
-	"native.hid_lifecycle": {Name: "native.hid_lifecycle", Summary: "Non-Apple HID device lifecycle event (connect, disconnect, seize, release, monitor start).", Since: "0.1.0", Source: "native", Severity: "info", Redaction: "none"},
-	"native.window_skipped": {Name: "native.window_skipped", Summary: "World poller skipped a non-standard window (debug-level).", Since: "0.1.0", Source: "native", Severity: "debug", Redaction: "none"},
-	"native.world_poller_event": {Name: "native.world_poller_event", Summary: "World poller lifecycle event (started, seeded, batch processed, idle).", Since: "0.1.0", Source: "native", Severity: "debug", Redaction: "none"},
-	"operation.completed": {Name: "operation.completed", Summary: "An operation handler completed execution.", Since: "0.1.0", Source: "dispatch", Severity: "debug", Redaction: "none"},
-	"plugin.degraded": {Name: "plugin.degraded", Summary: "A managed plugin's RPC channel hit the consecutive-timeout threshold and was marked degraded.", Since: "0.1.0", Source: "plugins", Severity: "warn", Redaction: "none"},
-	"plugin.diagnostic": {Name: "plugin.diagnostic", Summary: "A plugin emitted a warn- or error-level diagnostic via plugin.debug; cross-posted to actuator.log so plugin-level failures interleave with the actuator's view of dispatch / coordination.", Since: "0.2.0", Source: "plugins", Severity: "warn", Redaction: "none"},
-	"plugin.exited": {Name: "plugin.exited", Summary: "A managed plugin process exited (clean or crashed).", Since: "0.1.0", Source: "plugins", Severity: "info", Redaction: "none"},
-	"plugin.lifecycle_op": {Name: "plugin.lifecycle_op", Summary: "A plugin lifecycle operation (install, uninstall, update, reload, hot-reload, enable, disable).", Since: "0.1.0", Source: "plugins", Severity: "info", Redaction: "none"},
-	"plugin.loaded": {Name: "plugin.loaded", Summary: "A plugin manifest was discovered and parsed.", Since: "0.1.0", Source: "plugins", Severity: "info", Redaction: "none"},
-	"plugin.ready": {Name: "plugin.ready", Summary: "A managed plugin completed its RPC handshake.", Since: "0.1.0", Source: "plugins", Severity: "info", Redaction: "none"},
-	"plugin.recovered": {Name: "plugin.recovered", Summary: "A previously-degraded plugin recovered and is responding again.", Since: "0.1.0", Source: "plugins", Severity: "info", Redaction: "none"},
-	"plugin.rpc_failed": {Name: "plugin.rpc_failed", Summary: "A plugin RPC method returned an error or failed to respond.", Since: "0.1.0", Source: "plugins", Severity: "warn", Redaction: "none"},
-	"plugin.sandbox_applied": {Name: "plugin.sandbox_applied", Summary: "Sandbox profile applied (or skipped) for a managed plugin spawn.", Since: "0.1.0", Source: "plugins", Severity: "debug", Redaction: "none"},
-	"plugin.spawned": {Name: "plugin.spawned", Summary: "A managed plugin process was spawned.", Since: "0.1.0", Source: "plugins", Severity: "info", Redaction: "none"},
-	"plugin.stderr_line": {Name: "plugin.stderr_line", Summary: "A managed plugin emitted a stdout/stderr line.", Since: "0.1.0", Source: "plugins", Severity: "info", Redaction: "none"},
-	"rpc.call_completed": {Name: "rpc.call_completed", Summary: "A plugin-to-actuator RPC call completed.", Since: "0.1.0", Source: "plugins", Severity: "debug", Redaction: "none"},
-	"rpc.call_received": {Name: "rpc.call_received", Summary: "A plugin-to-actuator RPC call was received.", Since: "0.1.0", Source: "plugins", Severity: "debug", Redaction: "none"},
-	"rpc.notify_received": {Name: "rpc.notify_received", Summary: "A plugin-to-actuator RPC notification (fire-and-forget) was received.", Since: "0.1.0", Source: "plugins", Severity: "debug", Redaction: "none"},
+	"audio.keybind_triggered":     {Name: "audio.keybind_triggered", Summary: "Global keybind triggered an action via the Swift shell.", Since: "0.1.0", Source: "audio", Severity: "info", Redaction: "none"},
+	"audio.session_ended":         {Name: "audio.session_ended", Summary: "A speech session ended (hold-to-talk released or continuous mode terminated).", Since: "0.1.0", Source: "audio", Severity: "info", Redaction: "none"},
+	"audio.session_started":       {Name: "audio.session_started", Summary: "A speech session began (hold-to-talk pressed or continuous mode entered).", Since: "0.1.0", Source: "audio", Severity: "info", Redaction: "none"},
+	"audio.speech_transcript":     {Name: "audio.speech_transcript", Summary: "Final or interim speech recognition transcript for a session.", Since: "0.1.0", Source: "audio", Severity: "info", Redaction: "full"},
+	"bridge.lifecycle":            {Name: "bridge.lifecycle", Summary: "FFI bridge lifecycle event (init, shutdown, UI server bind, callback registration).", Since: "0.1.0", Source: "lifecycle", Severity: "info", Redaction: "none"},
+	"capture.progress":            {Name: "capture.progress", Summary: "Partial match reached a DependentCapture whose deps are bound and whose resolved collection exists — plugins can react to the intermediate step (e.g. browser hint grayout).", Since: "0.1.0", Source: "dispatch", Severity: "info", Redaction: "none"},
+	"command.match_decision":      {Name: "command.match_decision", Summary: "Diagnostic snapshot of the matcher's tiebreaker choice — which category won, which gates were active, whether a gated Partial was suppressed.", Since: "0.1.0", Source: "dispatch", Severity: "debug", Redaction: "none"},
+	"command.matched":             {Name: "command.matched", Summary: "Speech recognition produced a match against a registered command.", Since: "0.1.0", Source: "dispatch", Severity: "info", Redaction: "none"},
+	"command.no_match":            {Name: "command.no_match", Summary: "Speech input did not match any registered command.", Since: "0.1.0", Source: "dispatch", Severity: "debug", Redaction: "none"},
+	"diagnostic.message":          {Name: "diagnostic.message", Summary: "Catch-all for ad-hoc operational text that doesn't fit a typed variant.", Since: "0.1.0", Source: "generic", Severity: "debug", Redaction: "none"},
+	"dispatch.action_dispatched":  {Name: "dispatch.action_dispatched", Summary: "An action entered the dispatch pipeline.", Since: "0.1.0", Source: "dispatch", Severity: "debug", Redaction: "none"},
+	"dispatch.action_panicked":    {Name: "dispatch.action_panicked", Summary: "A dispatch handler panicked. Process likely degraded; investigate.", Since: "0.1.0", Source: "dispatch", Severity: "error", Redaction: "none"},
+	"dispatch.action_routed":      {Name: "dispatch.action_routed", Summary: "Dispatch resolved an action to a target plugin or builtin handler.", Since: "0.1.0", Source: "dispatch", Severity: "debug", Redaction: "none"},
+	"dispatch.action_unhandled":   {Name: "dispatch.action_unhandled", Summary: "An action reached dispatch but no handler claimed it.", Since: "0.1.0", Source: "dispatch", Severity: "warn", Redaction: "none"},
+	"dispatch.timing":             {Name: "dispatch.timing", Summary: "Timing marker for dispatch / ingest / keybind operations.", Since: "0.1.0", Source: "dispatch", Severity: "debug", Redaction: "none"},
+	"effect.asserted":             {Name: "effect.asserted", Summary: "A plugin asserted ownership of an exclusive effect (granted / already-held / displaced).", Since: "0.1.0", Source: "effects", Severity: "info", Redaction: "none"},
+	"effect.retracted":            {Name: "effect.retracted", Summary: "A plugin retracted an effect assertion; ownership may transfer to a queued asserter.", Since: "0.1.0", Source: "effects", Severity: "info", Redaction: "none"},
+	"event_bus.lagged":            {Name: "event_bus.lagged", Summary: "An event-bus subscriber fell behind and dropped events.", Since: "0.1.0", Source: "lifecycle", Severity: "warn", Redaction: "none"},
+	"hud.closed":                  {Name: "hud.closed", Summary: "A HUD channel was hidden.", Since: "0.1.0", Source: "hud", Severity: "info", Redaction: "none"},
+	"hud.fragment_pushed":         {Name: "hud.fragment_pushed", Summary: "Fragments were pushed to a HUD channel (high-volume; debug-level).", Since: "0.1.0", Source: "hud", Severity: "debug", Redaction: "none"},
+	"hud.opened":                  {Name: "hud.opened", Summary: "A HUD channel became visible.", Since: "0.1.0", Source: "hud", Severity: "info", Redaction: "none"},
+	"keybind.fired":               {Name: "keybind.fired", Summary: "A global keybind resolved to an action.", Since: "0.1.0", Source: "dispatch", Severity: "info", Redaction: "none"},
+	"keybind.unresolved":          {Name: "keybind.unresolved", Summary: "A keybind was pressed but no binding existed.", Since: "0.1.0", Source: "dispatch", Severity: "debug", Redaction: "none"},
+	"native.action_stub_fired":    {Name: "native.action_stub_fired", Summary: "The stub native backend received an action (debug-only; not wired in production).", Since: "0.1.0", Source: "native", Severity: "debug", Redaction: "none"},
+	"native.ble_lifecycle":        {Name: "native.ble_lifecycle", Summary: "Bluetooth lifecycle event (manager init, power state, connect / discover / write errors).", Since: "0.1.0", Source: "native", Severity: "info", Redaction: "none"},
+	"native.hid_lifecycle":        {Name: "native.hid_lifecycle", Summary: "Non-Apple HID device lifecycle event (connect, disconnect, seize, release, monitor start).", Since: "0.1.0", Source: "native", Severity: "info", Redaction: "none"},
+	"native.window_skipped":       {Name: "native.window_skipped", Summary: "World poller skipped a non-standard window (debug-level).", Since: "0.1.0", Source: "native", Severity: "debug", Redaction: "none"},
+	"native.world_poller_event":   {Name: "native.world_poller_event", Summary: "World poller lifecycle event (started, seeded, batch processed, idle).", Since: "0.1.0", Source: "native", Severity: "debug", Redaction: "none"},
+	"operation.completed":         {Name: "operation.completed", Summary: "An operation handler completed execution.", Since: "0.1.0", Source: "dispatch", Severity: "debug", Redaction: "none"},
+	"plugin.degraded":             {Name: "plugin.degraded", Summary: "A managed plugin's RPC channel hit the consecutive-timeout threshold and was marked degraded.", Since: "0.1.0", Source: "plugins", Severity: "warn", Redaction: "none"},
+	"plugin.diagnostic":           {Name: "plugin.diagnostic", Summary: "A plugin emitted a warn- or error-level diagnostic via plugin.debug; cross-posted to actuator.log so plugin-level failures interleave with the actuator's view of dispatch / coordination.", Since: "0.2.0", Source: "plugins", Severity: "warn", Redaction: "none"},
+	"plugin.exited":               {Name: "plugin.exited", Summary: "A managed plugin process exited (clean or crashed).", Since: "0.1.0", Source: "plugins", Severity: "info", Redaction: "none"},
+	"plugin.lifecycle_op":         {Name: "plugin.lifecycle_op", Summary: "A plugin lifecycle operation (install, uninstall, update, reload, hot-reload, enable, disable).", Since: "0.1.0", Source: "plugins", Severity: "info", Redaction: "none"},
+	"plugin.loaded":               {Name: "plugin.loaded", Summary: "A plugin manifest was discovered and parsed.", Since: "0.1.0", Source: "plugins", Severity: "info", Redaction: "none"},
+	"plugin.ready":                {Name: "plugin.ready", Summary: "A managed plugin completed its RPC handshake.", Since: "0.1.0", Source: "plugins", Severity: "info", Redaction: "none"},
+	"plugin.recovered":            {Name: "plugin.recovered", Summary: "A previously-degraded plugin recovered and is responding again.", Since: "0.1.0", Source: "plugins", Severity: "info", Redaction: "none"},
+	"plugin.rpc_failed":           {Name: "plugin.rpc_failed", Summary: "A plugin RPC method returned an error or failed to respond.", Since: "0.1.0", Source: "plugins", Severity: "warn", Redaction: "none"},
+	"plugin.sandbox_applied":      {Name: "plugin.sandbox_applied", Summary: "Sandbox profile applied (or skipped) for a managed plugin spawn.", Since: "0.1.0", Source: "plugins", Severity: "debug", Redaction: "none"},
+	"plugin.spawned":              {Name: "plugin.spawned", Summary: "A managed plugin process was spawned.", Since: "0.1.0", Source: "plugins", Severity: "info", Redaction: "none"},
+	"plugin.stderr_line":          {Name: "plugin.stderr_line", Summary: "A managed plugin emitted a stdout/stderr line.", Since: "0.1.0", Source: "plugins", Severity: "info", Redaction: "none"},
+	"rpc.call_completed":          {Name: "rpc.call_completed", Summary: "A plugin-to-actuator RPC call completed.", Since: "0.1.0", Source: "plugins", Severity: "debug", Redaction: "none"},
+	"rpc.call_received":           {Name: "rpc.call_received", Summary: "A plugin-to-actuator RPC call was received.", Since: "0.1.0", Source: "plugins", Severity: "debug", Redaction: "none"},
+	"rpc.notify_received":         {Name: "rpc.notify_received", Summary: "A plugin-to-actuator RPC notification (fire-and-forget) was received.", Since: "0.1.0", Source: "plugins", Severity: "debug", Redaction: "none"},
 	"rpc.outbound_call_completed": {Name: "rpc.outbound_call_completed", Summary: "An actuator-to-plugin RPC call completed (response received or timed out).", Since: "0.1.0", Source: "plugins", Severity: "debug", Redaction: "none"},
-	"rpc.outbound_call_sent": {Name: "rpc.outbound_call_sent", Summary: "An actuator-to-plugin RPC call was sent (awaiting response).", Since: "0.1.0", Source: "plugins", Severity: "debug", Redaction: "none"},
-	"rpc.outbound_notify": {Name: "rpc.outbound_notify", Summary: "An actuator-to-plugin RPC notification (fire-and-forget) was sent.", Since: "0.1.0", Source: "plugins", Severity: "debug", Redaction: "none"},
-	"session.control_message": {Name: "session.control_message", Summary: "A control message was forwarded to the Swift host (HUD show, mode reset, etc.).", Since: "0.1.0", Source: "dispatch", Severity: "info", Redaction: "none"},
-	"stage.diagnostic": {Name: "stage.diagnostic", Summary: "A pipeline stage emitted a diagnostic line (e.g. a [PERF] latency measurement); correlated to the command via tr_ derived from the stage's session id.", Since: "0.2.0", Source: "generic", Severity: "info", Redaction: "none"},
-	"state.retention_swept": {Name: "state.retention_swept", Summary: "Retention sweep removed expired records from a collection.", Since: "0.1.0", Source: "state", Severity: "info", Redaction: "none"},
-	"state.tag_cleared": {Name: "state.tag_cleared", Summary: "One or more tags were cleared via a gate-shape collection mutation.", Since: "0.1.0", Source: "state", Severity: "info", Redaction: "none"},
-	"state.tag_lifecycle_clear": {Name: "state.tag_lifecycle_clear", Summary: "Lifecycle policy cleared transient tags after a triggering event.", Since: "0.1.0", Source: "state", Severity: "debug", Redaction: "none"},
-	"state.tag_set": {Name: "state.tag_set", Summary: "One or more tags were set via a gate-shape collection mutation.", Since: "0.1.0", Source: "state", Severity: "info", Redaction: "none"},
-	"state.ttl_swept": {Name: "state.ttl_swept", Summary: "TTL sweep removed expired records from a collection.", Since: "0.1.0", Source: "state", Severity: "debug", Redaction: "none"},
-	"state.write_attempted": {Name: "state.write_attempted", Summary: "A write to a state collection was initiated.", Since: "0.1.0", Source: "state", Severity: "debug", Redaction: "payload_hash"},
-	"state.write_denied": {Name: "state.write_denied", Summary: "A write was rejected by auth, grants, validation, or policy.", Since: "0.1.0", Source: "state", Severity: "warn", Redaction: "none"},
-	"state.write_succeeded": {Name: "state.write_succeeded", Summary: "A write to a state collection completed.", Since: "0.1.0", Source: "state", Severity: "info", Redaction: "none"},
-	"validation.error": {Name: "validation.error", Summary: "Manifest validation error — plugin was rejected or not reloaded.", Since: "0.1.0", Source: "validation", Severity: "error", Redaction: "none"},
-	"validation.startup_pass": {Name: "validation.startup_pass", Summary: "Startup validation pass completed; warning_count summarizes any drift detected.", Since: "0.1.0", Source: "validation", Severity: "info", Redaction: "none"},
-	"validation.warning": {Name: "validation.warning", Summary: "Manifest / commands / action validation produced a warning.", Since: "0.1.0", Source: "validation", Severity: "warn", Redaction: "none"},
-	"watchdog.warning": {Name: "watchdog.warning", Summary: "Watchdog observed mutex contention or suspected a deadlock.", Since: "0.1.0", Source: "lifecycle", Severity: "warn", Redaction: "none"},
+	"rpc.outbound_call_sent":      {Name: "rpc.outbound_call_sent", Summary: "An actuator-to-plugin RPC call was sent (awaiting response).", Since: "0.1.0", Source: "plugins", Severity: "debug", Redaction: "none"},
+	"rpc.outbound_notify":         {Name: "rpc.outbound_notify", Summary: "An actuator-to-plugin RPC notification (fire-and-forget) was sent.", Since: "0.1.0", Source: "plugins", Severity: "debug", Redaction: "none"},
+	"session.control_message":     {Name: "session.control_message", Summary: "A control message was forwarded to the Swift host (HUD show, mode reset, etc.).", Since: "0.1.0", Source: "dispatch", Severity: "info", Redaction: "none"},
+	"stage.diagnostic":            {Name: "stage.diagnostic", Summary: "A pipeline stage emitted a diagnostic line (e.g. a [PERF] latency measurement); correlated to the command via tr_ derived from the stage's session id.", Since: "0.2.0", Source: "generic", Severity: "info", Redaction: "none"},
+	"state.retention_swept":       {Name: "state.retention_swept", Summary: "Retention sweep removed expired records from a collection.", Since: "0.1.0", Source: "state", Severity: "info", Redaction: "none"},
+	"state.tag_cleared":           {Name: "state.tag_cleared", Summary: "One or more tags were cleared via a gate-shape collection mutation.", Since: "0.1.0", Source: "state", Severity: "info", Redaction: "none"},
+	"state.tag_lifecycle_clear":   {Name: "state.tag_lifecycle_clear", Summary: "Lifecycle policy cleared transient tags after a triggering event.", Since: "0.1.0", Source: "state", Severity: "debug", Redaction: "none"},
+	"state.tag_set":               {Name: "state.tag_set", Summary: "One or more tags were set via a gate-shape collection mutation.", Since: "0.1.0", Source: "state", Severity: "info", Redaction: "none"},
+	"state.ttl_swept":             {Name: "state.ttl_swept", Summary: "TTL sweep removed expired records from a collection.", Since: "0.1.0", Source: "state", Severity: "debug", Redaction: "none"},
+	"state.write_attempted":       {Name: "state.write_attempted", Summary: "A write to a state collection was initiated.", Since: "0.1.0", Source: "state", Severity: "debug", Redaction: "payload_hash"},
+	"state.write_denied":          {Name: "state.write_denied", Summary: "A write was rejected by auth, grants, validation, or policy.", Since: "0.1.0", Source: "state", Severity: "warn", Redaction: "none"},
+	"state.write_succeeded":       {Name: "state.write_succeeded", Summary: "A write to a state collection completed.", Since: "0.1.0", Source: "state", Severity: "info", Redaction: "none"},
+	"validation.error":            {Name: "validation.error", Summary: "Manifest validation error — plugin was rejected or not reloaded.", Since: "0.1.0", Source: "validation", Severity: "error", Redaction: "none"},
+	"validation.startup_pass":     {Name: "validation.startup_pass", Summary: "Startup validation pass completed; warning_count summarizes any drift detected.", Since: "0.1.0", Source: "validation", Severity: "info", Redaction: "none"},
+	"validation.warning":          {Name: "validation.warning", Summary: "Manifest / commands / action validation produced a warning.", Since: "0.1.0", Source: "validation", Severity: "warn", Redaction: "none"},
+	"watchdog.warning":            {Name: "watchdog.warning", Summary: "Watchdog observed mutex contention or suspected a deadlock.", Since: "0.1.0", Source: "lifecycle", Severity: "warn", Redaction: "none"},
 }

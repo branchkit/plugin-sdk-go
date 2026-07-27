@@ -18,9 +18,9 @@ import (
 //	client := shared.NewUpstreamClient("https://localhost:21549")
 //	resp, err := client.Do(ctx, "GET", "/api/fields", nil)
 type UpstreamClient struct {
-	baseURL string
-	client  *http.Client
-	mu      sync.Mutex
+	baseURL  string
+	client   *http.Client
+	mu       sync.Mutex
 	healthOK bool
 	healthAt time.Time
 }
