@@ -350,8 +350,9 @@ type ExternalDisk struct {
 // settings UI, etc.) interpret roles on their own terms.
 //
 // See `notes/DESIGN_COLLECTION_FIELD_ROLES.md` for the full vocabulary
-// rationale. Roles `primary`, `secondary`, `description`, `payload` are
-// consumed by `services::matching_service::expand_collections_to_items`
+// rationale. Roles `primary`, `secondary`, `group`, `description`,
+// `payload` are consumed by
+// `services::matching_service::expand_collections_to_items`
 // for discovery items; `summary` is consumed by the settings UI's
 // log-kind timeline rows.
 type FieldDisplay string
@@ -359,6 +360,7 @@ type FieldDisplay string
 const (
 	FieldDisplayPrimary     FieldDisplay = "primary"
 	FieldDisplaySecondary   FieldDisplay = "secondary"
+	FieldDisplayGroup       FieldDisplay = "group"
 	FieldDisplayDescription FieldDisplay = "description"
 	FieldDisplayPayload     FieldDisplay = "payload"
 	FieldDisplaySummary     FieldDisplay = "summary"
