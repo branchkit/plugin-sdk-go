@@ -362,6 +362,7 @@ const (
 	MethodNativeNetworkReachable              = "native.network_reachable"                 // since 0.1.0
 	MethodNativeNetworkSignalStrength         = "native.network_signal_strength"           // since 0.1.0
 	MethodNativeNetworkSsid                   = "native.network_ssid"                      // since 0.1.0
+	MethodNativeNewAppWindow                  = "native.new_app_window"                    // since 0.1.0
 	MethodNativeNightShift                    = "native.night_shift"                       // since 0.1.0
 	MethodNativeNotificationSoundEnabled      = "native.notification_sound_enabled"        // since 0.1.0
 	MethodNativeNotify                        = "native.notify"                            // since 0.1.0

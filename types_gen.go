@@ -3488,6 +3488,16 @@ type NativeNetworkSsidResponse struct {
 	Value string `json:"value"`
 }
 
+// NativeNewAppWindowRequest is the request type for native.new_app_window.
+type NativeNewAppWindowRequest struct {
+	BundleID string `json:"bundle_id"`
+}
+
+// NativeNewAppWindowResponse is the response type for native.new_app_window.
+type NativeNewAppWindowResponse struct {
+	Ok bool `json:"ok"`
+}
+
 // NativeNightShiftResponse is the response type for native.night_shift.
 type NativeNightShiftResponse struct {
 	Enabled bool `json:"enabled"`

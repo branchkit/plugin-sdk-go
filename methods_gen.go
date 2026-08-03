@@ -3766,6 +3766,14 @@ func (p *Plugin) NativeNetworkSsid() (*NativeNetworkSsidResponse, error) {
 	return &result, nil
 }
 
+// NativeNewAppWindow open a new window of an app on the current Space, without switching to an existing window on another Space.
+func (p *Plugin) NativeNewAppWindow(bundleID string) error {
+	req := &NativeNewAppWindowRequest{
+		BundleID: bundleID,
+	}
+	return p.Call(MethodNativeNewAppWindow, req, nil)
+}
+
 // NativeNightShift check if Night Shift is currently enabled.
 func (p *Plugin) NativeNightShift() (*NativeNightShiftResponse, error) {
 	var result NativeNightShiftResponse
