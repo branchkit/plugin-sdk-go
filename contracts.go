@@ -524,6 +524,7 @@ const (
 	MethodNativeStageManagerEnabled           = "native.stage_manager_enabled"             // since 0.1.0
 	MethodNativeStartupDisk                   = "native.startup_disk"                      // since 0.1.0
 	MethodNativeStartupSoundEnabled           = "native.startup_sound_enabled"             // since 0.1.0
+	MethodNativeStatusIndicator               = "native.status_indicator"                  // since 0.1.0
 	MethodNativeStickyKeys                    = "native.sticky_keys"                       // since 0.1.0
 	MethodNativeSwipeBetweenPages             = "native.swipe_between_pages"               // since 0.1.0
 	MethodNativeSwitchSpace                   = "native.switch_space"                      // since 0.1.0

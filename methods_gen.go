@@ -5331,6 +5331,16 @@ func (p *Plugin) NativeStartupSoundEnabled() (*NativeStartupSoundEnabledResponse
 	return &result, nil
 }
 
+// NativeStatusIndicator whether a visible status-indicator surface (tray/status item) exists that can show recording state.
+func (p *Plugin) NativeStatusIndicator() (*NativeStatusIndicatorResponse, error) {
+	var result NativeStatusIndicatorResponse
+	err := p.Call(MethodNativeStatusIndicator, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // NativeStickyKeys check if Sticky Keys is enabled.
 func (p *Plugin) NativeStickyKeys() (*NativeStickyKeysResponse, error) {
 	var result NativeStickyKeysResponse

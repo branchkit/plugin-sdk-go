@@ -4745,6 +4745,11 @@ type NativeStartupSoundEnabledResponse struct {
 	Enabled bool `json:"enabled"`
 }
 
+// NativeStatusIndicatorResponse is the response type for native.status_indicator.
+type NativeStatusIndicatorResponse struct {
+	Available bool `json:"available"`
+}
+
 // NativeStickyKeysResponse is the response type for native.sticky_keys.
 type NativeStickyKeysResponse struct {
 	Enabled bool `json:"enabled"`
