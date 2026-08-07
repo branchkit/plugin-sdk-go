@@ -604,7 +604,7 @@ func (p *Plugin) EventsEmit(correlationID *string, data json.RawMessage, eventTy
 }
 
 // HUDCreateChannel create a new HUD broadcast channel at runtime.
-func (p *Plugin) HUDCreateChannel(acceptsInput *bool, anchor json.RawMessage, channel string, description *string, draggable *bool, followsFocus *bool, minHeight *int, onPointer *OnPointer, transparent *bool, width *int) error {
+func (p *Plugin) HUDCreateChannel(acceptsInput *bool, anchor json.RawMessage, channel string, description *string, draggable *bool, followsFocus *bool, minHeight *int, onPointer *OnPointer, stackOrder *int, transparent *bool, width *int) error {
 	req := &HUDCreateChannelRequest{
 		AcceptsInput: acceptsInput,
 		Anchor:       anchor,
@@ -614,6 +614,7 @@ func (p *Plugin) HUDCreateChannel(acceptsInput *bool, anchor json.RawMessage, ch
 		FollowsFocus: followsFocus,
 		MinHeight:    minHeight,
 		OnPointer:    onPointer,
+		StackOrder:   stackOrder,
 		Transparent:  transparent,
 		Width:        width,
 	}

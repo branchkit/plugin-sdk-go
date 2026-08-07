@@ -1388,6 +1388,7 @@ type HUDCreateChannelRequest struct {
 	FollowsFocus *bool           `json:"follows_focus,omitempty"`
 	MinHeight    *int            `json:"min_height,omitempty"`
 	OnPointer    *OnPointer      `json:"on_pointer,omitempty"`
+	StackOrder   *int            `json:"stack_order,omitempty"`
 	Transparent  *bool           `json:"transparent,omitempty"`
 	Width        *int            `json:"width,omitempty"`
 }
