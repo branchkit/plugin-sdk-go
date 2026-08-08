@@ -6059,9 +6059,10 @@ func (p *Plugin) PipelinesStatus() (*PipelinesStatusResponse, error) {
 }
 
 // PipelinesStop stop a running pipeline by name.
-func (p *Plugin) PipelinesStop(name string) (*PipelinesStopResponse, error) {
+func (p *Plugin) PipelinesStop(audioCutoffMs *int, name string) (*PipelinesStopResponse, error) {
 	req := &PipelinesStopRequest{
-		Name: name,
+		AudioCutoffMs: audioCutoffMs,
+		Name:          name,
 	}
 	var result PipelinesStopResponse
 	err := p.Call(MethodPipelinesStop, req, &result)

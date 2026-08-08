@@ -5241,7 +5241,8 @@ type PipelinesStatusResponse struct {
 
 // PipelinesStopRequest is the request type for pipelines.stop.
 type PipelinesStopRequest struct {
-	Name string `json:"name"`
+	AudioCutoffMs *int   `json:"audio_cutoff_ms,omitempty"`
+	Name          string `json:"name"`
 }
 
 // PipelinesStopResponse is the response type for pipelines.stop.
