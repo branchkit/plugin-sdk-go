@@ -610,12 +610,6 @@ type PipelineStatusEntry struct {
 	Name      string `json:"name"`
 }
 
-// PipelineTranscriptAlternative is auto-generated from the OpenRPC spec.
-type PipelineTranscriptAlternative struct {
-	Confidence float64 `json:"confidence"`
-	Text       string  `json:"text"`
-}
-
 // PluginLogLevel is auto-generated from the OpenRPC spec.
 type PluginLogLevel string
 
