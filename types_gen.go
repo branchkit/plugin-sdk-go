@@ -671,13 +671,14 @@ type ProcessInfo struct {
 
 // RecordingRow is auto-generated from the OpenRPC spec.
 type RecordingRow struct {
-	Disposition string `json:"disposition"`
-	Engine      string `json:"engine"`
-	File        string `json:"file"`
-	Heard       string `json:"heard"`
-	Matched     bool   `json:"matched"`
-	Target      string `json:"target"`
-	Ts          string `json:"ts"`
+	Disposition string          `json:"disposition"`
+	Engine      string          `json:"engine"`
+	File        string          `json:"file"`
+	Heard       string          `json:"heard"`
+	Matched     bool            `json:"matched"`
+	Target      string          `json:"target"`
+	Ts          string          `json:"ts"`
+	WordScores  json.RawMessage `json:"word_scores,omitempty"`
 }
 
 // ReminderItem is auto-generated from the OpenRPC spec.
