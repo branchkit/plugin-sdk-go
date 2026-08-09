@@ -74,10 +74,12 @@ func (p *Plugin) Count(name string) (int, error) {
 // `collection.put` with a 1-element entries array.
 //
 // If the target collection name isn't in the registry yet, the platform
-// auto-registers it as a record-keyed dynamic collection with this
-// plugin as the introducer. The act of calling Put against an unknown
-// name IS the opt-in to per-key write semantics — see
-// notes/DESIGN_BROWSER_HINT_SILENT_EVICTION.md.
+// auto-registers it as a record-keyed dynamic collection with this plugin
+// as the introducer. IMPORTANT: an auto-registered collection uses
+// Storage::MemoryOnly — it is EPHEMERAL and lost on restart (the default
+// suits session-scoped data like browser hints). For DURABLE storage,
+// declare the collection in your plugin manifest (a "log" or "data" preset)
+// rather than relying on cold-Put auto-registration.
 func (p *Plugin) Put(name, id string, payload any) error {
 	raw, err := json.Marshal(payload)
 	if err != nil {
