@@ -25,6 +25,9 @@ import (
 type CollectionMirror struct {
 	p    *Plugin
 	name string
+	// compacted mirrors the keyed-log FOLDED view (ListCompacted) instead of
+	// the raw collection.get read — see MirrorCompacted.
+	compacted bool
 
 	mu       sync.RWMutex
 	data     json.RawMessage
@@ -39,7 +42,24 @@ type CollectionMirror struct {
 // Ready()==false and Raw()==nil; callers that need the data
 // synchronously at a specific moment can force a fetch with Refresh().
 func (p *Plugin) MirrorCollection(name string) *CollectionMirror {
-	m := &CollectionMirror{p: p, name: name}
+	return p.mirror(name, false)
+}
+
+// MirrorCompacted mirrors the FOLDED current-state view of a keyed
+// (compacted-changelog) log — the same records ListCompacted returns, one per
+// key — kept fresh the same way MirrorCollection is. Use this instead of
+// MirrorCollection for a keyed log: plain MirrorCollection mirrors the RAW
+// append history (every append, unfolded), which is almost never what a
+// consumer of a keyed log wants. The mirrored collection must declare
+// `emits_on_change: true` for the refetch-on-change to fire (logs default off
+// — see notes/DESIGN_LOG_ANNOTATION_PROJECTION.md); without it the mirror still
+// fetches once at on_ready but won't auto-refresh.
+func (p *Plugin) MirrorCompacted(name string) *CollectionMirror {
+	return p.mirror(name, true)
+}
+
+func (p *Plugin) mirror(name string, compacted bool) *CollectionMirror {
+	m := &CollectionMirror{p: p, name: name, compacted: compacted}
 
 	p.OnReady(func() {
 		if err := m.Refresh(); err != nil {
@@ -73,16 +93,34 @@ func unpopulated(data json.RawMessage) bool {
 // update event will complete the mirror). An RPC error is returned and
 // leaves the previous snapshot intact.
 func (m *CollectionMirror) Refresh() error {
-	res, err := m.p.CollectionGet(m.name)
-	if err != nil {
-		return err
-	}
-	if res == nil || unpopulated(res.Data) {
-		return nil
+	var data json.RawMessage
+	if m.compacted {
+		// Folded view: one record per key. Store the records array as the
+		// snapshot; an empty array is the boot-race no-op, same as a raw
+		// unpopulated read.
+		recs, err := m.p.ListCompacted(m.name, nil)
+		if err != nil {
+			return err
+		}
+		if len(recs) == 0 {
+			return nil
+		}
+		if data, err = json.Marshal(recs); err != nil {
+			return fmt.Errorf("mirror %q: marshal folded records: %w", m.name, err)
+		}
+	} else {
+		res, err := m.p.CollectionGet(m.name)
+		if err != nil {
+			return err
+		}
+		if res == nil || unpopulated(res.Data) {
+			return nil
+		}
+		data = res.Data
 	}
 
 	m.mu.Lock()
-	m.data = res.Data
+	m.data = data
 	m.ready = true
 	callbacks := append([]func(){}, m.onChange...)
 	m.mu.Unlock()

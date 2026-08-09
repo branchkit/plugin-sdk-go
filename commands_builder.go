@@ -156,6 +156,29 @@ func (b *CommandBuilder) CancelsBridge() *CommandBuilder {
 	return b
 }
 
+// DiscoveryMode declares that a `literal-prefix + tail-capture` command's bare
+// prefix opens the Discovery HUD when spoken alone, instead of firing. See
+// notes/DESIGN_DISCOVERABLE_PREFIX.md. String-typed to match the wire field.
+type DiscoveryMode = string
+
+const (
+	// DiscoveryPrefix: the bare prefix opens the HUD and the capture's words
+	// stay live in free context — for small, acoustically safe target sets.
+	DiscoveryPrefix DiscoveryMode = "prefix"
+	// DiscoveryExclusive: the bare prefix enters an auto-minted exclusive mode
+	// so the capture's words only decode while it holds — for large/dynamic
+	// sets (e.g. open tabs) whose codewords would otherwise pollute free context.
+	DiscoveryExclusive DiscoveryMode = "exclusive"
+)
+
+// Discovery declares the command's prefix-discovery affordance (see
+// DiscoveryMode). Valid only on a pattern that is literal word(s) followed by a
+// single tail capture; the actuator rejects other shapes at load.
+func (b *CommandBuilder) Discovery(mode DiscoveryMode) *CommandBuilder {
+	b.spec.Discovery = &mode
+	return b
+}
+
 // Category sets the Settings-UI grouping label.
 func (b *CommandBuilder) Category(c string) *CommandBuilder {
 	b.spec.Category = &c

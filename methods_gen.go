@@ -263,6 +263,23 @@ func (p *Plugin) CollectionAppend(name string, payload json.RawMessage) (*LogEnt
 	return result.Entry, nil
 }
 
+// CollectionAppendKeyed append a keyed annotation to a keyed log (compacted-changelog shape).
+func (p *Plugin) CollectionAppendKeyed(key string, name string, payload json.RawMessage) (*LogEntry, error) {
+	req := &CollectionAppendKeyedRequest{
+		Key:     key,
+		Name:    name,
+		Payload: payload,
+	}
+	var result struct {
+		Entry *LogEntry `json:"entry,omitempty"`
+	}
+	err := p.Call(MethodCollectionAppendKeyed, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Entry, nil
+}
+
 // CollectionCount total record count for a collection.
 func (p *Plugin) CollectionCount(name string) (*CollectionCountResponse, error) {
 	req := &CollectionCountRequest{
@@ -298,6 +315,20 @@ func (p *Plugin) CollectionFetch(id string, name string) (*CollectionFetchRespon
 	}
 	var result CollectionFetchResponse
 	err := p.Call(MethodCollectionFetch, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// CollectionFetchCompacted fetch a keyed log's folded current state for one key (compacted point-read).
+func (p *Plugin) CollectionFetchCompacted(id string, name string) (*CollectionFetchCompactedResponse, error) {
+	req := &CollectionFetchCompactedRequest{
+		ID:   id,
+		Name: name,
+	}
+	var result CollectionFetchCompactedResponse
+	err := p.Call(MethodCollectionFetchCompacted, req, &result)
 	if err != nil {
 		return nil, err
 	}

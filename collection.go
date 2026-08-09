@@ -8,6 +8,10 @@ import (
 // Get fetches one record from a collection by id. Returns (nil, nil) if no
 // record with that id exists.
 //
+// On a keyed (compacted-changelog) log, Get returns the RAW entry with that id
+// — for a key, the introducing record WITHOUT later annotations. Use
+// GetCompacted for the folded current state.
+//
 // CollectionFetchResponse.Record is json.RawMessage because the actuator
 // declares it as Option<CollectionRecord> and the Go emitter routes
 // Option<StructType> through RawMessage (the Phase 5 anyOf-null collapser
@@ -15,6 +19,31 @@ import (
 // a typed value.
 func (p *Plugin) Get(name, id string) (*CollectionRecord, error) {
 	res, err := p.CollectionFetch(id, name)
+	if err != nil {
+		return nil, err
+	}
+	if res == nil || len(res.Record) == 0 || string(res.Record) == "null" {
+		return nil, nil
+	}
+	var rec CollectionRecord
+	if err := json.Unmarshal(res.Record, &rec); err != nil {
+		return nil, fmt.Errorf("decode record: %w", err)
+	}
+	return &rec, nil
+}
+
+// GetCompacted reads a keyed log's folded CURRENT state for one key — the
+// point-read half of the compacted-changelog projection (paired with
+// ListCompacted). `key` is the fold key; same-key appends are merged per the
+// collection's `merge` and that key's current record is returned, or (nil, nil)
+// if the key has no records. Errors if the collection is not a keyed
+// (`id_strategy: by_field`) log. See notes/DESIGN_LOG_ANNOTATION_PROJECTION.md.
+//
+// Contrast with Get, which returns the RAW entry with that id (on a keyed log,
+// the introducing record WITHOUT later annotations). Use Get for the raw entry,
+// GetCompacted for current state.
+func (p *Plugin) GetCompacted(name, key string) (*CollectionRecord, error) {
+	res, err := p.CollectionFetchCompacted(key, name)
 	if err != nil {
 		return nil, err
 	}
@@ -40,6 +69,25 @@ func (p *Plugin) List(name string, opts *ListOpts) ([]CollectionRecord, error) {
 		return nil, nil
 	}
 	return res.Records, nil
+}
+
+// ListCompacted reads the compacted-changelog projection of a keyed log —
+// one folded record per key (its current state) instead of the raw append
+// history. Same-key records are merged per the collection's `merge`
+// (Authoritative: later non-null fields win; Collect: payloads accumulate into
+// an array). Pairs with AppendKeyed. Errors if the collection is not a keyed
+// (`id_strategy: by_field`) log. See notes/DESIGN_LOG_ANNOTATION_PROJECTION.md.
+//
+// `opts` may carry the usual since/until/limit filters; limit applies to the
+// folded records. Pass nil for "every folded record."
+func (p *Plugin) ListCompacted(name string, opts *ListOpts) ([]CollectionRecord, error) {
+	folded := true
+	merged := ListOpts{Compacted: &folded}
+	if opts != nil {
+		merged = *opts
+		merged.Compacted = &folded
+	}
+	return p.List(name, &merged)
 }
 
 // ListPage is like List but also returns the unfiltered total count so

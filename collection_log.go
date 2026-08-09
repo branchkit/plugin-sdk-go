@@ -67,6 +67,31 @@ func (p *Plugin) AppendEntry(name string, payload any) (*LogEntry, error) {
 	return entry, nil
 }
 
+// AppendKeyed annotates a keyed log — a `log`-preset collection with
+// `id_strategy: by_field`. It appends `payload` with `key` stamped into the
+// collection's key field, as a fresh append (the raw log is never mutated);
+// appending another record with the same `key` folds onto the first. Read the
+// merged current-state view with ListCompacted. This is the compacted-changelog
+// primitive — see notes/DESIGN_LOG_ANNOTATION_PROJECTION.md.
+//
+// "Annotate a past record" is just "append the same key with the new field":
+// the first append introduces the record, later same-key appends carry only the
+// changed fields. Errors if the collection is not a keyed log.
+func (p *Plugin) AppendKeyed(name, key string, payload any) error {
+	raw, err := json.Marshal(payload)
+	if err != nil {
+		return fmt.Errorf("marshal payload: %w", err)
+	}
+	_, err = p.CollectionAppendKeyed(key, name, raw)
+	if err != nil {
+		if strings.Contains(err.Error(), "RECORDING_DISABLED") {
+			return fmt.Errorf("%w: %s", ErrRecordingDisabled, err.Error())
+		}
+		return err
+	}
+	return nil
+}
+
 // LogListOpts filters ListLog / ListLogPage. SDK-level type — the wire
 // carries the unified ListOpts (the former collection.list_log op was
 // folded into collection.list); the fields are identical by design.
@@ -116,7 +141,9 @@ func (p *Plugin) ListLogPage(name string, opts *LogListOpts) (entries []LogEntry
 }
 
 // GetLogEntry fetches one entry by id. Returns (nil, nil) if no entry with
-// that id exists in the collection. Sugar over `collection.fetch`.
+// that id exists in the collection. Sugar over `collection.fetch` — returns the
+// RAW entry, so on a keyed (compacted-changelog) log this is the introducing
+// record without later annotations; use GetCompacted for a key's current state.
 func (p *Plugin) GetLogEntry(name, id string) (*LogEntry, error) {
 	rec, err := p.Get(name, id)
 	if err != nil || rec == nil {

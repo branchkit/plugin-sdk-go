@@ -224,6 +224,7 @@ type CommandSpec struct {
 	Category       *string           `json:"category,omitempty"`
 	ClearsTags     []string          `json:"clears_tags"`
 	Description    *string           `json:"description,omitempty"`
+	Discovery      *string           `json:"discovery,omitempty"`
 	DisplaySources map[string]string `json:"display_sources"`
 	Pattern        []json.RawMessage `json:"pattern"`
 	RequiresTags   []string          `json:"requires_tags"`
@@ -476,10 +477,11 @@ type ListCommandSection struct {
 
 // ListOpts is auto-generated from the OpenRPC spec.
 type ListOpts struct {
-	Cursor  *string `json:"cursor,omitempty"`
-	Limit   *int    `json:"limit,omitempty"`
-	SinceMs *int    `json:"since_ms,omitempty"`
-	UntilMs *int    `json:"until_ms,omitempty"`
+	Compacted *bool   `json:"compacted,omitempty"`
+	Cursor    *string `json:"cursor,omitempty"`
+	Limit     *int    `json:"limit,omitempty"`
+	SinceMs   *int    `json:"since_ms,omitempty"`
+	UntilMs   *int    `json:"until_ms,omitempty"`
 }
 
 // ListeningPort is auto-generated from the OpenRPC spec.
@@ -1051,6 +1053,18 @@ type CollectionAppendResponse struct {
 	Entry LogEntry `json:"entry"`
 }
 
+// CollectionAppendKeyedRequest is the request type for collection.append_keyed.
+type CollectionAppendKeyedRequest struct {
+	Key     string          `json:"key"`
+	Name    string          `json:"name"`
+	Payload json.RawMessage `json:"payload"`
+}
+
+// CollectionAppendKeyedResponse is the response type for collection.append_keyed.
+type CollectionAppendKeyedResponse struct {
+	Entry LogEntry `json:"entry"`
+}
+
 // CollectionCountRequest is the request type for collection.count.
 type CollectionCountRequest struct {
 	Name string `json:"name"`
@@ -1081,6 +1095,17 @@ type CollectionFetchRequest struct {
 
 // CollectionFetchResponse is the response type for collection.fetch.
 type CollectionFetchResponse struct {
+	Record json.RawMessage `json:"record,omitempty"`
+}
+
+// CollectionFetchCompactedRequest is the request type for collection.fetch_compacted.
+type CollectionFetchCompactedRequest struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
+// CollectionFetchCompactedResponse is the response type for collection.fetch_compacted.
+type CollectionFetchCompactedResponse struct {
 	Record json.RawMessage `json:"record,omitempty"`
 }
 

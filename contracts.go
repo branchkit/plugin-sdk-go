@@ -28,9 +28,11 @@ const (
 	MethodCodewordLabReportsList              = "codeword_lab.reports.list"                // since 0.1.0
 	MethodCodewordLabReportsRead              = "codeword_lab.reports.read"                // since 0.1.0
 	MethodCollectionAppend                    = "collection.append"                        // since 0.1.0
+	MethodCollectionAppendKeyed               = "collection.append_keyed"                  // since 0.1.0
 	MethodCollectionCount                     = "collection.count"                         // since 0.1.0
 	MethodCollectionDeleteRecords             = "collection.delete_records"                // since 0.1.0
 	MethodCollectionFetch                     = "collection.fetch"                         // since 0.1.0
+	MethodCollectionFetchCompacted            = "collection.fetch_compacted"               // since 0.1.0
 	MethodCollectionGet                       = "collection.get"                           // since 0.1.0
 	MethodCollectionList                      = "collection.list"                          // since 0.1.0
 	MethodCollectionPatch                     = "collection.patch"                         // since 0.1.0
