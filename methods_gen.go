@@ -388,6 +388,21 @@ func (p *Plugin) CollectionPut(entries []CollectionPutEntry, label *string, name
 	return &result, nil
 }
 
+// CollectionsCreateUser create a simple user list of words (name + words_text, one entry per line, optional `word = value`) and seed its entries.
+func (p *Plugin) CollectionsCreateUser(description *string, name string, wordsText *string) (*CollectionsCreateUserResponse, error) {
+	req := &CollectionsCreateUserRequest{
+		Description: description,
+		Name:        name,
+		WordsText:   wordsText,
+	}
+	var result CollectionsCreateUserResponse
+	err := p.Call(MethodCollectionsCreateUser, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // CollectionsList list collections with entries for display, optionally filtered by kind.
 func (p *Plugin) CollectionsList(kind *string) ([]CollectionsListSection, error) {
 	req := &CollectionsListRequest{

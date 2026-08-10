@@ -1170,6 +1170,18 @@ type CollectionPutResponse struct {
 	Ok    bool `json:"ok"`
 }
 
+// CollectionsCreateUserRequest is the request type for collections.create_user.
+type CollectionsCreateUserRequest struct {
+	Description *string `json:"description,omitempty"`
+	Name        string  `json:"name"`
+	WordsText   *string `json:"words_text,omitempty"`
+}
+
+// CollectionsCreateUserResponse is the response type for collections.create_user.
+type CollectionsCreateUserResponse struct {
+	Name string `json:"name"`
+}
+
 // CollectionsListRequest is the request type for collections.list.
 type CollectionsListRequest struct {
 	Kind *string `json:"kind,omitempty"`
