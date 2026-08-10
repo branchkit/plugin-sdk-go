@@ -233,6 +233,15 @@ type CommandSpec struct {
 	Variants       []json.RawMessage `json:"variants"`
 }
 
+// ConfusabilityFinding is auto-generated from the OpenRPC spec.
+type ConfusabilityFinding struct {
+	Confuser string `json:"confuser"`
+	Distance int    `json:"distance"`
+	Example  string `json:"example"`
+	Owner    string `json:"owner"`
+	Target   string `json:"target"`
+}
+
 // ContactInfo is auto-generated from the OpenRPC spec.
 type ContactInfo struct {
 	Email        *string `json:"email,omitempty"`
@@ -1181,6 +1190,17 @@ type CommandsAddAliasRequest struct {
 // CommandsAddAliasResponse is the response type for commands.add_alias.
 type CommandsAddAliasResponse struct {
 	Ok bool `json:"ok"`
+}
+
+// CommandsConfusabilityRequest is the request type for commands.confusability.
+type CommandsConfusabilityRequest struct {
+	RequiresTags []string `json:"requires_tags,omitempty"`
+	Words        []string `json:"words,omitempty"`
+}
+
+// CommandsConfusabilityResponse is the response type for commands.confusability.
+type CommandsConfusabilityResponse struct {
+	Findings []ConfusabilityFinding `json:"findings"`
 }
 
 // CommandsDeleteRequest is the request type for commands.delete.

@@ -413,6 +413,22 @@ func (p *Plugin) CommandsAddAlias(action string, defaultPattern string, newPatte
 	return p.Call(MethodCommandsAddAlias, req, nil)
 }
 
+// CommandsConfusability author-time acoustic confusability for a phrase: existing command words it may be misheard as that are co-eligible in its context.
+func (p *Plugin) CommandsConfusability(requiresTags []string, words []string) ([]ConfusabilityFinding, error) {
+	req := &CommandsConfusabilityRequest{
+		RequiresTags: requiresTags,
+		Words:        words,
+	}
+	var result struct {
+		Findings []ConfusabilityFinding `json:"findings"`
+	}
+	err := p.Call(MethodCommandsConfusability, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Findings, nil
+}
+
 // CommandsDelete delete a user command by canonical name.
 func (p *Plugin) CommandsDelete(canonical string) error {
 	req := &CommandsDeleteRequest{

@@ -39,6 +39,7 @@ const (
 	MethodCollectionPut                       = "collection.put"                           // since 0.1.0
 	MethodCollectionsList                     = "collections.list"                         // since 0.1.0
 	MethodCommandsAddAlias                    = "commands.add_alias"                       // since 0.1.0
+	MethodCommandsConfusability               = "commands.confusability"                   // since 0.1.0
 	MethodCommandsDelete                      = "commands.delete"                          // since 0.1.0
 	MethodCommandsEnumerate                   = "commands.enumerate"                       // since 0.1.0
 	MethodCommandsList                        = "commands.list"                            // since 0.1.0
