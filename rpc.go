@@ -30,8 +30,9 @@ type rpcMessage struct {
 }
 
 type rpcError struct {
-	Code    int    `json:"code"`
-	Message string `json:"message"`
+	Code    int             `json:"code"`
+	Message string          `json:"message"`
+	Data    json.RawMessage `json:"data,omitempty"`
 }
 
 // --- Handler types ---
@@ -379,7 +380,10 @@ func (p *Plugin) CallWithTimeout(method string, params any, result any, timeout 
 	select {
 	case res := <-pc.ch:
 		if res.Error != nil {
-			return fmt.Errorf("rpc error %d: %s", res.Error.Code, res.Error.Message)
+			// Return the typed error itself so callers can errors.As /
+			// errors.Is it. This used to be fmt.Errorf, which discarded the
+			// code and left substring matching as the only option.
+			return res.Error.toRPCError()
 		}
 		if result != nil && len(res.Result) > 0 {
 			return json.Unmarshal(res.Result, result)

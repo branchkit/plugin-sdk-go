@@ -42,39 +42,29 @@ func TestUpstreamClientDo(t *testing.T) {
 	}
 }
 
-// The self-signed allowance is for loopback upstreams only. It used to be
-// unconditional while the doc comment claimed otherwise, so a client pointed at
-// a public host accepted any certificate — reachable for real under
-// BRANCHKIT_PROXY, where the base URL can be a remote allowlisted host.
-func TestUpstreamClientSkipsTLSVerifyOnlyForLoopback(t *testing.T) {
-	skips := func(baseURL string) bool {
-		c := NewUpstreamClient(baseURL)
-		tr, ok := c.client.Transport.(*http.Transport)
-		if !ok {
-			t.Fatalf("%s: transport is not *http.Transport", baseURL)
-		}
-		return tr.TLSClientConfig != nil && tr.TLSClientConfig.InsecureSkipVerify
-	}
-
+// The client must never disable certificate verification, for ANY host —
+// loopback included. The CONNECT proxy blind-tunnels TLS and never terminates
+// it, so client-side verification is the only thing authenticating the server;
+// the allowlist gates which name you may dial, not who answers. This used to be
+// an unconditional skip, then a loopback carve-out; both are gone. TS has no
+// equivalent bypass and must not grow one.
+func TestUpstreamClientNeverSkipsTLSVerify(t *testing.T) {
 	for _, u := range []string{
 		"https://localhost:21549",
 		"https://127.0.0.1:21549",
-		"http://localhost:8080",
 		"https://[::1]:21549",
-	} {
-		if !skips(u) {
-			t.Errorf("%s: expected verification to be skipped for a loopback upstream", u)
-		}
-	}
-
-	for _, u := range []string{
 		"https://example.com",
 		"https://api.internal.corp:8443",
 		"https://127.0.0.1.evil.com",
 		"not a url at all::",
 	} {
-		if skips(u) {
-			t.Errorf("%s: TLS verification must NOT be skipped for a non-loopback upstream", u)
+		c := NewUpstreamClient(u)
+		tr, ok := c.client.Transport.(*http.Transport)
+		if !ok {
+			t.Fatalf("%s: transport is not *http.Transport", u)
+		}
+		if tr.TLSClientConfig != nil && tr.TLSClientConfig.InsecureSkipVerify {
+			t.Errorf("%s: TLS verification must never be skipped", u)
 		}
 	}
 }

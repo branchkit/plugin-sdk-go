@@ -50,6 +50,43 @@ func mockActuator(
 
 // runPluginCall wires up newTestPlugin + mockActuator and returns once
 // `call` has finished (or the harness times out). Cleans up the writer.
+// runPluginCallWireErr drives one plugin call against a mock actuator that
+// answers with an exact wire error, structured `data` included. The
+// (any, string) responder used by runPluginCall can only express a message,
+// which is not enough to exercise error classification.
+func runPluginCallWireErr(t *testing.T, wireErr *rpcError, call func(p *Plugin)) {
+	t.Helper()
+	p, w, r := newTestPlugin()
+	go p.Run()
+
+	go func() {
+		for r.Scan() {
+			var req rpcMessage
+			if err := json.Unmarshal(r.Bytes(), &req); err != nil {
+				t.Errorf("mockActuator: bad request: %v", err)
+				return
+			}
+			resp := rpcMessage{JSONRPC: "2.0", ID: req.ID, Error: wireErr}
+			data, _ := json.Marshal(resp)
+			if _, err := w.Write(append(data, '\n')); err != nil {
+				return
+			}
+		}
+	}()
+
+	callDone := make(chan struct{})
+	go func() {
+		call(p)
+		close(callDone)
+	}()
+	select {
+	case <-callDone:
+	case <-time.After(2 * time.Second):
+		t.Fatal("plugin call timed out")
+	}
+	w.(io.Closer).Close()
+}
+
 func runPluginCall(
 	t *testing.T,
 	responder func(method string, params json.RawMessage) (any, string),
@@ -115,19 +152,98 @@ func TestAppendReturnsEntryID(t *testing.T) {
 	)
 }
 
-func TestAppendWrapsRecordingDisabledError(t *testing.T) {
-	runPluginCall(t,
-		func(method string, params json.RawMessage) (any, string) {
-			return nil, "RECORDING_DISABLED: log collection 'x' has recording turned off"
+// The sentinel is matched off the wire's structured `data.kind`. It used to be
+// a substring match on the message, which meant any actuator whose prose
+// changed silently stopped being detectable.
+func TestAppendSurfacesRecordingDisabledFromKind(t *testing.T) {
+	runPluginCallWireErr(t,
+		&rpcError{
+			Code: -32006,
+			// The message deliberately omits the "RECORDING_DISABLED" token: if
+			// detection regressed to substring matching, this test would fail.
+			Message: "log collection 'x' has recording turned off",
+			Data: json.RawMessage(
+				`{"kind":"recording_disabled","op":"append","collection":"x",` +
+					`"detail":"log collection 'x' has recording turned off"}`),
 		},
 		func(p *Plugin) {
 			_, err := p.Append("x", map[string]any{})
 			if err == nil {
-				t.Errorf("expected error, got nil")
-				return
+				t.Fatalf("expected error, got nil")
 			}
 			if !errors.Is(err, ErrRecordingDisabled) {
 				t.Errorf("expected ErrRecordingDisabled, got: %v", err)
+			}
+			var rpcErr *RPCError
+			if !errors.As(err, &rpcErr) {
+				t.Fatalf("expected *RPCError, got %T", err)
+			}
+			if rpcErr.Kind != ErrorKindRecordingDisabled {
+				t.Errorf("kind = %q, want %q", rpcErr.Kind, ErrorKindRecordingDisabled)
+			}
+			if rpcErr.Code != -32006 {
+				t.Errorf("code = %d, want -32006", rpcErr.Code)
+			}
+			if rpcErr.Data == nil || rpcErr.Data.Collection != "x" || rpcErr.Data.Op != "append" {
+				t.Errorf("data = %+v, want collection=x op=append", rpcErr.Data)
+			}
+			// The message prose must not be load-bearing for any of the above.
+			if errors.Is(err, ErrNotFound) {
+				t.Errorf("must not match an unrelated sentinel")
+			}
+		},
+	)
+}
+
+// An actuator predating structured errors sends no `data`. The call must still
+// produce a usable error rather than failing to parse — but it cannot be
+// classified, so kind-based matching correctly does not fire.
+func TestErrorWithoutDataDegradesInsteadOfThrowing(t *testing.T) {
+	runPluginCallWireErr(t,
+		&rpcError{Code: -1, Message: "RECORDING_DISABLED: recording is off"},
+		func(p *Plugin) {
+			_, err := p.Append("x", map[string]any{})
+			if err == nil {
+				t.Fatalf("expected error, got nil")
+			}
+			var rpcErr *RPCError
+			if !errors.As(err, &rpcErr) {
+				t.Fatalf("expected *RPCError, got %T", err)
+			}
+			if rpcErr.Kind != "" {
+				t.Errorf("kind = %q, want empty for a data-less error", rpcErr.Kind)
+			}
+			if rpcErr.Message != "RECORDING_DISABLED: recording is off" {
+				t.Errorf("message not preserved: %q", rpcErr.Message)
+			}
+			if _, ok := ErrorKindOf(err); ok {
+				t.Errorf("ErrorKindOf must report absent for a data-less error")
+			}
+		},
+	)
+}
+
+// A kind this SDK has no constant for must fall through, not blow up.
+func TestUnrecognizedKindDegradesToGenericError(t *testing.T) {
+	runPluginCallWireErr(t,
+		&rpcError{
+			Code:    -32099,
+			Message: "something new happened",
+			Data:    json.RawMessage(`{"kind":"teleportation_failed"}`),
+		},
+		func(p *Plugin) {
+			_, err := p.Append("x", map[string]any{})
+			if err == nil {
+				t.Fatalf("expected error, got nil")
+			}
+			kind, ok := ErrorKindOf(err)
+			if !ok || kind != ErrorKind("teleportation_failed") {
+				t.Errorf("kind = %q (ok=%v), want the unrecognized value passed through", kind, ok)
+			}
+			for _, sentinel := range []error{ErrRecordingDisabled, ErrNotFound, ErrNotPermitted, ErrForbidden} {
+				if errors.Is(err, sentinel) {
+					t.Errorf("unrecognized kind must not match sentinel %v", sentinel)
+				}
 			}
 		},
 	)

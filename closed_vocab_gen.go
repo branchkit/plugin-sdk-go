@@ -43,3 +43,51 @@ var KnownEffects = []string{
 	"suppress_huds",
 	"suppress_notifications",
 }
+
+// ErrorKind* are the closed-vocabulary `kind` values the actuator puts
+// in a JSON-RPC error's `data.kind`. Branch on RPCError.Kind rather
+// than matching the message prose. Source of truth:
+// `actuator/src/fault.rs::ErrorKind`.
+//
+// An actuator newer than this SDK may send a kind that is not listed
+// here; treat an unrecognized value as ErrorKindInternal rather than
+// failing to parse.
+const (
+	ErrorKindNotPermitted      ErrorKind = "not_permitted"
+	ErrorKindRecordingDisabled ErrorKind = "recording_disabled"
+	ErrorKindNotFound          ErrorKind = "not_found"
+	ErrorKindValidation        ErrorKind = "validation"
+	ErrorKindForbidden         ErrorKind = "forbidden"
+	ErrorKindStorage           ErrorKind = "storage"
+	ErrorKindMethodNotFound    ErrorKind = "method_not_found"
+	ErrorKindInvalidParams     ErrorKind = "invalid_params"
+	ErrorKindInternal          ErrorKind = "internal"
+)
+
+// ErrorCodeFor maps a kind to the JSON-RPC error code the actuator
+// sends with it. Derived from the kind actuator-side, so the two can
+// never disagree on the wire.
+var ErrorCodeFor = map[ErrorKind]int{
+	ErrorKindNotPermitted:      -32002,
+	ErrorKindRecordingDisabled: -32006,
+	ErrorKindNotFound:          -32001,
+	ErrorKindValidation:        -32004,
+	ErrorKindForbidden:         -32003,
+	ErrorKindStorage:           -32005,
+	ErrorKindMethodNotFound:    -32601,
+	ErrorKindInvalidParams:     -32602,
+	ErrorKindInternal:          -32603,
+}
+
+// KnownErrorKinds lists the full closed-vocabulary set.
+var KnownErrorKinds = []ErrorKind{
+	ErrorKindNotPermitted,
+	ErrorKindRecordingDisabled,
+	ErrorKindNotFound,
+	ErrorKindValidation,
+	ErrorKindForbidden,
+	ErrorKindStorage,
+	ErrorKindMethodNotFound,
+	ErrorKindInvalidParams,
+	ErrorKindInternal,
+}

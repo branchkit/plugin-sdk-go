@@ -2,9 +2,7 @@ package shared
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
-	"strings"
 )
 
 // Helpers for log-kind collections — append-only record stores defined in
@@ -14,13 +12,6 @@ import (
 // helpers below provide shorter, payload-typed wrappers that mirror the
 // SDK spec section 4.6 surface: Append, ListLog, GetLogEntry, DeleteLogEntry,
 // SetCollectionRecording, GetCollectionRecording.
-
-// ErrRecordingDisabled is returned (wrapped) by Append when the target
-// log collection has its recording flag turned off. Callers can use
-// errors.Is(err, ErrRecordingDisabled) to drop silently or surface a
-// one-time warning. The actuator wire error string starts with
-// "RECORDING_DISABLED:" — Append matches on that prefix.
-var ErrRecordingDisabled = errors.New("RECORDING_DISABLED")
 
 // Append adds an entry to a log-kind collection. The actuator generates a
 // ULID and timestamp and validates the payload against the collection's
@@ -39,9 +30,8 @@ func (p *Plugin) Append(name string, payload any) (string, error) {
 	}
 	entry, err := p.CollectionAppend(name, raw)
 	if err != nil {
-		if strings.Contains(err.Error(), "RECORDING_DISABLED") {
-			return "", fmt.Errorf("%w: %s", ErrRecordingDisabled, err.Error())
-		}
+		// errors.Is(err, ErrRecordingDisabled) works directly off the wire's
+		// structured kind — this used to substring-match the message prose.
 		return "", err
 	}
 	if entry == nil {
@@ -59,9 +49,6 @@ func (p *Plugin) AppendEntry(name string, payload any) (*LogEntry, error) {
 	}
 	entry, err := p.CollectionAppend(name, raw)
 	if err != nil {
-		if strings.Contains(err.Error(), "RECORDING_DISABLED") {
-			return nil, fmt.Errorf("%w: %s", ErrRecordingDisabled, err.Error())
-		}
 		return nil, err
 	}
 	// CollectionAppend decodes into a struct whose Entry is a pointer, so a
@@ -90,9 +77,6 @@ func (p *Plugin) AppendKeyed(name, key string, payload any) error {
 	}
 	_, err = p.CollectionAppendKeyed(key, name, raw)
 	if err != nil {
-		if strings.Contains(err.Error(), "RECORDING_DISABLED") {
-			return fmt.Errorf("%w: %s", ErrRecordingDisabled, err.Error())
-		}
 		return err
 	}
 	return nil
