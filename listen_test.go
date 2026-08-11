@@ -150,6 +150,21 @@ func TestListenLocalNoPluginDir(t *testing.T) {
 	}
 }
 
+// Spec §4.6 requires this of every SDK; the TS SDK had it and Go did not.
+// Counts without opening anything, so it stays safe to call speculatively.
+func TestInheritedListenerCount(t *testing.T) {
+	for _, v := range []string{"", "0", "garbage", "-2"} {
+		t.Setenv("LISTEN_FDS", v)
+		if got := InheritedListenerCount(); got != 0 {
+			t.Fatalf("LISTEN_FDS=%q: expected 0, got %d", v, got)
+		}
+	}
+	t.Setenv("LISTEN_FDS", "2")
+	if got := InheritedListenerCount(); got != 2 {
+		t.Fatalf("LISTEN_FDS=2: expected 2, got %d", got)
+	}
+}
+
 func TestInheritedListenersAbsentOrInvalid(t *testing.T) {
 	// No LISTEN_FDS (or nonsense) must mean "none granted", never an error —
 	// ListenLocal then falls back to self-binding.

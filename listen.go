@@ -102,6 +102,23 @@ func (l *Listener) HandleFunc(pattern string, handler http.HandlerFunc) {
 	l.mux.HandleFunc(pattern, handler)
 }
 
+// InheritedListenerCount reports how many loopback listeners the actuator
+// granted (manifest `sockets.listen`, delivered per the LISTEN_FDS convention
+// at fds 3+). 0 when none were granted — old actuators, unsandboxed dev runs,
+// or no manifest declaration.
+//
+// Cheap and side-effect-free: unlike InheritedListeners it opens nothing, so
+// it is the right call for "was I granted a socket at all?". Required of every
+// SDK by DESIGN_PLUGIN_SDK_SPEC §4.6; the TS SDK exposes the same function as
+// inheritedListenerCount().
+func InheritedListenerCount() int {
+	n, err := strconv.Atoi(os.Getenv("LISTEN_FDS"))
+	if err != nil || n <= 0 {
+		return 0
+	}
+	return n
+}
+
 // InheritedListeners returns every actuator-granted loopback listener
 // declared in the manifest's `sockets.listen`, in declaration order
 // (fd 3 = first entry). Returns an empty slice when none were granted —

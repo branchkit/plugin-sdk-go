@@ -4,7 +4,9 @@ import (
 	"context"
 	"crypto/tls"
 	"io"
+	"net"
 	"net/http"
+	"net/url"
 	"sync"
 	"time"
 )
@@ -25,16 +27,35 @@ type UpstreamClient struct {
 	healthAt time.Time
 }
 
+// isLoopbackURL reports whether baseURL's host is loopback. A URL that does not
+// parse is treated as non-loopback — fail closed, not open.
+func isLoopbackURL(baseURL string) bool {
+	u, err := url.Parse(baseURL)
+	if err != nil {
+		return false
+	}
+	host := u.Hostname()
+	if host == "localhost" {
+		return true
+	}
+	ip := net.ParseIP(host)
+	return ip != nil && ip.IsLoopback()
+}
+
 // NewUpstreamClient creates a client for the given base URL.
 // If the URL uses HTTPS on localhost, TLS certificate verification is skipped
-// to support self-signed certs (common for local services).
+// to support self-signed certs (common for local services). Non-loopback hosts
+// get normal verification.
 func NewUpstreamClient(baseURL string) *UpstreamClient {
-	transport := &http.Transport{
-		// Allow self-signed certs for localhost services.
-		// Safe: upstream is always localhost, visible in plugin settings.
-		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: true,
-		},
+	transport := &http.Transport{}
+	// Skip verification ONLY for a loopback upstream, which is what the
+	// self-signed-cert allowance is for. This used to be unconditional while
+	// the doc comment claimed the loopback condition — so a plugin pointed at a
+	// public host silently accepted any certificate. Under BRANCHKIT_PROXY the
+	// base URL can genuinely be a remote allowlisted host, so the distinction
+	// is load-bearing, not theoretical.
+	if isLoopbackURL(baseURL) {
+		transport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	}
 	// Sandboxed per-host plugins have no direct egress — the platform's
 	// CONNECT proxy (BRANCHKIT_PROXY) is the only route, same as the

@@ -92,13 +92,20 @@ func (r *actionRegistry) dispatch(params json.RawMessage) (any, error) {
 //   - return any other value → marshaled as the JSON-RPC result (caller decides shape)
 //   - return error → translated to a JSON-RPC error response
 func (p *Plugin) HandleAction(action string, fn ActionHandlerFunc) {
+	// p.mu guards the handler map and the registry pointer; the registry's own
+	// RWMutex guards its entries. Always p.mu → registry.mu, never the reverse.
+	p.mu.Lock()
 	if p.actionRegistry == nil {
 		if _, exists := p.handlers[HookOnAction]; exists {
+			p.mu.Unlock()
 			panic("plugin-sdk-go: cannot mix Handle(\"on_action\", ...) and HandleAction(...) — pick one")
 		}
 		p.actionRegistry = &actionRegistry{handlers: make(map[string]ActionHandlerFunc)}
 		p.handlers[HookOnAction] = p.actionRegistry.dispatch
 	}
+	reg := p.actionRegistry
+	p.mu.Unlock()
+
 	wrapped := func(req *OnActionRequest) (any, error) {
 		result, err := fn(req)
 		if err != nil {
@@ -109,7 +116,7 @@ func (p *Plugin) HandleAction(action string, fn ActionHandlerFunc) {
 		}
 		return result, nil
 	}
-	p.actionRegistry.set(action, wrapped)
+	reg.set(action, wrapped)
 }
 
 // HandleActionTyped is a generic helper that unmarshals the request params into
@@ -137,13 +144,16 @@ func HandleActionTyped[T any](p *Plugin, action string, fn func(params T, req *O
 // HandleAction. Useful for the (future) list_action_types RPC and for tests.
 // Returns nil if no per-action handlers have been registered.
 func (p *Plugin) RegisteredActionTypes() []string {
-	if p.actionRegistry == nil {
+	p.mu.Lock()
+	reg := p.actionRegistry
+	p.mu.Unlock()
+	if reg == nil {
 		return nil
 	}
-	p.actionRegistry.mu.RLock()
-	defer p.actionRegistry.mu.RUnlock()
-	out := make([]string, 0, len(p.actionRegistry.handlers))
-	for k := range p.actionRegistry.handlers {
+	reg.mu.RLock()
+	defer reg.mu.RUnlock()
+	out := make([]string, 0, len(reg.handlers))
+	for k := range reg.handlers {
 		out = append(out, k)
 	}
 	return out

@@ -161,6 +161,26 @@ func TestAppendEntryReturnsFullEntry(t *testing.T) {
 	)
 }
 
+// A well-formed response carrying no entry decodes to a nil *LogEntry. Append
+// guarded that; AppendEntry returned (nil, nil), so callers following the
+// `if err != nil` convention went straight to a nil dereference.
+func TestAppendEntryRejectsNilEntry(t *testing.T) {
+	runPluginCall(t,
+		func(method string, params json.RawMessage) (any, string) {
+			return map[string]any{}, "" // no "entry" key
+		},
+		func(p *Plugin) {
+			entry, err := p.AppendEntry("any", map[string]string{"k": "v"})
+			if err == nil {
+				t.Error("expected an error for a response with no entry, got nil")
+			}
+			if entry != nil {
+				t.Errorf("expected nil entry alongside the error, got %+v", entry)
+			}
+		},
+	)
+}
+
 func TestListLogReturnsEntries(t *testing.T) {
 	runPluginCall(t,
 		func(method string, params json.RawMessage) (any, string) {

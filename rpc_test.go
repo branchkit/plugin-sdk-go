@@ -119,6 +119,65 @@ func newTestPluginT(t testing.TB) (*Plugin, io.Writer, *bufio.Scanner) {
 // notifications in wire order even when a handler is slow. The first handler
 // sleeps; under the old goroutine-per-notification dispatch the later
 // notifications would record while it slept, producing out-of-order results.
+// TestNotificationsBeforeRunAreQueuedNotDropped pins the readiness gate on the
+// notification path. The actuator's forwarder gates delivery on subscription +
+// interaction only — never on `plugin.initialized` — so events genuinely land
+// on stdin while the plugin body is still calling On(). Before the gate that
+// window did two bad things: the notification was dropped (no listener
+// registered yet), and the worker's map read raced On()'s map write, which is
+// a fatal unrecoverable Go throw rather than a recoverable panic.
+//
+// Run under -race: the interleaving below is what reproduced the throw.
+func TestNotificationsBeforeRunAreQueuedNotDropped(t *testing.T) {
+	p, actuatorW, _ := newTestPluginT(t)
+
+	const n = 50
+	received := make(chan int, n)
+
+	// The actuator pushes the moment the session exists — before Run().
+	go func() {
+		for i := range n {
+			fmt.Fprintf(actuatorW, `{"jsonrpc":"2.0","method":"early.tick","params":{"seq":%d}}`+"\n", i)
+		}
+	}()
+
+	// Concurrently, the plugin body registers listeners for OTHER methods, as
+	// every plugin does. Registering several for one method exercises the slice
+	// append that used to reallocate under the worker's range — this is the
+	// interleaving that reproduced the fatal map throw under -race.
+	for range 10 {
+		p.On("early.evt", func(json.RawMessage) {})
+	}
+
+	// Give the read loop time to drain stdin into the queue. Without the
+	// readiness gate the worker would pop all n here, find no listener for
+	// early.tick, and drop them on the floor — making the wait below time out.
+	// This sleep is what makes the drop deterministic rather than a race.
+	time.Sleep(100 * time.Millisecond)
+
+	p.On("early.tick", func(params json.RawMessage) {
+		var msg struct {
+			Seq int `json:"seq"`
+		}
+		json.Unmarshal(params, &msg)
+		received <- msg.Seq
+	})
+
+	go p.Run()
+
+	// Every pre-Run notification must arrive once Run() opens the gate.
+	for i := range n {
+		select {
+		case got := <-received:
+			if got != i {
+				t.Fatalf("notification %d delivered out of order: got seq %d", i, got)
+			}
+		case <-time.After(2 * time.Second):
+			t.Fatalf("timed out waiting for pre-Run notification %d/%d — dropped, not queued", i, n)
+		}
+	}
+}
+
 func TestNotificationsDeliveredInOrder(t *testing.T) {
 	p, actuatorW, _ := newTestPluginT(t)
 

@@ -119,6 +119,13 @@ func (q *notifyQueue) close() {
 //
 // Handle() and On() must be called before Run(). Call() may be called from
 // any goroutine concurrently with Run().
+//
+// Both inbound lanes are held until Run(): requests block in handleRequest,
+// notifications queue in notifyQ. So a listener registered before Run() sees
+// every notification the actuator sent since spawn — the forwarder starts
+// writing as soon as the RPC session exists, well before `plugin.initialized`.
+// Registering after Run() is safe (the bookkeeping maps are mutex-guarded) but
+// may miss notifications already drained.
 type Plugin struct {
 	pluginID string
 
@@ -216,6 +223,20 @@ func NewPlugin() *Plugin {
 // keeps running and delivers the response, then this worker proceeds to the
 // next notification. See notes/DESIGN_SDK_EVENT_ORDERING.md.
 func (p *Plugin) notifyWorker() {
+	// Hold delivery until Run() signals that listeners are registered — the
+	// same gate handleRequest applies to inbound requests. The actuator's
+	// forwarder starts writing as soon as the RPC session exists (it gates on
+	// subscription + interaction, never on `plugin.initialized`), so without
+	// this a notification arriving during plugin setup was dropped on the
+	// floor — no listener registered yet — AND raced On()'s map write against
+	// this goroutine's map read, which is a fatal, unrecoverable Go throw.
+	// The queue is unbounded and push never blocks, so holding here is free.
+	select {
+	case <-p.ready:
+	case <-p.closed:
+		return
+	}
+
 	for {
 		msg, ok := p.notifyQ.pop()
 		if !ok {
@@ -232,6 +253,8 @@ func (p *Plugin) notifyWorker() {
 // install a handler for the same RPC method. Calling either after the other
 // has been registered panics, regardless of order.
 func (p *Plugin) Handle(method string, fn HandlerFunc) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
 	if method == HookOnAction && p.actionRegistry != nil {
 		panic("plugin-sdk-go: cannot mix Handle(\"on_action\", ...) and HandleAction(...) — pick one")
 	}
@@ -265,6 +288,8 @@ func HandleTyped[Req any](p *Plugin, method string, fn func(*Req) (any, error)) 
 // On registers a listener for actuator→plugin notifications (fire-and-forget).
 // Multiple listeners can be registered for the same method.
 func (p *Plugin) On(method string, fn ListenerFunc) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
 	p.listeners[method] = append(p.listeners[method], fn)
 }
 
@@ -489,7 +514,12 @@ func (p *Plugin) handleRequest(msg rpcMessage) {
 		return
 	}
 
+	// Copy the handler out under the lock, then release it — a handler may
+	// call Handle/On or block on an outbound Call, and mu must never be held
+	// across either.
+	p.mu.Lock()
 	handler, ok := p.handlers[msg.Method]
+	p.mu.Unlock()
 	if !ok {
 		p.sendError(*msg.ID, -32601, fmt.Sprintf("method not found: %s", msg.Method))
 		return
@@ -538,7 +568,13 @@ func (p *Plugin) handleNotification(msg rpcMessage) {
 	setAmbientCorrelation(msg.CorrelationID)
 	defer clearAmbientCorrelation()
 
-	listeners := p.listeners[msg.Method]
+	// Snapshot the slice under the lock: On() may append concurrently (a
+	// listener is free to register another), and append can reallocate the
+	// backing array out from under this range.
+	p.mu.Lock()
+	listeners := append([]ListenerFunc(nil), p.listeners[msg.Method]...)
+	p.mu.Unlock()
+
 	for _, fn := range listeners {
 		func() {
 			defer func() {

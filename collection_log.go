@@ -64,6 +64,12 @@ func (p *Plugin) AppendEntry(name string, payload any) (*LogEntry, error) {
 		}
 		return nil, err
 	}
+	// CollectionAppend decodes into a struct whose Entry is a pointer, so a
+	// well-formed response carrying no entry yields (nil, nil) — which the
+	// caller then dereferences. Append guards this; AppendEntry did not.
+	if entry == nil {
+		return nil, fmt.Errorf("collection.append: actuator returned nil entry")
+	}
 	return entry, nil
 }
 
