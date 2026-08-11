@@ -21,10 +21,25 @@ func TestLoadCommandFile(t *testing.T) {
 	}
 }
 
-func TestLoadCommandFileMissing(t *testing.T) {
-	_, err := loadCommandFile("/nonexistent/commands.json")
-	if err == nil {
-		t.Fatal("expected error for missing file")
+// Absent is not an error: a plugin may ship only context files under commands/,
+// or none at all (browser and keyboard ship neither). This previously returned
+// an error, so PushCommands failed outright for those plugins.
+func TestLoadCommandFileMissingIsNotAnError(t *testing.T) {
+	cmds, err := loadCommandFile("/nonexistent/commands.json")
+	if err != nil {
+		t.Fatalf("missing file should not error, got: %v", err)
+	}
+	if len(cmds) != 0 {
+		t.Fatalf("expected no commands, got %d", len(cmds))
+	}
+}
+
+// Any OTHER read failure must propagate — silently pushing zero commands
+// because the file was unreadable is the failure mode worth being loud about.
+func TestLoadCommandFileUnreadablePropagates(t *testing.T) {
+	// A directory is readable-as-a-path but not as a file: EISDIR, not ENOENT.
+	if _, err := loadCommandFile(t.TempDir()); err == nil {
+		t.Fatal("expected an error for an unreadable commands.json, got nil")
 	}
 }
 

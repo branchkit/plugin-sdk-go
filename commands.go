@@ -2,7 +2,9 @@ package shared
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"sort"
@@ -94,9 +96,17 @@ func PushCommands(p *Plugin) (int, error) {
 }
 
 // loadCommandFile reads a JSON array of commands from a file.
+//
+// An ABSENT file is not an error — a plugin may ship only context files under
+// commands/, or no command files at all (browser and keyboard ship neither).
+// Any other read failure propagates: silently pushing zero commands because the
+// file was unreadable is the failure mode worth being loud about.
 func loadCommandFile(path string) ([]json.RawMessage, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			return nil, nil
+		}
 		return nil, err
 	}
 	var commands []json.RawMessage
