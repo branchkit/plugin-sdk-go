@@ -3,6 +3,7 @@ package shared
 import (
 	"context"
 	"crypto/rand"
+	"crypto/subtle"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -79,7 +80,14 @@ func ListenLocal(plugin *Plugin) (*Listener, error) {
 				http.Error(w, "unauthorized", http.StatusUnauthorized)
 				return
 			}
-			if strings.TrimPrefix(auth, "Bearer ") != token {
+			// Constant-time: a length-and-content-dependent compare leaks the
+			// token prefix-by-prefix to anything that can time the response.
+			// The browser plugin's fork of this handler already did this; the
+			// primitive it forked did not.
+			if subtle.ConstantTimeCompare(
+				[]byte(strings.TrimPrefix(auth, "Bearer ")),
+				[]byte(token),
+			) != 1 {
 				http.Error(w, "forbidden", http.StatusForbidden)
 				return
 			}
