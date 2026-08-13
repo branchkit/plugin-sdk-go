@@ -280,6 +280,22 @@ func (b *ListOptsBuilder) Cursor(id string) *ListOptsBuilder {
 	return b
 }
 
+// Writer returns only records owned by `writer` — the plugin id that CREATED
+// them, or "_platform" for host writes. Exact equality; omitting it returns
+// every record whoever owns it.
+//
+// Pair it with p.ID() to ask for your own records, which is the read half of
+// a scoped write:
+//
+//	mine := shared.NewListOpts().Writer(p.ID()).Build()
+//
+// Filtering happens before Limit, so a limited read returns up to Limit
+// MATCHING records rather than the matches within the first Limit records.
+func (b *ListOptsBuilder) Writer(writer string) *ListOptsBuilder {
+	b.opts.Writer = &writer
+	return b
+}
+
 func (b *ListOptsBuilder) Build() *ListOpts { return &b.opts }
 
 // CollectionChangedEvent is the payload of _platform.collection.updated.

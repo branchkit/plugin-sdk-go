@@ -167,6 +167,19 @@ type Plugin struct {
 	actionRegistry *actionRegistry
 }
 
+// ID returns this plugin's own id, as the actuator assigned it
+// (BRANCHKIT_PLUGIN_ID), or "unknown" when running outside the actuator.
+//
+// Exposed because a plugin routinely needs to name itself to the platform —
+// most directly to ask for its OWN records:
+//
+//	mine := shared.NewListOpts().Writer(p.ID()).Build()
+//
+// Without it every caller reaches for os.Getenv and re-derives the fallback,
+// which is how the SDK ended up reading the variable in several places
+// internally before this existed.
+func (p *Plugin) ID() string { return p.pluginID }
+
 // NewPlugin creates a new Plugin that communicates via stdin/stdout.
 // The read loop starts immediately — Call() works from this point.
 func NewPlugin() *Plugin {

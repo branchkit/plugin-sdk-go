@@ -492,6 +492,7 @@ type ListOpts struct {
 	Limit     *int    `json:"limit,omitempty"`
 	SinceMs   *int    `json:"since_ms,omitempty"`
 	UntilMs   *int    `json:"until_ms,omitempty"`
+	Writer    *string `json:"writer,omitempty"`
 }
 
 // ListeningPort is auto-generated from the OpenRPC spec.
