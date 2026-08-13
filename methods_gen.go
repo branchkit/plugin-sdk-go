@@ -436,6 +436,18 @@ func (p *Plugin) CollectionsList(kind *string) ([]CollectionsListSection, error)
 	return result.Sections, nil
 }
 
+// CollectionsOwned list the collections holding records the caller owns, with per-group counts — the enumeration half of per-record ownership.
+func (p *Plugin) CollectionsOwned() ([]OwnedCollection, error) {
+	var result struct {
+		Owned []OwnedCollection `json:"owned"`
+	}
+	err := p.Call(MethodCollectionsOwned, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Owned, nil
+}
+
 // CommandsAddAlias add an extra spoken form (alias) for an existing command.
 func (p *Plugin) CommandsAddAlias(action string, defaultPattern string, newPattern string) error {
 	req := &CommandsAddAliasRequest{

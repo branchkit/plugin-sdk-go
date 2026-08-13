@@ -619,6 +619,13 @@ const (
 	OnPointerFade OnPointer = "fade"
 )
 
+// OwnedCollection is auto-generated from the OpenRPC spec.
+type OwnedCollection struct {
+	Count int     `json:"count"`
+	Group *string `json:"group,omitempty"`
+	Name  string  `json:"name"`
+}
+
 // PipelineStatusEntry is auto-generated from the OpenRPC spec.
 type PipelineStatusEntry struct {
 	Ephemeral bool   `json:"ephemeral"`
@@ -1211,6 +1218,11 @@ type CollectionsListRequest struct {
 // CollectionsListResponse is the response type for collections.list.
 type CollectionsListResponse struct {
 	Sections []CollectionsListSection `json:"sections"`
+}
+
+// CollectionsOwnedResponse is the response type for collections.owned.
+type CollectionsOwnedResponse struct {
+	Owned []OwnedCollection `json:"owned"`
 }
 
 // CommandsAddAliasRequest is the request type for commands.add_alias.

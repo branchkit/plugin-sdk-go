@@ -40,6 +40,7 @@ const (
 	MethodCollectionReplace                   = "collection.replace"                       // since 0.1.0
 	MethodCollectionsCreateUser               = "collections.create_user"                  // since 0.1.0
 	MethodCollectionsList                     = "collections.list"                         // since 0.1.0
+	MethodCollectionsOwned                    = "collections.owned"                        // since 0.1.0
 	MethodCommandsAddAlias                    = "commands.add_alias"                       // since 0.1.0
 	MethodCommandsConfusability               = "commands.confusability"                   // since 0.1.0
 	MethodCommandsDelete                      = "commands.delete"                          // since 0.1.0
