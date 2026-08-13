@@ -93,9 +93,15 @@ type LogListOpts struct {
 }
 
 // recordToLogEntry projects the unified record envelope onto the log
-// view. Lossless: log records carry their append time in timestamp_ms.
+// view. Lossless: log records carry their append time in timestamp_ms and
+// their owner in writer.
 func recordToLogEntry(r CollectionRecord) LogEntry {
-	return LogEntry{ID: r.ID, TimestampMs: r.TimestampMs, Payload: r.Payload}
+	return LogEntry{
+		ID:          r.ID,
+		TimestampMs: r.TimestampMs,
+		Payload:     r.Payload,
+		Writer:      r.Writer,
+	}
 }
 
 // logOptsToListOpts maps the log opts onto the unified list opts —
