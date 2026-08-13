@@ -174,6 +174,7 @@ type CollectionRecord struct {
 	Payload     json.RawMessage `json:"payload,omitempty"`
 	Revision    int             `json:"revision"`
 	TimestampMs int             `json:"timestamp_ms"`
+	Writer      string          `json:"writer"`
 }
 
 // CollectionsListItem is auto-generated from the OpenRPC spec.
@@ -506,6 +507,7 @@ type LogEntry struct {
 	ID          string          `json:"id"`
 	Payload     json.RawMessage `json:"payload,omitempty"`
 	TimestampMs int             `json:"timestamp_ms"`
+	Writer      string          `json:"writer"`
 }
 
 // LoginItem is auto-generated from the OpenRPC spec.
