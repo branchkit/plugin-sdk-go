@@ -305,3 +305,90 @@ func (p *Plugin) Subscribe(name string, fn CollectionChangedHandler) {
 		}
 	})
 }
+
+// --- Replace ---------------------------------------------------------------
+
+// ReplaceScope bounds what a Replace is allowed to DELETE. It is required and
+// never inferred: collection ownership is per-collection, not per-record, and
+// `writers: anyone_who_declares` permits multiple plugins to write one
+// collection — so a replace that assumed the whole collection was the caller's
+// could silently wipe another plugin's records.
+//
+// Construct with ScopeCollection or ScopePrefix.
+type ReplaceScope struct {
+	kind  string
+	value string
+}
+
+// ScopeCollection makes every other record in the collection the complement:
+// after the call the collection contains exactly the given records.
+//
+// Restricted by the platform to the collection's introducer. If this plugin did
+// not declare the collection, use ScopePrefix over a key space you own.
+func ScopeCollection() ReplaceScope { return ReplaceScope{kind: "collection"} }
+
+// ScopePrefix limits both the replace and its deletions to record ids starting
+// with prefix, so one plugin can maintain several independent replace-sets in
+// one collection (per-tab hint sets, per-source command sets). Entries whose id
+// falls outside the prefix are rejected rather than written — accepting them
+// would create records the same call could never clean up.
+func ScopePrefix(prefix string) ReplaceScope {
+	return ReplaceScope{kind: "prefix", value: prefix}
+}
+
+func (s ReplaceScope) marshal() (json.RawMessage, error) {
+	if s.kind == "" {
+		return nil, fmt.Errorf("replace scope is required — use ScopeCollection() or ScopePrefix()")
+	}
+	m := map[string]string{"kind": s.kind}
+	if s.kind == "prefix" {
+		m["value"] = s.value
+	}
+	return json.Marshal(m)
+}
+
+// ReplaceResult reports what a Replace changed. The counts are split for drift
+// detection, like DeleteMany's: a caller that expected a steady state and sees
+// a nonzero Put or Deleted has diverged from the platform's view.
+type ReplaceResult struct {
+	// Records written — new, or whose payload differed.
+	Put int
+	// Records removed because they were in scope but not in the desired set.
+	Deleted int
+	// Records left untouched because their payload was byte-identical. Load
+	// bearing: skipping these is what keeps a periodic refresh from re-firing
+	// _platform.collection.updated for every record and waking every subscriber.
+	Skipped int
+}
+
+// Replace makes the records in scope exactly `entries`: upsert what changed,
+// delete what is absent, skip what is byte-identical.
+//
+// Prefer this over hand-rolling a diff. Computing the complement on the plugin
+// side requires remembering what you last published, and that memory dies with
+// the process — which is precisely the orphaned-record bug in the older
+// toolkit.ReplaceCollection helper this replaces. The platform already knows
+// what is in the collection, so it needs no shadow.
+//
+//	// publish this tab's hints, clearing any this tab published before
+//	_, err := p.Replace("browser_hints", entries, shared.ScopePrefix(tabID+":"))
+//
+// See notes/DESIGN_COLLECTION_REPLACE.md.
+func (p *Plugin) Replace(
+	name string,
+	entries []CollectionPutEntry,
+	scope ReplaceScope,
+) (ReplaceResult, error) {
+	rawScope, err := scope.marshal()
+	if err != nil {
+		return ReplaceResult{}, err
+	}
+	resp, err := p.CollectionReplace(entries, nil, name, nil, rawScope)
+	if err != nil {
+		return ReplaceResult{}, err
+	}
+	if resp == nil {
+		return ReplaceResult{}, nil
+	}
+	return ReplaceResult{Put: resp.Put, Deleted: resp.Deleted, Skipped: resp.Skipped}, nil
+}

@@ -1170,6 +1170,22 @@ type CollectionPutResponse struct {
 	Ok    bool `json:"ok"`
 }
 
+// CollectionReplaceRequest is the request type for collection.replace.
+type CollectionReplaceRequest struct {
+	Entries []CollectionPutEntry `json:"entries,omitempty"`
+	Label   *string              `json:"label,omitempty"`
+	Name    string               `json:"name"`
+	Roles   json.RawMessage      `json:"roles,omitempty"`
+	Scope   json.RawMessage      `json:"scope"`
+}
+
+// CollectionReplaceResponse is the response type for collection.replace.
+type CollectionReplaceResponse struct {
+	Deleted int `json:"deleted"`
+	Put     int `json:"put"`
+	Skipped int `json:"skipped"`
+}
+
 // CollectionsCreateUserRequest is the request type for collections.create_user.
 type CollectionsCreateUserRequest struct {
 	Description *string `json:"description,omitempty"`

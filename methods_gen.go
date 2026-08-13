@@ -388,6 +388,23 @@ func (p *Plugin) CollectionPut(entries []CollectionPutEntry, label *string, name
 	return &result, nil
 }
 
+// CollectionReplace make the records in scope exactly the given set: upsert changed, delete absent, skip byte-identical. Scope is required and bounds what may be deleted..
+func (p *Plugin) CollectionReplace(entries []CollectionPutEntry, label *string, name string, roles json.RawMessage, scope json.RawMessage) (*CollectionReplaceResponse, error) {
+	req := &CollectionReplaceRequest{
+		Entries: entries,
+		Label:   label,
+		Name:    name,
+		Roles:   roles,
+		Scope:   scope,
+	}
+	var result CollectionReplaceResponse
+	err := p.Call(MethodCollectionReplace, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // CollectionsCreateUser create a simple user list of words (name + words_text, one entry per line, optional `word = value`) and seed its entries.
 func (p *Plugin) CollectionsCreateUser(description *string, name string, wordsText *string) (*CollectionsCreateUserResponse, error) {
 	req := &CollectionsCreateUserRequest{
