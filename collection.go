@@ -361,6 +361,36 @@ type ReplaceResult struct {
 	Skipped int
 }
 
+// ReplaceOption sets the presentation metadata a Replace may carry alongside
+// its records. Both options describe how a DYNAMIC collection renders; a
+// collection declared in plugin.json sets the same things there instead, and
+// passing them here would be redundant.
+type ReplaceOption func(*replaceOpts)
+
+type replaceOpts struct {
+	roles map[string]FieldDisplay
+	label string
+}
+
+// WithReplaceRoles declares display roles for this collection's fields (field
+// name → role). Only meaningful for dynamic collections; manifest-declared
+// collections carry `display` on each field in plugin.json.
+//
+// Safe to pass on every call. The platform's semantics are last-write-wins,
+// and a replace that omits roles leaves the prior setting in place — so
+// re-asserting the same roles on each publish costs nothing and keeps them
+// correct across a plugin restart.
+func WithReplaceRoles(roles map[string]FieldDisplay) ReplaceOption {
+	return func(o *replaceOpts) { o.roles = roles }
+}
+
+// WithReplaceLabel sets the collection's human-readable category name — what
+// display surfaces (the Discovery HUD's tag badge, Settings) render instead of
+// humanizing the collection id. Same dynamic-only scope as WithReplaceRoles.
+func WithReplaceLabel(label string) ReplaceOption {
+	return func(o *replaceOpts) { o.label = label }
+}
+
 // Replace makes the records in scope exactly `entries`: upsert what changed,
 // delete what is absent, skip what is byte-identical.
 //
@@ -373,17 +403,35 @@ type ReplaceResult struct {
 //	// publish this tab's hints, clearing any this tab published before
 //	_, err := p.Replace("browser_hints", entries, shared.ScopePrefix(tabID+":"))
 //
+// A name the platform does not know yet is created on first call, with this
+// plugin as its introducer — the same auto-registration `Put` performs.
+//
 // See notes/DESIGN_COLLECTION_REPLACE.md.
 func (p *Plugin) Replace(
 	name string,
 	entries []CollectionPutEntry,
 	scope ReplaceScope,
+	opts ...ReplaceOption,
 ) (ReplaceResult, error) {
 	rawScope, err := scope.marshal()
 	if err != nil {
 		return ReplaceResult{}, err
 	}
-	resp, err := p.CollectionReplace(entries, nil, name, nil, rawScope)
+	var o replaceOpts
+	for _, opt := range opts {
+		opt(&o)
+	}
+	var rawRoles json.RawMessage
+	if len(o.roles) > 0 {
+		if rawRoles, err = json.Marshal(o.roles); err != nil {
+			return ReplaceResult{}, fmt.Errorf("replace %s: marshal roles: %w", name, err)
+		}
+	}
+	var label *string
+	if o.label != "" {
+		label = &o.label
+	}
+	resp, err := p.CollectionReplace(entries, label, name, rawRoles, rawScope)
 	if err != nil {
 		return ReplaceResult{}, err
 	}
