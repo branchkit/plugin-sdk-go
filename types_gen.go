@@ -170,6 +170,7 @@ type CollectionPutEntry struct {
 
 // CollectionRecord is auto-generated from the OpenRPC spec.
 type CollectionRecord struct {
+	Group       *string         `json:"group,omitempty"`
 	ID          string          `json:"id"`
 	Payload     json.RawMessage `json:"payload,omitempty"`
 	Revision    int             `json:"revision"`
@@ -1162,6 +1163,7 @@ type CollectionPatchResponse struct {
 // CollectionPutRequest is the request type for collection.put.
 type CollectionPutRequest struct {
 	Entries []CollectionPutEntry `json:"entries,omitempty"`
+	Group   *string              `json:"group,omitempty"`
 	Label   *string              `json:"label,omitempty"`
 	Name    string               `json:"name"`
 	Roles   json.RawMessage      `json:"roles,omitempty"`

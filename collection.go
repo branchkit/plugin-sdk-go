@@ -133,7 +133,7 @@ func (p *Plugin) Put(name, id string, payload any) error {
 	if err != nil {
 		return fmt.Errorf("marshal payload: %w", err)
 	}
-	_, err = p.CollectionPut([]CollectionPutEntry{{ID: id, Payload: raw}}, nil, name, nil)
+	_, err = p.CollectionPut([]CollectionPutEntry{{ID: id, Payload: raw}}, nil, nil, name, nil)
 	return err
 }
 
@@ -192,7 +192,7 @@ func (p *Plugin) PutManyWithDisplay(
 	if label != "" {
 		labelPtr = &label
 	}
-	res, err := p.CollectionPut(entries, labelPtr, name, rolesRaw)
+	res, err := p.CollectionPut(entries, nil, labelPtr, name, rolesRaw)
 	if err != nil {
 		return 0, err
 	}
@@ -334,7 +334,7 @@ func (p *Plugin) Subscribe(name string, fn CollectionChangedHandler) {
 // subset under this key space" are different intentions and guessing between
 // them is how a refresh silently becomes a wipe.
 //
-// Construct with ScopeCollection or ScopePrefix.
+// Construct with ScopeCollection or ScopeGroup.
 type ReplaceScope struct {
 	kind  string
 	value string
@@ -347,25 +347,29 @@ type ReplaceScope struct {
 //
 // Safe on a collection you did not declare — `writers: anyone_who_declares`
 // collections are meant to have several contributors, and each can manage its
-// own with this. Reach for ScopePrefix when you keep SEVERAL independent
+// own with this. Reach for ScopeGroup when you keep SEVERAL independent
 // replace-sets in one collection, not merely because you are not the owner.
 func ScopeCollection() ReplaceScope { return ReplaceScope{kind: "collection"} }
 
-// ScopePrefix narrows further, to ids starting with prefix, so one plugin can
-// maintain several independent replace-sets in one collection (per-tab hint
-// sets, per-source command sets). Entries whose id falls outside the prefix are
-// rejected rather than written — accepting them would create records the same
-// call could never clean up.
-func ScopePrefix(prefix string) ReplaceScope {
-	return ReplaceScope{kind: "prefix", value: prefix}
+// ScopeGroup narrows further, to this plugin's records carrying the named
+// group label — and stamps that label on every entry written, so membership
+// is an envelope fact rather than an id convention. One plugin keeps several
+// independent replace-sets in one collection this way (per-source command
+// sets are the motivating case: commands.push's group is exactly this).
+//
+// The label must be non-empty — an empty one is indistinguishable from
+// "ungrouped" on the records it writes, which would silently make this a
+// collection-wide replace. The platform refuses it.
+func ScopeGroup(group string) ReplaceScope {
+	return ReplaceScope{kind: "group", value: group}
 }
 
 func (s ReplaceScope) marshal() (json.RawMessage, error) {
 	if s.kind == "" {
-		return nil, fmt.Errorf("replace scope is required — use ScopeCollection() or ScopePrefix()")
+		return nil, fmt.Errorf("replace scope is required — use ScopeCollection() or ScopeGroup()")
 	}
 	m := map[string]string{"kind": s.kind}
-	if s.kind == "prefix" {
+	if s.kind == "group" {
 		m["value"] = s.value
 	}
 	return json.Marshal(m)
@@ -424,8 +428,8 @@ func WithReplaceLabel(label string) ReplaceOption {
 // toolkit.ReplaceCollection helper this replaces. The platform already knows
 // what is in the collection, so it needs no shadow.
 //
-//	// publish this tab's hints, clearing any this tab published before
-//	_, err := p.Replace("browser_hints", entries, shared.ScopePrefix(tabID+":"))
+//	// publish this source's commands, clearing what it published before
+//	_, err := p.Replace("cmds", entries, shared.ScopeGroup("hints"))
 //
 // A name the platform does not know yet is created on first call, with this
 // plugin as its introducer — the same auto-registration `Put` performs.
