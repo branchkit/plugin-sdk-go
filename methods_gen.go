@@ -516,9 +516,10 @@ func (p *Plugin) CommandsListOverrides() ([]CommandOverride, error) {
 }
 
 // CommandsPush register commands with the matching engine to the matching engine.
-func (p *Plugin) CommandsPush(commands json.RawMessage) (*CommandsPushResponse, error) {
+func (p *Plugin) CommandsPush(commands json.RawMessage, group *string) (*CommandsPushResponse, error) {
 	req := &CommandsPushRequest{
 		Commands: commands,
+		Group:    group,
 	}
 	var result CommandsPushResponse
 	err := p.Call(MethodCommandsPush, req, &result)

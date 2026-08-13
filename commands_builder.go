@@ -251,14 +251,50 @@ func LoadCommands() ([]CommandSpec, error) {
 // (LoadCommands + built) slice. Returns the number of command variants
 // registered.
 func PushCommandSpecs(p *Plugin, specs []CommandSpec) (int, error) {
+	return pushCommandSpecs(p, specs, nil)
+}
+
+// PushCommandGroup registers `specs` as a NAMED GROUP within this plugin's
+// command set, replacing only that group and leaving the plugin's other groups
+// intact.
+//
+// Use this whenever a plugin has more than one command source. Plain
+// PushCommandSpecs replaces the plugin's ENTIRE set, so two sources pushing
+// independently race: whichever landed last is the only set the matcher sees.
+// That is not hypothetical — it cost browser its hint-skeleton commands
+// repeatedly, and the workaround was a mutex plus rebuilding the union from
+// every builder on each call. With groups, each source owns one and nothing
+// needs to know about the others.
+//
+//	// each source owns its own group; no coordination between them
+//	shared.PushCommandGroup(p, "hints", hintSpecs)
+//	shared.PushCommandGroup(p, "scroll", scrollSpecs)
+//
+//	// retract one source without touching the rest
+//	shared.PushCommandGroup(p, "hints", nil)
+//
+// Returns the number of command variants now active for the whole plugin, not
+// just this group.
+func PushCommandGroup(p *Plugin, group string, specs []CommandSpec) (int, error) {
+	if group == "" {
+		return 0, fmt.Errorf("PushCommandGroup: group name is required (use PushCommandSpecs to replace the whole set)")
+	}
+	return pushCommandSpecs(p, specs, &group)
+}
+
+func pushCommandSpecs(p *Plugin, specs []CommandSpec, group *string) (int, error) {
 	wire := make([]CommandSpec, len(specs))
 	for i, s := range specs {
 		wire[i] = normalizeCommandSpec(s)
 	}
+	params := map[string]any{"commands": wire}
+	if group != nil {
+		params["group"] = *group
+	}
 	var resp struct {
 		Count int `json:"count"`
 	}
-	if err := p.Call("commands.push", map[string]any{"commands": wire}, &resp); err != nil {
+	if err := p.Call("commands.push", params, &resp); err != nil {
 		return 0, fmt.Errorf("commands.push: %w", err)
 	}
 	return resp.Count, nil

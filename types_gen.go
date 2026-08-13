@@ -1266,6 +1266,7 @@ type CommandsListOverridesResponse struct {
 // CommandsPushRequest is the request type for commands.push.
 type CommandsPushRequest struct {
 	Commands json.RawMessage `json:"commands,omitempty"`
+	Group    *string         `json:"group,omitempty"`
 }
 
 // CommandsPushResponse is the response type for commands.push.
