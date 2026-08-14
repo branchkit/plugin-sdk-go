@@ -22,6 +22,7 @@ const (
 	EffectPreventFocusSteal        = "prevent_focus_steal"
 	EffectSignalRecordingActive    = "signal_recording_active"
 	EffectSuppressHuds             = "suppress_huds"
+	EffectSuppressKeybinds         = "suppress_keybinds"
 	EffectSuppressNotifications    = "suppress_notifications"
 )
 
@@ -41,6 +42,7 @@ var KnownEffects = []string{
 	"prevent_focus_steal",
 	"signal_recording_active",
 	"suppress_huds",
+	"suppress_keybinds",
 	"suppress_notifications",
 }
 
