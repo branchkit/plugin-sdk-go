@@ -619,6 +619,15 @@ const (
 	OnPointerFade OnPointer = "fade"
 )
 
+// OverlayRow is auto-generated from the OpenRPC spec.
+type OverlayRow struct {
+	Added      int      `json:"added"`
+	Collection string   `json:"collection"`
+	PatchedIds []string `json:"patched_ids"`
+	Removed    int      `json:"removed"`
+	Tenant     string   `json:"tenant"`
+}
+
 // OwnedCollection is auto-generated from the OpenRPC spec.
 type OwnedCollection struct {
 	Count  int     `json:"count"`
@@ -5275,12 +5284,18 @@ type OverridesApplyRequest struct {
 	Fields     json.RawMessage `json:"fields,omitempty"`
 	ID         *string         `json:"id,omitempty"`
 	NewID      *string         `json:"new_id,omitempty"`
+	Tenant     *string         `json:"tenant,omitempty"`
 }
 
 // OverridesApplyResponse is the response type for overrides.apply.
 type OverridesApplyResponse struct {
 	Key *string `json:"key,omitempty"`
 	Ok  bool    `json:"ok"`
+}
+
+// OverridesListResponse is the response type for overrides.list.
+type OverridesListResponse struct {
+	Overlays []OverlayRow `json:"overlays"`
 }
 
 // PipelinesGrammarRequest is the request type for pipelines.grammar.

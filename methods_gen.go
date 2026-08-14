@@ -6082,13 +6082,14 @@ func (p *Plugin) NativeZoomEnabled() (*NativeZoomEnabledResponse, error) {
 }
 
 // OverridesApply add, remove, restore, patch, rename, revert (reset one entry to its plugin default), or reset user overrides for a collection.
-func (p *Plugin) OverridesApply(action string, collection string, fields json.RawMessage, id *string, newID *string) (*OverridesApplyResponse, error) {
+func (p *Plugin) OverridesApply(action string, collection string, fields json.RawMessage, id *string, newID *string, tenant *string) (*OverridesApplyResponse, error) {
 	req := &OverridesApplyRequest{
 		Action:     action,
 		Collection: collection,
 		Fields:     fields,
 		ID:         id,
 		NewID:      newID,
+		Tenant:     tenant,
 	}
 	var result OverridesApplyResponse
 	err := p.Call(MethodOverridesApply, req, &result)
@@ -6096,6 +6097,18 @@ func (p *Plugin) OverridesApply(action string, collection string, fields json.Ra
 		return nil, err
 	}
 	return &result, nil
+}
+
+// OverridesList list overlay entries — a plugin sees which collections carry its annotations (including dangling ids to prune); the host sees every tenant.
+func (p *Plugin) OverridesList() ([]OverlayRow, error) {
+	var result struct {
+		Overlays []OverlayRow `json:"overlays"`
+	}
+	err := p.Call(MethodOverridesList, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Overlays, nil
 }
 
 // PipelinesGrammar get the current command grammar word list — or, with full=true, the complete vocabulary_update seed payload (words, narrow_to, weights, DAG).

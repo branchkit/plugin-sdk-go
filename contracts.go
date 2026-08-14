@@ -598,6 +598,7 @@ const (
 	MethodNativeZip                           = "native.zip"                               // since 0.1.0
 	MethodNativeZoomEnabled                   = "native.zoom_enabled"                      // since 0.1.0
 	MethodOverridesApply                      = "overrides.apply"                          // since 0.1.0
+	MethodOverridesList                       = "overrides.list"                           // since 0.1.0
 	MethodPipelinesGrammar                    = "pipelines.grammar"                        // since 0.1.0
 	MethodPipelinesInject                     = "pipelines.inject"                         // since 0.1.0
 	MethodPipelinesRun                        = "pipelines.run"                            // since 0.1.0
