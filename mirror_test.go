@@ -101,10 +101,14 @@ func TestMirrorUnpopulatedSentinelIsNotReadyNotError(t *testing.T) {
 }
 
 func TestMirrorRPCErrorPreservesSnapshot(t *testing.T) {
+	var failMu sync.Mutex
 	fail := false
 	runPluginCall(t,
 		func(method string, _ json.RawMessage) (any, string) {
-			if fail {
+			failMu.Lock()
+			down := fail
+			failMu.Unlock()
+			if down {
 				return nil, "backend down"
 			}
 			return map[string]any{
@@ -117,7 +121,9 @@ func TestMirrorRPCErrorPreservesSnapshot(t *testing.T) {
 			if err := m.Refresh(); err != nil {
 				t.Fatalf("Refresh failed: %v", err)
 			}
+			failMu.Lock()
 			fail = true
+			failMu.Unlock()
 			if err := m.Refresh(); err == nil {
 				t.Error("RPC failure must surface from Refresh")
 			}
