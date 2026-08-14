@@ -621,9 +621,10 @@ const (
 
 // OwnedCollection is auto-generated from the OpenRPC spec.
 type OwnedCollection struct {
-	Count int     `json:"count"`
-	Group *string `json:"group,omitempty"`
-	Name  string  `json:"name"`
+	Count  int     `json:"count"`
+	Group  *string `json:"group,omitempty"`
+	Name   string  `json:"name"`
+	Writer string  `json:"writer"`
 }
 
 // PipelineStatusEntry is auto-generated from the OpenRPC spec.
