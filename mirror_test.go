@@ -69,6 +69,70 @@ func TestMirrorRefreshPopulatesSnapshot(t *testing.T) {
 	)
 }
 
+// The contract's other half, missing until 2026-08-14: a mirror that HAS been
+// populated cannot be racing boot, so an empty read is the source saying "I am
+// now empty" — the snapshot empties and OnChange fires. Before this, the
+// empty read was swallowed as if it were the boot race, the mirror kept
+// serving records the source had deleted forever, and derived projections
+// orphaned with no notification anywhere. (This suite used to pin THAT
+// behavior as intended, which is what kept it alive.)
+func TestMirrorEmptyReadAfterPopulationCommitsAndNotifies(t *testing.T) {
+	var mu sync.Mutex
+	populated := true
+	runPluginCall(t,
+		func(method string, _ json.RawMessage) (any, string) {
+			if method != "collection.get" {
+				return nil, "unexpected method " + method
+			}
+			mu.Lock()
+			defer mu.Unlock()
+			if populated {
+				return map[string]any{
+					"name": "alphabet", "introducer": "voice", "merge": "authoritative",
+					"data": []map[string]string{{"letter": "a", "codeword": "arch"}},
+				}, ""
+			}
+			return map[string]any{
+				"name": "alphabet", "introducer": "voice", "merge": "authoritative",
+				"data": []any{},
+			}, ""
+		},
+		func(p *Plugin) {
+			m := &CollectionMirror{p: p, name: "alphabet"}
+			changes := 0
+			m.OnChange(func() { changes++ })
+
+			if err := m.Refresh(); err != nil {
+				t.Fatalf("populated refresh: %v", err)
+			}
+			if changes != 1 {
+				t.Fatalf("populated refresh fires OnChange, got %d", changes)
+			}
+
+			// The source empties (owner deleted everything).
+			mu.Lock()
+			populated = false
+			mu.Unlock()
+			if err := m.Refresh(); err != nil {
+				t.Fatalf("empty refresh: %v", err)
+			}
+			if changes != 2 {
+				t.Fatalf("post-population empty MUST fire OnChange (a derived projection that isn't told the source emptied orphans); got %d", changes)
+			}
+			if !m.Ready() {
+				t.Error("an emptied mirror stays Ready — empty is a real state, not un-readiness")
+			}
+			var out []map[string]string
+			if err := m.Decode(&out); err != nil {
+				t.Fatalf("Decode after emptying: %v", err)
+			}
+			if len(out) != 0 {
+				t.Errorf("snapshot must be EMPTY, still serving %+v", out)
+			}
+		},
+	)
+}
+
 func TestMirrorUnpopulatedSentinelIsNotReadyNotError(t *testing.T) {
 	// The boot race: collection.get before the owner's first Put
 	// returns the empty-array sentinel. That's a silent no-op, not an

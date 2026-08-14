@@ -94,29 +94,52 @@ func unpopulated(data json.RawMessage) bool {
 // leaves the previous snapshot intact.
 func (m *CollectionMirror) Refresh() error {
 	var data json.RawMessage
+	var empty bool
 	if m.compacted {
-		// Folded view: one record per key. Store the records array as the
-		// snapshot; an empty array is the boot-race no-op, same as a raw
-		// unpopulated read.
+		// Folded view: one record per key.
 		recs, err := m.p.ListCompacted(m.name, nil)
 		if err != nil {
 			return err
 		}
-		if len(recs) == 0 {
-			return nil
-		}
-		if data, err = json.Marshal(recs); err != nil {
-			return fmt.Errorf("mirror %q: marshal folded records: %w", m.name, err)
+		empty = len(recs) == 0
+		if !empty {
+			if data, err = json.Marshal(recs); err != nil {
+				return fmt.Errorf("mirror %q: marshal folded records: %w", m.name, err)
+			}
 		}
 	} else {
 		res, err := m.p.CollectionGet(m.name)
 		if err != nil {
 			return err
 		}
-		if res == nil || unpopulated(res.Data) {
+		empty = res == nil || unpopulated(res.Data)
+		if !empty {
+			data = res.Data
+		}
+	}
+
+	// An empty read means one of two things, and READINESS is what tells
+	// them apart. A mirror that has never been populated is in the boot
+	// race — the owner hasn't Put yet, and the update event will complete
+	// it — so the read is a silent no-op. A mirror that HAS been populated
+	// cannot be racing boot: an empty read is the source saying "I am now
+	// empty", and swallowing it is how derived projections used to orphan —
+	// the snapshot kept serving records the source had deleted, forever,
+	// and OnChange never told anyone. Post-populated emptiness commits an
+	// empty snapshot and fires OnChange like any other change.
+	if empty {
+		m.mu.Lock()
+		if !m.ready {
+			m.mu.Unlock()
 			return nil
 		}
-		data = res.Data
+		m.data = json.RawMessage("[]")
+		callbacks := append([]func(){}, m.onChange...)
+		m.mu.Unlock()
+		for _, fn := range callbacks {
+			fn()
+		}
+		return nil
 	}
 
 	m.mu.Lock()
