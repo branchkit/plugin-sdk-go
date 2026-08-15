@@ -6,6 +6,7 @@ package pipeline
 
 import (
 	"bufio"
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -89,10 +90,19 @@ func NewWriter(w io.Writer) *Writer {
 }
 
 // WriteEvent writes a single event and flushes immediately.
+//
+// Empty data — nil, `{}`, or `null` — is omitted from the header, matching
+// the Rust and TS writers (the wire contract's omitted-when-empty rule).
+// Without this, an event decoded from a lenient peer's `data:{}` would
+// re-serialize non-canonically.
 func (wr *Writer) WriteEvent(ev *Event) error {
+	data := ev.Data
+	if s := string(bytes.TrimSpace(data)); s == "" || s == "{}" || s == "null" {
+		data = nil
+	}
 	h := wireHeader{
 		Type:          ev.Type,
-		Data:          ev.Data,
+		Data:          data,
 		PayloadLength: len(ev.Payload),
 	}
 	hdr, err := json.Marshal(h)

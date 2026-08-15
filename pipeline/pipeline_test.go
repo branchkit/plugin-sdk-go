@@ -149,6 +149,24 @@ func TestHeaderOmitsEmptyData(t *testing.T) {
 	}
 }
 
+func TestHeaderOmitsEmptyObjectAndNullData(t *testing.T) {
+	// A lenient peer may put `data:{}` or `data:null` on the wire; an event
+	// decoded from it must re-serialize canonically (data omitted), matching
+	// the Rust and TS writers.
+	for _, raw := range []string{`{}`, `null`} {
+		var buf bytes.Buffer
+		w := NewWriter(&buf)
+		ev := &Event{Type: "audio_stop", Data: json.RawMessage(raw)}
+		if err := w.WriteEvent(ev); err != nil {
+			t.Fatal(err)
+		}
+		line := buf.String()
+		if strings.Contains(line, `"data"`) {
+			t.Fatalf("header should omit data when %s, got: %s", raw, line)
+		}
+	}
+}
+
 func TestOversizedPayloadLengthRejected(t *testing.T) {
 	// Header claims 32 MB payload.
 	header := `{"type":"audio_chunk","data":{},"payload_length":33554432}` + "\n"
