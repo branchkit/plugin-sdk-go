@@ -37,3 +37,23 @@ func GetAPIVersion() string {
 	}
 	return APIVersion
 }
+
+// PluginDir returns the plugin's installation directory, as handed to the
+// process by the actuator via BRANCHKIT_PLUGIN_DIR. Falls back to "." when
+// unset, which is what a plugin run by hand outside the actuator sees.
+//
+// This is launch-contract surface, not convenience: the actuator sets the
+// variable, every plugin that reads a file next to its manifest needs it, and
+// resolving it costs no dependency beyond the standard library. Same class as
+// GetAPIVersion.
+//
+// The command loaders (PushCommands, LoadCommands) deliberately do NOT route
+// through this. They distinguish unset from any directory — an unset variable
+// means "not launched by the actuator, load nothing", and a "." fallback would
+// have them scan the working directory for commands.json instead.
+func PluginDir() string {
+	if dir := os.Getenv("BRANCHKIT_PLUGIN_DIR"); dir != "" {
+		return dir
+	}
+	return "."
+}
