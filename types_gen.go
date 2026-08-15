@@ -47,6 +47,7 @@ type AXPathSegment struct {
 
 // ActionFieldSchema is auto-generated from the OpenRPC spec.
 type ActionFieldSchema struct {
+	Default     json.RawMessage     `json:"default,omitempty"`
 	Display     json.RawMessage     `json:"display,omitempty"`
 	EnumValues  []string            `json:"enum_values"`
 	FieldType   FieldType           `json:"field_type"`
