@@ -6082,10 +6082,11 @@ func (p *Plugin) NativeZoomEnabled() (*NativeZoomEnabledResponse, error) {
 }
 
 // OverridesApply add, remove, restore, patch, rename, revert (reset one entry to its plugin default), or reset user overrides for a collection.
-func (p *Plugin) OverridesApply(action string, collection string, fields json.RawMessage, id *string, newID *string, tenant *string) (*OverridesApplyResponse, error) {
+func (p *Plugin) OverridesApply(action string, collection string, field *string, fields json.RawMessage, id *string, newID *string, tenant *string) (*OverridesApplyResponse, error) {
 	req := &OverridesApplyRequest{
 		Action:     action,
 		Collection: collection,
+		Field:      field,
 		Fields:     fields,
 		ID:         id,
 		NewID:      newID,

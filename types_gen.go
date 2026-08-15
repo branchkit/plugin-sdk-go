@@ -5282,6 +5282,7 @@ type NativeZoomEnabledResponse struct {
 type OverridesApplyRequest struct {
 	Action     string          `json:"action"`
 	Collection string          `json:"collection"`
+	Field      *string         `json:"field,omitempty"`
 	Fields     json.RawMessage `json:"fields,omitempty"`
 	ID         *string         `json:"id,omitempty"`
 	NewID      *string         `json:"new_id,omitempty"`
