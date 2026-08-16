@@ -878,19 +878,6 @@ type ActionsListResponse struct {
 	Actions map[string]ActionTypeSchema `json:"actions"`
 }
 
-// CalibrationApplyRequest is the request type for calibration.apply.
-type CalibrationApplyRequest struct {
-	CommandID string `json:"command_id"`
-	TrialID   string `json:"trial_id"`
-}
-
-// CalibrationApplyResponse is the response type for calibration.apply.
-type CalibrationApplyResponse struct {
-	FixtureHandle string   `json:"fixture_handle"`
-	Kind          string   `json:"kind"`
-	Tags          []string `json:"tags"`
-}
-
 // CalibrationBiasApplyRequest is the request type for calibration.bias.apply.
 type CalibrationBiasApplyRequest struct {
 	Force    *bool   `json:"force,omitempty"`
@@ -915,38 +902,6 @@ type CalibrationCaptureProbeRequest struct {
 type CalibrationCaptureProbeResponse struct {
 	Lines        []ProbeLine `json:"lines"`
 	ModelVersion *string     `json:"model_version,omitempty"`
-}
-
-// CalibrationRegisterFixtureHandleRequest is the request type for calibration.register_fixture_handle.
-type CalibrationRegisterFixtureHandleRequest struct {
-	FixtureHandle string `json:"fixture_handle"`
-	OwnerPluginID string `json:"owner_plugin_id"`
-	TrialID       string `json:"trial_id"`
-}
-
-// CalibrationResolveSamplesRequest is the request type for calibration.resolve_samples.
-type CalibrationResolveSamplesRequest struct {
-	CommandID string `json:"command_id"`
-}
-
-// CalibrationResolveSamplesResponse is the response type for calibration.resolve_samples.
-type CalibrationResolveSamplesResponse struct {
-	Prompts []string `json:"prompts"`
-}
-
-// CalibrationTrialBeginResponse is the response type for calibration.trial_begin.
-type CalibrationTrialBeginResponse struct {
-	TrialID string `json:"trial_id"`
-}
-
-// CalibrationTrialEndRequest is the request type for calibration.trial_end.
-type CalibrationTrialEndRequest struct {
-	TrialID string `json:"trial_id"`
-}
-
-// CalibrationTrialEndResponse is the response type for calibration.trial_end.
-type CalibrationTrialEndResponse struct {
-	ReleasedHandleCount int `json:"released_handle_count"`
 }
 
 // CollectionAppendRequest is the request type for collection.append.
@@ -5420,37 +5375,57 @@ type SystemRunShellResponse struct {
 	Ok bool `json:"ok"`
 }
 
+// TrialBeginResponse is the response type for trial.begin.
+type TrialBeginResponse struct {
+	TrialID string `json:"trial_id"`
+}
+
+// TrialEndRequest is the request type for trial.end.
+type TrialEndRequest struct {
+	TrialID string `json:"trial_id"`
+}
+
+// TrialEndResponse is the response type for trial.end.
+type TrialEndResponse struct {
+	ReleasedHandleCount int `json:"released_handle_count"`
+}
+
+// TrialEnterContextRequest is the request type for trial.enter_context.
+type TrialEnterContextRequest struct {
+	CommandID string `json:"command_id"`
+	TrialID   string `json:"trial_id"`
+}
+
+// TrialEnterContextResponse is the response type for trial.enter_context.
+type TrialEnterContextResponse struct {
+	FixtureHandle string   `json:"fixture_handle"`
+	Kind          string   `json:"kind"`
+	Tags          []string `json:"tags"`
+}
+
+// TrialRegisterFixtureRequest is the request type for trial.register_fixture.
+type TrialRegisterFixtureRequest struct {
+	FixtureHandle string `json:"fixture_handle"`
+	OwnerPluginID string `json:"owner_plugin_id"`
+	TrialID       string `json:"trial_id"`
+}
+
+// TrialResolveSamplesRequest is the request type for trial.resolve_samples.
+type TrialResolveSamplesRequest struct {
+	CommandID string `json:"command_id"`
+}
+
+// TrialResolveSamplesResponse is the response type for trial.resolve_samples.
+type TrialResolveSamplesResponse struct {
+	Prompts []string `json:"prompts"`
+}
+
 // VocabularyCommitResponse is the response type for vocabulary.commit.
 type VocabularyCommitResponse struct {
 	Ok bool `json:"ok"`
 }
 
 // ===== Actuator → Plugin request/response types =====
-
-// CalibrationApplyFixtureRequest is the request type for calibration_apply_fixture.
-type CalibrationApplyFixtureRequest struct {
-	CommandID string `json:"command_id"`
-}
-
-// CalibrationApplyFixtureResponse is the response type for calibration_apply_fixture.
-type CalibrationApplyFixtureResponse struct {
-	FixtureHandle string `json:"fixture_handle"`
-}
-
-// CalibrationReleaseFixtureRequest is the request type for calibration_release_fixture.
-type CalibrationReleaseFixtureRequest struct {
-	FixtureHandle string `json:"fixture_handle"`
-}
-
-// CalibrationSamplesRequest is the request type for calibration_samples.
-type CalibrationSamplesRequest struct {
-	CommandID string `json:"command_id"`
-}
-
-// CalibrationSamplesResponse is the response type for calibration_samples.
-type CalibrationSamplesResponse struct {
-	Prompts []string `json:"prompts"`
-}
 
 // OnActionRequest is the request type for on_action.
 type OnActionRequest struct {
@@ -5503,4 +5478,29 @@ type RenderSettingsRequest struct {
 type RenderSettingsResponse struct {
 	CSS  *string `json:"css,omitempty"`
 	HTML string  `json:"html"`
+}
+
+// TrialApplyFixtureRequest is the request type for trial_apply_fixture.
+type TrialApplyFixtureRequest struct {
+	CommandID string `json:"command_id"`
+}
+
+// TrialApplyFixtureResponse is the response type for trial_apply_fixture.
+type TrialApplyFixtureResponse struct {
+	FixtureHandle string `json:"fixture_handle"`
+}
+
+// TrialReleaseFixtureRequest is the request type for trial_release_fixture.
+type TrialReleaseFixtureRequest struct {
+	FixtureHandle string `json:"fixture_handle"`
+}
+
+// TrialSamplesRequest is the request type for trial_samples.
+type TrialSamplesRequest struct {
+	CommandID string `json:"command_id"`
+}
+
+// TrialSamplesResponse is the response type for trial_samples.
+type TrialSamplesResponse struct {
+	Prompts []string `json:"prompts"`
 }

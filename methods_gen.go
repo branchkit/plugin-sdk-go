@@ -18,20 +18,6 @@ func (p *Plugin) ActionsList() (*ActionsListResponse, error) {
 	return &result, nil
 }
 
-// CalibrationApply enter a command's context for a trial — writes mode-gated requires_tags (platform write) or forwards calibration_apply_fixture to a dynamic command's owner — and returns the entered context (kind + tags + fixture_handle).
-func (p *Plugin) CalibrationApply(commandID string, trialID string) (*CalibrationApplyResponse, error) {
-	req := &CalibrationApplyRequest{
-		CommandID: commandID,
-		TrialID:   trialID,
-	}
-	var result CalibrationApplyResponse
-	err := p.Call(MethodCalibrationApply, req, &result)
-	if err != nil {
-		return nil, err
-	}
-	return &result, nil
-}
-
 // CalibrationBiasApply apply a calibration-measured strength to the never-standalone recognition bias (provenance: calibration); refuses over a manually-set value unless force.
 func (p *Plugin) CalibrationBiasApply(force *bool, strength float64) (*CalibrationBiasApplyResponse, error) {
 	req := &CalibrationBiasApplyRequest{
@@ -56,54 +42,6 @@ func (p *Plugin) CalibrationCaptureProbe(items []ProbeItem, maxActive *int, mode
 	}
 	var result CalibrationCaptureProbeResponse
 	err := p.Call(MethodCalibrationCaptureProbe, req, &result)
-	if err != nil {
-		return nil, err
-	}
-	return &result, nil
-}
-
-// CalibrationRegisterFixtureHandle register a fixture handle under an open trial so trial_end can release it.
-func (p *Plugin) CalibrationRegisterFixtureHandle(fixtureHandle string, ownerPluginID string, trialID string) error {
-	req := &CalibrationRegisterFixtureHandleRequest{
-		FixtureHandle: fixtureHandle,
-		OwnerPluginID: ownerPluginID,
-		TrialID:       trialID,
-	}
-	return p.Call(MethodCalibrationRegisterFixtureHandle, req, nil)
-}
-
-// CalibrationResolveSamples resolve the concrete calibration prompts for a command whose vocabulary the host can't derive — forwards calibration_samples to a dynamic command's owner (empty when the owner doesn't implement the optional hook; the host then falls back to its own default)..
-func (p *Plugin) CalibrationResolveSamples(commandID string) ([]string, error) {
-	req := &CalibrationResolveSamplesRequest{
-		CommandID: commandID,
-	}
-	var result struct {
-		Prompts []string `json:"prompts"`
-	}
-	err := p.Call(MethodCalibrationResolveSamples, req, &result)
-	if err != nil {
-		return nil, err
-	}
-	return result.Prompts, nil
-}
-
-// CalibrationTrialBegin open a calibration trial — writes _platform.calibration.active, returns a trial_id.
-func (p *Plugin) CalibrationTrialBegin() (*CalibrationTrialBeginResponse, error) {
-	var result CalibrationTrialBeginResponse
-	err := p.Call(MethodCalibrationTrialBegin, nil, &result)
-	if err != nil {
-		return nil, err
-	}
-	return &result, nil
-}
-
-// CalibrationTrialEnd close a calibration trial — clears the tag and spawns release RPCs to fixture owners.
-func (p *Plugin) CalibrationTrialEnd(trialID string) (*CalibrationTrialEndResponse, error) {
-	req := &CalibrationTrialEndRequest{
-		TrialID: trialID,
-	}
-	var result CalibrationTrialEndResponse
-	err := p.Call(MethodCalibrationTrialEnd, req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -6229,6 +6167,68 @@ func (p *Plugin) SystemRunShell(command string) error {
 		Command: command,
 	}
 	return p.Call(MethodSystemRunShell, req, nil)
+}
+
+// TrialBegin open a calibration trial — writes _platform.calibration.active, returns a trial_id.
+func (p *Plugin) TrialBegin() (*TrialBeginResponse, error) {
+	var result TrialBeginResponse
+	err := p.Call(MethodTrialBegin, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// TrialEnd close a calibration trial — clears the tag and spawns release RPCs to fixture owners.
+func (p *Plugin) TrialEnd(trialID string) (*TrialEndResponse, error) {
+	req := &TrialEndRequest{
+		TrialID: trialID,
+	}
+	var result TrialEndResponse
+	err := p.Call(MethodTrialEnd, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// TrialEnterContext enter a command's context for a trial — writes mode-gated requires_tags (platform write) or forwards trial_apply_fixture to a dynamic command's owner — and returns the entered context (kind + tags + fixture_handle).
+func (p *Plugin) TrialEnterContext(commandID string, trialID string) (*TrialEnterContextResponse, error) {
+	req := &TrialEnterContextRequest{
+		CommandID: commandID,
+		TrialID:   trialID,
+	}
+	var result TrialEnterContextResponse
+	err := p.Call(MethodTrialEnterContext, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// TrialRegisterFixture register a fixture handle under an open trial so trial_end can release it.
+func (p *Plugin) TrialRegisterFixture(fixtureHandle string, ownerPluginID string, trialID string) error {
+	req := &TrialRegisterFixtureRequest{
+		FixtureHandle: fixtureHandle,
+		OwnerPluginID: ownerPluginID,
+		TrialID:       trialID,
+	}
+	return p.Call(MethodTrialRegisterFixture, req, nil)
+}
+
+// TrialResolveSamples resolve concrete prompt phrases for a command whose vocabulary the caller can't derive — forwards trial_samples to a dynamic command's owner (empty when the owner doesn't implement the optional hook; the host then falls back to its own default)..
+func (p *Plugin) TrialResolveSamples(commandID string) ([]string, error) {
+	req := &TrialResolveSamplesRequest{
+		CommandID: commandID,
+	}
+	var result struct {
+		Prompts []string `json:"prompts"`
+	}
+	err := p.Call(MethodTrialResolveSamples, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Prompts, nil
 }
 
 // VocabularyCommit commit pending vocabulary additions to the recognition pipeline.

@@ -9,13 +9,8 @@ const APIVersion = "0.1.0"
 // RPC method names: plugin → actuator (use with plugin.Call()).
 const (
 	MethodActionsList                         = "actions.list"                             // since 0.1.0
-	MethodCalibrationApply                    = "calibration.apply"                        // since 0.1.0
 	MethodCalibrationBiasApply                = "calibration.bias.apply"                   // since 0.1.0
 	MethodCalibrationCaptureProbe             = "calibration.capture.probe"                // since 0.1.0
-	MethodCalibrationRegisterFixtureHandle    = "calibration.register_fixture_handle"      // since 0.1.0
-	MethodCalibrationResolveSamples           = "calibration.resolve_samples"              // since 0.1.0
-	MethodCalibrationTrialBegin               = "calibration.trial_begin"                  // since 0.1.0
-	MethodCalibrationTrialEnd                 = "calibration.trial_end"                    // since 0.1.0
 	MethodCollectionAppend                    = "collection.append"                        // since 0.1.0
 	MethodCollectionAppendKeyed               = "collection.append_keyed"                  // since 0.1.0
 	MethodCollectionCount                     = "collection.count"                         // since 0.1.0
@@ -610,18 +605,23 @@ const (
 	MethodSystemLaunchApp                     = "system.launch_app"                        // since 0.1.0
 	MethodSystemNotify                        = "system.notify"                            // since 0.1.0
 	MethodSystemRunShell                      = "system.run_shell"                         // since 0.1.0
+	MethodTrialBegin                          = "trial.begin"                              // since 0.1.0
+	MethodTrialEnd                            = "trial.end"                                // since 0.1.0
+	MethodTrialEnterContext                   = "trial.enter_context"                      // since 0.1.0
+	MethodTrialRegisterFixture                = "trial.register_fixture"                   // since 0.1.0
+	MethodTrialResolveSamples                 = "trial.resolve_samples"                    // since 0.1.0
 	MethodVocabularyCommit                    = "vocabulary.commit"                        // since 0.1.0
 )
 
 // RPC method names: actuator → plugin (use with plugin.Handle()).
 const (
-	HookCalibrationApplyFixture   = "calibration_apply_fixture"   // since 0.1.0
-	HookCalibrationReleaseFixture = "calibration_release_fixture" // since 0.1.0
-	HookCalibrationSamples        = "calibration_samples"         // since 0.1.0
-	HookOnAction                  = "on_action"                   // since 0.1.0
-	HookOnCommandsChanged         = "on_commands_changed"         // since 0.1.0
-	HookRenderHud                 = "render_hud"                  // since 0.1.0
-	HookRenderSettings            = "render_settings"             // since 0.1.0
+	HookOnAction            = "on_action"             // since 0.1.0
+	HookOnCommandsChanged   = "on_commands_changed"   // since 0.1.0
+	HookRenderHud           = "render_hud"            // since 0.1.0
+	HookRenderSettings      = "render_settings"       // since 0.1.0
+	HookTrialApplyFixture   = "trial_apply_fixture"   // since 0.1.0
+	HookTrialReleaseFixture = "trial_release_fixture" // since 0.1.0
+	HookTrialSamples        = "trial_samples"         // since 0.1.0
 )
 
 // Platform event type constants (use with plugin.On()).
