@@ -704,12 +704,6 @@ type ReminderItem struct {
 	Title       string  `json:"title"`
 }
 
-// ReportSummary is auto-generated from the OpenRPC spec.
-type ReportSummary struct {
-	Modified int    `json:"modified"`
-	Slot     string `json:"slot"`
-}
-
 // ResolveTelemetry is auto-generated from the OpenRPC spec.
 type ResolveTelemetry struct {
 	GatedPartialSeen bool        `json:"gated_partial_seen"`
@@ -953,21 +947,6 @@ type CalibrationTrialEndRequest struct {
 // CalibrationTrialEndResponse is the response type for calibration.trial_end.
 type CalibrationTrialEndResponse struct {
 	ReleasedHandleCount int `json:"released_handle_count"`
-}
-
-// CodewordLabReportsListResponse is the response type for codeword_lab.reports.list.
-type CodewordLabReportsListResponse struct {
-	Reports []ReportSummary `json:"reports"`
-}
-
-// CodewordLabReportsReadRequest is the request type for codeword_lab.reports.read.
-type CodewordLabReportsReadRequest struct {
-	Slot string `json:"slot"`
-}
-
-// CodewordLabReportsReadResponse is the response type for codeword_lab.reports.read.
-type CodewordLabReportsReadResponse struct {
-	Report json.RawMessage `json:"report"`
 }
 
 // CollectionAppendRequest is the request type for collection.append.

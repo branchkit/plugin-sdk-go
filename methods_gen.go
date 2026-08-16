@@ -110,31 +110,6 @@ func (p *Plugin) CalibrationTrialEnd(trialID string) (*CalibrationTrialEndRespon
 	return &result, nil
 }
 
-// CodewordLabReportsList list codeword-lab candidate reports (one per slot, newest first) — the actuator-owned scan of the reports dir the plugin subprocess can't read.
-func (p *Plugin) CodewordLabReportsList() ([]ReportSummary, error) {
-	var result struct {
-		Reports []ReportSummary `json:"reports"`
-	}
-	err := p.Call(MethodCodewordLabReportsList, nil, &result)
-	if err != nil {
-		return nil, err
-	}
-	return result.Reports, nil
-}
-
-// CodewordLabReportsRead read one slot's codeword-lab candidate report, slot-confined to the reports dir.
-func (p *Plugin) CodewordLabReportsRead(slot string) (*CodewordLabReportsReadResponse, error) {
-	req := &CodewordLabReportsReadRequest{
-		Slot: slot,
-	}
-	var result CodewordLabReportsReadResponse
-	err := p.Call(MethodCodewordLabReportsRead, req, &result)
-	if err != nil {
-		return nil, err
-	}
-	return &result, nil
-}
-
 // CollectionAppend append an entry to a log-kind collection.
 func (p *Plugin) CollectionAppend(name string, payload json.RawMessage) (*LogEntry, error) {
 	req := &CollectionAppendRequest{
