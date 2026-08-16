@@ -10,9 +10,6 @@ package shared
 // vocabulary drift is a compile error.
 const (
 	LogEventAudioKeybindTriggered    = "audio.keybind_triggered"
-	LogEventAudioSessionEnded        = "audio.session_ended"
-	LogEventAudioSessionStarted      = "audio.session_started"
-	LogEventAudioSpeechTranscript    = "audio.speech_transcript"
 	LogEventBridgeLifecycle          = "bridge.lifecycle"
 	LogEventCaptureProgress          = "capture.progress"
 	LogEventCommandMatchDecision     = "command.match_decision"
@@ -84,9 +81,6 @@ type LogEventMeta struct {
 // LogEventRegistry is the closed vocabulary keyed by event name.
 var LogEventRegistry = map[string]LogEventMeta{
 	"audio.keybind_triggered":     {Name: "audio.keybind_triggered", Summary: "Global keybind triggered an action via the Swift shell.", Since: "0.1.0", Source: "audio", Severity: "info", Redaction: "none"},
-	"audio.session_ended":         {Name: "audio.session_ended", Summary: "A speech session ended (hold-to-talk released or continuous mode terminated).", Since: "0.1.0", Source: "audio", Severity: "info", Redaction: "none"},
-	"audio.session_started":       {Name: "audio.session_started", Summary: "A speech session began (hold-to-talk pressed or continuous mode entered).", Since: "0.1.0", Source: "audio", Severity: "info", Redaction: "none"},
-	"audio.speech_transcript":     {Name: "audio.speech_transcript", Summary: "Final or interim speech recognition transcript for a session.", Since: "0.1.0", Source: "audio", Severity: "info", Redaction: "full"},
 	"bridge.lifecycle":            {Name: "bridge.lifecycle", Summary: "FFI bridge lifecycle event (init, shutdown, UI server bind, callback registration).", Since: "0.1.0", Source: "lifecycle", Severity: "info", Redaction: "none"},
 	"capture.progress":            {Name: "capture.progress", Summary: "Partial match reached a DependentCapture whose deps are bound and whose resolved collection exists — plugins can react to the intermediate step (e.g. browser hint grayout).", Since: "0.1.0", Source: "dispatch", Severity: "info", Redaction: "none"},
 	"command.match_decision":      {Name: "command.match_decision", Summary: "Diagnostic snapshot of the matcher's tiebreaker choice — which category won, which gates were active, whether a gated Partial was suppressed.", Since: "0.1.0", Source: "dispatch", Severity: "debug", Redaction: "none"},
