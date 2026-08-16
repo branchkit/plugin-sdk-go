@@ -46,7 +46,7 @@ func (p *Plugin) CalibrationBiasApply(force *bool, strength float64) (*Calibrati
 	return &result, nil
 }
 
-// CalibrationCaptureProbe run a registered recognizer stage's `probe` re-decode over captured clips (the fragility ladder) — the actuator runs it because the sandboxed plugin can't reach the model/capture dirs.
+// CalibrationCaptureProbe re-decode the caller's own captured audio through a registered recognizer stage against the LIVE grammar (the fragility ladder) — the actuator runs it because the grammar is platform state and plugins cannot exec.
 func (p *Plugin) CalibrationCaptureProbe(items []ProbeItem, maxActive *int, model string, stage string) (*CalibrationCaptureProbeResponse, error) {
 	req := &CalibrationCaptureProbeRequest{
 		Items:     items,
@@ -56,118 +56,6 @@ func (p *Plugin) CalibrationCaptureProbe(items []ProbeItem, maxActive *int, mode
 	}
 	var result CalibrationCaptureProbeResponse
 	err := p.Call(MethodCalibrationCaptureProbe, req, &result)
-	if err != nil {
-		return nil, err
-	}
-	return &result, nil
-}
-
-// CalibrationCaptureReadCorpus read the full corpus index (so the plugin can prune the bounded-retention set, which needs the accumulated index).
-func (p *Plugin) CalibrationCaptureReadCorpus() ([]RecordingRow, error) {
-	var result struct {
-		Rows []RecordingRow `json:"rows"`
-	}
-	err := p.Call(MethodCalibrationCaptureReadCorpus, nil, &result)
-	if err != nil {
-		return nil, err
-	}
-	return result.Rows, nil
-}
-
-// CalibrationCaptureReadManifest read a per-game capture manifest (the read-through that lets the plugin label clips + run fragility without raw file access).
-func (p *Plugin) CalibrationCaptureReadManifest(game string) ([]CaptureManifestRow, error) {
-	req := &CalibrationCaptureReadManifestRequest{
-		Game: game,
-	}
-	var result struct {
-		Lines []CaptureManifestRow `json:"lines"`
-	}
-	err := p.Call(MethodCalibrationCaptureReadManifest, req, &result)
-	if err != nil {
-		return nil, err
-	}
-	return result.Lines, nil
-}
-
-// CalibrationCaptureWriteCorpus append labeled rows to the corpus index, or rewrite it (after a prune) — the scoped corpus-write the plugin can't do directly.
-func (p *Plugin) CalibrationCaptureWriteCorpus(mode string, rows []RecordingRow) (*CalibrationCaptureWriteCorpusResponse, error) {
-	req := &CalibrationCaptureWriteCorpusRequest{
-		Mode: mode,
-		Rows: rows,
-	}
-	var result CalibrationCaptureWriteCorpusResponse
-	err := p.Call(MethodCalibrationCaptureWriteCorpus, req, &result)
-	if err != nil {
-		return nil, err
-	}
-	return &result, nil
-}
-
-// CalibrationRecordingsClear wipe every captured calibration recording + the corpus index (privacy action).
-func (p *Plugin) CalibrationRecordingsClear() (*CalibrationRecordingsClearResponse, error) {
-	var result CalibrationRecordingsClearResponse
-	err := p.Call(MethodCalibrationRecordingsClear, nil, &result)
-	if err != nil {
-		return nil, err
-	}
-	return &result, nil
-}
-
-// CalibrationRecordingsDelete delete one captured calibration clip, path-confined to the capture dir.
-func (p *Plugin) CalibrationRecordingsDelete(file string) (*CalibrationRecordingsDeleteResponse, error) {
-	req := &CalibrationRecordingsDeleteRequest{
-		File: file,
-	}
-	var result CalibrationRecordingsDeleteResponse
-	err := p.Call(MethodCalibrationRecordingsDelete, req, &result)
-	if err != nil {
-		return nil, err
-	}
-	return &result, nil
-}
-
-// CalibrationRecordingsExport bundle kept calibration clips + a NeMo-format manifest into a tar.gz in Downloads (training / contribution).
-func (p *Plugin) CalibrationRecordingsExport(confirmedOnly *bool) (*CalibrationRecordingsExportResponse, error) {
-	req := &CalibrationRecordingsExportRequest{
-		ConfirmedOnly: confirmedOnly,
-	}
-	var result CalibrationRecordingsExportResponse
-	err := p.Call(MethodCalibrationRecordingsExport, req, &result)
-	if err != nil {
-		return nil, err
-	}
-	return &result, nil
-}
-
-// CalibrationRecordingsList list captured calibration recordings (newest first, capped by limit) — the actuator-owned scan of the capture dir the plugin subprocess can't read.
-func (p *Plugin) CalibrationRecordingsList(limit *int) (*CalibrationRecordingsListResponse, error) {
-	req := &CalibrationRecordingsListRequest{
-		Limit: limit,
-	}
-	var result CalibrationRecordingsListResponse
-	err := p.Call(MethodCalibrationRecordingsList, req, &result)
-	if err != nil {
-		return nil, err
-	}
-	return &result, nil
-}
-
-// CalibrationRecordingsSetDisposition stamp a review verdict ("", confirmed, or misspoke) on a captured clip's corpus row.
-func (p *Plugin) CalibrationRecordingsSetDisposition(disposition string, file string) error {
-	req := &CalibrationRecordingsSetDispositionRequest{
-		Disposition: disposition,
-		File:        file,
-	}
-	return p.Call(MethodCalibrationRecordingsSetDisposition, req, nil)
-}
-
-// CalibrationRecordingsSweep reclaim orphaned capture clips — one abandoned game (scoped by `game`) or all orphans not in the corpus index (global).
-func (p *Plugin) CalibrationRecordingsSweep(game *string) (*CalibrationRecordingsSweepResponse, error) {
-	req := &CalibrationRecordingsSweepRequest{
-		Game: game,
-	}
-	var result CalibrationRecordingsSweepResponse
-	err := p.Call(MethodCalibrationRecordingsSweep, req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -6187,6 +6075,20 @@ func (p *Plugin) PipelinesWarm(name string, paramOverrides map[string]json.RawMe
 	}
 	var result PipelinesWarmResponse
 	err := p.Call(MethodPipelinesWarm, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// PluginDataExport copy one file out of the caller's own data dir into Downloads and reveal it (the one egress a plugin cannot perform itself).
+func (p *Plugin) PluginDataExport(filename *string, path string) (*PluginDataExportResponse, error) {
+	req := &PluginDataExportRequest{
+		Filename: filename,
+		Path:     path,
+	}
+	var result PluginDataExportResponse
+	err := p.Call(MethodPluginDataExport, req, &result)
 	if err != nil {
 		return nil, err
 	}
