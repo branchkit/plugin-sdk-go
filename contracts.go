@@ -651,6 +651,8 @@ const (
 	EventPluginDisabled        = "_platform.plugin.disabled"
 	EventPluginEnabled         = "_platform.plugin.enabled"
 	EventSelectionPicked       = "_platform.selection.picked"
+	EventSystemDidWake         = "_platform.system.did_wake"
+	EventSystemWillSleep       = "_platform.system.will_sleep"
 	EventWindowClosed          = "_platform.window.closed"
 	EventWindowCreated         = "_platform.window.created"
 	EventWindowFocused         = "_platform.window.focused"
