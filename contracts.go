@@ -9,8 +9,6 @@ const APIVersion = "0.1.0"
 // RPC method names: plugin → actuator (use with plugin.Call()).
 const (
 	MethodActionsList                         = "actions.list"                             // since 0.1.0
-	MethodCalibrationBiasApply                = "calibration.bias.apply"                   // since 0.1.0
-	MethodCalibrationCaptureProbe             = "calibration.capture.probe"                // since 0.1.0
 	MethodCollectionAppend                    = "collection.append"                        // since 0.1.0
 	MethodCollectionAppendKeyed               = "collection.append_keyed"                  // since 0.1.0
 	MethodCollectionCount                     = "collection.count"                         // since 0.1.0
@@ -593,6 +591,8 @@ const (
 	MethodPluginDebug                         = "plugin.debug"                             // since 0.1.0
 	MethodPrivacyGetRecording                 = "privacy.get_recording"                    // since 0.1.0
 	MethodPrivacySetRecording                 = "privacy.set_recording"                    // since 0.1.0
+	MethodRecognitionBiasApply                = "recognition.bias.apply"                   // since 0.1.0
+	MethodRecognitionRedecode                 = "recognition.redecode"                     // since 0.1.0
 	MethodSelectionPick                       = "selection.pick"                           // since 0.1.0
 	MethodSelectionSet                        = "selection.set"                            // since 0.1.0
 	MethodSessionBoundary                     = "session.boundary"                         // since 0.1.0

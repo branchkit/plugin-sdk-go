@@ -18,36 +18,6 @@ func (p *Plugin) ActionsList() (*ActionsListResponse, error) {
 	return &result, nil
 }
 
-// CalibrationBiasApply apply a calibration-measured strength to the never-standalone recognition bias (provenance: calibration); refuses over a manually-set value unless force.
-func (p *Plugin) CalibrationBiasApply(force *bool, strength float64) (*CalibrationBiasApplyResponse, error) {
-	req := &CalibrationBiasApplyRequest{
-		Force:    force,
-		Strength: strength,
-	}
-	var result CalibrationBiasApplyResponse
-	err := p.Call(MethodCalibrationBiasApply, req, &result)
-	if err != nil {
-		return nil, err
-	}
-	return &result, nil
-}
-
-// CalibrationCaptureProbe re-decode the caller's own captured audio through a registered recognizer stage against the LIVE grammar (the fragility ladder) — the actuator runs it because the grammar is platform state and plugins cannot exec.
-func (p *Plugin) CalibrationCaptureProbe(items []ProbeItem, maxActive *int, model string, stage string) (*CalibrationCaptureProbeResponse, error) {
-	req := &CalibrationCaptureProbeRequest{
-		Items:     items,
-		MaxActive: maxActive,
-		Model:     model,
-		Stage:     stage,
-	}
-	var result CalibrationCaptureProbeResponse
-	err := p.Call(MethodCalibrationCaptureProbe, req, &result)
-	if err != nil {
-		return nil, err
-	}
-	return &result, nil
-}
-
 // CollectionAppend append an entry to a log-kind collection.
 func (p *Plugin) CollectionAppend(name string, payload json.RawMessage) (*LogEntry, error) {
 	req := &CollectionAppendRequest{
@@ -6038,6 +6008,36 @@ func (p *Plugin) PrivacySetRecording(enabled bool, name string) error {
 		Name:    name,
 	}
 	return p.Call(MethodPrivacySetRecording, req, nil)
+}
+
+// RecognitionBiasApply apply a calibration-measured strength to the never-standalone recognition bias (provenance: calibration); refuses over a manually-set value unless force.
+func (p *Plugin) RecognitionBiasApply(force *bool, strength float64) (*RecognitionBiasApplyResponse, error) {
+	req := &RecognitionBiasApplyRequest{
+		Force:    force,
+		Strength: strength,
+	}
+	var result RecognitionBiasApplyResponse
+	err := p.Call(MethodRecognitionBiasApply, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// RecognitionRedecode re-decode the caller's own captured audio through a registered recognizer stage against the LIVE grammar (the fragility ladder) — the actuator runs it because the grammar is platform state and plugins cannot exec.
+func (p *Plugin) RecognitionRedecode(items []RedecodeItem, maxActive *int, model string, stage string) (*RecognitionRedecodeResponse, error) {
+	req := &RecognitionRedecodeRequest{
+		Items:     items,
+		MaxActive: maxActive,
+		Model:     model,
+		Stage:     stage,
+	}
+	var result RecognitionRedecodeResponse
+	err := p.Call(MethodRecognitionRedecode, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
 }
 
 // SelectionPick resolve a selection pick by index — clears selection state, emits event, closes HUD.

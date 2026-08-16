@@ -662,29 +662,6 @@ type PrinterInfo struct {
 	State     string `json:"state"`
 }
 
-// ProbeItem is auto-generated from the OpenRPC spec.
-type ProbeItem struct {
-	ApplyBias    bool            `json:"apply_bias"`
-	Audio        string          `json:"audio"`
-	BiasStrength *float64        `json:"bias_strength,omitempty"`
-	ID           string          `json:"id"`
-	Noise        json.RawMessage `json:"noise,omitempty"`
-	Words        []string        `json:"words"`
-}
-
-// ProbeLine is auto-generated from the OpenRPC spec.
-type ProbeLine struct {
-	Error string `json:"error"`
-	ID    string `json:"id"`
-	Text  string `json:"text"`
-}
-
-// ProbeNoise is auto-generated from the OpenRPC spec.
-type ProbeNoise struct {
-	Seed  int     `json:"seed"`
-	SnrDb float64 `json:"snr_db"`
-}
-
 // ProcessInfo is auto-generated from the OpenRPC spec.
 type ProcessInfo struct {
 	CpuPercent  *float64 `json:"cpu_percent,omitempty"`
@@ -693,6 +670,29 @@ type ProcessInfo struct {
 	Path        *string  `json:"path,omitempty"`
 	Pid         int      `json:"pid"`
 	User        *string  `json:"user,omitempty"`
+}
+
+// RedecodeItem is auto-generated from the OpenRPC spec.
+type RedecodeItem struct {
+	ApplyBias    bool            `json:"apply_bias"`
+	Audio        string          `json:"audio"`
+	BiasStrength *float64        `json:"bias_strength,omitempty"`
+	ID           string          `json:"id"`
+	Noise        json.RawMessage `json:"noise,omitempty"`
+	Words        []string        `json:"words"`
+}
+
+// RedecodeLine is auto-generated from the OpenRPC spec.
+type RedecodeLine struct {
+	Error string `json:"error"`
+	ID    string `json:"id"`
+	Text  string `json:"text"`
+}
+
+// RedecodeNoise is auto-generated from the OpenRPC spec.
+type RedecodeNoise struct {
+	Seed  int     `json:"seed"`
+	SnrDb float64 `json:"snr_db"`
 }
 
 // ReminderItem is auto-generated from the OpenRPC spec.
@@ -876,32 +876,6 @@ type WorldModel struct {
 // ActionsListResponse is the response type for actions.list.
 type ActionsListResponse struct {
 	Actions map[string]ActionTypeSchema `json:"actions"`
-}
-
-// CalibrationBiasApplyRequest is the request type for calibration.bias.apply.
-type CalibrationBiasApplyRequest struct {
-	Force    *bool   `json:"force,omitempty"`
-	Strength float64 `json:"strength"`
-}
-
-// CalibrationBiasApplyResponse is the response type for calibration.bias.apply.
-type CalibrationBiasApplyResponse struct {
-	Applied            bool   `json:"applied"`
-	PreviousProvenance string `json:"previous_provenance"`
-}
-
-// CalibrationCaptureProbeRequest is the request type for calibration.capture.probe.
-type CalibrationCaptureProbeRequest struct {
-	Items     []ProbeItem `json:"items"`
-	MaxActive *int        `json:"max_active,omitempty"`
-	Model     string      `json:"model"`
-	Stage     string      `json:"stage"`
-}
-
-// CalibrationCaptureProbeResponse is the response type for calibration.capture.probe.
-type CalibrationCaptureProbeResponse struct {
-	Lines        []ProbeLine `json:"lines"`
-	ModelVersion *string     `json:"model_version,omitempty"`
 }
 
 // CollectionAppendRequest is the request type for collection.append.
@@ -5239,6 +5213,32 @@ type PrivacySetRecordingRequest struct {
 // PrivacySetRecordingResponse is the response type for privacy.set_recording.
 type PrivacySetRecordingResponse struct {
 	Ok bool `json:"ok"`
+}
+
+// RecognitionBiasApplyRequest is the request type for recognition.bias.apply.
+type RecognitionBiasApplyRequest struct {
+	Force    *bool   `json:"force,omitempty"`
+	Strength float64 `json:"strength"`
+}
+
+// RecognitionBiasApplyResponse is the response type for recognition.bias.apply.
+type RecognitionBiasApplyResponse struct {
+	Applied            bool   `json:"applied"`
+	PreviousProvenance string `json:"previous_provenance"`
+}
+
+// RecognitionRedecodeRequest is the request type for recognition.redecode.
+type RecognitionRedecodeRequest struct {
+	Items     []RedecodeItem `json:"items"`
+	MaxActive *int           `json:"max_active,omitempty"`
+	Model     string         `json:"model"`
+	Stage     string         `json:"stage"`
+}
+
+// RecognitionRedecodeResponse is the response type for recognition.redecode.
+type RecognitionRedecodeResponse struct {
+	Lines        []RedecodeLine `json:"lines"`
+	ModelVersion *string        `json:"model_version,omitempty"`
 }
 
 // SelectionPickRequest is the request type for selection.pick.
