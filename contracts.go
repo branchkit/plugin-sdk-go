@@ -650,6 +650,7 @@ const (
 	EventPluginDegraded        = "_platform.plugin.degraded"
 	EventPluginDisabled        = "_platform.plugin.disabled"
 	EventPluginEnabled         = "_platform.plugin.enabled"
+	EventPowerChanged          = "_platform.power.changed"
 	EventSelectionPicked       = "_platform.selection.picked"
 	EventSystemDidWake         = "_platform.system.did_wake"
 	EventSystemWillSleep       = "_platform.system.will_sleep"
