@@ -985,7 +985,7 @@ func (p *Plugin) KeybindsRegister(snapshot json.RawMessage) (*KeybindsRegisterRe
 	return &result, nil
 }
 
-// ModelDelete delete a speech model.
+// ModelDelete delete an installed model from the caller's own model namespace (ref: <plugin>/<model>).
 func (p *Plugin) ModelDelete(ref string) error {
 	req := &ModelDeleteRequest{
 		Ref: ref,
