@@ -514,6 +514,15 @@ type LoginItem struct {
 	Path     string  `json:"path"`
 }
 
+// ManagedFieldRow is auto-generated from the OpenRPC spec.
+type ManagedFieldRow struct {
+	Actor    string `json:"actor"`
+	AtUnixMs int    `json:"at_unix_ms"`
+	Field    string `json:"field"`
+	ID       string `json:"id"`
+	Origin   string `json:"origin"`
+}
+
 // MatchWinner is auto-generated from the OpenRPC spec.
 // Which category the matcher's tiebreaker chose. Mirrors the four
 // branches of `find_match_at_start_with_telemetry`: gated Completes win over
@@ -615,11 +624,12 @@ const (
 
 // OverlayRow is auto-generated from the OpenRPC spec.
 type OverlayRow struct {
-	Added      int      `json:"added"`
-	Collection string   `json:"collection"`
-	PatchedIds []string `json:"patched_ids"`
-	Removed    int      `json:"removed"`
-	Tenant     string   `json:"tenant"`
+	Added         int               `json:"added"`
+	Collection    string            `json:"collection"`
+	ManagedFields []ManagedFieldRow `json:"managed_fields"`
+	PatchedIds    []string          `json:"patched_ids"`
+	Removed       int               `json:"removed"`
+	Tenant        string            `json:"tenant"`
 }
 
 // OwnedCollection is auto-generated from the OpenRPC spec.

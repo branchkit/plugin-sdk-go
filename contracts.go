@@ -642,6 +642,7 @@ const (
 	EventInputSessionBoundary  = "_platform.input.session_boundary"
 	EventInputSessionEnded     = "_platform.input.session_ended"
 	EventKeyboardLayoutChanged = "_platform.keyboard.layout_changed"
+	EventNetworkChanged        = "_platform.network.changed"
 	EventPipelineError         = "_platform.pipeline.error"
 	EventPipelineStarted       = "_platform.pipeline.started"
 	EventPipelineStopped       = "_platform.pipeline.stopped"
