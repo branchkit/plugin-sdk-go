@@ -77,13 +77,10 @@ func newTestPluginT(t testing.TB) (*Plugin, io.Writer, *bufio.Scanner) {
 	// plugin writes to stdoutW, actuator reads from stdoutR
 	stdoutR, stdoutW := io.Pipe()
 
-	scanner := bufio.NewScanner(stdinR)
-	scanner.Buffer(make([]byte, 0, 64*1024), 1024*1024)
-
 	p := &Plugin{
 		pluginID:  "test",
 		writer:    json.NewEncoder(stdoutW),
-		scanner:   scanner,
+		reader:    bufio.NewReaderSize(stdinR, 64*1024),
 		handlers:  make(map[string]HandlerFunc),
 		listeners: make(map[string][]ListenerFunc),
 		pending:   make(map[uint64]*pendingCall),
@@ -639,6 +636,54 @@ func TestNewPluginUsesEnv(t *testing.T) {
 	p := NewPlugin()
 	if p.pluginID != "test-kb" {
 		t.Fatalf("expected pluginID=test-kb, got %q", p.pluginID)
+	}
+}
+
+// A frame far larger than any buffer must be dispatched, not fatal. This is a
+// regression: the read loop used a bufio.Scanner with a 1 MB cap, and
+// exceeding it is TERMINAL for a Scanner — so the day voice's command-editor
+// render_settings payload crossed 1 MB, the plugin logged "token too long" and
+// exited, and the settings tab showed "plugin process exited" with no clue why.
+//
+// The actuator decides how big a frame is; a plugin cannot negotiate it, so
+// the reader must not have an opinion about it.
+func TestOversizedFrameIsDispatchedNotFatal(t *testing.T) {
+	p, stdin, _ := newTestPluginT(t)
+	got := make(chan int, 1)
+	p.Handle("big", func(params json.RawMessage) (any, error) {
+		var v struct {
+			Blob string `json:"blob"`
+		}
+		_ = json.Unmarshal(params, &v)
+		got <- len(v.Blob)
+		return map[string]bool{"ok": true}, nil
+	})
+	go p.Run()
+	<-p.ready
+
+	// Comfortably past the old 1 MB ceiling, and past it again after JSON
+	// escaping, so a future buffer tweak cannot accidentally pass this.
+	blob := strings.Repeat("x", 3*1024*1024)
+	raw := `{"jsonrpc":"2.0","id":1,"method":"big","params":{"blob":"` + blob + `"}}` + "\n"
+	if _, err := stdin.Write([]byte(raw)); err != nil {
+		t.Fatalf("write: %v", err)
+	}
+
+	select {
+	case n := <-got:
+		if n != len(blob) {
+			t.Fatalf("payload truncated: got %d bytes, want %d", n, len(blob))
+		}
+	case <-time.After(5 * time.Second):
+		t.Fatal("handler never ran — the oversized frame was dropped or killed the read loop")
+	}
+
+	// And the loop is still alive afterwards, which is the half the old
+	// failure got wrong: a Scanner error ended it for good.
+	select {
+	case <-p.closed:
+		t.Fatal("read loop exited after a large frame")
+	default:
 	}
 }
 

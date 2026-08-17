@@ -2,8 +2,10 @@ package shared
 
 import (
 	"bufio"
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"os/signal"
 	"sync"
@@ -133,8 +135,14 @@ type Plugin struct {
 	// stdin/stdout are from the plugin's perspective:
 	// - we READ from os.Stdin (actuator writes to our stdin)
 	// - we WRITE to os.Stdout (actuator reads from our stdout)
-	writer  *json.Encoder
-	scanner *bufio.Scanner
+	writer *json.Encoder
+	// reader over stdin. Deliberately NOT a bufio.Scanner: a Scanner has a
+	// maximum token size, and exceeding it is a TERMINAL error that ends the
+	// read loop — so one oversized frame killed the plugin outright. The
+	// actuator decides how big a frame is (a settings render carries every
+	// command row), and a plugin cannot negotiate that, so the reader must
+	// not have an opinion about it. See `reader.ReadBytes` in readLoop.
+	reader *bufio.Reader
 
 	handlers  map[string]HandlerFunc
 	listeners map[string][]ListenerFunc
@@ -188,14 +196,12 @@ func NewPlugin() *Plugin {
 		pluginID = "unknown"
 	}
 
-	scanner := bufio.NewScanner(os.Stdin)
-	// Allow up to 1MB per line for large payloads (settings HTML, HUD content)
-	scanner.Buffer(make([]byte, 0, 64*1024), 1024*1024)
+	reader := bufio.NewReaderSize(os.Stdin, 64*1024)
 
 	p := &Plugin{
 		pluginID:  pluginID,
 		writer:    json.NewEncoder(os.Stdout),
-		scanner:   scanner,
+		reader:    reader,
 		handlers:  make(map[string]HandlerFunc),
 		listeners: make(map[string][]ListenerFunc),
 		pending:   make(map[uint64]*pendingCall),
@@ -449,24 +455,37 @@ func (p *Plugin) Run() {
 	<-p.closed
 }
 
+// oversizedFrameBytes is a tripwire, not a limit. Nothing is refused at this
+// size — the line is dispatched exactly as any other — but a frame this large
+// means the platform is shipping something it probably did not intend to, and
+// the plugin author is the person who can see it happening.
+const oversizedFrameBytes = 1024 * 1024
+
 func (p *Plugin) readLoop() {
-	for p.scanner.Scan() {
-		line := p.scanner.Bytes()
-		if len(line) == 0 {
-			continue
+	for {
+		line, err := p.reader.ReadBytes('\n')
+		if len(line) > 0 {
+			line = bytes.TrimRight(line, "\r\n")
+			if len(line) > oversizedFrameBytes {
+				Logf(p.pluginID, "large stdin frame: %d bytes (dispatching anyway)", len(line))
+			}
+			if len(line) > 0 {
+				var msg rpcMessage
+				if jsonErr := json.Unmarshal(line, &msg); jsonErr != nil {
+					Logf(p.pluginID, "failed to parse message: %v", jsonErr)
+				} else {
+					p.dispatch(msg)
+				}
+			}
 		}
-
-		var msg rpcMessage
-		if err := json.Unmarshal(line, &msg); err != nil {
-			Logf(p.pluginID, "failed to parse message: %v", err)
-			continue
+		if err != nil {
+			// io.EOF is the ordinary shutdown path: the actuator closed our
+			// stdin. Anything else is worth a line before we go.
+			if err != io.EOF {
+				Logf(p.pluginID, "stdin read error: %v", err)
+			}
+			break
 		}
-
-		p.dispatch(msg)
-	}
-
-	if err := p.scanner.Err(); err != nil {
-		Logf(p.pluginID, "stdin read error: %v", err)
 	}
 
 	// Signal shutdown to any in-flight Call() waiters
