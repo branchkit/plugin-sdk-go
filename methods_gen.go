@@ -5871,6 +5871,21 @@ func (p *Plugin) OverridesApply(action string, collection string, field *string,
 	return &result, nil
 }
 
+// OverridesControl who currently controls each user-band field — whether a field was set through the calling plugin, by another plugin relaying, or by the user on BranchKit's own surface. The read a plugin needs to render a value it no longer writes.
+func (p *Plugin) OverridesControl(collection *string) ([]ControlRow, error) {
+	req := &OverridesControlRequest{
+		Collection: collection,
+	}
+	var result struct {
+		Control []ControlRow `json:"control"`
+	}
+	err := p.Call(MethodOverridesControl, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Control, nil
+}
+
 // OverridesList list overlay entries — a plugin sees which collections carry its annotations (including dangling ids to prune); the host sees every tenant.
 func (p *Plugin) OverridesList() ([]OverlayRow, error) {
 	var result struct {

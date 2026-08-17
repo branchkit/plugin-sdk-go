@@ -246,6 +246,16 @@ type ContactInfo struct {
 	Phone        *string `json:"phone,omitempty"`
 }
 
+// ControlRow is auto-generated from the OpenRPC spec.
+type ControlRow struct {
+	Actor      string `json:"actor"`
+	AtUnixMs   int    `json:"at_unix_ms"`
+	Collection string `json:"collection"`
+	Field      string `json:"field"`
+	ID         string `json:"id"`
+	Level      string `json:"level"`
+}
+
 // CpuInfo is auto-generated from the OpenRPC spec.
 type CpuInfo struct {
 	Architecture     string `json:"architecture"`
@@ -5108,6 +5118,16 @@ type OverridesApplyRequest struct {
 type OverridesApplyResponse struct {
 	Key *string `json:"key,omitempty"`
 	Ok  bool    `json:"ok"`
+}
+
+// OverridesControlRequest is the request type for overrides.control.
+type OverridesControlRequest struct {
+	Collection *string `json:"collection,omitempty"`
+}
+
+// OverridesControlResponse is the response type for overrides.control.
+type OverridesControlResponse struct {
+	Control []ControlRow `json:"control"`
 }
 
 // OverridesListResponse is the response type for overrides.list.
