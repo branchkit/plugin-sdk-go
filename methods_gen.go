@@ -884,7 +884,7 @@ func (p *Plugin) NativeAllWindowIds() ([]string, error) {
 	return result.WindowIds, nil
 }
 
-// NativeApfsSnapshots list APFS snapshots as JSON.
+// NativeApfsSnapshots list APFS local snapshots as `tmutil listlocalsnapshots` prints them — a header line followed by one snapshot name per line, NOT JSON.
 func (p *Plugin) NativeApfsSnapshots() (*NativeApfsSnapshotsResponse, error) {
 	var result NativeApfsSnapshotsResponse
 	err := p.Call(MethodNativeApfsSnapshots, nil, &result)
@@ -1720,7 +1720,7 @@ func (p *Plugin) NativeComputerName() (*NativeComputerNameResponse, error) {
 	return &result, nil
 }
 
-// NativeComputerSleepTime get computer sleep timeout in minutes.
+// NativeComputerSleepTime get computer sleep timeout in minutes, for the power source the machine is currently on.
 func (p *Plugin) NativeComputerSleepTime() error {
 	return p.Call(MethodNativeComputerSleepTime, nil, nil)
 }
@@ -1754,7 +1754,7 @@ func (p *Plugin) NativeCpuInfo() (*NativeCpuInfoResponse, error) {
 	return &result, nil
 }
 
-// NativeCpuTemperature get CPU temperature in Celsius.
+// NativeCpuTemperature get CPU temperature in Celsius. Requires the third-party `osx-cpu-temp`; a reading without an explicit scale marker is rejected rather than assumed.
 func (p *Plugin) NativeCpuTemperature() error {
 	return p.Call(MethodNativeCpuTemperature, nil, nil)
 }
@@ -2117,7 +2117,7 @@ func (p *Plugin) NativeDisplaySerialNumber() (*NativeDisplaySerialNumberResponse
 	return &result, nil
 }
 
-// NativeDisplaySleepTime get display sleep timeout in minutes.
+// NativeDisplaySleepTime get display sleep timeout in minutes, for the power source the machine is currently on.
 func (p *Plugin) NativeDisplaySleepTime() error {
 	return p.Call(MethodNativeDisplaySleepTime, nil, nil)
 }
@@ -2176,7 +2176,7 @@ func (p *Plugin) NativeDockMagnification() (*NativeDockMagnificationResponse, er
 	return &result, nil
 }
 
-// NativeDockMinimizeEffect get Dock minimize animation (genie/scale).
+// NativeDockMinimizeEffect get Dock minimize animation. Returns one of: genie, scale, suck.
 func (p *Plugin) NativeDockMinimizeEffect() (*NativeDockMinimizeEffectResponse, error) {
 	var result NativeDockMinimizeEffectResponse
 	err := p.Call(MethodNativeDockMinimizeEffect, nil, &result)
@@ -2319,7 +2319,7 @@ func (p *Plugin) NativeExternalDisplayNames() ([]string, error) {
 	return result.Names, nil
 }
 
-// NativeFanSpeeds get fan speeds as JSON.
+// NativeFanSpeeds get raw SMC fan lines as reported by powermetrics or ioreg — free-form text, NOT JSON, and unavailable unless a fan source can be read.
 func (p *Plugin) NativeFanSpeeds() (*NativeFanSpeedsResponse, error) {
 	var result NativeFanSpeedsResponse
 	err := p.Call(MethodNativeFanSpeeds, nil, &result)
@@ -2614,7 +2614,7 @@ func (p *Plugin) NativeFnKeyFunction() (*NativeFnKeyFunctionResponse, error) {
 	return &result, nil
 }
 
-// NativeFocusModes get configured Focus modes as JSON.
+// NativeFocusModes get configured Focus modes as the raw `com.apple.ncprefs` preference value — macOS plist text, NOT JSON.
 func (p *Plugin) NativeFocusModes() (*NativeFocusModesResponse, error) {
 	var result NativeFocusModesResponse
 	err := p.Call(MethodNativeFocusModes, nil, &result)
@@ -3367,7 +3367,7 @@ func (p *Plugin) NativeMaximizeWindow(windowID string) error {
 	return p.Call(MethodNativeMaximizeWindow, req, nil)
 }
 
-// NativeMeasurementSystem get the measurement system (metric/us).
+// NativeMeasurementSystem get the measurement system. Returns one of: metric, us.
 func (p *Plugin) NativeMeasurementSystem() (*NativeMeasurementSystemResponse, error) {
 	var result NativeMeasurementSystemResponse
 	err := p.Call(MethodNativeMeasurementSystem, nil, &result)
@@ -3402,7 +3402,7 @@ func (p *Plugin) NativeMemoryInfo() (*NativeMemoryInfoResponse, error) {
 	return &result, nil
 }
 
-// NativeMemoryPressure get memory pressure level (nominal/warn/critical).
+// NativeMemoryPressure get memory pressure level. Unavailable when `memory_pressure -Q` names no level, which is the stock macOS 15 case — it reports only a free-percentage summary. Returns one of: nominal, warn, critical.
 func (p *Plugin) NativeMemoryPressure() (*NativeMemoryPressureResponse, error) {
 	var result NativeMemoryPressureResponse
 	err := p.Call(MethodNativeMemoryPressure, nil, &result)
@@ -3916,7 +3916,7 @@ func (p *Plugin) NativePowerAdapterConnected() (*NativePowerAdapterConnectedResp
 	return &result, nil
 }
 
-// NativePowerSource get current power source type (battery, AC, UPS).
+// NativePowerSource get current power source type. Returns one of: AC, Battery, UPS, Unknown.
 func (p *Plugin) NativePowerSource() (*NativePowerSourceResponse, error) {
 	var result NativePowerSourceResponse
 	err := p.Call(MethodNativePowerSource, nil, &result)
@@ -5013,7 +5013,7 @@ func (p *Plugin) NativeShowScrollBars() (*NativeShowScrollBarsResponse, error) {
 	return &result, nil
 }
 
-// NativeSidebarIconSize get sidebar icon size (small/medium/large).
+// NativeSidebarIconSize get sidebar icon size. Returns one of: small, medium, large.
 func (p *Plugin) NativeSidebarIconSize() (*NativeSidebarIconSizeResponse, error) {
 	var result NativeSidebarIconSizeResponse
 	err := p.Call(MethodNativeSidebarIconSize, nil, &result)
@@ -5365,7 +5365,7 @@ func (p *Plugin) NativeTemperatureUnit() (*NativeTemperatureUnitResponse, error)
 	return &result, nil
 }
 
-// NativeTextReplacements get user text replacements as JSON.
+// NativeTextReplacements get user text replacements as the raw `NSUserDictionaryReplacementItems` preference value — macOS plist text, NOT JSON.
 func (p *Plugin) NativeTextReplacements() (*NativeTextReplacementsResponse, error) {
 	var result NativeTextReplacementsResponse
 	err := p.Call(MethodNativeTextReplacements, nil, &result)
@@ -5375,7 +5375,7 @@ func (p *Plugin) NativeTextReplacements() (*NativeTextReplacementsResponse, erro
 	return &result, nil
 }
 
-// NativeThermalState get coarse CPU throttling state (nominal/throttled) from `pmset -g therm`. NOT ProcessInfo.thermalState — for the four-level nominal/fair/serious/critical reading, subscribe to _platform.thermal.changed..
+// NativeThermalState get coarse CPU throttling state from `pmset -g therm`. NOT ProcessInfo.thermalState — for the four-level nominal/fair/serious/critical reading, subscribe to _platform.thermal.changed. Returns one of: nominal, throttled.
 func (p *Plugin) NativeThermalState() (*NativeThermalStateResponse, error) {
 	var result NativeThermalStateResponse
 	err := p.Call(MethodNativeThermalState, nil, &result)
@@ -5509,7 +5509,7 @@ func (p *Plugin) NativeTrash(path string) (bool, error) {
 	return result.Result, err
 }
 
-// NativeTrueTone check if True Tone is enabled.
+// NativeTrueTone check if True Tone is enabled. KNOWN LIMITATION: the `corebrightnessdiag` probe this depends on is absent from macOS 15, where this always reports false.
 func (p *Plugin) NativeTrueTone() (*NativeTrueToneResponse, error) {
 	var result NativeTrueToneResponse
 	err := p.Call(MethodNativeTrueTone, nil, &result)
