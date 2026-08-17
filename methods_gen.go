@@ -5375,7 +5375,7 @@ func (p *Plugin) NativeTextReplacements() (*NativeTextReplacementsResponse, erro
 	return &result, nil
 }
 
-// NativeThermalState get system thermal state (nominal/fair/serious/critical).
+// NativeThermalState get coarse CPU throttling state (nominal/throttled) from `pmset -g therm`. NOT ProcessInfo.thermalState — for the four-level nominal/fair/serious/critical reading, subscribe to _platform.thermal.changed..
 func (p *Plugin) NativeThermalState() (*NativeThermalStateResponse, error) {
 	var result NativeThermalStateResponse
 	err := p.Call(MethodNativeThermalState, nil, &result)
