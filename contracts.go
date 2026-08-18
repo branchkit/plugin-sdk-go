@@ -9,16 +9,16 @@ const APIVersion = "0.1.0"
 // RPC method names: plugin → actuator (use with plugin.Call()).
 const (
 	MethodActionsList                         = "actions.list"                             // since 0.1.0
-	MethodCollectionAppend                    = "collection.append"                        // since 0.1.0
+	MethodCollectionAppend                    = "collection.append"                        // stable, since 0.1.0
 	MethodCollectionAppendKeyed               = "collection.append_keyed"                  // since 0.1.0
-	MethodCollectionCount                     = "collection.count"                         // since 0.1.0
-	MethodCollectionDeleteRecords             = "collection.delete_records"                // since 0.1.0
-	MethodCollectionFetch                     = "collection.fetch"                         // since 0.1.0
+	MethodCollectionCount                     = "collection.count"                         // stable, since 0.1.0
+	MethodCollectionDeleteRecords             = "collection.delete_records"                // stable, since 0.1.0
+	MethodCollectionFetch                     = "collection.fetch"                         // stable, since 0.1.0
 	MethodCollectionFetchCompacted            = "collection.fetch_compacted"               // since 0.1.0
-	MethodCollectionGet                       = "collection.get"                           // since 0.1.0
-	MethodCollectionList                      = "collection.list"                          // since 0.1.0
-	MethodCollectionPatch                     = "collection.patch"                         // since 0.1.0
-	MethodCollectionPut                       = "collection.put"                           // since 0.1.0
+	MethodCollectionGet                       = "collection.get"                           // stable, since 0.1.0
+	MethodCollectionList                      = "collection.list"                          // stable, since 0.1.0
+	MethodCollectionPatch                     = "collection.patch"                         // stable, since 0.1.0
+	MethodCollectionPut                       = "collection.put"                           // stable, since 0.1.0
 	MethodCollectionReplace                   = "collection.replace"                       // since 0.1.0
 	MethodCollectionsCreateUser               = "collections.create_user"                  // since 0.1.0
 	MethodCollectionsList                     = "collections.list"                         // since 0.1.0
@@ -579,7 +579,7 @@ const (
 	MethodNativeXcodeVersion                  = "native.xcode_version"                     // since 0.1.0
 	MethodNativeZip                           = "native.zip"                               // since 0.1.0
 	MethodNativeZoomEnabled                   = "native.zoom_enabled"                      // since 0.1.0
-	MethodOverridesApply                      = "overrides.apply"                          // since 0.1.0
+	MethodOverridesApply                      = "overrides.apply"                          // stable, since 0.1.0
 	MethodOverridesList                       = "overrides.list"                           // since 0.1.0
 	MethodPipelinesGrammar                    = "pipelines.grammar"                        // since 0.1.0
 	MethodPipelinesInject                     = "pipelines.inject"                         // since 0.1.0
@@ -589,8 +589,8 @@ const (
 	MethodPipelinesWarm                       = "pipelines.warm"                           // since 0.1.0
 	MethodPluginDataExport                    = "plugin.data.export"                       // since 0.1.0
 	MethodPluginDebug                         = "plugin.debug"                             // since 0.1.0
-	MethodPrivacyGetRecording                 = "privacy.get_recording"                    // since 0.1.0
-	MethodPrivacySetRecording                 = "privacy.set_recording"                    // since 0.1.0
+	MethodPrivacyGetRecording                 = "privacy.get_recording"                    // stable, since 0.1.0
+	MethodPrivacySetRecording                 = "privacy.set_recording"                    // stable, since 0.1.0
 	MethodRecognitionBiasApply                = "recognition.bias.apply"                   // since 0.1.0
 	MethodRecognitionRedecode                 = "recognition.redecode"                     // since 0.1.0
 	MethodSelectionPick                       = "selection.pick"                           // since 0.1.0
