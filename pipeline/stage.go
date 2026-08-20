@@ -50,6 +50,12 @@ import (
 	"os/signal"
 	"sync"
 	"syscall"
+
+	// The runtime references the audio session types in two places: the
+	// AudioConsumer interface, and the stop request a ListenForStop source
+	// reads. Both are audio assumptions sitting in an otherwise domain-free
+	// runtime — visible here on purpose rather than hidden by a flat package.
+	"github.com/branchkit/plugin-sdk-go/pipeline/audio"
 )
 
 // Run executes a stage body as main, mapping a fatal error to one structured
@@ -169,13 +175,13 @@ func (c *AudioCtx) GrantNow(sessionID string, frames uint32) error {
 // silent default — which is the trade this SDK generally prefers.
 type AudioConsumer interface {
 	// OnAudioStart is called when a session begins upstream.
-	OnAudioStart(ev AudioStart, ctx *AudioCtx) error
+	OnAudioStart(ev audio.AudioStart, ctx *AudioCtx) error
 	// OnAudioChunk receives one frame of audio. Return ChunkDropped to keep it
 	// out of the credit cadence.
-	OnAudioChunk(ev AudioChunk, payload []byte, ctx *AudioCtx) (Chunk, error)
+	OnAudioChunk(ev audio.AudioChunk, payload []byte, ctx *AudioCtx) (Chunk, error)
 	// OnAudioStop is called when the session ends. A per_run stage emits its
 	// final result here and returns FlowStop.
-	OnAudioStop(ev AudioStop, ctx *AudioCtx) (Flow, error)
+	OnAudioStop(ev audio.AudioStop, ctx *AudioCtx) (Flow, error)
 	// OnOther receives any event the runtime did not decode, including unknown
 	// types. Ignoring them is the default because wire leniency is contract.
 	OnOther(ev *Event, ctx *AudioCtx) (Flow, error)
@@ -187,13 +193,13 @@ type AudioConsumer interface {
 // Embed it so a stage implements only what it cares about.
 type BaseConsumer struct{}
 
-func (BaseConsumer) OnAudioStart(AudioStart, *AudioCtx) error { return nil }
-func (BaseConsumer) OnAudioChunk(AudioChunk, []byte, *AudioCtx) (Chunk, error) {
+func (BaseConsumer) OnAudioStart(audio.AudioStart, *AudioCtx) error { return nil }
+func (BaseConsumer) OnAudioChunk(audio.AudioChunk, []byte, *AudioCtx) (Chunk, error) {
 	return ChunkCounted, nil
 }
-func (BaseConsumer) OnAudioStop(AudioStop, *AudioCtx) (Flow, error) { return FlowContinue, nil }
-func (BaseConsumer) OnOther(*Event, *AudioCtx) (Flow, error)        { return FlowContinue, nil }
-func (BaseConsumer) OnEOF(*AudioCtx) error                          { return nil }
+func (BaseConsumer) OnAudioStop(audio.AudioStop, *AudioCtx) (Flow, error) { return FlowContinue, nil }
+func (BaseConsumer) OnOther(*Event, *AudioCtx) (Flow, error)              { return FlowContinue, nil }
+func (BaseConsumer) OnEOF(*AudioCtx) error                                { return nil }
 
 // ServeAudioConsumer serves a read-driven stage on stdin/stdout.
 func ServeAudioConsumer(cap Capability, policy CreditPolicy, handler AudioConsumer) error {
@@ -240,8 +246,8 @@ func ServeAudioConsumerOn(
 		}
 
 		switch ev.Type {
-		case EventAudioStart:
-			var start AudioStart
+		case audio.EventAudioStart:
+			var start audio.AudioStart
 			if err := json.Unmarshal(ev.Data, &start); err != nil {
 				return fmt.Errorf("stage: decode audio_start: %w", err)
 			}
@@ -254,8 +260,8 @@ func ServeAudioConsumerOn(
 				return err
 			}
 
-		case EventAudioChunk:
-			var chunk AudioChunk
+		case audio.EventAudioChunk:
+			var chunk audio.AudioChunk
 			if err := json.Unmarshal(ev.Data, &chunk); err != nil {
 				return fmt.Errorf("stage: decode audio_chunk: %w", err)
 			}
@@ -272,8 +278,8 @@ func ServeAudioConsumerOn(
 				}
 			}
 
-		case EventAudioStop:
-			var stop AudioStop
+		case audio.EventAudioStop:
+			var stop audio.AudioStop
 			if err := json.Unmarshal(ev.Data, &stop); err != nil {
 				return fmt.Errorf("stage: decode audio_stop: %w", err)
 			}
@@ -319,7 +325,7 @@ type SourceCtx struct {
 	w           *Writer
 	ctx         context.Context
 	stop        context.CancelFunc
-	stopRequest *AudioStop
+	stopRequest *audio.AudioStop
 }
 
 // Emit marshals data and writes it as one framed event.
@@ -364,7 +370,7 @@ func (c *SourceCtx) RequestStop() { c.stop() }
 //
 // An audio source forwards this event's CutoffMs verbatim on its own
 // downstream audio_stop.
-func (c *SourceCtx) StopRequest() *AudioStop {
+func (c *SourceCtx) StopRequest() *audio.AudioStop {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	return c.stopRequest
@@ -416,10 +422,10 @@ func watchForStop(r io.Reader, sc *SourceCtx) {
 		if err != nil {
 			return
 		}
-		if ev.Type != EventAudioStop {
+		if ev.Type != audio.EventAudioStop {
 			continue
 		}
-		var stop AudioStop
+		var stop audio.AudioStop
 		if err := json.Unmarshal(ev.Data, &stop); err == nil {
 			sc.mu.Lock()
 			sc.stopRequest = &stop

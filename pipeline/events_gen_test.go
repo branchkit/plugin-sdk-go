@@ -3,6 +3,9 @@ package pipeline
 import (
 	"encoding/json"
 	"testing"
+
+	"github.com/branchkit/plugin-sdk-go/pipeline/audio"
+	"github.com/branchkit/plugin-sdk-go/pipeline/monitors"
 )
 
 // The generated types are only worth having if they decode what stages
@@ -23,7 +26,7 @@ func TestGeneratedTypesDecodeRealWirePayloads(t *testing.T) {
 		if cap.StageType != "monitor" || cap.StageName != "power" {
 			t.Fatalf("identity fields did not decode: %+v", cap)
 		}
-		if len(cap.Emits) != 2 || cap.Emits[0] != EventPowerSnapshot {
+		if len(cap.Emits) != 2 || cap.Emits[0] != monitors.EventPowerSnapshot {
 			t.Fatalf("emits did not decode: %+v", cap.Emits)
 		}
 		if len(cap.LifecycleModes) != 1 || cap.LifecycleModes[0] != "persistent" {
@@ -33,7 +36,7 @@ func TestGeneratedTypesDecodeRealWirePayloads(t *testing.T) {
 
 	t.Run("audio_chunk", func(t *testing.T) {
 		const raw = `{"session_id":"abc","timestamp_ms":120}`
-		var chunk AudioChunk
+		var chunk audio.AudioChunk
 		if err := json.Unmarshal([]byte(raw), &chunk); err != nil {
 			t.Fatalf("unmarshal: %v", err)
 		}
@@ -60,7 +63,7 @@ func TestGeneratedTypesDecodeRealWirePayloads(t *testing.T) {
 	t.Run("optional fields stay absent when unset", func(t *testing.T) {
 		// audio_stop without a cutoff must not emit `"cutoff_ms":null` — the
 		// Rust writer omits it, and the strict framing checks compare bytes.
-		out, err := json.Marshal(AudioStop{SessionId: "abc"})
+		out, err := json.Marshal(audio.AudioStop{SessionId: "abc"})
 		if err != nil {
 			t.Fatalf("marshal: %v", err)
 		}

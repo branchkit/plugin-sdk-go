@@ -4,12 +4,17 @@
 // The BranchKit pipeline event vocabulary, projected from
 // contracts/pipeline.json (itself generated from the branchkit-stage-sdk Rust
 // types). Framing lives in the hand-written reader/writer alongside this file.
+//
+// Transport vocabulary: the handshake, framing, error and flow-credit
+// types every stage speaks whatever its domain.
 
 package pipeline
 
 import (
 	"encoding/json"
 	"strings"
+
+	"github.com/branchkit/plugin-sdk-go/pipeline/audio"
 )
 
 // Ensure the json import is used even if no type needs it.
@@ -18,31 +23,17 @@ var _ json.RawMessage
 // Wire event tags. Use these instead of string literals so vocabulary
 // drift is a compile error.
 const (
-	EventAudioChunk                = "audio_chunk"
-	EventAudioDeviceAdded          = "audio_device_added"
-	EventAudioDeviceDefaultChanged = "audio_device_default_changed"
-	EventAudioDeviceRemoved        = "audio_device_removed"
-	EventAudioDeviceSnapshot       = "audio_device_snapshot"
-	EventAudioStart                = "audio_start"
-	EventAudioStop                 = "audio_stop"
-	EventCapability                = "capability"
-	EventDisplayAdded              = "display_added"
-	EventDisplayChanged            = "display_changed"
-	EventDisplayRemoved            = "display_removed"
-	EventDisplaySnapshot           = "display_snapshot"
-	EventError                     = "error"
-	EventFlowCredit                = "flow_credit"
-	EventHeadingUpdate             = "heading_update"
-	EventLocationError             = "location_error"
-	EventLocationUpdate            = "location_update"
-	EventPowerSnapshot             = "power_snapshot"
-	EventPowerSourceChanged        = "power_source_changed"
-	EventTranscript                = "transcript"
-	EventVocabularyUpdate          = "vocabulary_update"
+	EventCapability = "capability"
+	EventError      = "error"
+	EventFlowCredit = "flow_credit"
 )
 
 // ExtEventPrefix reserves the open namespace a stage emits custom events
 // under: at least three non-empty dot segments, `ext.<vendor>.<name>`.
+//
+// This is the namespace EVERY domain the platform does not itself decode
+// lives in — a foot pedal, a frame source, a MIDI filter. It needs no
+// platform change and no entry in any catalog.
 const ExtEventPrefix = "ext."
 
 // IsValidExtEventType reports whether a custom event type is well-formed.
@@ -71,69 +62,8 @@ const (
 	DataDirEnv   = "BRANCHKIT_STAGE_DATA"
 )
 
-type AudioChunk struct {
-	SessionId   string `json:"session_id"`
-	TimestampMs uint64 `json:"timestamp_ms"`
-}
-
-type AudioDeviceAdded struct {
-	Device AudioDeviceInfo `json:"device"`
-}
-
-type AudioDeviceDefaultChanged struct {
-	DeviceId  uint32 `json:"device_id"`
-	Direction string `json:"direction"`
-	Name      string `json:"name"`
-	Uid       string `json:"uid"`
-}
-
-type AudioDeviceInfo struct {
-	DeviceId        uint32 `json:"device_id"`
-	IsDefaultInput  bool   `json:"is_default_input"`
-	IsDefaultOutput bool   `json:"is_default_output"`
-	IsInput         bool   `json:"is_input"`
-	IsOutput        bool   `json:"is_output"`
-	Name            string `json:"name"`
-	Uid             string `json:"uid"`
-}
-
-type AudioDeviceRemoved struct {
-	DeviceId uint32 `json:"device_id"`
-	Name     string `json:"name"`
-	Uid      string `json:"uid"`
-}
-
-type AudioDeviceSnapshot struct {
-	Devices []AudioDeviceInfo `json:"devices"`
-}
-
-type AudioFormat struct {
-	Channels uint32 `json:"channels"`
-	Rate     uint32 `json:"rate"`
-	Width    uint32 `json:"width"`
-}
-
-type AudioStart struct {
-	Format    AudioFormat `json:"format"`
-	SessionId string      `json:"session_id"`
-}
-
-type AudioStop struct {
-	// Shared-clock position (the AudioChunk `timestamp_ms` timebase) after
-	// which buffered audio must NOT be processed. Set when the stop was
-	// triggered by something whose audio position is known — a recognized
-	// stop phrase, say — so that a consumer buffering ahead of the trigger
-	// does not process audio the user never meant to send.
-	//
-	// A source stage forwards it verbatim on its downstream AudioStop; a
-	// batch consumer truncates its buffer at it; absent = process
-	// everything.
-	CutoffMs  *uint64 `json:"cutoff_ms,omitempty"`
-	SessionId string  `json:"session_id"`
-}
-
 type Capability struct {
-	AudioFormats []AudioFormat `json:"audio_formats,omitempty"`
+	AudioFormats []audio.AudioFormat `json:"audio_formats,omitempty"`
 	// Event types this stage emits — built-in tags (`transcript`,
 	// `power_snapshot`, …) and/or custom types under [`EXT_EVENT_PREFIX`]
 	// (an `ext.<vendor>.*` glob covers a vendor namespace). Advisory at
@@ -147,32 +77,6 @@ type Capability struct {
 	StageType      string         `json:"stage_type"`
 }
 
-type DisplayAdded struct {
-	Display DisplayInfo `json:"display"`
-}
-
-type DisplayChanged struct {
-	Display DisplayInfo `json:"display"`
-}
-
-type DisplayInfo struct {
-	DisplayId   uint32  `json:"display_id"`
-	Height      uint32  `json:"height"`
-	IsBuiltin   bool    `json:"is_builtin"`
-	IsMain      bool    `json:"is_main"`
-	RefreshRate float64 `json:"refresh_rate"`
-	ScaleFactor float64 `json:"scale_factor"`
-	Width       uint32  `json:"width"`
-}
-
-type DisplayRemoved struct {
-	DisplayId uint32 `json:"display_id"`
-}
-
-type DisplaySnapshot struct {
-	Displays []DisplayInfo `json:"displays"`
-}
-
 type ErrorEvent struct {
 	Code      string  `json:"code"`
 	Fatal     bool    `json:"fatal"`
@@ -183,153 +87,6 @@ type ErrorEvent struct {
 type FlowCredit struct {
 	Frames    uint32 `json:"frames"`
 	SessionId string `json:"session_id"`
-}
-
-// The engine-facing wire projection of the compiled grammar DAG (Phase D2
-// contract).
-//
-// This is the JSON the actuator attaches to a `vocabulary_update` and the CTC
-// stage feeds to the patched `GrammarBuilder` to build `G`. It is a *reduced*
-// view of the DAG — exactly what FST construction needs, nothing the matcher
-// keeps:
-//   - `start` (always 0) is `G`'s start AND its sole base accept state: every
-//     command-final arc returns there, so accepting at `start` accepts any
-//     sequence of complete commands.
-//   - `arcs` are word-level `(from → word → to)` transitions; the builder maps
-//     `word` to the same word id `H ∘ L` emits and rides `weight` onto the arc.
-//   - `open_states` are states whose continuation D1 could not enumerate (free
-//     text, dependent capture, list repeat/optional). The builder realizes each
-//     as final + a self-loop over the full word alphabet (the back-arc into a
-//     word loop), so those commands still recognize their open tail.
-//
-// D3 extends this with per-arc command ids; D2 carries words only.
-type GrammarDagWire struct {
-	Arcs []WireArc `json:"arcs"`
-	// Alternatives the compiler dropped under the empty-list policy —
-	// telemetry only, the FST builder ignores it.
-	DroppedAlts *uint       `json:"dropped_alts,omitempty"`
-	NumStates   uint        `json:"num_states"`
-	OpenStates  []OpenState `json:"open_states,omitempty"`
-	Start       uint        `json:"start"`
-}
-
-type HeadingUpdate struct {
-	HeadingAccuracy float64 `json:"heading_accuracy"`
-	MagneticHeading float64 `json:"magnetic_heading"`
-	Timestamp       float64 `json:"timestamp"`
-	TrueHeading     float64 `json:"true_heading"`
-}
-
-type LocationError struct {
-	Code    string `json:"code"`
-	Message string `json:"message"`
-}
-
-type LocationUpdate struct {
-	Altitude           float64 `json:"altitude"`
-	HorizontalAccuracy float64 `json:"horizontal_accuracy"`
-	Latitude           float64 `json:"latitude"`
-	Longitude          float64 `json:"longitude"`
-	Timestamp          float64 `json:"timestamp"`
-	VerticalAccuracy   float64 `json:"vertical_accuracy"`
-}
-
-// A state whose continuation D1 could not fully enumerate. The builder realizes
-// it as final + a self-loop. `alphabet` bounds that self-loop when known;
-// omitted (`None`) means loop over the full recognition union — the phase-2
-// default and the always-safe fallback.
-type OpenState struct {
-	Alphabet []string `json:"alphabet,omitempty"`
-	State    uint     `json:"state"`
-}
-
-type PowerSnapshot struct {
-	State PowerState `json:"state"`
-}
-
-type PowerSourceChanged struct {
-	State PowerState `json:"state"`
-}
-
-type PowerState struct {
-	BatteryLevel *float64 `json:"battery_level,omitempty"`
-	IsCharging   bool     `json:"is_charging"`
-	Source       string   `json:"source"`
-	TimeToEmpty  *int64   `json:"time_to_empty,omitempty"`
-	TimeToFull   *int64   `json:"time_to_full,omitempty"`
-}
-
-type Transcript struct {
-	// Coarse scalar confidence for the whole transcript: the MEAN of
-	// `word_scores` when the engine produces them, or its own scalar when it
-	// has no per-word signal.
-	//
-	// Deliberately coarse, and the reason matters — **a confidence GATE must
-	// read `word_scores` (the minimum), never this.** A mean hides a single
-	// badly-supported word: scores of [+8, -3] average to +2.5 and sail past
-	// a threshold the per-word data says should fail. For display and
-	// logging only.
-	Confidence *float32 `json:"confidence,omitempty"`
-	Final      bool     `json:"final"`
-	Partial    bool     `json:"partial"`
-	SessionId  string   `json:"session_id"`
-	Text       string   `json:"text"`
-	// Shared-clock onset (ms, the AudioChunk `timestamp_ms` timebase) of each
-	// word of `text`, aligned 1:1 with its whitespace-split words. Emitted by
-	// engines that produce alignment; omitted by those that do not.
-	//
-	// Because the timebase is the shared clock rather than a per-session
-	// counter, a consumer can convert a word position into an audio position
-	// that is meaningful to OTHER concurrently-running pipelines — which is
-	// what makes `AudioStop::cutoff_ms` possible across pipelines.
-	WordOnsetsMs []uint64 `json:"word_onsets_ms,omitempty"`
-	// Per-word acoustic score, aligned 1:1 with `text`'s whitespace-split
-	// words (same alignment contract as `word_onsets_ms`).
-	//
-	// Sign is the contract; magnitude is the engine's own scale. Positive
-	// means the audio supported the word. Negative means the decoder's
-	// language constraint outweighed weak acoustic evidence — the word was
-	// produced because the grammar allowed it, not because it was heard. A
-	// stage that computes these should document its own scale; a consumer
-	// that gates on them should read the MINIMUM, per `confidence` above.
-	//
-	// When present, `confidence` is the mean of these.
-	WordScores []float32 `json:"word_scores,omitempty"`
-}
-
-// The `vocabulary_update` payload: the recognition word union plus the
-// optional grammar stamps the platform attaches at delivery time.
-//
-// This struct is the typed contract; the actuator's producer side still
-// assembles the payload field-by-field (the three delivery-time grammar
-// stamps mutate the JSON per event), and an actuator-side test pins that
-// assembly to this shape so the two cannot drift silently. A consumer
-// stage should treat every field but `words` as optional and fall back
-// to the flat word list when a stamp is absent or malformed.
-type VocabularyUpdate struct {
-	// The structured word-level grammar DAG (D2), stamped when the
-	// structured-grammar toggle is on. Absent/null → the consumer falls back
-	// to the flat word-list grammar.
-	GrammarDag json.RawMessage `json:"grammar_dag,omitempty"`
-	// Exclusive-mode narrowing: when present, the engine grammar is built
-	// from THIS list instead of `words`.
-	NarrowTo []string `json:"narrow_to,omitempty"`
-	// Sparse per-word decoding bias (Lever E): only biased words appear;
-	// everything else is neutral. Keyed by word identity so it cannot drift
-	// out of alignment with the separately-built union.
-	WordWeights map[string]float32 `json:"word_weights,omitempty"`
-	// The full recognition word union (uppercased downstream to the model
-	// lexicon's casing by the consumer).
-	Words []string `json:"words"`
-}
-
-// One word-level arc in [`GrammarDagWire`]. `weight` is omitted when absent
-// (D1 leaves it unset; a later weight policy populates it).
-type WireArc struct {
-	From   uint     `json:"from"`
-	To     uint     `json:"to"`
-	Weight *float32 `json:"weight,omitempty"`
-	Word   string   `json:"word"`
 }
 
 // The serialized header line — one JSON object per event, newline-terminated,
