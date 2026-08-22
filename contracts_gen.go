@@ -100,6 +100,7 @@ const (
 	MethodNativeAppVersion                    = "native.app_version"                       // since 0.1.0
 	MethodNativeAppWindows                    = "native.app_windows"                       // since 0.1.0
 	MethodNativeAppWindowsCount               = "native.app_windows_count"                 // since 0.1.0
+	MethodNativeAppsForPath                   = "native.apps_for_path"                     // since 0.1.0
 	MethodNativeAudioDeviceVolume             = "native.audio_device_volume"               // since 0.1.0
 	MethodNativeAudioDevices                  = "native.audio_devices"                     // since 0.1.0
 	MethodNativeAudioInputDevice              = "native.audio_input_device"                // since 0.1.0

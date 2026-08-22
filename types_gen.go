@@ -1774,6 +1774,16 @@ type NativeAppWindowsCountRequest struct {
 	BundleID string `json:"bundle_id"`
 }
 
+// NativeAppsForPathRequest is the request type for native.apps_for_path.
+type NativeAppsForPathRequest struct {
+	Path string `json:"path"`
+}
+
+// NativeAppsForPathResponse is the response type for native.apps_for_path.
+type NativeAppsForPathResponse struct {
+	Apps []InstalledApp `json:"apps"`
+}
+
 // NativeAudioDeviceVolumeRequest is the request type for native.audio_device_volume.
 type NativeAudioDeviceVolumeRequest struct {
 	DeviceUID string `json:"device_uid"`

@@ -1046,6 +1046,21 @@ func (p *Plugin) NativeAppWindowsCount(bundleID string) error {
 	return p.Call(MethodNativeAppWindowsCount, req, nil)
 }
 
+// NativeAppsForPath applications the OS registers as able to open a given file (Launch Services).
+func (p *Plugin) NativeAppsForPath(path string) ([]InstalledApp, error) {
+	req := &NativeAppsForPathRequest{
+		Path: path,
+	}
+	var result struct {
+		Apps []InstalledApp `json:"apps"`
+	}
+	err := p.Call(MethodNativeAppsForPath, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Apps, nil
+}
+
 // NativeAudioDeviceVolume get volume state for a specific audio device by UID.
 func (p *Plugin) NativeAudioDeviceVolume(deviceUID string) (*NativeAudioDeviceVolumeResponse, error) {
 	req := &NativeAudioDeviceVolumeRequest{
