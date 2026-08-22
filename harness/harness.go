@@ -21,6 +21,7 @@ package harness
 
 import (
 	"bufio"
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -35,10 +36,15 @@ import (
 
 // Harness wraps a running branchkit-test-harness process in --server mode.
 type Harness struct {
-	t       testing.TB
-	cmd     *exec.Cmd
-	writer  *json.Encoder
-	scanner *bufio.Scanner
+	t      testing.TB
+	cmd    *exec.Cmd
+	writer *json.Encoder
+	// Deliberately a bufio.Reader, not a Scanner — same posture as the
+	// SDK's own read loop (rpc.go): a Scanner silently caps lines at 64KB
+	// unless Buffer() is called, so an author's test with a large response
+	// would fail here while production works. The harness must never be
+	// stricter than the thing it mocks.
+	reader  *bufio.Reader
 	mu      sync.Mutex
 	nextID  atomic.Uint64
 	timeout time.Duration
@@ -77,7 +83,7 @@ func Start(t testing.TB, dir string) *Harness {
 		t:       t,
 		cmd:     cmd,
 		writer:  json.NewEncoder(stdin),
-		scanner: bufio.NewScanner(stdout),
+		reader:  bufio.NewReader(stdout),
 		timeout: 30 * time.Second,
 	}
 
@@ -280,9 +286,10 @@ func (h *Harness) tryCall(method string, params any, result any) error {
 	}
 
 	done := make(chan struct{})
-	var scanOK bool
+	var line []byte
+	var readErr error
 	go func() {
-		scanOK = h.scanner.Scan()
+		line, readErr = h.reader.ReadBytes('\n')
 		close(done)
 	}()
 	select {
@@ -291,16 +298,20 @@ func (h *Harness) tryCall(method string, params any, result any) error {
 		return fmt.Errorf("timeout after %s", h.timeout)
 	}
 
-	if !scanOK {
-		if err := h.scanner.Err(); err != nil {
-			return fmt.Errorf("read response: %w", err)
+	if readErr != nil {
+		if len(line) == 0 {
+			return fmt.Errorf("read response: %w", readErr)
 		}
+		// A final unterminated line still parses below.
+	}
+	line = bytes.TrimRight(line, "\r\n")
+	if len(line) == 0 {
 		return fmt.Errorf("EOF reading response")
 	}
 
 	var resp rpcMessage
-	if err := json.Unmarshal(h.scanner.Bytes(), &resp); err != nil {
-		return fmt.Errorf("parse response: %w (raw: %s)", err, h.scanner.Text())
+	if err := json.Unmarshal(line, &resp); err != nil {
+		return fmt.Errorf("parse response: %w (raw: %s)", err, line)
 	}
 
 	if resp.Error != nil {
