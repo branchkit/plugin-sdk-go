@@ -6093,7 +6093,7 @@ func (p *Plugin) SessionEndCleanup() (*SessionEndCleanupResponse, error) {
 	return &result, nil
 }
 
-// SettingsPatchSignals push Datastar signal patches to all active settings SSE streams.
+// SettingsPatchSignals push Datastar signal patches to the calling plugin's active settings SSE streams.
 func (p *Plugin) SettingsPatchSignals(signals string) error {
 	req := &SettingsPatchSignalsRequest{
 		Signals: signals,
