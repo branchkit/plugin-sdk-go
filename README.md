@@ -18,12 +18,12 @@ integration, or anything else to the BranchKit platform. MIT licensed.
 ```go
 package main
 
-import shared "github.com/branchkit/plugin-sdk-go"
+import "github.com/branchkit/plugin-sdk-go"
 
 func main() {
-    plugin := shared.NewPlugin()
+    plugin := branchkit.NewPlugin()
 
-    plugin.HandleAction("myplugin.greet", func(req *shared.OnActionRequest) (any, error) {
+    plugin.HandleAction("myplugin.greet", func(req *branchkit.OnActionRequest) (any, error) {
         plugin.Call("input.type_text", map[string]any{"text": "Hello!"}, nil)
         return nil, nil
     })
@@ -46,7 +46,7 @@ manifest's `action_types`.
 | Commands & vocabulary | `CommandBuilder`, `CommandsPush` |
 | Events | manifest `consumes.events` + `plugin.On(event, fn)` |
 | Settings UI tab | `settings_tab` manifest field + render method |
-| Logging | `shared.Logf` (shared actuator log), `plugin.Debug` (per-plugin file) |
+| Logging | `branchkit.Logf` (shared actuator log), `plugin.Debug` (per-plugin file) |
 
 ## Conformance
 

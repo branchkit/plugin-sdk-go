@@ -1,4 +1,4 @@
-package shared
+package branchkit
 
 import (
 	"encoding/json"
@@ -287,7 +287,7 @@ func (b *ListOptsBuilder) Cursor(id string) *ListOptsBuilder {
 // Pair it with p.ID() to ask for your own records, which is the read half of
 // a scoped write:
 //
-//	mine := shared.NewListOpts().Writer(p.ID()).Build()
+//	mine := branchkit.NewListOpts().Writer(p.ID()).Build()
 //
 // Filtering happens before Limit, so a limited read returns up to Limit
 // MATCHING records rather than the matches within the first Limit records.
@@ -425,7 +425,7 @@ func WithReplaceLabel(label string) ReplaceOption {
 // what is in the collection, so it needs no shadow.
 //
 //	// publish this source's commands, clearing what it published before
-//	_, err := p.Replace("cmds", entries, shared.ScopeGroup("hints"))
+//	_, err := p.Replace("cmds", entries, branchkit.ScopeGroup("hints"))
 //
 // A name the platform does not know yet is created on first call, with this
 // plugin as its introducer — the same auto-registration `Put` performs.

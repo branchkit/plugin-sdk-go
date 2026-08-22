@@ -4,7 +4,7 @@
 // BranchKit observability bus — closed log-event vocabulary.
 // See notes/DESIGN_OBSERVABILITY_BUS.md for the architectural contract.
 
-package shared
+package branchkit
 
 // Log event name constants. Use these instead of string literals so
 // vocabulary drift is a compile error.

@@ -1,4 +1,4 @@
-package shared
+package branchkit
 
 import (
 	"encoding/json"
@@ -19,7 +19,7 @@ type ActionHandlerFunc func(req *OnActionRequest) (any, error)
 //	type SnapParams struct {
 //	    Position string `json:"position"`
 //	}
-//	plugin.HandleAction("foo.snap", func(req *shared.OnActionRequest) (any, error) {
+//	plugin.HandleAction("foo.snap", func(req *branchkit.OnActionRequest) (any, error) {
 //	    var p SnapParams
 //	    if err := req.UnmarshalParams(&p); err != nil {
 //	        return nil, err
@@ -80,7 +80,7 @@ func (r *actionRegistry) dispatch(params json.RawMessage) (any, error) {
 // action to external clients) — but mixing the two will panic, since each is
 // installing the same handler key.
 //
-//	plugin.HandleAction("foo.snap", func(req *shared.OnActionRequest) (any, error) {
+//	plugin.HandleAction("foo.snap", func(req *branchkit.OnActionRequest) (any, error) {
 //	    var p struct{ Position string `json:"position"` }
 //	    req.UnmarshalParams(&p)
 //	    return nil, nil // implicit "ok" — SDK fills in the response
@@ -126,7 +126,7 @@ func (p *Plugin) HandleAction(action string, fn ActionHandlerFunc) {
 //	type SnapParams struct {
 //	    Position string `json:"position"`
 //	}
-//	shared.HandleActionTyped(plugin, "foo.snap", func(p SnapParams, req *shared.OnActionRequest) (any, error) {
+//	branchkit.HandleActionTyped(plugin, "foo.snap", func(p SnapParams, req *branchkit.OnActionRequest) (any, error) {
 //	    // p is fully typed
 //	    return nil, nil
 //	})

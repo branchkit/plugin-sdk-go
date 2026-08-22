@@ -1,4 +1,4 @@
-package shared
+package branchkit
 
 import (
 	"bufio"
@@ -181,7 +181,7 @@ type Plugin struct {
 // Exposed because a plugin routinely needs to name itself to the platform —
 // most directly to ask for its OWN records:
 //
-//	mine := shared.NewListOpts().Writer(p.ID()).Build()
+//	mine := branchkit.NewListOpts().Writer(p.ID()).Build()
 //
 // Without it every caller reaches for os.Getenv and re-derives the fallback,
 // which is how the SDK ended up reading the variable in several places
@@ -289,7 +289,7 @@ func (p *Plugin) Handle(method string, fn HandlerFunc) {
 //	type SetVolumeRequest struct {
 //	    Volume int `json:"volume"`
 //	}
-//	shared.HandleTyped(plugin, "set_volume", func(req *SetVolumeRequest) (any, error) {
+//	branchkit.HandleTyped(plugin, "set_volume", func(req *SetVolumeRequest) (any, error) {
 //	    setVolume(req.Volume)
 //	    return map[string]string{"result": "ok"}, nil
 //	})

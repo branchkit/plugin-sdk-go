@@ -72,7 +72,7 @@ func Run(body func() error) {
 // InitialGrant says when the runtime emits the initial credit window.
 //
 // The NUMBERS are receiver-chosen buffering policy and stay at your call site;
-// only the mechanism is shared. This captures the one structural difference
+// only the mechanism is branchkit. This captures the one structural difference
 // between stages: whether the window opens before any session exists.
 type InitialGrant int
 

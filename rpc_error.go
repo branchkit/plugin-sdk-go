@@ -1,4 +1,4 @@
-package shared
+package branchkit
 
 import (
 	"encoding/json"
@@ -22,8 +22,8 @@ type ErrorKind string
 //
 // Recover it with errors.As:
 //
-//	var rpcErr *shared.RPCError
-//	if errors.As(err, &rpcErr) && rpcErr.Kind == shared.ErrorKindNotPermitted {
+//	var rpcErr *branchkit.RPCError
+//	if errors.As(err, &rpcErr) && rpcErr.Kind == branchkit.ErrorKindNotPermitted {
 //	    // the collection's shape forbids this op — different remedy from
 //	    // ErrorKindForbidden, which means the caller lacks a privilege
 //	}

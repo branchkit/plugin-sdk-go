@@ -1,4 +1,4 @@
-package shared
+package branchkit
 
 import (
 	"encoding/json"

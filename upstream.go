@@ -1,4 +1,4 @@
-package shared
+package branchkit
 
 import (
 	"context"
@@ -14,7 +14,7 @@ import (
 //
 // Usage:
 //
-//	client := shared.NewUpstreamClient("https://api.example.com")
+//	client := branchkit.NewUpstreamClient("https://api.example.com")
 //	resp, err := client.Do(ctx, "GET", "/api/fields", nil)
 //
 // TLS certificates are ALWAYS verified. The platform's CONNECT proxy

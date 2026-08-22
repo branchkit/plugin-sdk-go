@@ -1,4 +1,4 @@
-package shared
+package branchkit
 
 import (
 	"fmt"
@@ -38,8 +38,8 @@ func MethodURL(method string) string {
 // user-controlled strings must run them through toolkit.JSEscape first, the
 // same as any other inline expression.
 //
-//	<button data-on:click={ shared.MethodPost("set_auto_tile", "{enabled: true}") }>
-//	<button data-on:click={ shared.MethodPost("reset", "") }>
+//	<button data-on:click={ branchkit.MethodPost("set_auto_tile", "{enabled: true}") }>
+//	<button data-on:click={ branchkit.MethodPost("reset", "") }>
 func MethodPost(method, payloadJS string) string {
 	if payloadJS == "" {
 		return fmt.Sprintf("@post('%s')", MethodURL(method))

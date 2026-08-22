@@ -1,4 +1,4 @@
-package shared
+package branchkit
 
 import "encoding/json"
 
@@ -18,7 +18,7 @@ func (p *Plugin) Trace(tag string, data any) { p.logAtLevel("trace", tag, data) 
 // diagnostics you want visible by default; use Debug for verbose-only
 // chatter. See notes/DESIGN_PLUGIN_LOG_LEVELS.md.
 //
-// Use shared.Logf instead for lines that describe coordination with the
+// Use branchkit.Logf instead for lines that describe coordination with the
 // actuator or other plugins — those benefit from interleaving with the
 // actuator's own match/dispatch/route lines in actuator.log.
 //

@@ -1,4 +1,4 @@
-package shared
+package branchkit
 
 import (
 	"context"
@@ -20,8 +20,8 @@ import (
 //
 // Usage:
 //
-//	plugin := shared.NewPlugin()
-//	listener := shared.ListenLocal(plugin)
+//	plugin := branchkit.NewPlugin()
+//	listener := branchkit.ListenLocal(plugin)
 //	listener.HandleFunc("POST /push", func(w http.ResponseWriter, r *http.Request) {
 //	    // use plugin.Call() to forward data to actuator
 //	})

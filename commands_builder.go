@@ -1,4 +1,4 @@
-package shared
+package branchkit
 
 import (
 	"encoding/json"
@@ -19,13 +19,13 @@ import (
 // exposes the actuator's alternatives capability (`OneOf`) that no authoring
 // surface reached before.
 //
-//	shared.Command(shared.OneOf("refresh", "reload")).
+//	branchkit.Command(branchkit.OneOf("refresh", "reload")).
 //	    Action("browser.refresh").
 //	    RequiresTags("plugin.browser.active").
 //	    Category("Navigation").
 //	    Build()
 //
-//	shared.Command(shared.Word("focus"), shared.Capture("app", "apps")).
+//	branchkit.Command(branchkit.Word("focus"), branchkit.Capture("app", "apps")).
 //	    Action("input.focus_app").
 //	    Build()
 //
@@ -267,11 +267,11 @@ func PushCommandSpecs(p *Plugin, specs []CommandSpec) (int, error) {
 // needs to know about the others.
 //
 //	// each source owns its own group; no coordination between them
-//	shared.PushCommandGroup(p, "hints", hintSpecs)
-//	shared.PushCommandGroup(p, "scroll", scrollSpecs)
+//	branchkit.PushCommandGroup(p, "hints", hintSpecs)
+//	branchkit.PushCommandGroup(p, "scroll", scrollSpecs)
 //
 //	// retract one source without touching the rest
-//	shared.PushCommandGroup(p, "hints", nil)
+//	branchkit.PushCommandGroup(p, "hints", nil)
 //
 // Returns the number of command variants now active for the whole plugin, not
 // just this group.

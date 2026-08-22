@@ -1,4 +1,4 @@
-package shared
+package branchkit
 
 // Typed settings access for `preset: settings` collections
 // (DESIGN_PLUGIN_SETTINGS_STORAGE.md). The platform materializes the
