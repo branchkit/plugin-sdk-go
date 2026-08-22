@@ -68,6 +68,43 @@ func TestSetUserObservableToImmediateGet(t *testing.T) {
 		})
 }
 
+// TestUnpatchUserRelaysAndRefreshes: unpatch removes the override and
+// the mirror observes the reverted value on return.
+func TestUnpatchUserRelaysAndRefreshes(t *testing.T) {
+	store := map[string]any{"editor": "custom"}
+	runPluginCall(t,
+		func(method string, params json.RawMessage) (any, string) {
+			switch method {
+			case "overrides.apply":
+				var req struct {
+					Action string  `json:"action"`
+					Field  *string `json:"field"`
+					Tenant *string `json:"tenant"`
+				}
+				if err := json.Unmarshal(params, &req); err != nil {
+					return nil, "bad params"
+				}
+				if req.Action != "unpatch" || req.Field == nil || *req.Field != "editor" {
+					return nil, "wrong unpatch shape"
+				}
+				store["editor"] = ""
+				return map[string]any{"ok": true}, ""
+			case "collection.get":
+				return map[string]any{"name": "plugin.test.config", "data": store}, ""
+			}
+			return nil, "unexpected method " + method
+		},
+		func(p *Plugin) {
+			s := Settings[testConfig](p, "plugin.test.config")
+			if err := s.UnpatchUser("editor"); err != nil {
+				t.Fatalf("UnpatchUser: %v", err)
+			}
+			if got := s.Get().Editor; got != "" {
+				t.Fatalf("Get after unpatch = %q, want reverted default", got)
+			}
+		})
+}
+
 // TestLoadReadsThrough: Load must return the store's current state even
 // when no update event has reached the mirror.
 func TestLoadReadsThrough(t *testing.T) {

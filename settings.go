@@ -130,6 +130,20 @@ func (s *SettingsMirror[T]) SetUserFields(fields map[string]any) error {
 	return s.Refresh()
 }
 
+// UnpatchUser removes the user's override for one field, so it resumes
+// tracking the plugin's shipped default (a change back to the default
+// must not pin a copy of it). Same contract as SetUser: one relayed
+// user gesture, refreshed before returning.
+func (s *SettingsMirror[T]) UnpatchUser(field string) error {
+	id := s.name
+	tenant := "_user"
+	f := field
+	if _, err := s.p.OverridesApply("unpatch", s.name, &f, nil, &id, nil, &tenant); err != nil {
+		return err
+	}
+	return s.Refresh()
+}
+
 // Load returns the composed settings via a synchronous read-through,
 // updating the mirror. Use it at the top of render paths
 // (`render_settings`): a render must read state at least as fresh as
