@@ -68,13 +68,19 @@ type opts struct {
 // accepts Key and ConfirmLabel.
 type Option func(*opts)
 
-// Payload builds the request payload from alternating key, value pairs —
-// values are marshaled (a name containing a quote stays data), except
-// Expr values, which are embedded raw:
+// Args builds a JS object-literal payload string from alternating key,
+// value pairs — values are marshaled (a name containing a quote stays
+// data), except Expr values, which are embedded raw:
 //
-//	ui.Payload("name", n, "new_name", ui.InputValue)
+//	ui.Args("name", n, "new_name", ui.InputValue)
 //	→ {"name":"it's fine","new_name":el.previousElementSibling.value}
-func Payload(pairs ...any) Option {
+//
+// This is the expression-context form of Payload — for templ attributes
+// and composed data-on expressions that call MethodPost directly:
+//
+//	data-on:keydown={ "evt.key === 'Enter' && " +
+//	    branchkit.MethodPost("retune", ui.Args("word", ui.Expr("el.value"))) }
+func Args(pairs ...any) string {
 	var b strings.Builder
 	b.WriteByte('{')
 	for i := 0; i+1 < len(pairs); i += 2 {
@@ -96,7 +102,12 @@ func Payload(pairs ...any) Option {
 		}
 	}
 	b.WriteByte('}')
-	p := b.String()
+	return b.String()
+}
+
+// Payload is Args as a button Option.
+func Payload(pairs ...any) Option {
+	p := Args(pairs...)
 	return func(o *opts) { o.payload = p }
 }
 
