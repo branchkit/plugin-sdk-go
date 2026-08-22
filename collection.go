@@ -298,13 +298,9 @@ func (b *ListOptsBuilder) Writer(writer string) *ListOptsBuilder {
 
 func (b *ListOptsBuilder) Build() *ListOpts { return &b.opts }
 
-// CollectionChangedEvent is the payload of _platform.collection.updated.
-type CollectionChangedEvent struct {
-	Collection string `json:"collection"`
-	Writer     string `json:"writer"`
-}
-
-type CollectionChangedHandler func(evt CollectionChangedEvent)
+// The Subscribe payload is the generated CollectionUpdatedEventParams
+// (types_gen.go).
+type CollectionChangedHandler func(evt CollectionUpdatedEventParams)
 
 // Subscribe registers a handler for changes on the named collection.
 // Multiple subscriptions on the same name run independently. There is
@@ -312,7 +308,7 @@ type CollectionChangedHandler func(evt CollectionChangedEvent)
 // lifetime.
 func (p *Plugin) Subscribe(name string, fn CollectionChangedHandler) {
 	p.On(EventCollectionUpdated, func(params json.RawMessage) {
-		var evt CollectionChangedEvent
+		var evt CollectionUpdatedEventParams
 		if err := json.Unmarshal(params, &evt); err != nil {
 			return
 		}

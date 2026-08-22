@@ -225,8 +225,8 @@ func TestListOptsBuilderEncodesTypedValues(t *testing.T) {
 func TestSubscribeFiltersByName(t *testing.T) {
 	p, _, _ := newTestPlugin()
 
-	calls := make(chan CollectionChangedEvent, 4)
-	p.Subscribe("things", func(evt CollectionChangedEvent) {
+	calls := make(chan CollectionUpdatedEventParams, 4)
+	p.Subscribe("things", func(evt CollectionUpdatedEventParams) {
 		calls <- evt
 	})
 

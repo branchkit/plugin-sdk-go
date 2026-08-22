@@ -14,20 +14,9 @@ func derefOr[T any](p *T) T {
 	return *p
 }
 
-// EffectDisplacedEvent is the payload delivered to OnEffectDisplaced
-// callbacks. Mirrors the actuator-side broadcast shape — see
-// `actuator/src/operations/registered/effects.rs`.
-type EffectDisplacedEvent struct {
-	// Effect that was displaced (e.g. "suppress_notifications").
-	Effect string `json:"effect"`
-	// Plugin that displaced this one and now holds top-of-stack.
-	NewOwner string `json:"new_owner"`
-	// Plugin that lost top-of-stack ownership. The SDK filters on this
-	// so `OnEffectDisplaced` only fires when *this* plugin was displaced;
-	// the field is exposed for plugins that subscribe to the underlying
-	// event directly via `On(EventEffectDisplaced, ...)`.
-	DisplacedOwner string `json:"displaced_owner"`
-}
+// The OnEffectDisplaced payload is the generated EffectDisplacedEventParams
+// (types_gen.go) — one wire shape, emitted from the actuator's inventoried
+// params struct, regenerated on change.
 
 // EffectAssertOutcome is the result of AssertEffect.
 type EffectAssertOutcome struct {
@@ -127,12 +116,12 @@ func (p *Plugin) IsEffectActive(name string) (active bool, currentOwner string, 
 // See `notes/DESIGN_CAPABILITY_MECHANISM.md` section 10.2.
 //
 // Multiple callbacks can be registered; each fires for every event.
-func (p *Plugin) OnEffectDisplaced(handler func(evt EffectDisplacedEvent)) {
+func (p *Plugin) OnEffectDisplaced(handler func(evt EffectDisplacedEventParams)) {
 	p.On(EventEffectDisplaced, func(params json.RawMessage) {
 		if len(params) == 0 {
 			return
 		}
-		var evt EffectDisplacedEvent
+		var evt EffectDisplacedEventParams
 		if err := json.Unmarshal(params, &evt); err != nil {
 			// Malformed payload — drop silently rather than crashing the
 			// listener thread. The actuator's emit shape is fixed at

@@ -67,7 +67,7 @@ func (p *Plugin) mirror(name string, compacted bool) *CollectionMirror {
 		}
 	})
 
-	p.Subscribe(name, func(CollectionChangedEvent) {
+	p.Subscribe(name, func(CollectionUpdatedEventParams) {
 		if err := m.Refresh(); err != nil {
 			Logf(p.pluginID, "mirror %q: refresh failed: %v", name, err)
 		}

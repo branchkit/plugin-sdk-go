@@ -5515,3 +5515,247 @@ type TrialSamplesRequest struct {
 type TrialSamplesResponse struct {
 	Prompts []string `json:"prompts"`
 }
+
+// ===== Platform event payload types =====
+
+// ActionExecutedEventParams is the payload of the _platform.action.executed event.
+type ActionExecutedEventParams struct {
+	Action string `json:"action"`
+}
+
+// AppFocusedEventParams is the payload of the _platform.app.focused event.
+type AppFocusedEventParams struct {
+	BundleID string `json:"bundle_id"`
+}
+
+// AudioDevicesChangedEventParams is the payload of the _platform.audio_devices.changed event.
+type AudioDevicesChangedEventParams struct {
+	DeviceID  int     `json:"device_id"`
+	Direction *string `json:"direction,omitempty"`
+	IsInput   *bool   `json:"is_input,omitempty"`
+	IsOutput  *bool   `json:"is_output,omitempty"`
+	Kind      string  `json:"kind"`
+	Name      string  `json:"name"`
+	UID       string  `json:"uid"`
+}
+
+// BleNotificationEventParams is the payload of the _platform.ble.notification event.
+type BleNotificationEventParams struct {
+	CharacteristicUuid string `json:"characteristic_uuid"`
+	Data               []int  `json:"data"`
+	DeviceIdentifier   string `json:"device_identifier"`
+	ServiceUuid        string `json:"service_uuid"`
+}
+
+// CaptureProgressEventParams is the payload of the _platform.capture.progress event.
+type CaptureProgressEventParams struct {
+	Captured       map[string]json.RawMessage `json:"captured"`
+	CommandPhrase  string                     `json:"command_phrase"`
+	NextCapture    string                     `json:"next_capture"`
+	NextCollection string                     `json:"next_collection"`
+	OwnerPlugin    string                     `json:"owner_plugin"`
+}
+
+// ClipboardChangedEventParams is the payload of the _platform.clipboard.changed event.
+type ClipboardChangedEventParams struct {
+	ChangeCount int      `json:"change_count"`
+	Types       []string `json:"types"`
+}
+
+// CollectionUpdatedEventParams is the payload of the _platform.collection.updated event.
+type CollectionUpdatedEventParams struct {
+	Collection string `json:"collection"`
+	Writer     string `json:"writer"`
+}
+
+// DisplayChangedEventParams is the payload of the _platform.display.changed event.
+type DisplayChangedEventParams struct {
+	Displays []DisplayInfo `json:"displays"`
+}
+
+// EffectDisplacedEventParams is the payload of the _platform.effect.displaced event.
+type EffectDisplacedEventParams struct {
+	DisplacedOwner string `json:"displaced_owner"`
+	Effect         string `json:"effect"`
+	NewOwner       string `json:"new_owner"`
+}
+
+// HidConnectedEventParams is the payload of the _platform.hid.connected event.
+type HidConnectedEventParams struct {
+	Axes      int     `json:"axes"`
+	BleUuid   *string `json:"ble_uuid,omitempty"`
+	Buttons   int     `json:"buttons"`
+	DeviceID  string  `json:"device_id"`
+	Product   string  `json:"product"`
+	ProductID int     `json:"product_id"`
+	Transport string  `json:"transport"`
+	VendorID  int     `json:"vendor_id"`
+}
+
+// HidDisconnectedEventParams is the payload of the _platform.hid.disconnected event.
+type HidDisconnectedEventParams struct {
+	DeviceID  string `json:"device_id"`
+	Product   string `json:"product"`
+	Transport string `json:"transport"`
+}
+
+// HidInputEventParams is the payload of the _platform.hid.input event.
+type HidInputEventParams struct {
+	DeviceID  string `json:"device_id"`
+	Product   string `json:"product"`
+	Timestamp int    `json:"timestamp"`
+	Usage     int    `json:"usage"`
+	UsagePage int    `json:"usage_page"`
+	Value     int    `json:"value"`
+}
+
+// HidReportEventParams is the payload of the _platform.hid.report event.
+type HidReportEventParams struct {
+	Data       []int  `json:"data"`
+	DeviceID   string `json:"device_id"`
+	Product    string `json:"product"`
+	ReportID   int    `json:"report_id"`
+	ReportType int    `json:"report_type"`
+	Timestamp  int    `json:"timestamp"`
+}
+
+// KeyboardLayoutChangedEventParams is the payload of the _platform.keyboard.layout_changed event.
+type KeyboardLayoutChangedEventParams struct {
+	NewLayoutID string `json:"new_layout_id"`
+	OldLayoutID string `json:"old_layout_id"`
+}
+
+// MemoryPressureChangedEventParams is the payload of the _platform.memory_pressure.changed event.
+type MemoryPressureChangedEventParams struct {
+	Level string `json:"level"`
+}
+
+// NetworkChangedEventParams is the payload of the _platform.network.changed event.
+type NetworkChangedEventParams struct {
+	Constrained bool   `json:"constrained"`
+	Expensive   bool   `json:"expensive"`
+	Interface   string `json:"interface"`
+	Reachable   bool   `json:"reachable"`
+}
+
+// PermissionChangedEventParams is the payload of the _platform.permission.changed event.
+type PermissionChangedEventParams struct {
+	Granted    bool   `json:"granted"`
+	Permission string `json:"permission"`
+}
+
+// PipelineErrorEventParams is the payload of the _platform.pipeline.error event.
+type PipelineErrorEventParams struct {
+	Error    string `json:"error"`
+	Pipeline string `json:"pipeline"`
+}
+
+// PipelineStartedEventParams is the payload of the _platform.pipeline.started event.
+type PipelineStartedEventParams struct {
+	Ephemeral *bool  `json:"ephemeral,omitempty"`
+	Pipeline  string `json:"pipeline"`
+}
+
+// PipelineStoppedEventParams is the payload of the _platform.pipeline.stopped event.
+type PipelineStoppedEventParams struct {
+	Pipeline string `json:"pipeline"`
+}
+
+// PipelineTranscriptEventParams is the payload of the _platform.pipeline.transcript event.
+type PipelineTranscriptEventParams struct {
+	Confidence       *float64        `json:"confidence,omitempty"`
+	DictationProfile *string         `json:"dictation_profile,omitempty"`
+	IsFinal          bool            `json:"is_final"`
+	Pipeline         string          `json:"pipeline"`
+	Text             string          `json:"text"`
+	WordOnsetsMs     json.RawMessage `json:"word_onsets_ms,omitempty"`
+	WordScores       json.RawMessage `json:"word_scores,omitempty"`
+}
+
+// PipelineWarmedEventParams is the payload of the _platform.pipeline.warmed event.
+type PipelineWarmedEventParams struct {
+	Pipeline string `json:"pipeline"`
+}
+
+// PluginDegradedEventParams is the payload of the _platform.plugin.degraded event.
+type PluginDegradedEventParams struct {
+	ConsecutiveTimeouts int    `json:"consecutive_timeouts"`
+	PluginID            string `json:"plugin_id"`
+}
+
+// PluginDisabledEventParams is the payload of the _platform.plugin.disabled event.
+type PluginDisabledEventParams struct {
+	PluginID string `json:"plugin_id"`
+}
+
+// PluginEnabledEventParams is the payload of the _platform.plugin.enabled event.
+type PluginEnabledEventParams struct {
+	PluginID string `json:"plugin_id"`
+}
+
+// PowerChangedEventParams is the payload of the _platform.power.changed event.
+type PowerChangedEventParams struct {
+	BatteryLevel *float64 `json:"battery_level,omitempty"`
+	IsCharging   bool     `json:"is_charging"`
+	Source       string   `json:"source"`
+	TimeToEmpty  *int     `json:"time_to_empty,omitempty"`
+	TimeToFull   *int     `json:"time_to_full,omitempty"`
+}
+
+// SelectionPickedEventParams is the payload of the _platform.selection.picked event.
+type SelectionPickedEventParams struct {
+	ItemID string `json:"item_id"`
+	Tag    string `json:"tag"`
+}
+
+// ThermalChangedEventParams is the payload of the _platform.thermal.changed event.
+type ThermalChangedEventParams struct {
+	State string `json:"state"`
+}
+
+// WindowClosedEventParams is the payload of the _platform.window.closed event.
+type WindowClosedEventParams struct {
+	AppID    string `json:"app_id"`
+	WindowID string `json:"window_id"`
+}
+
+// WindowCreatedEventParams is the payload of the _platform.window.created event.
+type WindowCreatedEventParams struct {
+	AppID    string  `json:"app_id"`
+	AppName  *string `json:"app_name,omitempty"`
+	Frame    Frame   `json:"frame"`
+	WindowID string  `json:"window_id"`
+}
+
+// WindowFocusedEventParams is the payload of the _platform.window.focused event.
+type WindowFocusedEventParams struct {
+	AppID    string `json:"app_id"`
+	WindowID string `json:"window_id"`
+}
+
+// WindowFrameChangedEventParams is the payload of the _platform.window.frame_changed event.
+type WindowFrameChangedEventParams struct {
+	New      Frame  `json:"new"`
+	Old      Frame  `json:"old"`
+	WindowID string `json:"window_id"`
+}
+
+// WindowTitleChangedEventParams is the payload of the _platform.window.title_changed event.
+type WindowTitleChangedEventParams struct {
+	NewTitle string `json:"new_title"`
+	OldTitle string `json:"old_title"`
+	WindowID string `json:"window_id"`
+}
+
+// WorkspaceChangedEventParams is the payload of the _platform.workspace.changed event.
+type WorkspaceChangedEventParams struct {
+	Reason *string `json:"reason,omitempty"`
+}
+
+// WorldUpdatedEventParams is the payload of the _platform.world.updated event.
+type WorldUpdatedEventParams struct {
+	ActiveApp      *string         `json:"active_app,omitempty"`
+	ActiveWindowID *string         `json:"active_window_id,omitempty"`
+	Displays       json.RawMessage `json:"displays,omitempty"`
+	Windows        json.RawMessage `json:"windows,omitempty"`
+}
