@@ -93,3 +93,14 @@ var KnownErrorKinds = []ErrorKind{
 	ErrorKindInvalidParams,
 	ErrorKindInternal,
 }
+
+// FaultData is the structured payload of a JSON-RPC error's `data`
+// member. Only Kind is guaranteed; the rest are populated when they
+// apply. Source of truth: `actuator/src/fault.rs::FaultData`.
+type FaultData struct {
+	Kind       ErrorKind `json:"kind"`
+	Collection string    `json:"collection,omitempty"`
+	Detail     string    `json:"detail,omitempty"`
+	ID         string    `json:"id,omitempty"`
+	Op         string    `json:"op,omitempty"`
+}

@@ -15,19 +15,8 @@ import (
 // fall through a switch rather than fail to parse.
 type ErrorKind string
 
-// FaultData is the structured payload from a JSON-RPC error's `data` member.
-// Only Kind is guaranteed; the rest are populated when they apply.
-type FaultData struct {
-	Kind ErrorKind `json:"kind"`
-	// Op is the collection verb, snake_case ("put", "append", …).
-	Op string `json:"op,omitempty"`
-	// Collection the operation targeted.
-	Collection string `json:"collection,omitempty"`
-	// ID the operation targeted.
-	ID string `json:"id,omitempty"`
-	// Detail is the reason WITHOUT the taxonomy prefix that Message carries.
-	Detail string `json:"detail,omitempty"`
-}
+// FaultData (the structured payload from a JSON-RPC error's `data` member)
+// is generated into closed_vocab_gen.go alongside the ErrorKind values.
 
 // RPCError is an error returned by the actuator in response to a plugin call.
 //
