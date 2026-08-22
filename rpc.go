@@ -8,6 +8,7 @@ import (
 	"io"
 	"os"
 	"os/signal"
+	"sort"
 	"sync"
 	"sync/atomic"
 	"syscall"
@@ -229,6 +230,21 @@ func NewPlugin() *Plugin {
 	// wire it themselves.
 	p.handlers["list_action_types"] = func(_ json.RawMessage) (any, error) {
 		return map[string]any{"action_types": p.RegisteredActionTypes()}, nil
+	}
+
+	// Built-in introspection: registered RPC method names, fetched by the
+	// actuator at readiness so the settings-HTML validator can flag @post
+	// URLs that name no handler — otherwise a typo'd method is a dead
+	// button with no error anywhere.
+	p.handlers["list_methods"] = func(_ json.RawMessage) (any, error) {
+		p.mu.Lock()
+		names := make([]string, 0, len(p.handlers))
+		for name := range p.handlers {
+			names = append(names, name)
+		}
+		p.mu.Unlock()
+		sort.Strings(names)
+		return map[string]any{"methods": names}, nil
 	}
 
 	Log(pluginID, "started (JSON-RPC over stdio)")
