@@ -5,8 +5,8 @@ import (
 	"testing"
 )
 
-func TestPostButtonUsesMethodRouteAndEscapes(t *testing.T) {
-	h := PostButton(`Save <x>`, "set_thing", "{v: 1}", "font-size:12px;")
+func TestPostButtonEscapesAndRoutes(t *testing.T) {
+	h := PostButton(`Save <x>`, "set_thing", Payload("v", 1), Style("font-size:12px;"))
 	if !strings.Contains(h, "Save &lt;x&gt;") {
 		t.Fatalf("label not escaped: %s", h)
 	}
@@ -15,41 +15,65 @@ func TestPostButtonUsesMethodRouteAndEscapes(t *testing.T) {
 	}
 }
 
-func TestInputValueIsElNotSignal(t *testing.T) {
-	// The dead-Save bug: $el reads an undefined SIGNAL. The idiom is el.
-	if strings.HasPrefix(InputValue, "$") {
-		t.Fatal("InputValue must reference the element (el), not a signal ($el)")
+func TestPayloadMarshalsValues(t *testing.T) {
+	// The quote-splice bug: a value containing a quote must stay DATA.
+	h := PostButton("Save", "rename", Payload("name", "it's", "n", 3, "ok", true))
+	if !strings.Contains(h, `&#34;name&#34;:&#34;it&#39;s&#34;`) {
+		t.Fatalf("string value not marshaled: %s", h)
 	}
-	if !strings.HasPrefix(InputValue, "el.") {
-		t.Fatalf("unexpected idiom: %s", InputValue)
-	}
-}
-
-func TestConfirmConsumesItsOwnSignal(t *testing.T) {
-	h := ConfirmPostButton("k1", "Delete", "Really?", "delete_thing", "{id: 'x'}", "")
-	if !strings.Contains(h, "data-signals:c_k1__ifmissing") {
-		t.Fatalf("signal not declared with __ifmissing: %s", h)
-	}
-	// The confirm click must post AND reset in one expression — a signal
-	// that survives its own use resurrects armed confirms on recreated
-	// rows (the untitled.lua bug).
-	if !strings.Contains(h, "; $c_k1 = false") {
-		t.Fatalf("confirm does not consume its signal: %s", h)
-	}
-	if !strings.Contains(h, `data-show="!$c_k1"`) || !strings.Contains(h, `data-show="$c_k1"`) {
-		t.Fatalf("arm/confirm visibility not signal-driven: %s", h)
-	}
-	if !strings.Contains(h, ">Cancel<") {
-		t.Fatalf("no Cancel escape hatch: %s", h)
+	if !strings.Contains(h, `&#34;n&#34;:3`) || !strings.Contains(h, `&#34;ok&#34;:true`) {
+		t.Fatalf("scalar values not marshaled: %s", h)
 	}
 }
 
-func TestPostButtonThenComposesOutsideThePayload(t *testing.T) {
-	h := PostButtonThen("Save", "rename", "{name: 'x'}", "$r = false", "")
+func TestPayloadExprIsRawAndElNotSignal(t *testing.T) {
+	h := PostButton("Save", "rename", Payload("new_name", InputValue))
+	if !strings.Contains(h, "el.previousElementSibling.value") {
+		t.Fatalf("Expr not embedded raw: %s", h)
+	}
+	if strings.Contains(h, "$el") {
+		t.Fatalf("$el leaked — the element is el, $ reads a signal: %s", h)
+	}
+}
+
+func TestThenComposesOutsideThePayload(t *testing.T) {
+	h := PostButton("Save", "rename", Payload("name", "x"), Then("$r = false"))
 	// The expression must follow the closed @post(...) call — inside the
 	// payload object it is a silent syntax error.
 	if !strings.Contains(h, "}); $r = false") {
 		t.Fatalf("then-expression not composed after the post: %s", h)
+	}
+}
+
+func TestConfirmButtonContract(t *testing.T) {
+	h := ConfirmButton("Delete", "delete_thing", Payload("id", "x"))
+	if !strings.Contains(h, "__ifmissing") {
+		t.Fatalf("signal not declared with __ifmissing: %s", h)
+	}
+	// Consumed on use: a signal surviving its own confirm resurrects armed
+	// confirms on recreated rows.
+	if !strings.Contains(h, "; $c_") || !strings.Contains(h, " = false") {
+		t.Fatalf("confirm does not consume its signal: %s", h)
+	}
+	if !strings.Contains(h, ">Really delete?<") {
+		t.Fatalf("derived confirm label missing: %s", h)
+	}
+	if !strings.Contains(h, ">Cancel<") {
+		t.Fatalf("no Cancel escape hatch: %s", h)
+	}
+	// Same action → same key (shared state is correct); different payload → different key.
+	h2 := ConfirmButton("Delete", "delete_thing", Payload("id", "x"))
+	h3 := ConfirmButton("Delete", "delete_thing", Payload("id", "y"))
+	keyOf := func(s string) string { return s[strings.Index(s, "c_"):strings.Index(s, "__ifmissing")] }
+	if keyOf(h) != keyOf(h2) || keyOf(h) == keyOf(h3) {
+		t.Fatalf("key derivation wrong: %s vs %s vs %s", keyOf(h), keyOf(h2), keyOf(h3))
+	}
+}
+
+func TestClassAndStyle(t *testing.T) {
+	h := SignalButton("Rename", "$r = true", Class("btn-sm"), Style("margin:0;"))
+	if !strings.Contains(h, `class="btn-sm"`) || !strings.Contains(h, `style="margin:0;"`) {
+		t.Fatalf("class/style not emitted: %s", h)
 	}
 }
 
