@@ -30,6 +30,11 @@ type rpcMessage struct {
 	// outbound calls from its current scope; inbound calls preserve the
 	// id from the wire for handlers that want to thread it forward.
 	CorrelationID string `json:"correlation_id,omitempty"`
+	// OnBehalfOf is the actor label: which hosted thing this plugin was
+	// acting for. Envelope-level for the same reason CorrelationID is —
+	// methods and notifies carry it uniformly. Observability only; the
+	// platform records it and never gates on it. See actor.go.
+	OnBehalfOf string `json:"on_behalf_of,omitempty"`
 }
 
 type rpcError struct {
@@ -399,6 +404,7 @@ func (p *Plugin) CallWithTimeout(method string, params any, result any, timeout 
 		Method:        method,
 		Params:        paramsRaw,
 		CorrelationID: currentCorrelation(),
+		OnBehalfOf:    currentActor(),
 	})
 	p.writeMu.Unlock()
 
@@ -455,6 +461,7 @@ func (p *Plugin) Notify(method string, params any) error {
 		Method:        method,
 		Params:        paramsRaw,
 		CorrelationID: currentCorrelation(),
+		OnBehalfOf:    currentActor(),
 	})
 }
 

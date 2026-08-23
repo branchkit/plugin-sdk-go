@@ -167,6 +167,7 @@ type CollectionPutEntry struct {
 type CollectionRecord struct {
 	Group       *string         `json:"group,omitempty"`
 	ID          string          `json:"id"`
+	OnBehalfOf  *string         `json:"on_behalf_of,omitempty"`
 	Payload     json.RawMessage `json:"payload,omitempty"`
 	Revision    int             `json:"revision"`
 	TimestampMs int             `json:"timestamp_ms"`
@@ -502,6 +503,7 @@ type ListeningPort struct {
 // LogEntry is auto-generated from the OpenRPC spec.
 type LogEntry struct {
 	ID          string          `json:"id"`
+	OnBehalfOf  *string         `json:"on_behalf_of,omitempty"`
 	Payload     json.RawMessage `json:"payload,omitempty"`
 	TimestampMs int             `json:"timestamp_ms"`
 	Writer      string          `json:"writer"`
