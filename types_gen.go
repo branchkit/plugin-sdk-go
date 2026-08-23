@@ -673,6 +673,15 @@ type PrinterInfo struct {
 	State     string `json:"state"`
 }
 
+// PrivilegeStatusEntry is auto-generated from the OpenRPC spec.
+type PrivilegeStatusEntry struct {
+	Denied    bool   `json:"denied"`
+	Granted   bool   `json:"granted"`
+	Pending   bool   `json:"pending"`
+	Privilege string `json:"privilege"`
+	Required  bool   `json:"required"`
+}
+
 // ProcessInfo is auto-generated from the OpenRPC spec.
 type ProcessInfo struct {
 	CpuPercent  *float64 `json:"cpu_percent,omitempty"`
@@ -5236,6 +5245,32 @@ type PrivacySetRecordingResponse struct {
 	Ok bool `json:"ok"`
 }
 
+// PrivilegesListResponse is the response type for privileges.list.
+type PrivilegesListResponse struct {
+	Privileges []PrivilegeStatusEntry `json:"privileges"`
+}
+
+// PrivilegesRelinquishRequest is the request type for privileges.relinquish.
+type PrivilegesRelinquishRequest struct {
+	Privilege string `json:"privilege"`
+}
+
+// PrivilegesRelinquishResponse is the response type for privileges.relinquish.
+type PrivilegesRelinquishResponse struct {
+	Status string `json:"status"`
+}
+
+// PrivilegesRequestRequest is the request type for privileges.request.
+type PrivilegesRequestRequest struct {
+	Privilege string  `json:"privilege"`
+	Reason    *string `json:"reason,omitempty"`
+}
+
+// PrivilegesRequestResponse is the response type for privileges.request.
+type PrivilegesRequestResponse struct {
+	Status string `json:"status"`
+}
+
 // RecognitionBiasApplyRequest is the request type for recognition.bias.apply.
 type RecognitionBiasApplyRequest struct {
 	Force    *bool   `json:"force,omitempty"`
@@ -5710,6 +5745,12 @@ type PowerChangedEventParams struct {
 	Source       string   `json:"source"`
 	TimeToEmpty  *int     `json:"time_to_empty,omitempty"`
 	TimeToFull   *int     `json:"time_to_full,omitempty"`
+}
+
+// PrivilegeGrantedEventParams is the payload of the _platform.privilege.granted event.
+type PrivilegeGrantedEventParams struct {
+	PluginID  string `json:"plugin_id"`
+	Privilege string `json:"privilege"`
 }
 
 // SelectionPickedEventParams is the payload of the _platform.selection.picked event.

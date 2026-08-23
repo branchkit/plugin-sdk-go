@@ -6025,6 +6025,45 @@ func (p *Plugin) PrivacySetRecording(enabled bool, name string) error {
 	return p.Call(MethodPrivacySetRecording, req, nil)
 }
 
+// PrivilegesList the caller's own declared privileges with live granted/pending/denied state.
+func (p *Plugin) PrivilegesList() ([]PrivilegeStatusEntry, error) {
+	var result struct {
+		Privileges []PrivilegeStatusEntry `json:"privileges"`
+	}
+	err := p.Call(MethodPrivilegesList, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Privileges, nil
+}
+
+// PrivilegesRelinquish give back one of the caller's optional privileges: returns a live grant and/or withdraws a pending request; de-escalation, no consent needed.
+func (p *Plugin) PrivilegesRelinquish(privilege string) (*PrivilegesRelinquishResponse, error) {
+	req := &PrivilegesRelinquishRequest{
+		Privilege: privilege,
+	}
+	var result PrivilegesRelinquishResponse
+	err := p.Call(MethodPrivilegesRelinquish, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// PrivilegesRequest request one of the caller's declared optional privileges; lands as an Approve/Dismiss to-do on the Plugins page.
+func (p *Plugin) PrivilegesRequest(privilege string, reason *string) (*PrivilegesRequestResponse, error) {
+	req := &PrivilegesRequestRequest{
+		Privilege: privilege,
+		Reason:    reason,
+	}
+	var result PrivilegesRequestResponse
+	err := p.Call(MethodPrivilegesRequest, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // RecognitionBiasApply apply a calibration-measured strength to the never-standalone recognition bias (provenance: calibration); refuses over a manually-set value unless force.
 func (p *Plugin) RecognitionBiasApply(force *bool, strength float64) (*RecognitionBiasApplyResponse, error) {
 	req := &RecognitionBiasApplyRequest{

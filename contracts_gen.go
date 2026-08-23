@@ -592,6 +592,9 @@ const (
 	MethodPluginDebug                         = "plugin.debug"                             // since 0.1.0
 	MethodPrivacyGetRecording                 = "privacy.get_recording"                    // stable, since 0.1.0
 	MethodPrivacySetRecording                 = "privacy.set_recording"                    // stable, since 0.1.0
+	MethodPrivilegesList                      = "privileges.list"                          // since 0.1.0
+	MethodPrivilegesRelinquish                = "privileges.relinquish"                    // since 0.1.0
+	MethodPrivilegesRequest                   = "privileges.request"                       // since 0.1.0
 	MethodRecognitionBiasApply                = "recognition.bias.apply"                   // since 0.1.0
 	MethodRecognitionRedecode                 = "recognition.redecode"                     // since 0.1.0
 	MethodSelectionPick                       = "selection.pick"                           // since 0.1.0
@@ -656,6 +659,7 @@ const (
 	EventPluginDisabled        = "_platform.plugin.disabled"
 	EventPluginEnabled         = "_platform.plugin.enabled"
 	EventPowerChanged          = "_platform.power.changed"
+	EventPrivilegeGranted      = "_platform.privilege.granted"
 	EventSelectionPicked       = "_platform.selection.picked"
 	EventSystemDidWake         = "_platform.system.did_wake"
 	EventSystemWillSleep       = "_platform.system.will_sleep"
