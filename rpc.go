@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/signal"
 	"sort"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"syscall"
@@ -152,6 +153,10 @@ type Plugin struct {
 
 	handlers  map[string]HandlerFunc
 	listeners map[string][]ListenerFunc
+	// patternListeners are OnPattern registrations, in registration order.
+	// A slice rather than a map: the key is a pattern, so lookup is a scan
+	// either way, and order is what makes delivery deterministic.
+	patternListeners []patternListener
 
 	pending map[uint64]*pendingCall
 	nextID  atomic.Uint64
@@ -332,6 +337,56 @@ func (p *Plugin) On(method string, fn ListenerFunc) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	p.listeners[method] = append(p.listeners[method], fn)
+}
+
+// PatternListenerFunc handles a notification matched by pattern. It receives
+// the CONCRETE event type alongside the payload — a pattern listener by
+// definition does not know which event arrived, and re-deriving it from the
+// payload is not possible for most event shapes.
+type PatternListenerFunc func(eventType string, payload json.RawMessage)
+
+type patternListener struct {
+	pattern string
+	fn      PatternListenerFunc
+}
+
+// OnPattern registers a listener for every notification whose method matches
+// `pattern`, where `*` stands for exactly one dot-separated segment —
+// the same language `consumes.events` uses in the manifest.
+//
+// Needed whenever a plugin subscribes to a namespace instead of a name:
+// `On` keys listeners by exact method, so a manifest subscription like
+// `scripts.*.*` or `browser.tab.*` had events delivered to the process and
+// then silently dropped by the SDK. That shape is the norm for host plugins,
+// whose hosted things name their events at runtime.
+//
+// The manifest still bounds delivery: a pattern here can only ever see events
+// the plugin's `consumes.events` already admits.
+func (p *Plugin) OnPattern(pattern string, fn PatternListenerFunc) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	p.patternListeners = append(p.patternListeners, patternListener{pattern: pattern, fn: fn})
+}
+
+// matchesTopic reports whether `eventType` matches `pattern`, where `*` is
+// exactly one dot-separated segment. Mirrors the actuator's
+// `event_bus::matches_topic`, which is what actually gates delivery — the two
+// must agree or a plugin's own routing disagrees with what it receives.
+func matchesTopic(pattern, eventType string) bool {
+	if pattern == eventType {
+		return true
+	}
+	pat := strings.Split(pattern, ".")
+	evt := strings.Split(eventType, ".")
+	if len(pat) != len(evt) {
+		return false
+	}
+	for i := range pat {
+		if pat[i] != "*" && pat[i] != evt[i] {
+			return false
+		}
+	}
+	return true
 }
 
 // OnReady registers a callback that fires when all plugins are ready.
@@ -632,17 +687,29 @@ func (p *Plugin) handleNotification(msg rpcMessage) {
 	// backing array out from under this range.
 	p.mu.Lock()
 	listeners := append([]ListenerFunc(nil), p.listeners[msg.Method]...)
+	patterned := append([]patternListener(nil), p.patternListeners...)
 	p.mu.Unlock()
 
-	for _, fn := range listeners {
-		func() {
-			defer func() {
-				if r := recover(); r != nil {
-					Logf(p.pluginID, "listener panic for %s: %v", msg.Method, r)
-				}
-			}()
-			fn(msg.Params)
+	deliver := func(fn func()) {
+		defer func() {
+			if r := recover(); r != nil {
+				Logf(p.pluginID, "listener panic for %s: %v", msg.Method, r)
+			}
 		}()
+		fn()
+	}
+
+	for _, fn := range listeners {
+		deliver(func() { fn(msg.Params) })
+	}
+	// Exact listeners first, then pattern ones — a plugin with both
+	// registered for the same event sees the specific handler run before the
+	// catch-all, which is the order that reads correctly.
+	for _, pl := range patterned {
+		if !matchesTopic(pl.pattern, msg.Method) {
+			continue
+		}
+		deliver(func() { pl.fn(msg.Method, msg.Params) })
 	}
 }
 
