@@ -398,3 +398,96 @@ func TestListAllCompactedRequestsTheFold(t *testing.T) {
 		},
 	)
 }
+
+// A collection that grows between the probe and the second read must not
+// produce a short result reported as complete.
+//
+// `total` is observed on the read that returns it. Taking the first one on
+// faith is the bug ListAll exists to prevent — a mirror declaring itself
+// Ready over a truncated read — just with a narrower window: one write
+// landing mid-refresh is enough.
+func TestListAllReReadsWhenTheCollectionGrows(t *testing.T) {
+	// 1500 records at the probe, 1600 by the time the second read lands,
+	// then stable.
+	totals := []int{1500, 1600, 1600}
+	call := 0
+	runPluginCall(t,
+		func(method string, params json.RawMessage) (any, string) {
+			if method != "collection.list" {
+				return nil, "unexpected method " + method
+			}
+			var args struct {
+				Opts struct {
+					Limit *float64 `json:"limit"`
+				} `json:"opts"`
+			}
+			_ = json.Unmarshal(params, &args)
+			if args.Opts.Limit == nil {
+				return nil, "ListAll must always send an explicit limit"
+			}
+			total := totals[call]
+			if call < len(totals)-1 {
+				call++
+			}
+			n := int(*args.Opts.Limit)
+			if n > total {
+				n = total
+			}
+			recs := make([]map[string]any, 0, n)
+			for i := 0; i < n; i++ {
+				recs = append(recs, map[string]any{"id": "k", "payload": map[string]any{}})
+			}
+			return map[string]any{"records": recs, "total": total}, ""
+		},
+		func(p *Plugin) {
+			records, err := p.ListAll("things")
+			if err != nil {
+				t.Errorf("ListAll failed: %v", err)
+				return
+			}
+			if len(records) != 1600 {
+				t.Errorf("got %d records, want the grown total of 1600", len(records))
+			}
+		},
+	)
+}
+
+// A collection written faster than it can be read is not something to spin
+// on. ListAll gives up and says so, rather than returning a short read as
+// though it were whole.
+func TestListAllGivesUpOnAnEndlesslyGrowingCollection(t *testing.T) {
+	total := 1500
+	runPluginCall(t,
+		func(method string, params json.RawMessage) (any, string) {
+			if method != "collection.list" {
+				return nil, "unexpected method " + method
+			}
+			var args struct {
+				Opts struct {
+					Limit *float64 `json:"limit"`
+				} `json:"opts"`
+			}
+			_ = json.Unmarshal(params, &args)
+			n := int(*args.Opts.Limit)
+			if n > total {
+				n = total
+			}
+			// Always one more than anyone just read.
+			total += 100
+			recs := make([]map[string]any, 0, n)
+			for i := 0; i < n; i++ {
+				recs = append(recs, map[string]any{"id": "k", "payload": map[string]any{}})
+			}
+			return map[string]any{"records": recs, "total": total}, ""
+		},
+		func(p *Plugin) {
+			records, err := p.ListAll("things")
+			if err == nil {
+				t.Fatalf("want an error, got %d records reported as complete", len(records))
+			}
+			if records != nil {
+				t.Errorf("a failed exhaustive read must not return a partial set")
+			}
+		},
+	)
+}

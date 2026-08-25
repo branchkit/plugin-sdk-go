@@ -160,15 +160,34 @@ func (p *Plugin) listExhaustive(name string, compacted bool) ([]CollectionRecord
 		return p.ListPage(name, opts)
 	}
 
-	records, total, err := page(firstPage)
-	if err != nil {
-		return nil, err
+	// Re-reads until the page covers `total`, because `total` is observed
+	// on the read that returns it and the collection can grow between
+	// reads. Taking the first `total` on faith would hand back a short
+	// result reported as complete — the same "cache that declares itself
+	// Ready on a truncated read" this helper exists to prevent, just with
+	// a narrower window.
+	//
+	// Bounded rather than unbounded: a collection being written faster
+	// than it can be read is not a condition to spin on, and a caller
+	// waiting on a mirror refresh should get an answer. Practically the
+	// loop settles on the second read; the extra passes are headroom for
+	// a write landing mid-refresh.
+	const maxPasses = 5
+	limit := firstPage
+	for pass := 0; pass < maxPasses; pass++ {
+		records, total, err := page(limit)
+		if err != nil {
+			return nil, err
+		}
+		if len(records) >= total {
+			return records, nil
+		}
+		limit = total
 	}
-	if len(records) >= total {
-		return records, nil
-	}
-	records, _, err = page(total)
-	return records, err
+	return nil, fmt.Errorf(
+		"collection %q kept growing across %d exhaustive reads; "+
+			"read it with an explicit limit and page with cursor instead",
+		name, maxPasses)
 }
 
 // ListPage is like List but also returns the unfiltered total count so
