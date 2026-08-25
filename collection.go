@@ -57,9 +57,20 @@ func (p *Plugin) GetCompacted(name, key string) (*CollectionRecord, error) {
 	return &rec, nil
 }
 
-// List returns records from a collection. Pass nil for default options
-// (every record, default ordering). The total field on the response is
-// the unfiltered record count, useful for paginated UIs.
+// List returns ONE PAGE of records from a collection.
+//
+// Passing nil does NOT mean "every record": the platform applies a default
+// limit when the caller supplies none, so a large collection comes back
+// truncated. This method discards `total`, so it cannot tell you that
+// happened.
+//
+// Choose deliberately:
+//   - some records → List with an explicit Limit
+//   - every record → ListAll
+//   - a page plus the real count → ListPage
+//
+// Reaching for this one because it has the shortest name is how a read
+// that assumed completeness silently stops being complete.
 func (p *Plugin) List(name string, opts *ListOpts) ([]CollectionRecord, error) {
 	res, err := p.CollectionList(name, opts)
 	if err != nil {
@@ -90,9 +101,83 @@ func (p *Plugin) ListCompacted(name string, opts *ListOpts) ([]CollectionRecord,
 	return p.List(name, &merged)
 }
 
+// ListAll reads EVERY record in a collection, defeating the platform's
+// default list limit.
+//
+// Use this when the read has to be exhaustive — clearing a collection,
+// reconciling against it, counting it. `List` returns one page and
+// discards `total`, so a caller using it cannot tell a complete read from
+// a capped one; that is a quiet correctness bug wherever completeness was
+// assumed (records past the cap are never seen, so a "delete everything"
+// loop orphans them).
+//
+// Prefer `List` with an explicit `Limit` when you only need some records:
+// this one is deliberately unbounded, and on a large collection it
+// materialises the whole thing.
+//
+// Two round trips at most, not a cursor walk: `total` comes back with the
+// first page, so the second read is bounded exactly. Cursor paging would
+// be wrong anyway on contribution-keyed storage, where cursors are a no-op.
+func (p *Plugin) ListAll(name string) ([]CollectionRecord, error) {
+	return p.listExhaustive(name, false)
+}
+
+// ListAllCompacted is ListAll over the compacted-changelog projection —
+// every folded record, one per key, defeating the default list limit.
+//
+// The exhaustive counterpart to ListCompacted, and needed for the same
+// reason: a keyed log with more live keys than the cap folds to a view its
+// reader believes is whole.
+func (p *Plugin) ListAllCompacted(name string) ([]CollectionRecord, error) {
+	return p.listExhaustive(name, true)
+}
+
+// listExhaustive reads a collection completely in at most two round trips.
+//
+// Not a cursor walk: `total` comes back with the first page, so the second
+// read is bounded exactly. Cursor paging would be wrong anyway on
+// contribution-keyed storage, where `cursor` is a no-op (it is for
+// time-ordered storage).
+//
+// `total` is the FOLDED count when compacted, not the raw append count, so
+// the short-circuit below is a real one on both projections rather than a
+// guaranteed miss that costs every caller a second read.
+func (p *Plugin) listExhaustive(name string, compacted bool) ([]CollectionRecord, error) {
+	// The probe passes an EXPLICIT limit rather than nil. Reading with nil
+	// to discover `total` would trip the platform's default-limit warning on
+	// every call — this helper would manufacture the exact noise that
+	// warning exists to surface, burying real occurrences from other callers
+	// underneath it. An explicit page size is also the honest description of
+	// what is happening: something is choosing one, so say which.
+	const firstPage = 1000
+
+	page := func(limit int) ([]CollectionRecord, int, error) {
+		opts := NewListOpts().Limit(limit).Build()
+		if compacted {
+			folded := true
+			opts.Compacted = &folded
+		}
+		return p.ListPage(name, opts)
+	}
+
+	records, total, err := page(firstPage)
+	if err != nil {
+		return nil, err
+	}
+	if len(records) >= total {
+		return records, nil
+	}
+	records, _, err = page(total)
+	return records, err
+}
+
 // ListPage is like List but also returns the unfiltered total count so
 // callers building paginated UIs don't need to call CollectionList
 // directly to read it off the response.
+//
+// `total` is also how you detect truncation: `len(records) < total` means
+// the read was capped, either by your own `Limit` or by the platform's
+// default.
 func (p *Plugin) ListPage(name string, opts *ListOpts) (records []CollectionRecord, total int, err error) {
 	res, err := p.CollectionList(name, opts)
 	if err != nil {

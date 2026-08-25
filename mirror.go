@@ -97,7 +97,10 @@ func (m *CollectionMirror) Refresh() error {
 	var empty bool
 	if m.compacted {
 		// Folded view: one record per key.
-		recs, err := m.p.ListCompacted(m.name, nil)
+		// Exhaustive: a mirror that silently drops records past the
+		// platform's default list limit is a wrong local cache that reports
+		// itself Ready, and every OnChange consumer inherits the error.
+		recs, err := m.p.ListAllCompacted(m.name)
 		if err != nil {
 			return err
 		}

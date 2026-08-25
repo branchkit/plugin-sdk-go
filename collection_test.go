@@ -260,3 +260,141 @@ loop:
 		t.Errorf("got %d matching events, want 2", got)
 	}
 }
+
+// --- ListAll: exhaustive reads ---
+
+// The whole point of ListAll is that it does not stop at the page the
+// platform would have given it. A collection larger than the first page must
+// come back whole, and the second read must be bounded by `total` rather than
+// walking a cursor.
+func TestListAllReadsPastTheFirstPage(t *testing.T) {
+	var limits []float64
+	runPluginCall(t,
+		func(method string, params json.RawMessage) (any, string) {
+			if method != "collection.list" {
+				return nil, "unexpected method " + method
+			}
+			var args struct {
+				Opts struct {
+					Limit *float64 `json:"limit"`
+				} `json:"opts"`
+			}
+			_ = json.Unmarshal(params, &args)
+			if args.Opts.Limit == nil {
+				return nil, "ListAll must always send an explicit limit"
+			}
+			limits = append(limits, *args.Opts.Limit)
+
+			// 1500 records exist; the first read is capped at the page size.
+			n := int(*args.Opts.Limit)
+			if n > 1500 {
+				n = 1500
+			}
+			recs := make([]map[string]any, 0, n)
+			for i := 0; i < n; i++ {
+				recs = append(recs, map[string]any{"id": "k", "payload": map[string]any{}})
+			}
+			return map[string]any{"records": recs, "total": 1500}, ""
+		},
+		func(p *Plugin) {
+			records, err := p.ListAll("things")
+			if err != nil {
+				t.Errorf("ListAll failed: %v", err)
+				return
+			}
+			if len(records) != 1500 {
+				t.Errorf("got %d records, want all 1500", len(records))
+			}
+			if len(limits) != 2 {
+				t.Fatalf("want exactly two reads, got %d: %v", len(limits), limits)
+			}
+			// Bounded by total, not a cursor walk: cursor is a no-op on
+			// contribution-keyed storage, so paging would never terminate.
+			if limits[1] != 1500 {
+				t.Errorf("second read limit = %v, want it bounded by total (1500)", limits[1])
+			}
+		},
+	)
+}
+
+// A probe that always costs two round trips would be a perf regression on
+// every mirror Refresh. When the first page already holds everything, stop.
+func TestListAllShortCircuitsWhenTheFirstPageIsWhole(t *testing.T) {
+	reads := 0
+	runPluginCall(t,
+		func(method string, _ json.RawMessage) (any, string) {
+			if method != "collection.list" {
+				return nil, "unexpected method " + method
+			}
+			reads++
+			return map[string]any{
+				"records": []map[string]any{{"id": "k1", "payload": map[string]any{}}},
+				"total":   1,
+			}, ""
+		},
+		func(p *Plugin) {
+			if _, err := p.ListAll("things"); err != nil {
+				t.Errorf("ListAll failed: %v", err)
+				return
+			}
+			if reads != 1 {
+				t.Errorf("got %d reads, want 1 — the first page was already complete", reads)
+			}
+		},
+	)
+}
+
+// Reading with no limit to discover `total` would fire the platform's
+// default-limit diagnostic on every call, and this helper is called often
+// enough (every mirror Refresh) to bury real occurrences from other callers
+// underneath its own noise.
+func TestListAllNeverProbesWithoutALimit(t *testing.T) {
+	runPluginCall(t,
+		func(_ string, params json.RawMessage) (any, string) {
+			var args struct {
+				Opts *struct {
+					Limit *float64 `json:"limit"`
+				} `json:"opts"`
+			}
+			_ = json.Unmarshal(params, &args)
+			if args.Opts == nil || args.Opts.Limit == nil {
+				return nil, "probe read carried no limit"
+			}
+			return map[string]any{"records": []map[string]any{}, "total": 0}, ""
+		},
+		func(p *Plugin) {
+			if _, err := p.ListAll("things"); err != nil {
+				t.Errorf("ListAll probed without a limit: %v", err)
+			}
+		},
+	)
+}
+
+// The compacted variant must actually ask for the fold — otherwise it
+// silently returns raw append history and the caller cannot tell.
+func TestListAllCompactedRequestsTheFold(t *testing.T) {
+	sawCompacted := false
+	runPluginCall(t,
+		func(_ string, params json.RawMessage) (any, string) {
+			var args struct {
+				Opts struct {
+					Compacted *bool `json:"compacted"`
+				} `json:"opts"`
+			}
+			_ = json.Unmarshal(params, &args)
+			if args.Opts.Compacted != nil && *args.Opts.Compacted {
+				sawCompacted = true
+			}
+			return map[string]any{"records": []map[string]any{}, "total": 0}, ""
+		},
+		func(p *Plugin) {
+			if _, err := p.ListAllCompacted("things"); err != nil {
+				t.Errorf("ListAllCompacted failed: %v", err)
+				return
+			}
+			if !sawCompacted {
+				t.Error("ListAllCompacted must set compacted=true or it reads raw history")
+			}
+		},
+	)
+}
