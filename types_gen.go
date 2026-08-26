@@ -5512,6 +5512,23 @@ type OnCommandsChangedResponse struct {
 	ProcessedCount int `json:"processed_count"`
 }
 
+// OnTranscriptRequest is the request type for on_transcript.
+type OnTranscriptRequest struct {
+	ActiveTags       []string  `json:"active_tags,omitempty"`
+	Confidence       *float64  `json:"confidence,omitempty"`
+	DictationProfile *string   `json:"dictation_profile,omitempty"`
+	IsFinal          *bool     `json:"is_final,omitempty"`
+	Pipeline         string    `json:"pipeline"`
+	Text             string    `json:"text"`
+	WordOnsetsMs     []int     `json:"word_onsets_ms,omitempty"`
+	WordScores       []float64 `json:"word_scores,omitempty"`
+}
+
+// OnTranscriptResponse is the response type for on_transcript.
+type OnTranscriptResponse struct {
+	Actions []json.RawMessage `json:"actions,omitempty"`
+}
+
 // RenderHUDRequest is the request type for render_hud.
 type RenderHUDRequest struct {
 	Footer   *string      `json:"footer,omitempty"`

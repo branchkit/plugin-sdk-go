@@ -621,6 +621,7 @@ const (
 const (
 	HookOnAction            = "on_action"             // since 0.1.0
 	HookOnCommandsChanged   = "on_commands_changed"   // since 0.1.0
+	HookOnTranscript        = "on_transcript"         // since 0.1.0
 	HookRenderHud           = "render_hud"            // since 0.1.0
 	HookRenderSettings      = "render_settings"       // since 0.1.0
 	HookTrialApplyFixture   = "trial_apply_fixture"   // since 0.1.0
