@@ -430,29 +430,6 @@ type HidElementEntry struct {
 	UsagePage   int    `json:"usage_page"`
 }
 
-// HudItem is auto-generated from the OpenRPC spec.
-type HudItem struct {
-	Icon     *string `json:"icon,omitempty"`
-	ID       string  `json:"id"`
-	Subtitle *string `json:"subtitle,omitempty"`
-	Tag      *string `json:"tag,omitempty"`
-	Title    string  `json:"title"`
-}
-
-// HudResponse is auto-generated from the OpenRPC spec.
-type HudResponse struct {
-	ContentHTML *string      `json:"content_html,omitempty"`
-	Footer      string       `json:"footer"`
-	Sections    []HudSection `json:"sections,omitempty"`
-	Title       string       `json:"title"`
-}
-
-// HudSection is auto-generated from the OpenRPC spec.
-type HudSection struct {
-	Items []HudItem `json:"items"`
-	Title string    `json:"title"`
-}
-
 // InputSource is auto-generated from the OpenRPC spec.
 type InputSource struct {
 	ID       string `json:"id"`
@@ -5525,14 +5502,6 @@ type OnTranscriptRequest struct {
 // OnTranscriptResponse is the response type for on_transcript.
 type OnTranscriptResponse struct {
 	Actions []json.RawMessage `json:"actions,omitempty"`
-}
-
-// RenderHUDRequest is the request type for render_hud.
-type RenderHUDRequest struct {
-	Footer   *string      `json:"footer,omitempty"`
-	HudMode  string       `json:"hud_mode"`
-	Sections []HudSection `json:"sections,omitempty"`
-	Title    *string      `json:"title,omitempty"`
 }
 
 // RenderSettingsRequest is the request type for render_settings.
