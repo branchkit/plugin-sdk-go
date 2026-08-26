@@ -1229,9 +1229,7 @@ type DiscoveryClosedResponse struct {
 
 // DispatchRequest is the request type for dispatch.
 type DispatchRequest struct {
-	Action    json.RawMessage `json:"action"`
-	SessionID *string         `json:"session_id,omitempty"`
-	TraceID   *string         `json:"trace_id,omitempty"`
+	Action json.RawMessage `json:"action"`
 }
 
 // DispatchResponse is the response type for dispatch.

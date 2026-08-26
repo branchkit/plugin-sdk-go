@@ -394,11 +394,9 @@ func (p *Plugin) DiscoveryClosed() error {
 }
 
 // Dispatch dispatch a typed Action to a plugin or platform builtin.
-func (p *Plugin) Dispatch(action json.RawMessage, sessionID *string, traceID *string) (*DispatchResponse, error) {
+func (p *Plugin) Dispatch(action json.RawMessage) (*DispatchResponse, error) {
 	req := &DispatchRequest{
-		Action:    action,
-		SessionID: sessionID,
-		TraceID:   traceID,
+		Action: action,
 	}
 	var result DispatchResponse
 	err := p.Call(MethodDispatch, req, &result)
