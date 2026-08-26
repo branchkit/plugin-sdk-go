@@ -158,3 +158,108 @@ func TestNoInboundCorrelationLeavesOutboundUnstamped(t *testing.T) {
 	actuatorW.(io.Closer).Close()
 	wg.Wait()
 }
+
+// The gap RunWithCorrelation exists to close: the ambient is keyed by
+// goroutine, so work a handler spawns starts with nothing. Distinct from
+// TestAmbientCorrelationIsolatedPerGoroutine above, which sets an id in each
+// goroutine — this one sets none, which is the real-world shape.
+func TestAmbientCorrelationDoesNotCrossAGoroutine(t *testing.T) {
+	setAmbientCorrelation("tr_handler")
+	defer clearAmbientCorrelation()
+
+	var got string
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		got = currentCorrelation()
+	}()
+	wg.Wait()
+
+	if got != "" {
+		t.Fatalf("a fresh goroutine should inherit nothing, got %q", got)
+	}
+	if currentCorrelation() != "tr_handler" {
+		t.Error("the spawning goroutine should be unaffected")
+	}
+}
+
+func TestRunWithCorrelationCarriesAcrossAGoroutine(t *testing.T) {
+	setAmbientCorrelation("tr_handler")
+	defer clearAmbientCorrelation()
+
+	corr := currentCorrelation()
+	var got string
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go RunWithCorrelation(corr, func() {
+		defer wg.Done()
+		got = currentCorrelation()
+	})
+	wg.Wait()
+
+	if got != "tr_handler" {
+		t.Fatalf("spawned work should carry the handler's id, got %q", got)
+	}
+}
+
+// Restore, not clear: an inner scope must not strip the outer one on the way
+// out.
+func TestRunWithCorrelationNests(t *testing.T) {
+	RunWithCorrelation("tr_outer", func() {
+		if got := currentCorrelation(); got != "tr_outer" {
+			t.Fatalf("outer: got %q", got)
+		}
+		RunWithCorrelation("tr_inner", func() {
+			if got := currentCorrelation(); got != "tr_inner" {
+				t.Fatalf("inner: got %q", got)
+			}
+		})
+		if got := currentCorrelation(); got != "tr_outer" {
+			t.Errorf("outer should be restored, got %q", got)
+		}
+	})
+	if got := currentCorrelation(); got != "" {
+		t.Errorf("nothing should remain ambient, got %q", got)
+	}
+}
+
+// An empty id runs fn with no ambient rather than installing a blank one, so
+// emits carry nothing instead of something meaningless.
+func TestRunWithCorrelationEmptyIDInstallsNothing(t *testing.T) {
+	ran := false
+	RunWithCorrelation("", func() {
+		ran = true
+		if got := currentCorrelation(); got != "" {
+			t.Errorf("expected no ambient, got %q", got)
+		}
+	})
+	if !ran {
+		t.Error("fn must still run")
+	}
+}
+
+func TestRunWithCorrelationIsolatesConcurrentScopes(t *testing.T) {
+	var wg sync.WaitGroup
+	errs := make(chan string, 64)
+	for i := 0; i < 32; i++ {
+		wg.Add(1)
+		want := "tr_" + string(rune('a'+i%26)) + string(rune('0'+i/26))
+		go func(want string) {
+			defer wg.Done()
+			RunWithCorrelation(want, func() {
+				for j := 0; j < 50; j++ {
+					if got := currentCorrelation(); got != want {
+						errs <- got + " != " + want
+						return
+					}
+				}
+			})
+		}(want)
+	}
+	wg.Wait()
+	close(errs)
+	for e := range errs {
+		t.Fatalf("scope bled between goroutines: %s", e)
+	}
+}
