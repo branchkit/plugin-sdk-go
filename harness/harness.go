@@ -37,7 +37,6 @@ import (
 // Harness wraps a running branchkit-test-harness process in --server mode.
 type Harness struct {
 	t      testing.TB
-	cmd    *exec.Cmd
 	writer *json.Encoder
 	// Deliberately a bufio.Reader, not a Scanner — same posture as the
 	// SDK's own read loop (rpc.go): a Scanner silently caps lines at 64KB
@@ -81,7 +80,6 @@ func Start(t testing.TB, dir string) *Harness {
 
 	h := &Harness{
 		t:       t,
-		cmd:     cmd,
 		writer:  json.NewEncoder(stdin),
 		reader:  bufio.NewReader(stdout),
 		timeout: 30 * time.Second,

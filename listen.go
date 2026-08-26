@@ -33,7 +33,6 @@ type Listener struct {
 	token  string
 	mux    *http.ServeMux
 	server *http.Server
-	plugin *Plugin
 }
 
 // ListenLocal binds a localhost TCP port for an external service to connect to.
@@ -69,10 +68,9 @@ func ListenLocal(plugin *Plugin) (*Listener, error) {
 
 	mux := http.NewServeMux()
 	l := &Listener{
-		ln:     ln,
-		token:  token,
-		mux:    mux,
-		plugin: plugin,
+		ln:    ln,
+		token: token,
+		mux:   mux,
 		server: &http.Server{Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			// Validate pairing token on all requests
 			auth := r.Header.Get("Authorization")

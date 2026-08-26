@@ -142,7 +142,6 @@ type AudioCtx struct {
 	mu     sync.Mutex
 	w      *Writer
 	credit *CreditGranter
-	policy CreditPolicy
 }
 
 // Emit marshals data and writes it as one framed event.
@@ -224,7 +223,6 @@ func ServeAudioConsumerOn(
 	ctx := &AudioCtx{
 		w:      NewWriter(w),
 		credit: NewCreditGranter(every, policy.Grant),
-		policy: policy,
 	}
 
 	if err := ctx.Emit(EventCapability, cap); err != nil {
