@@ -317,9 +317,12 @@ type SourceOptions struct {
 	// case, and turning this on for one would be a behavior change.
 	//
 	//deadfield:ignore third-party SDK surface — opt-in by design, so the
-	// absence of an in-repo caller that enables it is expected. Worth knowing
-	// what that costs: no stage in this tree turns it on, so the ON path has
-	// never executed here and is unvalidated rather than proven.
+	// absence of an in-repo caller that enables it is expected. It is no longer
+	// UNRUN, which is the part that mattered: listen_for_stop_test.go drives
+	// ServeSourceOn with it on and asserts the stop ends the body, that
+	// CutoffMs survives for a source to forward verbatim, that EOF stops with
+	// no request, that unrelated inbound events are skipped, and that the same
+	// bytes do nothing when it is off.
 	ListenForStop bool
 }
 
