@@ -315,6 +315,11 @@ type SourceOptions struct {
 	//
 	// Off by default: an event source that never opens stdin is the common
 	// case, and turning this on for one would be a behavior change.
+	//
+	//deadfield:ignore third-party SDK surface — opt-in by design, so the
+	// absence of an in-repo caller that enables it is expected. Worth knowing
+	// what that costs: no stage in this tree turns it on, so the ON path has
+	// never executed here and is unvalidated rather than proven.
 	ListenForStop bool
 }
 
