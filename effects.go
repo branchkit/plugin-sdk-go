@@ -43,7 +43,7 @@ type EffectAssertOutcome struct {
 }
 
 // AssertEffect declares this plugin is asserting `name`. The plugin must
-// have declared this effect in its manifest's `provides.effects[*].asserts`
+// have declared this effect in its manifest's `consumes.effects[*].asserts`
 // — undeclared effects return an error.
 //
 // Check Enforced on the result: Granted means ownership bookkeeping,

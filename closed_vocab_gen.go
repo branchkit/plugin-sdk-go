@@ -12,7 +12,7 @@ const (
 )
 
 // Effect* are the registered effect names plugins may declare in
-// `provides.effects`. The actuator's manifest validator rejects
+// `consumes.effects`. The actuator's manifest validator rejects
 // any other name. Source of truth:
 // `actuator/src/effects.rs::EffectDef` inventory entries.
 const (
