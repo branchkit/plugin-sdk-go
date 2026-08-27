@@ -16,17 +16,14 @@ const (
 // any other name. Source of truth:
 // `actuator/src/effects.rs::EffectDef` inventory entries.
 const (
-	EffectDisableScreenDim         = "disable_screen_dim"
-	EffectMuteAudioToOtherApps     = "mute_audio_to_other_apps"
-	EffectPauseMicrophoneIndicator = "pause_microphone_indicator"
-	EffectPreventFocusSteal        = "prevent_focus_steal"
-	EffectPreventSystemSleep       = "prevent_system_sleep"
-	EffectSignalClipboardInUse     = "signal_clipboard_in_use"
-	EffectSignalRecordingActive    = "signal_recording_active"
-	EffectSuppressHuds             = "suppress_huds"
-	EffectSuppressKeybinds         = "suppress_keybinds"
-	EffectSuppressNotifications    = "suppress_notifications"
-	EffectSuppressVoiceCommands    = "suppress_voice_commands"
+	EffectDisableScreenDim      = "disable_screen_dim"
+	EffectPreventSystemSleep    = "prevent_system_sleep"
+	EffectSignalClipboardInUse  = "signal_clipboard_in_use"
+	EffectSignalRecordingActive = "signal_recording_active"
+	EffectSuppressHuds          = "suppress_huds"
+	EffectSuppressKeybinds      = "suppress_keybinds"
+	EffectSuppressNotifications = "suppress_notifications"
+	EffectSuppressVoiceCommands = "suppress_voice_commands"
 )
 
 // KnownInputDirectives lists the full closed-vocabulary set of
@@ -40,9 +37,6 @@ var KnownInputDirectives = []string{
 // effect names.
 var KnownEffects = []string{
 	"disable_screen_dim",
-	"mute_audio_to_other_apps",
-	"pause_microphone_indicator",
-	"prevent_focus_steal",
 	"prevent_system_sleep",
 	"signal_clipboard_in_use",
 	"signal_recording_active",
