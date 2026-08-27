@@ -5611,6 +5611,13 @@ type EffectDisplacedEventParams struct {
 	NewOwner       string `json:"new_owner"`
 }
 
+// EffectOwnershipChangedEventParams is the payload of the _platform.effect.ownership_changed event.
+type EffectOwnershipChangedEventParams struct {
+	Effect   string  `json:"effect"`
+	Owner    *string `json:"owner,omitempty"`
+	Previous *string `json:"previous,omitempty"`
+}
+
 // HidConnectedEventParams is the payload of the _platform.hid.connected event.
 type HidConnectedEventParams struct {
 	Axes      int     `json:"axes"`
