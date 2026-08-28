@@ -330,16 +330,17 @@ type DisplayRotation struct {
 
 // EnumeratedCommand is auto-generated from the OpenRPC spec.
 type EnumeratedCommand struct {
-	Action       string   `json:"action"`
-	Category     *string  `json:"category,omitempty"`
-	Description  *string  `json:"description,omitempty"`
-	Dynamic      bool     `json:"dynamic"`
-	DynamicOwner *string  `json:"dynamic_owner,omitempty"`
-	ID           string   `json:"id"`
-	OwnerPlugin  string   `json:"owner_plugin"`
-	Pattern      string   `json:"pattern"`
-	RequiresTags []string `json:"requires_tags"`
-	SetsTags     []string `json:"sets_tags"`
+	Action       string          `json:"action"`
+	Binding      json.RawMessage `json:"binding,omitempty"`
+	Category     *string         `json:"category,omitempty"`
+	Description  *string         `json:"description,omitempty"`
+	Dynamic      bool            `json:"dynamic"`
+	DynamicOwner *string         `json:"dynamic_owner,omitempty"`
+	ID           string          `json:"id"`
+	OwnerPlugin  string          `json:"owner_plugin"`
+	Pattern      string          `json:"pattern"`
+	RequiresTags []string        `json:"requires_tags"`
+	SetsTags     []string        `json:"sets_tags"`
 }
 
 // ExternalDisk is auto-generated from the OpenRPC spec.
