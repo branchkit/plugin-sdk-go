@@ -65,7 +65,7 @@ func (p *Plugin) AppendEntry(name string, payload any) (*LogEntry, error) {
 // collection's key field, as a fresh append (the raw log is never mutated);
 // appending another record with the same `key` folds onto the first. Read the
 // merged current-state view with ListCompacted. This is the compacted-changelog
-// primitive — see notes/DESIGN_LOG_ANNOTATION_PROJECTION.md.
+// primitive — see docs/design/DESIGN_LOG_ANNOTATION_PROJECTION.md.
 //
 // "Annotate a past record" is just "append the same key with the new field":
 // the first append introduces the record, later same-key appends carry only the

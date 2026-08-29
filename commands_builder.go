@@ -135,7 +135,7 @@ func (b *CommandBuilder) ClearsTags(tags ...string) *CommandBuilder {
 // DisplaySource sets the Discovery-HUD display override for one capture:
 // the HUD enumerates `collection` instead of the capture's matching
 // collection. Matching is untouched — pair a sealed/static matching
-// collection with a live menu. (notes/DESIGN_CAPTURE_DISPLAY_FORMS.md.)
+// collection with a live menu. (docs/design/DESIGN_CAPTURE_DISPLAY_FORMS.md.)
 func (b *CommandBuilder) DisplaySource(capture, collection string) *CommandBuilder {
 	if b.spec.DisplaySources == nil {
 		b.spec.DisplaySources = map[string]string{}
@@ -158,7 +158,7 @@ func (b *CommandBuilder) CancelsBridge() *CommandBuilder {
 
 // DiscoveryMode declares that a `literal-prefix + tail-capture` command's bare
 // prefix opens the Discovery HUD when spoken alone, instead of firing. See
-// notes/DESIGN_DISCOVERABLE_PREFIX.md. String-typed to match the wire field.
+// docs/design/DESIGN_DISCOVERABLE_PREFIX.md. String-typed to match the wire field.
 type DiscoveryMode = string
 
 const (

@@ -1,6 +1,6 @@
 // Package ui emits the settings-tab interaction idioms a plugin would
 // otherwise hand-write as strings — the layer where every silent dead
-// button so far was born (see notes/DESIGN_SETTINGS_UI_ROBUSTNESS.md,
+// button so far was born (see docs/design/DESIGN_SETTINGS_UI_ROBUSTNESS.md,
 // leg 2). Each helper encodes a contract the platform cannot check at
 // runtime:
 //

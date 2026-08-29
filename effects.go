@@ -49,7 +49,7 @@ type EffectAssertOutcome struct {
 // Check Enforced on the result: Granted means ownership bookkeeping,
 // not necessarily OS-level delivery.
 //
-// See notes/DESIGN_CAPABILITY_MECHANISM.md for the mechanism design.
+// See docs/design/DESIGN_CAPABILITY_MECHANISM.md for the mechanism design.
 func (p *Plugin) AssertEffect(name string) (EffectAssertOutcome, error) {
 	res, err := p.EffectsAssert(name)
 	if err != nil {
@@ -113,7 +113,7 @@ func (p *Plugin) IsEffectActive(name string) (active bool, currentOwner string, 
 // state) should subscribe directly via
 // `On(EventEffectDisplaced, ...)`.
 //
-// See `notes/DESIGN_CAPABILITY_MECHANISM.md` section 10.2.
+// See `docs/design/DESIGN_CAPABILITY_MECHANISM.md` section 10.2.
 //
 // Multiple callbacks can be registered; each fires for every event.
 func (p *Plugin) OnEffectDisplaced(handler func(evt EffectDisplacedEventParams)) {

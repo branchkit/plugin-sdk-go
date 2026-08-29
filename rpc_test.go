@@ -112,7 +112,7 @@ func newTestPluginT(t testing.TB) (*Plugin, io.Writer, *bufio.Scanner) {
 }
 
 // TestNotificationsDeliveredInOrder pins the ordering contract in
-// notes/DESIGN_SDK_EVENT_ORDERING.md: a plugin's listener observes
+// docs/design/DESIGN_SDK_EVENT_ORDERING.md: a plugin's listener observes
 // notifications in wire order even when a handler is slow. The first handler
 // sleeps; under the old goroutine-per-notification dispatch the later
 // notifications would record while it slept, producing out-of-order results.

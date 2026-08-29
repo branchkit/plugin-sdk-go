@@ -37,7 +37,7 @@ func (p *Plugin) Get(name, id string) (*CollectionRecord, error) {
 // ListCompacted). `key` is the fold key; same-key appends are merged per the
 // collection's `merge` and that key's current record is returned, or (nil, nil)
 // if the key has no records. Errors if the collection is not a keyed
-// (`id_strategy: by_field`) log. See notes/DESIGN_LOG_ANNOTATION_PROJECTION.md.
+// (`id_strategy: by_field`) log. See docs/design/DESIGN_LOG_ANNOTATION_PROJECTION.md.
 //
 // Contrast with Get, which returns the RAW entry with that id (on a keyed log,
 // the introducing record WITHOUT later annotations). Use Get for the raw entry,
@@ -87,7 +87,7 @@ func (p *Plugin) List(name string, opts *ListOpts) ([]CollectionRecord, error) {
 // history. Same-key records are merged per the collection's `merge`
 // (Authoritative: later non-null fields win; Collect: payloads accumulate into
 // an array). Pairs with AppendKeyed. Errors if the collection is not a keyed
-// (`id_strategy: by_field`) log. See notes/DESIGN_LOG_ANNOTATION_PROJECTION.md.
+// (`id_strategy: by_field`) log. See docs/design/DESIGN_LOG_ANNOTATION_PROJECTION.md.
 //
 // `opts` may carry the usual since/until/limit filters; limit applies to the
 // folded records. Pass nil for "every folded record."
@@ -534,7 +534,7 @@ func WithReplaceLabel(label string) ReplaceOption {
 // A name the platform does not know yet is created on first call, with this
 // plugin as its introducer — the same auto-registration `Put` performs.
 //
-// See notes/DESIGN_COLLECTION_REPLACE.md.
+// See docs/design/DESIGN_COLLECTION_REPLACE.md.
 func (p *Plugin) Replace(
 	name string,
 	entries []CollectionPutEntry,

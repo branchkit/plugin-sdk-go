@@ -21,7 +21,7 @@ import (
 //     is NOT an error: the mirror stays not-Ready and the update event
 //     completes it
 //
-// See notes/DESIGN_COLLECTION_MIRROR.md.
+// See docs/design/DESIGN_COLLECTION_MIRROR.md.
 type CollectionMirror struct {
 	p    *Plugin
 	name string
@@ -52,7 +52,7 @@ func (p *Plugin) MirrorCollection(name string) *CollectionMirror {
 // append history (every append, unfolded), which is almost never what a
 // consumer of a keyed log wants. The mirrored collection must declare
 // `emits_on_change: true` for the refetch-on-change to fire (logs default off
-// — see notes/DESIGN_LOG_ANNOTATION_PROJECTION.md); without it the mirror still
+// — see docs/design/DESIGN_LOG_ANNOTATION_PROJECTION.md); without it the mirror still
 // fetches once at on_ready but won't auto-refresh.
 func (p *Plugin) MirrorCompacted(name string) *CollectionMirror {
 	return p.mirror(name, true)

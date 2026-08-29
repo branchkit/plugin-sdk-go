@@ -15,7 +15,7 @@ import (
 // carried a `//deadfield:ignore` saying exactly that. Unused platform surface
 // is fine; unused AND never-run is a promise nobody has checked, which is the
 // distinction that cost two first-party plugins real work when `render_hud`
-// turned out to be unreachable (notes/DESIGN_HUD_PULL_MODEL.md in app).
+// turned out to be unreachable (docs/design/DESIGN_HUD_PULL_MODEL.md in app).
 //
 // ServeSourceOn exists for this: explicit transports, no subprocess.
 
