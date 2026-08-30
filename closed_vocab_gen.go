@@ -100,7 +100,9 @@ var KnownErrorKinds = []ErrorKind{
 type FaultData struct {
 	Kind       ErrorKind `json:"kind"`
 	Collection string    `json:"collection,omitempty"`
+	Consent    string    `json:"consent,omitempty"`
 	Detail     string    `json:"detail,omitempty"`
 	ID         string    `json:"id,omitempty"`
 	Op         string    `json:"op,omitempty"`
+	Privilege  string    `json:"privilege,omitempty"`
 }

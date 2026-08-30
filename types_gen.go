@@ -657,6 +657,7 @@ type PrinterInfo struct {
 type PrivilegeStatusEntry struct {
 	Denied    bool   `json:"denied"`
 	Granted   bool   `json:"granted"`
+	OneShot   bool   `json:"one_shot"`
 	Pending   bool   `json:"pending"`
 	Privilege string `json:"privilege"`
 	Required  bool   `json:"required"`
