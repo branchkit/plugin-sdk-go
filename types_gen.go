@@ -1551,17 +1551,6 @@ type InputTypeTextResponse struct {
 	Ok bool `json:"ok"`
 }
 
-// KeyNamesSetRequest is the request type for key_names.set.
-type KeyNamesSetRequest struct {
-	Names map[string]int `json:"names,omitempty"`
-}
-
-// KeyNamesSetResponse is the response type for key_names.set.
-type KeyNamesSetResponse struct {
-	Count int  `json:"count"`
-	Ok    bool `json:"ok"`
-}
-
 // KeybindsRegisterRequest is the request type for keybinds.register.
 type KeybindsRegisterRequest struct {
 	Snapshot json.RawMessage `json:"snapshot"`

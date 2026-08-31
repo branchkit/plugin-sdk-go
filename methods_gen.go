@@ -728,19 +728,6 @@ func (p *Plugin) InputTypeText(text string) error {
 	return p.Call(MethodInputTypeText, req, nil)
 }
 
-// KeyNamesSet set the key name → keycode mapping for keyboard input simulation.
-func (p *Plugin) KeyNamesSet(names map[string]int) (*KeyNamesSetResponse, error) {
-	req := &KeyNamesSetRequest{
-		Names: names,
-	}
-	var result KeyNamesSetResponse
-	err := p.Call(MethodKeyNamesSet, req, &result)
-	if err != nil {
-		return nil, err
-	}
-	return &result, nil
-}
-
 // KeybindsRegister register keybind snapshot with the platform (caches and sends to Swift shell).
 func (p *Plugin) KeybindsRegister(snapshot json.RawMessage) (*KeybindsRegisterResponse, error) {
 	req := &KeybindsRegisterRequest{

@@ -70,7 +70,6 @@ const (
 	MethodInputSwitchInputSource              = "input.switch_input_source"                // since 0.1.0
 	MethodInputTripleClick                    = "input.triple_click"                       // since 0.1.0
 	MethodInputTypeText                       = "input.type_text"                          // since 0.1.0
-	MethodKeyNamesSet                         = "key_names.set"                            // since 0.1.0
 	MethodKeybindsRegister                    = "keybinds.register"                        // since 0.1.0
 	MethodModelDelete                         = "model.delete"                             // since 0.1.0
 	MethodNativeAccentColor                   = "native.accent_color"                      // since 0.1.0
