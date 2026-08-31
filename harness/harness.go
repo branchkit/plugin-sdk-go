@@ -178,14 +178,16 @@ func (h *Harness) SimulateCommand(phrase string) SimulateResult {
 	return result
 }
 
-// CollectionResult holds the data returned by GetCollection.
+// CollectionResult holds the data returned by GetCollection. Records come
+// back as the harness's public backend-registry read — one JSON object per
+// record, the same view `collection.get` serves.
 type CollectionResult struct {
-	Name          string                     `json:"name"`
-	Introducer    string                     `json:"introducer"`
-	Contributions map[string]json.RawMessage `json:"contributions"`
+	Name       string            `json:"name"`
+	Introducer string            `json:"introducer"`
+	Data       []json.RawMessage `json:"data"`
 }
 
-// GetCollection reads a collection's contributions.
+// GetCollection reads a collection's records.
 func (h *Harness) GetCollection(name string) CollectionResult {
 	h.t.Helper()
 	var result CollectionResult
@@ -344,8 +346,11 @@ func findHarnessBinary(t testing.TB) string {
 		return env
 	}
 
-	// Walk up from CWD looking for a Cargo target directory
+	// The installed app ships the harness in its Resources; then walk up
+	// from CWD looking for a Cargo target directory (app-repo checkouts).
 	candidates := []string{
+		"/Applications/BranchKit.app/Contents/Resources/branchkit-test-harness",
+		filepath.Join(os.Getenv("HOME"), "Applications/BranchKit.app/Contents/Resources/branchkit-test-harness"),
 		"target/debug/branchkit-test-harness",
 		"target/release/branchkit-test-harness",
 		"../target/debug/branchkit-test-harness",
@@ -369,12 +374,12 @@ func findHarnessBinary(t testing.TB) string {
 		return p
 	}
 
-	// Skip (not fail) when the binary is absent: these are integration tests
-	// that need the Rust `branchkit-test-harness`, which isn't built from this
-	// SDK's standalone checkout. They run in the app-repo conformance context
-	// where the binary exists. Mirrors the TS SDK's skipIf(harnessBinaryAvailable).
-	t.Skip("harness: branchkit-test-harness binary not found; " +
-		"set BRANCHKIT_TEST_HARNESS or run 'cargo build -p branchkit-test-harness' to enable these tests")
+	// Skip (not fail) when the binary is absent — but say where it lives,
+	// so a skip is never mistaken for "these tests can't be run here."
+	t.Skip("harness: branchkit-test-harness binary not found. It ships inside " +
+		"BranchKit.app (Contents/Resources); install the app, or set " +
+		"BRANCHKIT_TEST_HARNESS to a harness binary. These tests then run " +
+		"a real matcher, event bus, and HUD registry against your plugin.")
 	return ""
 }
 

@@ -20,11 +20,21 @@ func TestStartStop(t *testing.T) {
 func TestSimulateCommandTie(t *testing.T) {
 	h := harness.Start(t, "../../plugins/helloworld")
 
-	// "hello branchkit" completes BOTH helloworld commands at the same length
-	// (the ["hello","branchkit"] literal and the ["hello","<text>"] capture).
-	// Equally-eligible same-length candidates are a genuine tie: the matcher
-	// declines to act and surfaces the tied set for disambiguation
-	// (DESIGN_MATCHER_COLLISION_RESOLUTION step 2, shipped 2026-06-08).
+	// Seed the consumed `apps` vocabulary so the capture branch is live —
+	// helloworld only consumes it; in production the system plugin
+	// provides it (the stub carries the same schema, and the writer must
+	// be the introducer because named_entities pins introducer_only).
+	// With "branchkit" in the vocabulary, "hello branchkit" completes
+	// BOTH helloworld commands at the same length (the
+	// ["hello","branchkit"] literal and the ["hello","<apps>"] capture).
+	// Equally-eligible same-length candidates are a genuine tie: the
+	// matcher declines to act and surfaces the tied set for
+	// disambiguation (DESIGN_MATCHER_COLLISION_RESOLUTION step 2).
+	h.LoadManifest("testdata/apps-provider")
+	h.WriteCollection("apps", map[string]any{
+		"spoken": "branchkit", "bundle_id": "com.test.branchkit",
+	}, "apps-provider-stub")
+
 	result := h.SimulateCommand("hello branchkit")
 	if result.Matched {
 		t.Fatal("expected a surfaced tie (matched=false), got a single winner")
@@ -51,15 +61,23 @@ func TestSimulateCommandNoMatch(t *testing.T) {
 func TestParameterizedCommand(t *testing.T) {
 	h := harness.Start(t, "../../plugins/helloworld")
 
-	result := h.MustSimulateCommand("hello world")
+	// With the provider stub's schema loaded, the `<apps>` capture
+	// resolves the spoken key to the collection's value field, so the
+	// action's "{apps}" placeholder carries the bundle id.
+	h.LoadManifest("testdata/apps-provider")
+	h.WriteCollection("apps", map[string]any{
+		"spoken": "finder", "bundle_id": "com.apple.finder",
+	}, "apps-provider-stub")
+
+	result := h.MustSimulateCommand("hello finder")
 	var params struct {
 		Name string `json:"name"`
 	}
 	if err := result.ActionParams(&params); err != nil {
 		t.Fatalf("unmarshal action params: %v", err)
 	}
-	if params.Name != "world" {
-		t.Fatalf("expected name=world, got %s", params.Name)
+	if params.Name != "com.apple.finder" {
+		t.Fatalf("expected name=com.apple.finder, got %s", params.Name)
 	}
 }
 
