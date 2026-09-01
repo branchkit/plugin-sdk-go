@@ -863,6 +863,19 @@ type WindowInfo struct {
 	Y        int    `json:"y"`
 }
 
+// WiringCollection is auto-generated from the OpenRPC spec.
+type WiringCollection struct {
+	Access     string   `json:"access"`
+	DenyReason *string  `json:"deny_reason,omitempty"`
+	Fields     []string `json:"fields"`
+	Introducer string   `json:"introducer"`
+	Merge      string   `json:"merge"`
+	Name       string   `json:"name"`
+	Readable   bool     `json:"readable"`
+	Writable   bool     `json:"writable"`
+	Writers    string   `json:"writers"`
+}
+
 // WorldModel is auto-generated from the OpenRPC spec.
 type WorldModel struct {
 	ActiveApp        *string       `json:"active_app,omitempty"`
@@ -5447,6 +5460,11 @@ type TrialResolveSamplesResponse struct {
 // VocabularyCommitResponse is the response type for vocabulary.commit.
 type VocabularyCommitResponse struct {
 	Ok bool `json:"ok"`
+}
+
+// WiringDescribeResponse is the response type for wiring.describe.
+type WiringDescribeResponse struct {
+	Collections []WiringCollection `json:"collections"`
 }
 
 // ===== Actuator → Plugin request/response types =====

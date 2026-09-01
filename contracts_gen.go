@@ -614,6 +614,7 @@ const (
 	MethodTrialRegisterFixture                = "trial.register_fixture"                   // since 0.1.0
 	MethodTrialResolveSamples                 = "trial.resolve_samples"                    // since 0.1.0
 	MethodVocabularyCommit                    = "vocabulary.commit"                        // since 0.1.0
+	MethodWiringDescribe                      = "wiring.describe"                          // since 0.1.0
 )
 
 // RPC method names: actuator → plugin (use with plugin.Handle()).

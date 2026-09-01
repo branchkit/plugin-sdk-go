@@ -6274,3 +6274,15 @@ func (p *Plugin) TrialResolveSamples(commandID string) ([]string, error) {
 func (p *Plugin) VocabularyCommit() error {
 	return p.Call(MethodVocabularyCommit, nil, nil)
 }
+
+// WiringDescribe describe the resolved collection graph as the caller can see it.
+func (p *Plugin) WiringDescribe() ([]WiringCollection, error) {
+	var result struct {
+		Collections []WiringCollection `json:"collections"`
+	}
+	err := p.Call(MethodWiringDescribe, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Collections, nil
+}
