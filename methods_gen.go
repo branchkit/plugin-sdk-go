@@ -656,6 +656,24 @@ func (p *Plugin) InputMouseButton(button *string, direction string) error {
 	return p.Call(MethodInputMouseButton, req, nil)
 }
 
+// InputParseKeyEvent parse a browser key event into a BranchKit combo string.
+func (p *Plugin) InputParseKeyEvent(alt *bool, code *string, ctrl *bool, key *string, meta *bool, shift *bool) (*InputParseKeyEventResponse, error) {
+	req := &InputParseKeyEventRequest{
+		Alt:   alt,
+		Code:  code,
+		Ctrl:  ctrl,
+		Key:   key,
+		Meta:  meta,
+		Shift: shift,
+	}
+	var result InputParseKeyEventResponse
+	err := p.Call(MethodInputParseKeyEvent, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // InputPressKey press a key by raw keycode or name, with optional modifiers.
 func (p *Plugin) InputPressKey(code *int, modifiers []string, name *string) error {
 	req := &InputPressKeyRequest{

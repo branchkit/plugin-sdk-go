@@ -62,6 +62,7 @@ const (
 	MethodInputDrag                           = "input.drag"                               // since 0.1.0
 	MethodInputListInputSources               = "input.list_input_sources"                 // since 0.1.0
 	MethodInputMouseButton                    = "input.mouse_button"                       // since 0.1.0
+	MethodInputParseKeyEvent                  = "input.parse_key_event"                    // since 0.1.0
 	MethodInputPressKey                       = "input.press_key"                          // since 0.1.0
 	MethodInputRawKey                         = "input.raw_key"                            // since 0.1.0
 	MethodInputRightClick                     = "input.right_click"                        // since 0.1.0

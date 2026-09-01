@@ -1482,6 +1482,25 @@ type InputMouseButtonResponse struct {
 	Ok bool `json:"ok"`
 }
 
+// InputParseKeyEventRequest is the request type for input.parse_key_event.
+type InputParseKeyEventRequest struct {
+	Alt   *bool   `json:"alt,omitempty"`
+	Code  *string `json:"code,omitempty"`
+	Ctrl  *bool   `json:"ctrl,omitempty"`
+	Key   *string `json:"key,omitempty"`
+	Meta  *bool   `json:"meta,omitempty"`
+	Shift *bool   `json:"shift,omitempty"`
+}
+
+// InputParseKeyEventResponse is the response type for input.parse_key_event.
+type InputParseKeyEventResponse struct {
+	Combo          string `json:"combo"`
+	HasModifiers   bool   `json:"has_modifiers"`
+	IsBareModifier bool   `json:"is_bare_modifier"`
+	IsEscape       bool   `json:"is_escape"`
+	KeyName        string `json:"key_name"`
+}
+
 // InputPressKeyRequest is the request type for input.press_key.
 type InputPressKeyRequest struct {
 	Code      *int     `json:"code,omitempty"`
