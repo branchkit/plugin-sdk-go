@@ -63,8 +63,13 @@ func TestCommandBuilderWordAndCapture(t *testing.T) {
 		t.Fatalf("pattern should be [\"focus\",\"<app:apps>\"], got %v", m["pattern"])
 	}
 	action, _ := m["action"].(map[string]any)
-	if action["type"] != "input.focus_app" || action["strategy"] != "frontmost" {
-		t.Fatalf("action params not merged: %v", m["action"])
+	params, _ := action["params"].(map[string]any)
+	// One params dialect: the payload nests under "params", never flat.
+	if action["type"] != "input.focus_app" || params["strategy"] != "frontmost" {
+		t.Fatalf("action must carry a nested params object: %v", m["action"])
+	}
+	if _, flat := action["strategy"]; flat {
+		t.Fatalf("params must not ALSO appear flat: %v", m["action"])
 	}
 }
 

@@ -3,7 +3,6 @@ package branchkit
 import (
 	"encoding/json"
 	"fmt"
-	"maps"
 	"os"
 	"path/filepath"
 	"sort"
@@ -102,9 +101,11 @@ func Command(slots ...PatternSlot) *CommandBuilder {
 //	.Action("browser.refresh")
 //	.Action("key", map[string]any{"code": 36})
 func (b *CommandBuilder) Action(actionType string, params ...map[string]any) *CommandBuilder {
+	// One params dialect (DESIGN_ONE_PARAMS_DIALECT.md): the payload lives
+	// under "params"; the action object's envelope is closed.
 	action := map[string]any{"type": actionType}
-	if len(params) > 0 {
-		maps.Copy(action, params[0])
+	if len(params) > 0 && len(params[0]) > 0 {
+		action["params"] = params[0]
 	}
 	raw, _ := json.Marshal(action)
 	b.spec.Action = raw
