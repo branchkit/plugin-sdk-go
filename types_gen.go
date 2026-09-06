@@ -5152,6 +5152,7 @@ type PipelinesInjectRequest struct {
 	Data      json.RawMessage `json:"data,omitempty"`
 	EventType string          `json:"event_type"`
 	Name      string          `json:"name"`
+	Stage     string          `json:"stage"`
 }
 
 // PipelinesInjectResponse is the response type for pipelines.inject.

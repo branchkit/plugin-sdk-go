@@ -5914,12 +5914,13 @@ func (p *Plugin) PipelinesGrammar(full *bool) (*PipelinesGrammarResponse, error)
 	return &result, nil
 }
 
-// PipelinesInject inject an event into a running pipeline.
-func (p *Plugin) PipelinesInject(data json.RawMessage, eventType string, name string) (*PipelinesInjectResponse, error) {
+// PipelinesInject send a custom configuration event to one stage of a running pipeline.
+func (p *Plugin) PipelinesInject(data json.RawMessage, eventType string, name string, stage string) (*PipelinesInjectResponse, error) {
 	req := &PipelinesInjectRequest{
 		Data:      data,
 		EventType: eventType,
 		Name:      name,
+		Stage:     stage,
 	}
 	var result PipelinesInjectResponse
 	err := p.Call(MethodPipelinesInject, req, &result)
