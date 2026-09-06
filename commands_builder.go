@@ -170,6 +170,12 @@ const (
 	// so the capture's words only decode while it holds — for large/dynamic
 	// sets (e.g. open tabs) whose codewords would otherwise pollute free context.
 	DiscoveryExclusive DiscoveryMode = "exclusive"
+	// DiscoverySelect: exclusive-mode lifecycle, but entries are POINTED AT
+	// via platform-assigned alphabet codewords instead of spoken by name —
+	// item names never enter the grammar (promotion is the per-record
+	// opt-out). For churning sets whose names can't be pre-vetted acoustically
+	// (snippets, prompts, files). See DESIGN_SELECTION_PRIMITIVE.md.
+	DiscoverySelect DiscoveryMode = "select"
 )
 
 // Discovery declares the command's prefix-discovery affordance (see
