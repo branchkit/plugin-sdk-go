@@ -276,10 +276,11 @@ type DirectoryEntry struct {
 
 // DiscoverItem is auto-generated from the OpenRPC spec.
 type DiscoverItem struct {
-	ID       string  `json:"id"`
-	Subtitle *string `json:"subtitle,omitempty"`
-	Tag      string  `json:"tag"`
-	Title    string  `json:"title"`
+	ID        string  `json:"id"`
+	Speakable bool    `json:"speakable"`
+	Subtitle  *string `json:"subtitle,omitempty"`
+	Tag       string  `json:"tag"`
+	Title     string  `json:"title"`
 }
 
 // DisplayColorProfile is auto-generated from the OpenRPC spec.
