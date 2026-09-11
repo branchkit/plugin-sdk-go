@@ -5285,6 +5285,26 @@ type RecognitionBiasApplyResponse struct {
 	PreviousProvenance string `json:"previous_provenance"`
 }
 
+// RecognitionBiasGetResponse is the response type for recognition.bias.get.
+type RecognitionBiasGetResponse struct {
+	Enabled    bool    `json:"enabled"`
+	Provenance string  `json:"provenance"`
+	Strength   float64 `json:"strength"`
+}
+
+// RecognitionBiasSetRequest is the request type for recognition.bias.set.
+type RecognitionBiasSetRequest struct {
+	Enabled  *bool    `json:"enabled,omitempty"`
+	Strength *float64 `json:"strength,omitempty"`
+}
+
+// RecognitionBiasSetResponse is the response type for recognition.bias.set.
+type RecognitionBiasSetResponse struct {
+	Enabled    bool    `json:"enabled"`
+	Provenance string  `json:"provenance"`
+	Strength   float64 `json:"strength"`
+}
+
 // RecognitionRedecodeRequest is the request type for recognition.redecode.
 type RecognitionRedecodeRequest struct {
 	Items     []RedecodeItem `json:"items"`

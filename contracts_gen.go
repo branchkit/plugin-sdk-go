@@ -596,6 +596,8 @@ const (
 	MethodPrivilegesRelinquish                = "privileges.relinquish"                    // since 0.1.0
 	MethodPrivilegesRequest                   = "privileges.request"                       // since 0.1.0
 	MethodRecognitionBiasApply                = "recognition.bias.apply"                   // since 0.1.0
+	MethodRecognitionBiasGet                  = "recognition.bias.get"                     // since 0.1.0
+	MethodRecognitionBiasSet                  = "recognition.bias.set"                     // since 0.1.0
 	MethodRecognitionRedecode                 = "recognition.redecode"                     // since 0.1.0
 	MethodSelectionPick                       = "selection.pick"                           // since 0.1.0
 	MethodSelectionSet                        = "selection.set"                            // since 0.1.0

@@ -6082,6 +6082,30 @@ func (p *Plugin) RecognitionBiasApply(force *bool, strength float64) (*Recogniti
 	return &result, nil
 }
 
+// RecognitionBiasGet read the never-standalone recognition bias (enabled, strength, provenance).
+func (p *Plugin) RecognitionBiasGet() (*RecognitionBiasGetResponse, error) {
+	var result RecognitionBiasGetResponse
+	err := p.Call(MethodRecognitionBiasGet, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// RecognitionBiasSet manually set the never-standalone recognition bias (provenance: manual); the write path behind the Recordings tab's control.
+func (p *Plugin) RecognitionBiasSet(enabled *bool, strength *float64) (*RecognitionBiasSetResponse, error) {
+	req := &RecognitionBiasSetRequest{
+		Enabled:  enabled,
+		Strength: strength,
+	}
+	var result RecognitionBiasSetResponse
+	err := p.Call(MethodRecognitionBiasSet, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // RecognitionRedecode re-decode the caller's own captured audio through a registered recognizer stage against the LIVE grammar (the fragility ladder) — the actuator runs it because the grammar is platform state and plugins cannot exec.
 func (p *Plugin) RecognitionRedecode(items []RedecodeItem, maxActive *int, model string, stage string) (*RecognitionRedecodeResponse, error) {
 	req := &RecognitionRedecodeRequest{
