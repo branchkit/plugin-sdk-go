@@ -5778,8 +5778,9 @@ type PipelineWarmedEventParams struct {
 
 // PluginDegradedEventParams is the payload of the _platform.plugin.degraded event.
 type PluginDegradedEventParams struct {
-	ConsecutiveTimeouts int    `json:"consecutive_timeouts"`
-	PluginID            string `json:"plugin_id"`
+	ConsecutiveTimeouts int     `json:"consecutive_timeouts"`
+	PluginID            string  `json:"plugin_id"`
+	Reason              *string `json:"reason,omitempty"`
 }
 
 // PluginDisabledEventParams is the payload of the _platform.plugin.disabled event.
