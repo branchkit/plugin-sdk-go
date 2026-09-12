@@ -6007,6 +6007,15 @@ func (p *Plugin) PluginDebug(data json.RawMessage, level json.RawMessage, tag *s
 	return p.Call(MethodPluginDebug, req, nil)
 }
 
+// PluginReportHealth report whether this plugin can do its job. For a standing condition the platform cannot see from outside — a companion app disconnected, a device unplugged — not for a call that failed once..
+func (p *Plugin) PluginReportHealth(degraded bool, reason *string) error {
+	req := &PluginReportHealthRequest{
+		Degraded: degraded,
+		Reason:   reason,
+	}
+	return p.Call(MethodPluginReportHealth, req, nil)
+}
+
 // PrivacyGetRecording read the effective recording flag for a log-kind collection (privacy control plane).
 func (p *Plugin) PrivacyGetRecording(name string) (*PrivacyGetRecordingResponse, error) {
 	req := &PrivacyGetRecordingRequest{

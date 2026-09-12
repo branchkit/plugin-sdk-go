@@ -5226,6 +5226,17 @@ type PluginDebugResponse struct {
 	Ok bool `json:"ok"`
 }
 
+// PluginReportHealthRequest is the request type for plugin.report_health.
+type PluginReportHealthRequest struct {
+	Degraded bool    `json:"degraded"`
+	Reason   *string `json:"reason,omitempty"`
+}
+
+// PluginReportHealthResponse is the response type for plugin.report_health.
+type PluginReportHealthResponse struct {
+	Ok bool `json:"ok"`
+}
+
 // PrivacyGetRecordingRequest is the request type for privacy.get_recording.
 type PrivacyGetRecordingRequest struct {
 	Name string `json:"name"`
