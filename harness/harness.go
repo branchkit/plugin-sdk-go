@@ -464,26 +464,6 @@ func (h *Harness) LoadPlugin(dirOrName string) {
 	h.call("test.load_plugin", map[string]any{"name": dirOrName}, nil)
 }
 
-// DepStatus represents the resolution status of a single dependency.
-type DepStatus struct {
-	Plugin  string  `json:"plugin"`
-	Status  string  `json:"status"`
-	Version *string `json:"version,omitempty"`
-	Source  *string `json:"source,omitempty"`
-	Reason  *string `json:"reason,omitempty"`
-}
-
-// ResolveDeps resolves all depends_on entries for the running plugin and
-// reports their status.
-func (h *Harness) ResolveDeps() []DepStatus {
-	h.t.Helper()
-	var result struct {
-		Deps []DepStatus `json:"deps"`
-	}
-	h.call("test.resolve_deps", map[string]any{}, &result)
-	return result.Deps
-}
-
 // InjectEvent fires an event on the event bus. For plugin events, use any
 // event_type name. For platform events, use a valid _platform.* event type.
 func (h *Harness) InjectEvent(eventType string, data any) {
