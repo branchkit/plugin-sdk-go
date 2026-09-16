@@ -3,6 +3,7 @@ package branchkit
 import (
 	"bufio"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -891,4 +892,28 @@ func TestResponseWithUnknownID(t *testing.T) {
 	time.Sleep(50 * time.Millisecond)
 
 	actuatorW.(io.Closer).Close()
+}
+
+// TestDetachedPlugin pins the no-platform contract tests build hosts on:
+// calls fail at once with ErrDetached, notifications and Run are inert,
+// and a settings mirror can be constructed against it.
+func TestDetachedPlugin(t *testing.T) {
+	p := NewDetachedPlugin()
+	if err := p.Call("collection.get", nil, nil); !errors.Is(err, ErrDetached) {
+		t.Fatalf("Call = %v, want ErrDetached", err)
+	}
+	if err := p.Notify("events.emit", map[string]any{"x": 1}); err != nil {
+		t.Fatalf("Notify = %v, want nil", err)
+	}
+	s := Settings[testConfig](p, "plugin.test.config")
+	if s.Ready() {
+		t.Fatal("a detached mirror never fetches")
+	}
+	done := make(chan struct{})
+	go func() { p.Run(); close(done) }()
+	select {
+	case <-done:
+	case <-time.After(time.Second):
+		t.Fatal("Run on a detached plugin must return at once")
+	}
 }

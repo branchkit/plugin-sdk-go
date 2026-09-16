@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -151,8 +152,13 @@ type Plugin struct {
 	// not have an opinion about it. See `reader.ReadBytes` in readLoop.
 	reader *bufio.Reader
 
+	// detached marks a plugin with no platform behind it (NewDetachedPlugin):
+	// every Call fails with ErrDetached at once, nothing is written.
+	detached bool
+
 	handlers  map[string]HandlerFunc
 	listeners map[string][]ListenerFunc
+
 	// settingsTabs is non-nil once SettingsTab has installed the SDK's own
 	// render_settings handler; settingsMirrors are refreshed by that
 	// handler before every render (settings_tabs.go).
@@ -206,9 +212,37 @@ type Plugin struct {
 // internally before this existed.
 func (p *Plugin) ID() string { return p.pluginID }
 
+// ErrDetached is what every Call on a NewDetachedPlugin returns.
+var ErrDetached = errors.New("detached plugin: no platform")
+
+// NewDetachedPlugin is a plugin with no platform behind it, for tests. It
+// never touches stdin or stdout: every Call returns ErrDetached at once,
+// notifications go nowhere, mirrors never fetch, and Run returns
+// immediately. A host built on it exercises the plugin's own logic — the
+// handlers, the state, the rendering — without a nil handle to guard
+// against and without a live actuator. Swap a seam or a mirror for the
+// platform behaviour a test needs.
+func NewDetachedPlugin() *Plugin {
+	p := &Plugin{
+		pluginID:  "detached",
+		detached:  true,
+		writer:    json.NewEncoder(io.Discard),
+		reader:    bufio.NewReader(strings.NewReader("")),
+		handlers:  make(map[string]HandlerFunc),
+		listeners: make(map[string][]ListenerFunc),
+		pending:   make(map[uint64]*pendingCall),
+		closed:    make(chan struct{}),
+		ready:     make(chan struct{}),
+		notifyQ:   newNotifyQueue(),
+	}
+	p.closeOnce.Do(func() { close(p.closed) })
+	return p
+}
+
 // NewPlugin creates a new Plugin that communicates via stdin/stdout.
 // The read loop starts immediately — Call() works from this point.
 func NewPlugin() *Plugin {
+
 	pluginID := os.Getenv("BRANCHKIT_PLUGIN_ID")
 	if pluginID == "" {
 		pluginID = "unknown"
@@ -444,6 +478,9 @@ func (p *Plugin) Call(method string, params any, result any) error {
 
 // CallWithTimeout sends a request with a custom timeout.
 func (p *Plugin) CallWithTimeout(method string, params any, result any, timeout time.Duration) error {
+	if p.detached {
+		return ErrDetached
+	}
 	id := p.nextID.Add(1)
 
 	var paramsRaw json.RawMessage
