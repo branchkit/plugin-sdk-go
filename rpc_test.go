@@ -234,7 +234,7 @@ func TestNotificationsDeliveredInOrder(t *testing.T) {
 func TestHandleRequest(t *testing.T) {
 	p, actuatorW, actuatorR := newTestPlugin()
 
-	p.Handle("render_settings", func(params json.RawMessage) (any, error) {
+	p.Handle("describe_tab", func(params json.RawMessage) (any, error) {
 		var req struct {
 			Tab string `json:"tab"`
 		}
@@ -254,7 +254,7 @@ func TestHandleRequest(t *testing.T) {
 	msg := rpcMessage{
 		JSONRPC: "2.0",
 		ID:      &id,
-		Method:  "render_settings",
+		Method:  "describe_tab",
 		Params:  json.RawMessage(`{"tab":"keybinds"}`),
 	}
 	data, _ := json.Marshal(msg)

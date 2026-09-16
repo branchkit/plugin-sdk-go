@@ -36,16 +36,13 @@ type settingsRefresher interface {
 // answers 204: a method that changed something returns nil and lets the
 // re-render that follows draw it. Rendering inside a method is wasted.
 //
-// SettingsTab and Handle("render_settings", …) are mutually exclusive —
-// both install a handler for the same RPC method. Calling either after
-// the other panics, regardless of order.
+// This is the only way to install a render_settings handler:
+// Handle("render_settings", …) panics, so every tab goes through this
+// dispatch.
 func (p *Plugin) SettingsTab(key string, fn SettingsTabFunc) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	if p.settingsTabs == nil {
-		if _, taken := p.handlers[HookRenderSettings]; taken {
-			panic("plugin-sdk-go: cannot mix Handle(\"render_settings\", ...) and SettingsTab(...) — pick one")
-		}
 		p.settingsTabs = make(map[string]SettingsTabFunc)
 		p.handlers[HookRenderSettings] = p.renderSettingsTab
 	}

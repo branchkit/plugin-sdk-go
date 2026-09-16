@@ -132,7 +132,10 @@ func TestSettingsTabDispatch(t *testing.T) {
 	w.(io.Closer).Close()
 }
 
-func TestSettingsTabAndHandleAreExclusive(t *testing.T) {
+// TestHandleRejectsRenderSettings pins that the tab API is the only way in:
+// a hand-written render_settings handler panics at registration whether or
+// not a tab was registered first, so no plugin can bypass the dispatch.
+func TestHandleRejectsRenderSettings(t *testing.T) {
 	mustPanic := func(name string, f func()) {
 		t.Helper()
 		defer func() {
@@ -143,15 +146,17 @@ func TestSettingsTabAndHandleAreExclusive(t *testing.T) {
 		f()
 	}
 	p, _, _ := newTestPluginT(t)
-	p.SettingsTab("a", func(*RenderSettingsRequest) (string, error) { return "", nil })
-	mustPanic("Handle after SettingsTab", func() {
+	mustPanic("Handle on a fresh plugin", func() {
 		p.Handle(HookRenderSettings, func(json.RawMessage) (any, error) { return nil, nil })
+	})
+	mustPanic("HandleTyped on a fresh plugin", func() {
+		HandleTyped(p, HookRenderSettings, func(*RenderSettingsRequest) (any, error) { return nil, nil })
 	})
 
 	q, _, _ := newTestPluginT(t)
-	q.Handle(HookRenderSettings, func(json.RawMessage) (any, error) { return nil, nil })
-	mustPanic("SettingsTab after Handle", func() {
-		q.SettingsTab("a", func(*RenderSettingsRequest) (string, error) { return "", nil })
+	q.SettingsTab("a", func(*RenderSettingsRequest) (string, error) { return "", nil })
+	mustPanic("Handle after SettingsTab", func() {
+		q.Handle(HookRenderSettings, func(json.RawMessage) (any, error) { return nil, nil })
 	})
 }
 

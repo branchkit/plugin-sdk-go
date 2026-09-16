@@ -338,8 +338,11 @@ func (p *Plugin) notifyWorker() {
 //
 // Handle("on_action", ...) and HandleAction(...) are mutually exclusive — both
 // install a handler for the same RPC method. Calling either after the other
-// has been registered panics, regardless of order. The same holds for
-// Handle("render_settings", ...) and SettingsTab(...).
+// has been registered panics, regardless of order.
+//
+// "render_settings" is not registrable here at all: the SDK owns that hook
+// and installs it through [Plugin.SettingsTab], one renderer per manifest
+// tab. Handle panics on it so a plugin cannot bypass the tab dispatch.
 func (p *Plugin) Handle(
 	method string, fn HandlerFunc) {
 	p.mu.Lock()
@@ -347,8 +350,8 @@ func (p *Plugin) Handle(
 	if method == HookOnAction && p.actionRegistry != nil {
 		panic("plugin-sdk-go: cannot mix Handle(\"on_action\", ...) and HandleAction(...) — pick one")
 	}
-	if method == HookRenderSettings && p.settingsTabs != nil {
-		panic("plugin-sdk-go: cannot mix Handle(\"render_settings\", ...) and SettingsTab(...) — pick one")
+	if method == HookRenderSettings {
+		panic("plugin-sdk-go: render_settings is the SDK's hook — register each tab with SettingsTab(key, fn)")
 	}
 	p.handlers[method] = fn
 
@@ -356,8 +359,9 @@ func (p *Plugin) Handle(
 
 // HandleTyped is a generic convenience over Handle that unmarshals params into
 // a typed request struct before calling fn. Empty params produces a zero-valued
-// Req. This is the standard helper for non-action RPCs (render_settings,
-// calibrate, etc.) — for dispatched actions use HandleAction instead.
+// Req. This is the standard helper for a plugin's own RPC methods (the ones
+// its settings buttons post to, calibrate, etc.) — for dispatched actions use
+// HandleAction, and for settings tabs SettingsTab.
 //
 //	type SetVolumeRequest struct {
 //	    Volume int `json:"volume"`
