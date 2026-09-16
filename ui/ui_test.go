@@ -58,8 +58,12 @@ func TestConfirmButtonContract(t *testing.T) {
 	if !strings.Contains(h, ">Really delete?<") {
 		t.Fatalf("derived confirm label missing: %s", h)
 	}
+	if !strings.Contains(h, `class="danger"`) || strings.Contains(h, "#c44") {
+		t.Fatalf("confirm must carry the danger variant class, not an inline colour: %s", h)
+	}
 	if !strings.Contains(h, ">Cancel<") {
 		t.Fatalf("no Cancel escape hatch: %s", h)
+
 	}
 	// Same action → same key (shared state is correct); different payload → different key.
 	h2 := ConfirmButton("Delete", "delete_thing", Payload("id", "x"))
@@ -90,5 +94,20 @@ func TestSignalNameSanitizesAndDisambiguates(t *testing.T) {
 				t.Fatalf("unsafe rune %q in %s", r, n)
 			}
 		}
+	}
+}
+
+func TestJSMarshalsValues(t *testing.T) {
+	if got := JS("it's \"x\""); got != `"it's \"x\""` {
+		t.Fatalf("JS(string) = %s", got)
+	}
+	if got := JS(true); got != "true" {
+		t.Fatalf("JS(bool) = %s", got)
+	}
+	if got := JS(3); got != "3" {
+		t.Fatalf("JS(int) = %s", got)
+	}
+	if got := ConfirmButton("Delete", "d", Class("sc-btn")); !strings.Contains(got, `class="sc-btn danger"`) {
+		t.Fatalf("danger appends to the caller's class: %s", got)
 	}
 }

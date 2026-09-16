@@ -105,7 +105,24 @@ func Args(pairs ...any) string {
 	return b.String()
 }
 
+// JS marshals one Go value to a JavaScript literal for a Datastar
+// expression — a string becomes a quoted string, a bool `true`, a number
+// itself. This is the value-position twin of Args: a user string spliced
+// into `$sig = '...'` or `data-show="$x === '...'"` must not be able to
+// end the quote, and hand escapers miss cases that json does not.
+//
+//	data-show={ "$editing === " + ui.JS(id) }
+//	data-signals:name={ ui.JS(v) }
+func JS(v any) string {
+	out, err := json.Marshal(v)
+	if err != nil {
+		return "null"
+	}
+	return string(out)
+}
+
 // Payload is Args as a button Option.
+
 func Payload(pairs ...any) Option {
 	p := Args(pairs...)
 	return func(o *opts) { o.payload = p }
@@ -217,9 +234,12 @@ func ConfirmButton(label, method string, options ...Option) string {
 	if o.then != "" {
 		confirmClick += "; " + o.then
 	}
+	// The confirm click is the destructive one; `danger` is the platform
+	// stylesheet's variant class (button.danger), never an inline colour.
 	danger := o
-	danger.style = o.style + "color:#c44;border-color:#c44;"
+	danger.class = strings.TrimSpace(o.class + " danger")
 	confirm := button(confirmLabel, confirmClick, &danger)
+
 	cancel := button("Cancel", sig+" = false", &o)
 	return fmt.Sprintf(
 		`<span data-signals:c_%s__ifmissing="false">`+
