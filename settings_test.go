@@ -104,23 +104,3 @@ func TestUnpatchUserRelaysAndRefreshes(t *testing.T) {
 			}
 		})
 }
-
-// TestLoadReadsThrough: Load must return the store's current state even
-// when no update event has reached the mirror.
-func TestLoadReadsThrough(t *testing.T) {
-	store := map[string]any{"editor": "stale"}
-	sawApply := false
-	runPluginCall(t,
-		settingsResponder(t, store, &sawApply),
-		func(p *Plugin) {
-			s := Settings[testConfig](p, "plugin.test.config")
-			store["editor"] = "fresh-behind-the-mirrors-back"
-			got, err := s.Load()
-			if err != nil {
-				t.Fatalf("Load: %v", err)
-			}
-			if got.Editor != "fresh-behind-the-mirrors-back" {
-				t.Fatalf("Load = %q, want the store's current value", got.Editor)
-			}
-		})
-}

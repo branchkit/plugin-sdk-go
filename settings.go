@@ -43,6 +43,13 @@ type SettingsMirror[T any] struct {
 func Settings[T any](p *Plugin, name string) *SettingsMirror[T] {
 	s := &SettingsMirror[T]{p: p, name: name}
 	s.mirror = p.MirrorCollection(name)
+	// The SDK's render_settings hook refreshes every settings mirror before
+	// a tab draws (settings_tabs.go) — the read-through that render paths
+	// used to hand-roll.
+	p.mu.Lock()
+	p.settingsMirrors = append(p.settingsMirrors, s)
+	p.mu.Unlock()
+
 	pluginID := p.pluginID
 	s.mirror.OnChange(func() {
 		var v T
@@ -142,15 +149,4 @@ func (s *SettingsMirror[T]) UnpatchUser(field string) error {
 		return err
 	}
 	return s.Refresh()
-}
-
-// Load returns the composed settings via a synchronous read-through,
-// updating the mirror. Use it at the top of render paths
-// (`render_settings`): a render must read state at least as fresh as
-// whatever triggered it, and the mirror's event-driven refresh cannot
-// promise that ordering. On fetch failure it returns the mirror's last
-// snapshot along with the error.
-func (s *SettingsMirror[T]) Load() (T, error) {
-	err := s.Refresh()
-	return s.Get(), err
 }

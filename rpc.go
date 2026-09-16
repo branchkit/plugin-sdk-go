@@ -153,6 +153,13 @@ type Plugin struct {
 
 	handlers  map[string]HandlerFunc
 	listeners map[string][]ListenerFunc
+	// settingsTabs is non-nil once SettingsTab has installed the SDK's own
+	// render_settings handler; settingsMirrors are refreshed by that
+	// handler before every render (settings_tabs.go).
+	settingsTabs    map[string]SettingsTabFunc
+	settingsCSS     string
+	settingsMirrors []settingsRefresher
+
 	// patternListeners are OnPattern registrations, in registration order.
 	// A slice rather than a map: the key is a pattern, so lookup is a scan
 	// either way, and order is what makes delivery deterministic.
@@ -297,14 +304,20 @@ func (p *Plugin) notifyWorker() {
 //
 // Handle("on_action", ...) and HandleAction(...) are mutually exclusive — both
 // install a handler for the same RPC method. Calling either after the other
-// has been registered panics, regardless of order.
-func (p *Plugin) Handle(method string, fn HandlerFunc) {
+// has been registered panics, regardless of order. The same holds for
+// Handle("render_settings", ...) and SettingsTab(...).
+func (p *Plugin) Handle(
+	method string, fn HandlerFunc) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	if method == HookOnAction && p.actionRegistry != nil {
 		panic("plugin-sdk-go: cannot mix Handle(\"on_action\", ...) and HandleAction(...) — pick one")
 	}
+	if method == HookRenderSettings && p.settingsTabs != nil {
+		panic("plugin-sdk-go: cannot mix Handle(\"render_settings\", ...) and SettingsTab(...) — pick one")
+	}
 	p.handlers[method] = fn
+
 }
 
 // HandleTyped is a generic convenience over Handle that unmarshals params into
