@@ -13,7 +13,7 @@ import (
 // DESIGN_SANDBOX_HOST_PROXY.md).
 //
 // When a plugin declares `"network": {"hosts": [...]}`, platforms without an
-// in-kernel per-host primitive (Linux, later Windows) run the plugin in a
+// in-kernel per-host primitive (all three: Linux, macOS, Windows) run the plugin in a
 // no-network sandbox whose only egress is an actuator-run HTTP CONNECT proxy
 // that enforces the declared hostname allowlist. The actuator advertises the
 // endpoint in BRANCHKIT_PROXY:
@@ -26,7 +26,7 @@ import (
 // plugin author writes ordinary HTTP calls and the platform routes and
 // enforces. TLS is tunneled opaquely (CONNECT then a normal client-side TLS
 // handshake — the proxy never sees plaintext). When BRANCHKIT_PROXY is unset
-// (macOS in-kernel enforcement, unsandboxed dev runs), everything is direct.
+// (no `hosts` policy, or an unsandboxed dev run), everything is direct.
 
 func init() {
 	installProxyFromEnv()

@@ -174,8 +174,8 @@ func TestProxyDialContextRejectsUnknownSchemes(t *testing.T) {
 	}
 }
 
-// Unset env means direct transport — the transparent fallback for macOS
-// (in-kernel per-host) and unsandboxed dev runs.
+// Unset env means direct transport — the transparent fallback when no
+// `hosts` policy applies, and for unsandboxed dev runs.
 func TestProxyEnvUnsetMeansDirect(t *testing.T) {
 	t.Setenv("BRANCHKIT_PROXY", "")
 	dial, err := proxyDialContextFromEnv()
