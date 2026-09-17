@@ -370,6 +370,28 @@ func (p *Plugin) Handle(
 //	    setVolume(req.Volume)
 //	    return map[string]string{"result": "ok"}, nil
 //	})
+//
+// HandleCommand registers a command: a method a settings control posts to.
+// A command changes state and returns nothing — the platform's method proxy
+// answers the post with 204 and re-renders the tab through its stream, and
+// refuses any result with 422 and the settings-method-result diagnostic.
+// The signature makes that mistake unwritable: fn returns only error. Params
+// unmarshal into Req exactly as with HandleTyped; empty params give a zero
+// Req.
+//
+//	type SetVolumeRequest struct {
+//	    Volume int `json:"volume"`
+//	}
+//	branchkit.HandleCommand(plugin, "set_volume", func(req *SetVolumeRequest) error {
+//	    return setVolume(req.Volume)
+//	})
+//
+// Use HandleTyped for a method whose result another caller reads — a
+// platform hook, or another plugin — never for a settings control.
+func HandleCommand[Req any](p *Plugin, method string, fn func(*Req) error) {
+	HandleTyped(p, method, func(req *Req) (any, error) { return nil, fn(req) })
+}
+
 func HandleTyped[Req any](p *Plugin, method string, fn func(*Req) (any, error)) {
 	p.Handle(method, func(params json.RawMessage) (any, error) {
 		var req Req

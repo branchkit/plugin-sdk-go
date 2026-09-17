@@ -917,3 +917,42 @@ func TestDetachedPlugin(t *testing.T) {
 		t.Fatal("Run on a detached plugin must return at once")
 	}
 }
+
+// A command's response carries no result — `"result": null` on the wire —
+// however the handler is written, because the signature admits no value.
+// The proxy refuses anything else with 422; this is the SDK's half.
+func TestHandleCommandAnswersNull(t *testing.T) {
+	p, actuatorW, actuatorR := newTestPlugin()
+	got := make(chan int, 1)
+	HandleCommand(p, "set_volume", func(req *struct {
+		Volume int `json:"volume"`
+	}) error {
+		got <- req.Volume
+		return nil
+	})
+	go p.Run()
+
+	id := uint64(7)
+	msg := rpcMessage{JSONRPC: "2.0", ID: &id, Method: "set_volume", Params: json.RawMessage(`{"volume":3}`)}
+	data, _ := json.Marshal(msg)
+	actuatorW.Write(append(data, '\n'))
+
+	resp := scanRPC(t, actuatorR)
+	if resp.ID == nil || *resp.ID != 7 {
+		t.Fatalf("expected id=7, got %v", resp.ID)
+	}
+	if resp.Error != nil {
+		t.Fatalf("unexpected error: %v", resp.Error)
+	}
+	if string(resp.Result) != "" && string(resp.Result) != "null" {
+		t.Fatalf("a command must answer with no result, got %s", resp.Result)
+	}
+	select {
+	case v := <-got:
+		if v != 3 {
+			t.Fatalf("params not decoded: %d", v)
+		}
+	default:
+		t.Fatal("handler did not run")
+	}
+}
