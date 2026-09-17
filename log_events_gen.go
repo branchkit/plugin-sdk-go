@@ -42,6 +42,7 @@ const (
 	LogEventPluginExited             = "plugin.exited"
 	LogEventPluginLifecycleOp        = "plugin.lifecycle_op"
 	LogEventPluginLoaded             = "plugin.loaded"
+	LogEventPluginNetworkConnect     = "plugin.network_connect"
 	LogEventPluginReady              = "plugin.ready"
 	LogEventPluginRecovered          = "plugin.recovered"
 	LogEventPluginRpcFailed          = "plugin.rpc_failed"
@@ -115,6 +116,7 @@ var LogEventRegistry = map[string]LogEventMeta{
 	"plugin.exited":               {Name: "plugin.exited", Summary: "A managed plugin process exited (clean or crashed).", Since: "0.1.0", Source: "plugins", Severity: "info", Redaction: "none"},
 	"plugin.lifecycle_op":         {Name: "plugin.lifecycle_op", Summary: "A plugin lifecycle operation (install, uninstall, update, reload, hot-reload, enable, disable).", Since: "0.1.0", Source: "plugins", Severity: "info", Redaction: "none"},
 	"plugin.loaded":               {Name: "plugin.loaded", Summary: "A plugin manifest was discovered and parsed.", Since: "0.1.0", Source: "plugins", Severity: "info", Redaction: "none"},
+	"plugin.network_connect":      {Name: "plugin.network_connect", Summary: "A plugin attempted an outbound connection through its filtering proxy: allowed, denied (host not declared), or failed. Hostname and byte counts only. Audit-eligible.", Since: "0.1.0", Source: "plugins", Severity: "info", Redaction: "none"},
 	"plugin.ready":                {Name: "plugin.ready", Summary: "A managed plugin completed its RPC handshake.", Since: "0.1.0", Source: "plugins", Severity: "info", Redaction: "none"},
 	"plugin.recovered":            {Name: "plugin.recovered", Summary: "A previously-degraded plugin recovered and is responding again.", Since: "0.1.0", Source: "plugins", Severity: "info", Redaction: "none"},
 	"plugin.rpc_failed":           {Name: "plugin.rpc_failed", Summary: "A plugin RPC method returned an error or failed to respond.", Since: "0.1.0", Source: "plugins", Severity: "warn", Redaction: "none"},
