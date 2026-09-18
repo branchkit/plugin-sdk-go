@@ -54,6 +54,14 @@ func ListenLocal(plugin *Plugin) (*Listener, error) {
 		return nil, fmt.Errorf("inherited listener: %w", err)
 	}
 	if ln == nil {
+		// No fd (Windows): the actuator may instead have bound the listener
+		// outside the sandbox and be relaying to us — see relay.go.
+		ln, err = relayListenerFromEnv(0)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if ln == nil {
 		ln, err = net.Listen("tcp", "127.0.0.1:0")
 		if err != nil {
 			return nil, fmt.Errorf("listen: %w", err)
