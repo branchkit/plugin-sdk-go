@@ -20,7 +20,10 @@ import (
 //
 //	unix:///path/to/endpoint.sock  — UNIX socket (Linux; bind-mounted into
 //	                                 the sandbox at the same path)
-//	http://127.0.0.1:<port>        — localhost TCP (Windows, P3)
+//	http://127.0.0.1:<port>        — localhost TCP (legacy Windows path)
+//	npipe://\\.\pipe\name        — named pipe ACL'd to the plugin's
+//	                                 container SID (Windows; reached with no
+//	                                 loopback exemption)
 //
 // The SDK routes the default HTTP transport through it at package init, so a
 // plugin author writes ordinary HTTP calls and the platform routes and
@@ -79,8 +82,13 @@ func proxyDialContext(proxyURL string) (func(ctx context.Context, network, addr 
 		pnet, paddr = "unix", strings.TrimPrefix(proxyURL, "unix://")
 	case strings.HasPrefix(proxyURL, "http://"):
 		pnet, paddr = "tcp", strings.TrimPrefix(proxyURL, "http://")
+	case strings.HasPrefix(proxyURL, "npipe://"):
+		// Windows: the actuator ACLs the pipe to this plugin's container
+		// SID, so the AppContainer reaches it with no loopback exemption
+		// (DESIGN_WINDOWS_LOOPBACK_EXEMPTION.md).
+		pnet, paddr = "npipe", strings.TrimPrefix(proxyURL, "npipe://")
 	default:
-		return nil, fmt.Errorf("unsupported proxy url %q (want unix:// or http://)", proxyURL)
+		return nil, fmt.Errorf("unsupported proxy url %q (want unix://, http:// or npipe://)", proxyURL)
 	}
 	if paddr == "" {
 		return nil, fmt.Errorf("empty proxy address in %q", proxyURL)
@@ -89,8 +97,7 @@ func proxyDialContext(proxyURL string) (func(ctx context.Context, network, addr 
 		if network != "tcp" && network != "tcp4" && network != "tcp6" {
 			return nil, fmt.Errorf("branchkit proxy carries tcp only, not %q", network)
 		}
-		var d net.Dialer
-		conn, err := d.DialContext(ctx, pnet, paddr)
+		conn, err := dialProxyEndpoint(ctx, pnet, paddr)
 		if err != nil {
 			return nil, fmt.Errorf("dial branchkit proxy %s: %w", paddr, err)
 		}
