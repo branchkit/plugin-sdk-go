@@ -127,3 +127,29 @@ func TestListenLocalPrefersTheRelayOverSelfBinding(t *testing.T) {
 		t.Fatalf("ListenLocal Addr() = %s, want the relay's public port %s", l.Addr(), port)
 	}
 }
+
+func TestGrantedListenersTakeTheRelayWhenNoFdWasPassed(t *testing.T) {
+	const token = "00112233445566778899aabbccddeeff"
+	rendezvous, public, stop := fakeRelay(t, token)
+	defer stop()
+	_, port, _ := net.SplitHostPort(public)
+	t.Setenv("BRANCHKIT_LISTEN_RELAY", rendezvous)
+	t.Setenv("BRANCHKIT_LISTEN_RELAY_TOKEN", token)
+	t.Setenv("BRANCHKIT_LISTEN_PORTS", "trial="+port)
+	t.Setenv("LISTEN_FDS", "")
+
+	granted, err := GrantedListeners()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(granted) != 1 || granted[0].Addr().String() != "127.0.0.1:"+port {
+		t.Fatalf("GrantedListeners = %v, want one relay listener on the public port %s", granted, port)
+	}
+	granted[0].Close()
+
+	t.Setenv("BRANCHKIT_LISTEN_RELAY", "")
+	none, err := GrantedListeners()
+	if err != nil || len(none) != 0 {
+		t.Fatalf("with no fd and no relay, GrantedListeners = %v, %v; want none", none, err)
+	}
+}

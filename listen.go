@@ -166,6 +166,41 @@ func InheritedListeners() ([]net.Listener, error) {
 	return listeners, nil
 }
 
+// GrantedListeners returns every listener the actuator granted for the
+// manifest's `sockets.listen`, in declaration order, however the actuator
+// delivered them: as inherited fds (Linux, macOS — InheritedListeners) or
+// through its relay (Windows — relay.go, when BRANCHKIT_LISTEN_RELAY is
+// set). Empty when none were granted. This is what a plugin that runs its
+// own HTTP server on the granted socket should call; ListenLocal calls the
+// same order for the first listener. A plugin that took InheritedListeners
+// alone self-bound on Windows and was unreachable there (the browser
+// plugin, until 2026-09-18).
+func GrantedListeners() ([]net.Listener, error) {
+	inherited, err := InheritedListeners()
+	if err != nil {
+		return nil, err
+	}
+	if len(inherited) > 0 {
+		return inherited, nil
+	}
+	if _, _, ok := relayEnv(); !ok {
+		return nil, nil
+	}
+	ports := grantedPorts()
+	out := make([]net.Listener, 0, len(ports))
+	for i := range ports {
+		ln, err := relayListenerFromEnv(i)
+		if err != nil {
+			for _, l := range out {
+				l.Close()
+			}
+			return nil, err
+		}
+		out = append(out, ln)
+	}
+	return out, nil
+}
+
 // inheritedListener returns the i-th granted listener, or (nil, nil) when
 // the actuator granted none (callers then self-bind).
 func inheritedListener(i int) (net.Listener, error) {

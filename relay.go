@@ -192,4 +192,3 @@ func (l *relayListener) Close() error {
 func (l *relayListener) Addr() net.Addr { return l.addr }
 
 var _ net.Listener = (*relayListener)(nil)
-
