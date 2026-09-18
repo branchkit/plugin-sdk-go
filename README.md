@@ -47,6 +47,8 @@ manifest's `action_types`.
 | Events | manifest `consumes.events` + `plugin.On(event, fn)` |
 | Settings UI tab | `settings_tab` manifest field + render method |
 | Logging | `branchkit.Logf` (shared actuator log), `plugin.Debug` (per-plugin file) |
+| Outbound HTTP | `net/http` (the default transport is proxy-aware), `UpstreamClient` |
+| Raw TCP (MQTT, telnet, a local daemon) | `branchkit.Dial(host, port)` — the same proxy; `*HostRefusedError` for an undeclared host |
 
 ## Conformance
 

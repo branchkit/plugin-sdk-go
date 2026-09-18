@@ -6,6 +6,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -137,7 +138,15 @@ func connectHandshake(conn net.Conn, addr string) error {
 	status, _, _ := strings.Cut(string(head), "\r\n")
 	fields := strings.Fields(status)
 	if len(fields) < 2 || fields[1] != "200" {
-		return fmt.Errorf("proxy refused CONNECT %s: %s (host not in the plugin's declared allowlist?)", addr, status)
+		if len(fields) >= 2 && fields[1] == "403" {
+			// The allowlist refusal (host_proxy's RESP_FORBIDDEN) — typed, so a
+			// caller can tell "not declared" from "declared but unreachable"
+			// (a 400, below) without reading prose.
+			host, portStr, _ := net.SplitHostPort(addr)
+			port, _ := strconv.Atoi(portStr)
+			return &HostRefusedError{Host: host, Port: port, Status: status}
+		}
+		return fmt.Errorf("proxy could not connect %s: %s", addr, status)
 	}
 	return nil
 }
