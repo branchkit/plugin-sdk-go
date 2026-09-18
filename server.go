@@ -81,22 +81,29 @@ func PluginDataDir() string {
 	return os.Getenv("BRANCHKIT_PLUGIN_DATA")
 }
 
-// ModelsDir returns the plugin's own model namespace — where the CLI
-// provisions the models this plugin declares in `provides.models` — as handed
-// to the process by the actuator via BRANCHKIT_MODELS_DIR. Returns "" when
-// unset, meaning the plugin was not launched by the actuator.
+// ArtifactsDir returns the plugin's own artifact namespace — where the CLI
+// provisions the artifacts this plugin declares in `provides.artifacts` (named
+// bundles of large run-time files: ML weights, a font pack, a dictionary) — as
+// handed to the process by the actuator via BRANCHKIT_ARTIFACTS_DIR. Returns
+// "" when unset, meaning the plugin was not launched by the actuator.
 //
 // READ-ONLY. A plugin that ships an engine needs this to answer "which of my
-// models are installed?" for its own UI, which is a question it should not
+// artifacts are installed?" for its own UI, which is a question it should not
 // have to ask the platform. Writing is a different matter: the CLI is the only
-// component with network access and the per-part content pin is what makes a
-// model's bytes trustworthy, so the sandbox grants read here and nothing more.
-// Removing a model is `model.delete`, which the actuator performs within this
-// same namespace.
+// component with network access and the per-part content pin is what makes an
+// artifact's bytes trustworthy, so the sandbox grants read here and nothing more.
 //
-// The models a plugin declares are a flat namespace it owns, so a declared
-// model named `m` lives at `<ModelsDir()>/m` and its platform-wide ref is
-// `<plugin id>/m`.
-func ModelsDir() string {
+// The artifacts a plugin declares are a flat namespace it owns, so a declared
+// artifact named `m` lives at `<ArtifactsDir()>/m` and its platform-wide ref is
+// `<plugin id>/m`. Was `ModelsDir` (kept as a deprecated alias for one
+// release); see DESIGN_ARTIFACTS_RENAME.md.
+func ArtifactsDir() string {
+	if d := os.Getenv("BRANCHKIT_ARTIFACTS_DIR"); d != "" {
+		return d
+	}
 	return os.Getenv("BRANCHKIT_MODELS_DIR")
 }
+
+// Deprecated: use [ArtifactsDir]. `models` was renamed to `artifacts`
+// (DESIGN_ARTIFACTS_RENAME.md); this alias is removed one release later.
+func ModelsDir() string { return ArtifactsDir() }

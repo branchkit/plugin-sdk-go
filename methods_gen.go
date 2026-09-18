@@ -18,6 +18,14 @@ func (p *Plugin) ActionsList() (*ActionsListResponse, error) {
 	return &result, nil
 }
 
+// ArtifactDelete delete an installed model from the caller's own model namespace (ref: <plugin>/<model>).
+func (p *Plugin) ArtifactDelete(ref string) error {
+	req := &ArtifactDeleteRequest{
+		Ref: ref,
+	}
+	return p.Call(MethodArtifactDelete, req, nil)
+}
+
 // CollectionAppend append an entry to a log-kind collection.
 func (p *Plugin) CollectionAppend(name string, payload json.RawMessage) (*LogEntry, error) {
 	req := &CollectionAppendRequest{
@@ -757,14 +765,6 @@ func (p *Plugin) KeybindsRegister(snapshot json.RawMessage) (*KeybindsRegisterRe
 		return nil, err
 	}
 	return &result, nil
-}
-
-// ModelDelete delete an installed model from the caller's own model namespace (ref: <plugin>/<model>).
-func (p *Plugin) ModelDelete(ref string) error {
-	req := &ModelDeleteRequest{
-		Ref: ref,
-	}
-	return p.Call(MethodModelDelete, req, nil)
 }
 
 // NativeAccentColor get the system accent color name.

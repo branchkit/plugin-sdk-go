@@ -893,6 +893,16 @@ type ActionsListResponse struct {
 	Actions map[string]ActionTypeSchema `json:"actions"`
 }
 
+// ArtifactDeleteRequest is the request type for artifact.delete.
+type ArtifactDeleteRequest struct {
+	Ref string `json:"ref"`
+}
+
+// ArtifactDeleteResponse is the response type for artifact.delete.
+type ArtifactDeleteResponse struct {
+	Ok bool `json:"ok"`
+}
+
 // CollectionAppendRequest is the request type for collection.append.
 type CollectionAppendRequest struct {
 	Name    string          `json:"name"`
@@ -1593,16 +1603,6 @@ type KeybindsRegisterRequest struct {
 type KeybindsRegisterResponse struct {
 	Count int  `json:"count"`
 	Ok    bool `json:"ok"`
-}
-
-// ModelDeleteRequest is the request type for model.delete.
-type ModelDeleteRequest struct {
-	Ref string `json:"ref"`
-}
-
-// ModelDeleteResponse is the response type for model.delete.
-type ModelDeleteResponse struct {
-	Ok bool `json:"ok"`
 }
 
 // NativeAccentColorResponse is the response type for native.accent_color.
