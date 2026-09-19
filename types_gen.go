@@ -11,9 +11,11 @@ var _ json.RawMessage
 // ===== Shared types (from components/schemas) =====
 
 // AXElementInfo is auto-generated from the OpenRPC spec.
+// Detailed info about an accessibility element.
 type AXElementInfo struct {
-	Actions       []string        `json:"actions"`
-	Attributes    []string        `json:"attributes"`
+	Actions    []string `json:"actions"`
+	Attributes []string `json:"attributes"`
+	// wire uint32 · min 0
 	ChildrenCount int             `json:"children_count"`
 	Description   *string         `json:"description,omitempty"`
 	Enabled       bool            `json:"enabled"`
@@ -28,52 +30,117 @@ type AXElementInfo struct {
 }
 
 // AXElementNode is auto-generated from the OpenRPC spec.
+// A tree node of accessibility elements (recursive).
+//
+// schemars handles the self-reference automatically via a `$defs`
+// entry — no `#[schema(no_recursion)]` annotation needed (that was
+// utoipa-specific and was dropped in Phase 2j-utoipa-removal).
 type AXElementNode struct {
 	Children []AXElementNode `json:"children"`
 	Element  AXElementInfo   `json:"element"`
 }
 
 // AXElementRef is auto-generated from the OpenRPC spec.
+// A reference to an accessibility element by PID + path from the application root.
 type AXElementRef struct {
+	// default []
 	Path []AXPathSegment `json:"path,omitempty"`
-	Pid  int             `json:"pid"`
+	// wire int32
+	Pid int `json:"pid"`
 }
 
 // AXPathSegment is auto-generated from the OpenRPC spec.
+// A segment of an accessibility element path (role + index among siblings with that role).
 type AXPathSegment struct {
+	// wire uint32 · min 0
 	Index int    `json:"index"`
 	Role  string `json:"role"`
 }
 
 // ActionFieldSchema is auto-generated from the OpenRPC spec.
+// Schema for a single field within an action type.
 type ActionFieldSchema struct {
-	Default     json.RawMessage     `json:"default,omitempty"`
-	Description string              `json:"description"`
-	Display     *FieldDisplay       `json:"display,omitempty"`
-	EnumValues  []string            `json:"enum_values"`
-	FieldType   FieldType           `json:"field_type"`
-	Fields      []ActionFieldSchema `json:"fields"`
-	Key         string              `json:"key"`
-	Label       string              `json:"label"`
-	Placeholder *string             `json:"placeholder,omitempty"`
-	Required    bool                `json:"required"`
+	// Shipped default value. REQUIRED on every field of a
+	// `preset: settings` collection — the settings base record is
+	// materialized from these at read time, which is what makes default
+	// evolution work (an untouched field always reads the CURRENT shipped
+	// default, never a stale saved copy). Validated against `field_type`
+	// at manifest load. Advisory elsewhere (generic UIs may prefill).
+	Default json.RawMessage `json:"default,omitempty"`
+	// One line saying what this setting DOES, rendered under the label
+	// wherever the platform draws the field — the Collections view, and any
+	// generic form.
+	//
+	// A label names a setting; this says why you would touch it. Every
+	// hand-written settings tab in this repo carries such a line
+	// ("Auto-correct when Whisper outputs entirely in UPPERCASE"), and a
+	// field described here is described identically in every surface that
+	// renders it, including your own.
+	Description string `json:"description"`
+	// Optional display role for generic UI rendering. See `FieldDisplay`.
+	// Currently consumed by the Collections tab's log-kind timeline view
+	// to pick which fields appear in the row summary.
+	//
+	// Deserialization is deliberately LENIENT: an unrecognized role string
+	// degrades to `None` instead of failing the whole manifest parse.
+	// Display roles are guaranteed display-only (the matcher never reads
+	// them), so a plugin built against a newer SDK that declares a role
+	// this host predates must still load — strictness tracks blast
+	// radius. The typo-catching strictness lives at publish time
+	// (branchkit-gen validates against the schema's closed enum) and in
+	// the load-time validator, which walks the raw JSON and emits a loud
+	// warning for every unknown role it degraded. See
+	// docs/design/DESIGN_COLLECTION_FIELD_ROLES.md, Decision 5.
+	Display *FieldDisplay `json:"display,omitempty"`
+	// Allowed string values for `field_type: "enum"`. Ignored otherwise.
+	EnumValues []string `json:"enum_values"`
+	// Declared type for this field. See `FieldType`.
+	// default "string"
+	FieldType FieldType `json:"field_type"`
+	// Nested field list for `field_type: "object"` (recursive). Ignored
+	// for other field types.
+	Fields []ActionFieldSchema `json:"fields"`
+	// JSON key name (e.g. "selector", "direction").
+	Key string `json:"key"`
+	// Human-readable label for UI rendering.
+	// default ""
+	Label string `json:"label"`
+	// Placeholder text for input fields.
+	Placeholder *string `json:"placeholder,omitempty"`
+	// Whether this field is required.
+	// default false
+	Required bool `json:"required"`
 }
 
 // ActionTypeSchema is auto-generated from the OpenRPC spec.
+// Schema declaration for a plugin-defined action type.
+// Enables generic UI rendering (structured editor fields) for any plugin's actions.
 type ActionTypeSchema struct {
+	// Ordered list of fields for this action type.
 	Fields []ActionFieldSchema `json:"fields"`
-	Label  string              `json:"label"`
-	Modes  []string            `json:"modes"`
+	// Human-readable label (e.g. "Click Element", "Snap Window").
+	// default ""
+	Label string `json:"label"`
+	// Supported interaction modes: "tap" (single press), "hold" (start/stop via phase),
+	// and/or "toggle" (start/stop cycle). Defaults to ["tap"] if omitted.
+	Modes []string `json:"modes"`
 }
 
 // ActiveSpace is auto-generated from the OpenRPC spec.
+// The currently active space per display.
 type ActiveSpace struct {
+	// The display ID.
+	// wire uint32 · min 0
 	DisplayID int `json:"display_id"`
-	SpaceID   int `json:"space_id"`
+	// The currently active space ID on that display.
+	// wire uint64 (64-bit) · min 0
+	SpaceID int `json:"space_id"`
 }
 
 // AudioDevice is auto-generated from the OpenRPC spec.
+// An audio input/output device.
 type AudioDevice struct {
+	// wire uint32 · min 0
 	ID              int    `json:"id"`
 	IsDefaultInput  bool   `json:"is_default_input"`
 	IsDefaultOutput bool   `json:"is_default_output"`
@@ -85,41 +152,60 @@ type AudioDevice struct {
 
 // BarcodeResult is auto-generated from the OpenRPC spec.
 type BarcodeResult struct {
+	// wire double
 	Height    float64 `json:"height"`
 	Payload   string  `json:"payload"`
 	Symbology string  `json:"symbology"`
-	Width     float64 `json:"width"`
-	X         float64 `json:"x"`
-	Y         float64 `json:"y"`
+	// wire double
+	Width float64 `json:"width"`
+	// wire double
+	X float64 `json:"x"`
+	// wire double
+	Y float64 `json:"y"`
 }
 
 // BleCharacteristic is auto-generated from the OpenRPC spec.
+// A GATT characteristic.
 type BleCharacteristic struct {
 	Properties []string `json:"properties"`
 	Uuid       string   `json:"uuid"`
 }
 
 // BleService is auto-generated from the OpenRPC spec.
+// A GATT service with its characteristics.
 type BleService struct {
 	Characteristics []BleCharacteristic `json:"characteristics"`
 	Uuid            string              `json:"uuid"`
 }
 
 // BleWriteEntry is auto-generated from the OpenRPC spec.
+// A write to perform during the subscribe-and-write GATT cycle.
 type BleWriteEntry struct {
-	CharacteristicUuid string  `json:"characteristic_uuid"`
-	Data               []int   `json:"data,omitempty"`
-	ServiceUuid        string  `json:"service_uuid"`
-	WriteType          *string `json:"write_type,omitempty"`
+	// Characteristic UUID to write to.
+	CharacteristicUuid string `json:"characteristic_uuid"`
+	// Data bytes to write.
+	// default []
+	Data []int `json:"data,omitempty"`
+	// GATT service UUID containing the target characteristic.
+	ServiceUuid string `json:"service_uuid"`
+	// Write type: "with_response" (default) or "without_response".
+	// default "with_response"
+	WriteType *string `json:"write_type,omitempty"`
 }
 
 // BluetoothDevice is auto-generated from the OpenRPC spec.
+// A paired or connected Bluetooth device.
 type BluetoothDevice struct {
-	Address     string  `json:"address"`
-	DeviceType  *string `json:"device_type,omitempty"`
-	IsConnected bool    `json:"is_connected"`
-	IsPaired    bool    `json:"is_paired"`
-	Name        string  `json:"name"`
+	// Device MAC address.
+	Address string `json:"address"`
+	// Device type hint (e.g. "headphones", "keyboard"), if available.
+	DeviceType *string `json:"device_type,omitempty"`
+	// Whether the device is currently connected.
+	IsConnected bool `json:"is_connected"`
+	// Whether the device is paired.
+	IsPaired bool `json:"is_paired"`
+	// Device name.
+	Name string `json:"name"`
 }
 
 // CalendarEvent is auto-generated from the OpenRPC spec.
@@ -141,6 +227,7 @@ type CameraDevice struct {
 }
 
 // ClipboardContents is auto-generated from the OpenRPC spec.
+// Clipboard contents read from the OS.
 type ClipboardContents struct {
 	AvailableTypes []string `json:"available_types"`
 	ContentType    string   `json:"content_type"`
@@ -150,6 +237,7 @@ type ClipboardContents struct {
 }
 
 // ClipboardWriteItem is auto-generated from the OpenRPC spec.
+// An item to write to the clipboard with typed content.
 type ClipboardWriteItem struct {
 	ContentType string   `json:"content_type"`
 	FileUrls    []string `json:"file_urls,omitempty"`
@@ -158,25 +246,105 @@ type ClipboardWriteItem struct {
 }
 
 // CollectionPutEntry is auto-generated from the OpenRPC spec.
+// One record to upsert. Same shape as the older single-record wire form
+// `{id, payload}`; bulk callers pass multiple entries in one call.
+// `payload` is optional on the wire (OpenRPC marks only `id` as
+// required); a missing payload deserializes as `Value::Null` so
+// schema-driven SDK codegen can omit it without tripping a
+// `missing field` parse error here.
 type CollectionPutEntry struct {
-	ID      string          `json:"id"`
+	ID string `json:"id"`
+	// default null
 	Payload json.RawMessage `json:"payload,omitempty"`
 }
 
 // CollectionRecord is auto-generated from the OpenRPC spec.
+// One record as returned by a backend. The `id` field is whatever the
+// collection's `id_strategy` resolves to (auto-ulid string, by-field value,
+// key/value composite, or "singleton" for singleton collections).
+//
+// The wire / schema name is `CollectionRecord` to avoid colliding with
+// TypeScript's builtin `Record<K, V>` utility type (the codegen emits
+// `Record<string, T>` map shapes alongside our own types).
 type CollectionRecord struct {
-	Group       *string         `json:"group,omitempty"`
-	ID          string          `json:"id"`
-	OnBehalfOf  *string         `json:"on_behalf_of,omitempty"`
-	Payload     json.RawMessage `json:"payload,omitempty"`
-	Revision    int             `json:"revision"`
-	TimestampMs int             `json:"timestamp_ms"`
-	Writer      string          `json:"writer"`
+	// Writer-chosen group label — which of the writer's named replace-sets
+	// this record belongs to. `None` = ungrouped, the common case.
+	//
+	// Groups exist so one plugin can maintain several independent record sets
+	// in one collection, each replaced without touching the others — command
+	// sources are the motivating case (`commands.push`'s `group` stamps
+	// this). Meaningful only WITHIN a writer: (writer, group) is the scope a
+	// grouped replace computes its complement over, so two plugins using the
+	// same group label never interact.
+	//
+	// **Last write, unlike `writer`.** Ownership is creation-stamped because
+	// a record must not change hands by being touched; group is a placement,
+	// and re-putting a record under a different group MOVES it — the old
+	// group's next replace must not still count it.
+	//
+	// Storage support varies by backend shape: backends without a per-record
+	// envelope (shared_overrides' contribution blobs) REFUSE writes carrying
+	// a group rather than dropping it silently — see `backend_conformance`.
+	Group *string `json:"group,omitempty"`
+	ID    string  `json:"id"`
+	// Actor label of the writer that CREATED this record — which hosted
+	// thing the `writer` plugin was acting for. `None` for the ordinary
+	// case: a plugin acting only for itself.
+	//
+	// Creation-stamped, exactly like `writer` and for the same reason: it
+	// is the finer-grained half of the same answer ("whose record is
+	// this"), so touching a record must not relabel it. Last-touch
+	// attribution is the audit log's job, and it carries the label too.
+	//
+	// **Not an ownership axis.** `collection.replace` scopes its
+	// complement by `writer` alone; two scripts hosted by one plugin share
+	// one owner, because the platform grants and enforces at the plugin.
+	// Making this a scoping key would turn an observability label into a
+	// sub-principal, which `docs/design/DESIGN_HOST_PLUGINS.md` forbids. Per-
+	// hosted-thing separation is the host's job — one host-owned
+	// collection namespaced by script, not a platform ownership rule.
+	OnBehalfOf *string         `json:"on_behalf_of,omitempty"`
+	Payload    json.RawMessage `json:"payload,omitempty"`
+	// Monotonic per-record write counter, backend-maintained. Increments
+	// on every put/patch of the same id; starts at 1. Reserved as the
+	// compare-and-swap anchor (`put` opt `if_version`) so optimistic
+	// concurrency never needs a breaking envelope change. `0` = written
+	// before this field existed.
+	// wire uint64 (64-bit) · default 0 · min 0
+	Revision int `json:"revision"`
+	// Unix-milliseconds write time, backend-maintained. Log-shaped
+	// records carry their append time (ULID-aligned); keyed records the
+	// last write. `0` = written before this field existed.
+	// wire uint64 (64-bit) · default 0 · min 0
+	TimestampMs int `json:"timestamp_ms"`
+	// Who owns this record: the plugin id that CREATED it, or `_platform`
+	// for host writes. Backend-maintained. `""` = written before this field
+	// existed.
+	//
+	// **Creation, not last touch** — deliberately unlike `revision` and
+	// `timestamp_ms`, which both track the most recent write. A later write
+	// by a different plugin does not transfer ownership, because the
+	// question this field answers is "whose record is this", not "who
+	// touched it last". Last-touch is already served by the audit log; what
+	// the platform had no answer for was ownership.
+	//
+	// This is what lets a write be scoped to its author.
+	// `collection.replace` computes its complement over records whose writer
+	// is the caller, so a replace can only ever delete what that caller
+	// created — which is why a collection-wide replace is safe for any
+	// writer the collection accepts, not just its introducer, and why
+	// another plugin's records (and the user's) are invisible to the diff.
+	// `ListOpts.writer` is the read-side twin: ask for your own records.
+	//
+	// See docs/design/DESIGN_RECORD_OWNERSHIP.md.
+	// default ""
+	Writer string `json:"writer"`
 }
 
 // CollectionsListItem is auto-generated from the OpenRPC spec.
 type CollectionsListItem struct {
-	ID       string  `json:"id"`
+	ID string `json:"id"`
+	// Plugin ID that contributed this item.
 	Source   string  `json:"source"`
 	Subtitle *string `json:"subtitle,omitempty"`
 	Title    string  `json:"title"`
@@ -184,6 +352,7 @@ type CollectionsListItem struct {
 
 // CollectionsListSection is auto-generated from the OpenRPC spec.
 type CollectionsListSection struct {
+	// wire uint · min 0
 	EntryCount int                   `json:"entry_count"`
 	Items      []CollectionsListItem `json:"items"`
 	Label      string                `json:"label"`
@@ -192,6 +361,25 @@ type CollectionsListSection struct {
 }
 
 // CommandOverride is auto-generated from the OpenRPC spec.
+// A user override of a command's *spoken phrase* — "say `new_pattern` instead
+// of `default_pattern` for `action`." A keyed delta on top of the contributed
+// defaults, owned by the platform and applied when the command union is built
+// (`rebuild_commands_cache`), so it wins over the default and survives the
+// contributing plugin/extension re-contributing on reconnect.
+//
+// Keyed by the stable `(action, default_pattern)` identity, NOT by the phrase
+// (which changes the instant you override it):
+//   - `action` — the full action id (`Action::type_label`, e.g.
+//     `browser.scroll`), carrying the plugin prefix so the layer stays
+//     plugin-agnostic across browser/tiling/system.
+//   - `default_pattern` — the default spoken form this replaces
+//     (`Command::display_name`, the actuator's canonical `<capture>` notation).
+//     Needed because one action can carry several patterns, each with its own
+//     params; the key names which one.
+//
+// A stale override (default renamed/removed upstream) simply stops matching
+// and the new default applies — single source + derived delta, no dual-sync.
+// See `docs/design/DESIGN_COMMAND_PHRASE_OVERRIDES.md`.
 type CommandOverride struct {
 	Action         string `json:"action"`
 	DefaultPattern string `json:"default_pattern"`
@@ -200,44 +388,96 @@ type CommandOverride struct {
 
 // CommandRowData is auto-generated from the OpenRPC spec.
 type CommandRowData struct {
-	Action       string          `json:"action"`
-	ActionJson   json.RawMessage `json:"action_json,omitempty"`
-	Canonical    string          `json:"canonical"`
-	Category     string          `json:"category"`
-	ClearsTags   []string        `json:"clears_tags"`
-	Description  *string         `json:"description,omitempty"`
-	IsUser       bool            `json:"is_user"`
-	Pattern      string          `json:"pattern"`
-	PluginName   string          `json:"plugin_name"`
-	RequiresTags []string        `json:"requires_tags"`
-	SetsTags     []string        `json:"sets_tags"`
-	Tier         string          `json:"tier"`
-	Variants     []string        `json:"variants"`
+	Action string `json:"action"`
+	// Raw action JSON for editor decomposition (complements the display `action` string).
+	ActionJson json.RawMessage `json:"action_json,omitempty"`
+	Canonical  string          `json:"canonical"`
+	Category   string          `json:"category"`
+	ClearsTags []string        `json:"clears_tags"`
+	// Optional "what it does / use case" text from the command definition —
+	// the same field used as the HUD subtitle, shown in the command editor row.
+	Description  *string  `json:"description,omitempty"`
+	IsUser       bool     `json:"is_user"`
+	Pattern      string   `json:"pattern"`
+	PluginName   string   `json:"plugin_name"`
+	RequiresTags []string `json:"requires_tags"`
+	SetsTags     []string `json:"sets_tags"`
+	Tier         string   `json:"tier"`
+	// All expanded spoken forms (cartesian product of pattern alternatives).
+	Variants []string `json:"variants"`
 }
 
 // CommandSpec is auto-generated from the OpenRPC spec.
+// One Command in a `commands.push` payload — published purely for
+// discoverability. Wire deserialization goes through
+// `commands::parse_commands_with_templates` against the opaque JSON
+// value, so adding/removing a field here doesn't change runtime
+// behavior. Edit `commands::PartialCommand` first; mirror here.
 type CommandSpec struct {
-	Action         json.RawMessage   `json:"action"`
-	CancelsBridge  *bool             `json:"cancels_bridge,omitempty"`
-	Category       *string           `json:"category,omitempty"`
-	ClearsTags     []string          `json:"clears_tags,omitempty"`
-	Description    *string           `json:"description,omitempty"`
-	Discovery      *string           `json:"discovery,omitempty"`
+	// Action fired on match. Plugin-typed: `{"type":"plugin", "action_type":"...","params":{...}}`
+	// or a built-in like `{"type":"key","code":36}`.
+	Action json.RawMessage `json:"action"`
+	// When true, this gated command is allowed to win during a
+	// mid-bridge restricted resolve. Default false: gated sibling
+	// commands (`show_hints`, `dismiss`-style) are suppressed while
+	// the user is mid-codeword. Set true on explicit cancel words
+	// (`dismiss`, `cancel`, `exit`) that should be able to abort an
+	// in-progress bridge. See
+	// `docs/design/DESIGN_MULTI_CANDIDATE_BRIDGE.md`.
+	CancelsBridge *bool `json:"cancels_bridge,omitempty"`
+	// Category shown in Settings UI command lists.
+	Category *string `json:"category,omitempty"`
+	// Tags this command clears from active_gates on match.
+	ClearsTags []string `json:"clears_tags,omitempty"`
+	// One-line help text. Surfaced in Settings UI.
+	Description *string `json:"description,omitempty"`
+	// Prefix-discovery affordance for a `literal-prefix + tail-capture`
+	// command (e.g. `["jump", "<browser_tabs>"]`). Declaring it makes the
+	// bare prefix ("jump") speakable on its own: instead of firing, it opens
+	// the Discovery HUD over the capture's entries. One of:
+	// `"prefix"` (non-exclusive — the capture's words stay live in free
+	// context) or `"exclusive"` (entering the prefix flips an auto-minted
+	// mode so the words only decode while it holds — for large/dynamic sets).
+	// Only valid when the pattern is literal word(s) followed by a single
+	// tail capture; other shapes are rejected at load. See
+	// `docs/design/DESIGN_DISCOVERABLE_PREFIX.md`.
+	Discovery *string `json:"discovery,omitempty"`
+	// Discovery-HUD display override per capture binding name: when the
+	// HUD renders a capture slot of this command, enumerate the named
+	// collection instead of the matching one. Matching is untouched — a
+	// sealed/static matching collection can pair with a live display menu.
+	// Unknown capture names are inert. See
+	// `docs/design/DESIGN_CAPTURE_DISPLAY_FORMS.md`.
 	DisplaySources map[string]string `json:"display_sources,omitempty"`
-	Pattern        []json.RawMessage `json:"pattern"`
-	RequiresTags   []string          `json:"requires_tags,omitempty"`
-	SetsOnPartial  []string          `json:"sets_on_partial,omitempty"`
-	SetsTags       []string          `json:"sets_tags,omitempty"`
-	Variants       []json.RawMessage `json:"variants,omitempty"`
+	// Spoken pattern, e.g. `["switch", "<apps>"]`. Tokens are either
+	// literal strings or capture references like `<name:collection>`.
+	Pattern []json.RawMessage `json:"pattern"`
+	// Tags that must ALL be active for this command to match. Empty
+	// means the command is ungated (a global).
+	RequiresTags []string `json:"requires_tags,omitempty"`
+	// Tags this command sets when it Partial-matches (mid-capture
+	// mode tag). Bound to the bridge's lifecycle; cleared on
+	// completion. See `docs/design/DESIGN_SETS_ON_PARTIAL.md`.
+	SetsOnPartial []string `json:"sets_on_partial,omitempty"`
+	// Tags this command sets in active_gates on match.
+	SetsTags []string `json:"sets_tags,omitempty"`
+	// Optional command-variant declarations (alternate phrasings).
+	// Each variant inherits the parent's tags/action unless overridden.
+	Variants []json.RawMessage `json:"variants,omitempty"`
 }
 
 // ConfusabilityFinding is auto-generated from the OpenRPC spec.
+// One acoustic collision: `target` (a candidate word) sounds like `confuser`
+// (an existing command word) and the two compete in the candidate's context.
 type ConfusabilityFinding struct {
 	Confuser string `json:"confuser"`
-	Distance int    `json:"distance"`
-	Example  string `json:"example"`
-	Owner    string `json:"owner"`
-	Target   string `json:"target"`
+	// wire uint · min 0
+	Distance int `json:"distance"`
+	// That command's display phrase, to name it in the warning.
+	Example string `json:"example"`
+	// Owning plugin of a command that emits the confuser.
+	Owner  string `json:"owner"`
+	Target string `json:"target"`
 }
 
 // ContactInfo is auto-generated from the OpenRPC spec.
@@ -250,19 +490,27 @@ type ContactInfo struct {
 
 // CpuInfo is auto-generated from the OpenRPC spec.
 type CpuInfo struct {
-	Architecture     string `json:"architecture"`
-	Chip             string `json:"chip"`
-	CoreCount        int    `json:"core_count"`
-	EfficiencyCores  *int   `json:"efficiency_cores,omitempty"`
-	PerformanceCores *int   `json:"performance_cores,omitempty"`
+	Architecture string `json:"architecture"`
+	Chip         string `json:"chip"`
+	// wire uint32 · min 0
+	CoreCount int `json:"core_count"`
+	// wire uint32 · min 0
+	EfficiencyCores *int `json:"efficiency_cores,omitempty"`
+	// wire uint32 · min 0
+	PerformanceCores *int `json:"performance_cores,omitempty"`
 }
 
 // DeliveredNotification is auto-generated from the OpenRPC spec.
+// A delivered notification.
 type DeliveredNotification struct {
-	Body        *string `json:"body,omitempty"`
-	DeliveredAt string  `json:"delivered_at"`
-	ID          string  `json:"id"`
-	Title       string  `json:"title"`
+	// Notification body text.
+	Body *string `json:"body,omitempty"`
+	// Delivery timestamp (ISO 8601).
+	DeliveredAt string `json:"delivered_at"`
+	// Notification identifier.
+	ID string `json:"id"`
+	// Notification title.
+	Title string `json:"title"`
 }
 
 // DirectoryEntry is auto-generated from the OpenRPC spec.
@@ -271,12 +519,16 @@ type DirectoryEntry struct {
 	IsSymlink bool   `json:"is_symlink"`
 	Name      string `json:"name"`
 	Path      string `json:"path"`
-	Size      int    `json:"size"`
+	// wire uint64 (64-bit) · min 0
+	Size int `json:"size"`
 }
 
 // DiscoverItem is auto-generated from the OpenRPC spec.
 type DiscoverItem struct {
-	ID        string  `json:"id"`
+	ID string `json:"id"`
+	// The subtitle is itself a matchable spoken form — the entry has an
+	// alias equal to its display name (e.g. a promoted selection record).
+	// Browse surfaces may mark the row so the user knows the name works.
 	Speakable bool    `json:"speakable"`
 	Subtitle  *string `json:"subtitle,omitempty"`
 	Tag       string  `json:"tag"`
@@ -285,73 +537,129 @@ type DiscoverItem struct {
 
 // DisplayColorProfile is auto-generated from the OpenRPC spec.
 type DisplayColorProfile struct {
-	ColorSpace  string `json:"color_space"`
+	ColorSpace string `json:"color_space"`
+	// wire uint32 · min 0
 	DisplayID   int    `json:"display_id"`
 	ProfileName string `json:"profile_name"`
 }
 
 // DisplayInfo is auto-generated from the OpenRPC spec.
 type DisplayInfo struct {
-	H        int `json:"h"`
-	ID       int `json:"id"`
+	// wire int32
+	H int `json:"h"`
+	// wire uint32 · min 0
+	ID int `json:"id"`
+	// wire int32 · default 0
 	VisibleH int `json:"visible_h"`
+	// wire int32 · default 0
 	VisibleW int `json:"visible_w"`
+	// Visible bounds (excluding menu bar and dock), in top-left origin coordinates.
+	// Zero if not available.
+	// wire int32 · default 0
 	VisibleX int `json:"visible_x"`
+	// wire int32 · default 0
 	VisibleY int `json:"visible_y"`
-	W        int `json:"w"`
-	X        int `json:"x"`
-	Y        int `json:"y"`
+	// wire int32
+	W int `json:"w"`
+	// wire int32
+	X int `json:"x"`
+	// wire int32
+	Y int `json:"y"`
 }
 
 // DisplayMetadata is auto-generated from the OpenRPC spec.
+// Full display metadata — richer than WorldModel's DisplayInfo.
 type DisplayMetadata struct {
-	DisplayID   int     `json:"display_id"`
-	H           int     `json:"h"`
-	IsBuiltin   bool    `json:"is_builtin"`
-	IsPrimary   bool    `json:"is_primary"`
-	Name        string  `json:"name"`
+	// CoreGraphics display ID.
+	// wire uint32 · min 0
+	DisplayID int `json:"display_id"`
+	// wire int32
+	H int `json:"h"`
+	// Whether this is a built-in display (laptop screen).
+	IsBuiltin bool `json:"is_builtin"`
+	// Whether this is the primary display.
+	IsPrimary bool `json:"is_primary"`
+	// Human-readable display name (e.g. "Built-in Retina Display").
+	Name string `json:"name"`
+	// Display refresh rate in Hz (e.g. 60.0, 120.0).
+	// wire double
 	RefreshRate float64 `json:"refresh_rate"`
-	ResolutionH int     `json:"resolution_h"`
-	ResolutionW int     `json:"resolution_w"`
+	// Native pixel resolution height.
+	// wire uint32 · min 0
+	ResolutionH int `json:"resolution_h"`
+	// Native pixel resolution width.
+	// wire uint32 · min 0
+	ResolutionW int `json:"resolution_w"`
+	// Retina scale factor (e.g. 2.0 for HiDPI).
+	// wire double
 	ScaleFactor float64 `json:"scale_factor"`
-	VisibleH    int     `json:"visible_h"`
-	VisibleW    int     `json:"visible_w"`
-	VisibleX    int     `json:"visible_x"`
-	VisibleY    int     `json:"visible_y"`
-	W           int     `json:"w"`
-	X           int     `json:"x"`
-	Y           int     `json:"y"`
+	// wire int32
+	VisibleH int `json:"visible_h"`
+	// wire int32
+	VisibleW int `json:"visible_w"`
+	// Visible bounds (excluding menu bar and dock).
+	// wire int32
+	VisibleX int `json:"visible_x"`
+	// wire int32
+	VisibleY int `json:"visible_y"`
+	// wire int32
+	W int `json:"w"`
+	// Full bounds in top-left origin screen coordinates.
+	// wire int32
+	X int `json:"x"`
+	// wire int32
+	Y int `json:"y"`
 }
 
 // DisplayRotation is auto-generated from the OpenRPC spec.
 type DisplayRotation struct {
-	Degrees   int `json:"degrees"`
+	// wire uint32 · min 0
+	Degrees int `json:"degrees"`
+	// wire uint32 · min 0
 	DisplayID int `json:"display_id"`
 }
 
 // EnumeratedCommand is auto-generated from the OpenRPC spec.
 type EnumeratedCommand struct {
-	Action       string          `json:"action"`
-	Binding      json.RawMessage `json:"binding,omitempty"`
-	Category     *string         `json:"category,omitempty"`
-	Description  *string         `json:"description,omitempty"`
-	Dynamic      bool            `json:"dynamic"`
-	DynamicOwner *string         `json:"dynamic_owner,omitempty"`
-	ID           string          `json:"id"`
-	OwnerPlugin  string          `json:"owner_plugin"`
-	Pattern      string          `json:"pattern"`
-	RequiresTags []string        `json:"requires_tags"`
-	SetsTags     []string        `json:"sets_tags"`
+	// Dispatch action type, e.g. `"browser.scroll"` (template-resolved). The
+	// stable identity of what the command does — lets a companion correlate a
+	// spoken command with the action it triggers (the pattern is display text,
+	// not an identifier).
+	Action string `json:"action"`
+	// The ready-to-store keybind value (`{"action": "<dotted.type>",
+	// "params": {…}}`) when the command's action is statically bindable —
+	// a concrete plugin action with no capture template, no sequence, and
+	// no intrinsic phase. Absent otherwise. This is what the Keybinds
+	// tab's bind-a-command flow copies.
+	Binding json.RawMessage `json:"binding,omitempty"`
+	// Optional grouping label from the command definition (e.g. "Navigation").
+	Category *string `json:"category,omitempty"`
+	// Optional human-readable "what it does / use case" text from the command
+	// definition — the same field used as the HUD subtitle.
+	Description *string `json:"description,omitempty"`
+	Dynamic     bool    `json:"dynamic"`
+	// Same as `owner_plugin` when dynamic; omitted when static. Surfaced
+	// separately so callers can pattern-match `if let Some(owner) = ...`.
+	DynamicOwner *string `json:"dynamic_owner,omitempty"`
+	// `<owner_plugin>:<display_pattern>` — stable across reloads.
+	ID          string `json:"id"`
+	OwnerPlugin string `json:"owner_plugin"`
+	// Human-readable pattern (first option of each slot).
+	Pattern      string   `json:"pattern"`
+	RequiresTags []string `json:"requires_tags"`
+	SetsTags     []string `json:"sets_tags"`
 }
 
 // ExternalDisk is auto-generated from the OpenRPC spec.
 type ExternalDisk struct {
-	FileSystem  *string `json:"file_system,omitempty"`
-	FreeBytes   int     `json:"free_bytes"`
-	IsRemovable bool    `json:"is_removable"`
-	MountPoint  string  `json:"mount_point"`
-	Name        string  `json:"name"`
-	TotalBytes  int     `json:"total_bytes"`
+	FileSystem *string `json:"file_system,omitempty"`
+	// wire uint64 (64-bit) · min 0
+	FreeBytes   int    `json:"free_bytes"`
+	IsRemovable bool   `json:"is_removable"`
+	MountPoint  string `json:"mount_point"`
+	Name        string `json:"name"`
+	// wire uint64 (64-bit) · min 0
+	TotalBytes int `json:"total_bytes"`
 }
 
 // FieldDisplay is auto-generated from the OpenRPC spec.
@@ -398,48 +706,74 @@ const (
 )
 
 // Frame is auto-generated from the OpenRPC spec.
+// Integer rectangle for window position and size. Mirrors the `Frame`
+// component in the Plugin RPC schema (used by `_platform.window.created` and
+// `_platform.window.frame_changed` event payloads).
 type Frame struct {
+	// wire int32
 	H int `json:"h"`
+	// wire int32
 	W int `json:"w"`
+	// wire int32
 	X int `json:"x"`
+	// wire int32
 	Y int `json:"y"`
 }
 
 // HidDeviceEntry is auto-generated from the OpenRPC spec.
 type HidDeviceEntry struct {
-	Axes      int     `json:"axes"`
-	BleUuid   *string `json:"ble_uuid,omitempty"`
-	Buttons   int     `json:"buttons"`
-	ID        string  `json:"id"`
-	Product   string  `json:"product"`
-	ProductID int     `json:"product_id"`
-	Seized    bool    `json:"seized"`
-	Transport string  `json:"transport"`
-	VendorID  int     `json:"vendor_id"`
+	// wire uint32 · min 0
+	Axes    int     `json:"axes"`
+	BleUuid *string `json:"ble_uuid,omitempty"`
+	// wire uint32 · min 0
+	Buttons int    `json:"buttons"`
+	ID      string `json:"id"`
+	Product string `json:"product"`
+	// wire uint32 · min 0
+	ProductID int    `json:"product_id"`
+	Seized    bool   `json:"seized"`
+	Transport string `json:"transport"`
+	// wire uint32 · min 0
+	VendorID int `json:"vendor_id"`
 }
 
 // HidElementEntry is auto-generated from the OpenRPC spec.
+// A single input element from a HID device's report descriptor.
 type HidElementEntry struct {
-	BitOffset   int    `json:"bit_offset"`
-	ByteOffset  int    `json:"byte_offset"`
-	LogicalMax  int    `json:"logical_max"`
-	LogicalMin  int    `json:"logical_min"`
-	ReportCount int    `json:"report_count"`
-	ReportID    int    `json:"report_id"`
-	ReportSize  int    `json:"report_size"`
-	Type        string `json:"type"`
-	Usage       int    `json:"usage"`
-	UsagePage   int    `json:"usage_page"`
+	// wire uint32 · min 0
+	BitOffset int `json:"bit_offset"`
+	// wire uint32 · min 0
+	ByteOffset int `json:"byte_offset"`
+	// wire int64 (64-bit)
+	LogicalMax int `json:"logical_max"`
+	// wire int64 (64-bit)
+	LogicalMin int `json:"logical_min"`
+	// wire uint32 · min 0
+	ReportCount int `json:"report_count"`
+	// wire uint32 · min 0
+	ReportID int `json:"report_id"`
+	// wire uint32 · min 0
+	ReportSize int    `json:"report_size"`
+	Type       string `json:"type"`
+	// wire uint32 · min 0
+	Usage int `json:"usage"`
+	// wire uint32 · min 0
+	UsagePage int `json:"usage_page"`
 }
 
 // InputSource is auto-generated from the OpenRPC spec.
+// An available keyboard input source.
 type InputSource struct {
-	ID       string `json:"id"`
-	IsActive bool   `json:"is_active"`
-	Name     string `json:"name"`
+	// Input source identifier (e.g. "com.apple.keylayout.US").
+	ID string `json:"id"`
+	// Whether this is the currently active input source.
+	IsActive bool `json:"is_active"`
+	// Localized display name.
+	Name string `json:"name"`
 }
 
 // InstalledApp is auto-generated from the OpenRPC spec.
+// An installed application discovered by scanning the filesystem.
 type InstalledApp struct {
 	BundleID string `json:"bundle_id"`
 	Name     string `json:"name"`
@@ -447,7 +781,13 @@ type InstalledApp struct {
 
 // ListCommandItem is auto-generated from the OpenRPC spec.
 type ListCommandItem struct {
-	Dynamic      bool    `json:"dynamic"`
+	// True iff this command's vocabulary depends on runtime state pushes
+	// (DependentCapture, or a capture against a collection no plugin
+	// declares in provides.collections). Calibration consumers use this
+	// to decide whether to invoke a fixture RPC.
+	Dynamic bool `json:"dynamic"`
+	// Owning plugin when `dynamic` is true — the plugin to ask for a
+	// calibration fixture. Omitted for static commands.
 	DynamicOwner *string `json:"dynamic_owner,omitempty"`
 	ID           string  `json:"id"`
 	Subtitle     *string `json:"subtitle,omitempty"`
@@ -462,33 +802,109 @@ type ListCommandSection struct {
 }
 
 // ListOpts is auto-generated from the OpenRPC spec.
+// Listing parameters for `list`. All fields optional — an empty `ListOpts`
+// asks a BACKEND for every record in default ordering. That is not what an
+// RPC caller gets: `StateService::list` substitutes
+// `StateService::DEFAULT_LIST_LIMIT` when the caller passed no `limit`, so
+// "every record" is the backend contract and never the plugin-visible one.
+// See docs/design/DESIGN_PLATFORM_LOAD_SAFEGUARDS.md.
+// CLOSED vocabulary (verb-surface consolidation, 2026-06-11): every
+// added opt must be shape-generic or explicitly shape-scoped and
+// documented in DESIGN_PLATFORM_STATE.md section 3.2 — an undisciplined
+// opts bag becomes a hidden taxonomy that defeats the eight-verb thesis.
 type ListOpts struct {
-	Compacted *bool   `json:"compacted,omitempty"`
-	Cursor    *string `json:"cursor,omitempty"`
-	Limit     *int    `json:"limit,omitempty"`
-	SinceMs   *int    `json:"since_ms,omitempty"`
-	UntilMs   *int    `json:"until_ms,omitempty"`
-	Writer    *string `json:"writer,omitempty"`
+	// Shape-scoped to `by_field` log collections (the compacted-changelog
+	// projection — see `docs/design/DESIGN_LOG_ANNOTATION_PROJECTION.md`, and
+	// DESIGN_PLATFORM_STATE.md §3.2). When true, a keyed log's raw appends
+	// are folded by their key field per the collection's `merge` and one
+	// record per key is returned (the record's current state) instead of the
+	// raw append history. Ignored by non-log backends; a validation error on
+	// an auto-ulid log (no key field to fold on). Absent/false = raw read.
+	Compacted *bool `json:"compacted,omitempty"`
+	// Opaque pagination cursor. Backends define the format; callers pass
+	// back the cursor value returned by a prior `list` call.
+	Cursor *string `json:"cursor,omitempty"`
+	// Maximum records to return. None = no limit AT THE BACKEND; over RPC,
+	// `StateService::list` substitutes `StateService::DEFAULT_LIST_LIMIT`
+	// for a caller that passed none, and emits a `LIST_TRUNCATED` diagnostic
+	// if that bound actually cut the result short. An explicit limit is
+	// honored either way, above or below the default.
+	// wire uint · min 0
+	Limit *int `json:"limit,omitempty"`
+	// Inclusive lower bound on `timestamp_ms` (or equivalent ordering key).
+	// wire uint64 (64-bit) · min 0
+	SinceMs *int `json:"since_ms,omitempty"`
+	// Exclusive upper bound on `timestamp_ms`.
+	// wire uint64 (64-bit) · min 0
+	UntilMs *int `json:"until_ms,omitempty"`
+	// Shape-generic equality filter on `Record::writer` — return only records
+	// owned by this writer. Absent = every record, whoever owns it.
+	//
+	// This is the ONE in-verb extension DESIGN_PLATFORM_STATE.md section 3.2
+	// reserved ("the only in-verb extension we would entertain is equality
+	// filters on list opts"), spent here rather than on a general predicate
+	// language: it is exact equality on one structural envelope field, so it
+	// cannot compose into a query engine every backend must reimplement.
+	//
+	// It exists so a caller can ask for its OWN records — the read half of
+	// scoped writes. `collection.replace` computes its complement from this,
+	// which is what lets a replace be safe on a multi-writer collection
+	// without the introducer restriction. See docs/design/DESIGN_RECORD_OWNERSHIP.md.
+	//
+	// Filtering happens BEFORE `limit`, so a limited+filtered read returns up
+	// to `limit` MATCHING records rather than the matches within the first
+	// `limit` records. Backends are free to filter earlier as an optimization
+	// (skipping a whole non-matching contribution, say) as long as the
+	// observable result is identical — `backend_conformance` pins that.
+	Writer *string `json:"writer,omitempty"`
 }
 
 // ListeningPort is auto-generated from the OpenRPC spec.
 type ListeningPort struct {
-	Pid         *int    `json:"pid,omitempty"`
+	// wire int32
+	Pid *int `json:"pid,omitempty"`
+	// wire uint16 · min 0 · max 65535
 	Port        int     `json:"port"`
 	ProcessName *string `json:"process_name,omitempty"`
 	Protocol    string  `json:"protocol"`
 }
 
 // LogEntry is auto-generated from the OpenRPC spec.
+// One record in a log collection.
 type LogEntry struct {
-	ID          string          `json:"id"`
-	OnBehalfOf  *string         `json:"on_behalf_of,omitempty"`
-	Payload     json.RawMessage `json:"payload,omitempty"`
-	TimestampMs int             `json:"timestamp_ms"`
-	Writer      string          `json:"writer"`
+	// ULID — Crockford base32, sortable by creation time. Acts as the
+	// entry's primary key for `get(id)` and `delete(id)` calls.
+	ID string `json:"id"`
+	// Actor label of the writer that appended this entry — see
+	// `Record::on_behalf_of`. `None` for entries whose writer was acting
+	// only for itself, and for anything written before the field existed.
+	//
+	// Follows `writer` through the fold: the INTRODUCING entry's label
+	// stays on a folded record, so an annotation by another script does not
+	// relabel the record it annotates.
+	OnBehalfOf *string `json:"on_behalf_of,omitempty"`
+	// Plugin-defined entry payload. Validated against the collection's
+	// `fields` schema at append time by the service layer (not here).
+	Payload json.RawMessage `json:"payload,omitempty"`
+	// Unix milliseconds. Duplicated from the ULID's embedded timestamp for
+	// cheap range queries that don't want to decode the ULID.
+	// wire uint64 (64-bit) · min 0
+	TimestampMs int `json:"timestamp_ms"`
+	// Plugin id that appended this entry, or `_platform` for host writes.
+	// `""` for entries written before this field existed — `serde(default)`
+	// so already-persisted logs rehydrate rather than failing to parse.
+	//
+	// Logs are append-once per ULID, so for a raw entry "creation writer"
+	// and "last writer" are the same thing. On a KEYED log they are not:
+	// the folded record keeps its INTRODUCING entry's writer, so an
+	// annotation by another plugin does not transfer ownership of the
+	// record it annotates. See `Record::writer`.
+	// default ""
+	Writer string `json:"writer"`
 }
 
 // LoginItem is auto-generated from the OpenRPC spec.
+// A login item (launch-at-login entry).
 type LoginItem struct {
 	BundleID *string `json:"bundle_id,omitempty"`
 	Hidden   bool    `json:"hidden"`
@@ -497,12 +913,17 @@ type LoginItem struct {
 }
 
 // ManagedFieldRow is auto-generated from the OpenRPC spec.
+// One `(record, field)` a tenant set, with the provenance of the decision.
 type ManagedFieldRow struct {
-	Actor    string `json:"actor"`
+	// Who applied it: a plugin id, or `_host` for the Settings UI.
+	Actor string `json:"actor"`
+	// wire uint64 (64-bit) · min 0
 	AtUnixMs int    `json:"at_unix_ms"`
 	Field    string `json:"field"`
 	ID       string `json:"id"`
-	Origin   string `json:"origin"`
+	// `user` | `relayed` | `plugin` — whose intent this represents. `relayed`
+	// is a plugin's unverified claim to be carrying a user gesture.
+	Origin string `json:"origin"`
 }
 
 // MatchWinner is auto-generated from the OpenRPC spec.
@@ -522,20 +943,37 @@ const (
 
 // MemoryInfo is auto-generated from the OpenRPC spec.
 type MemoryInfo struct {
+	// wire uint64 (64-bit) · min 0
 	AvailableBytes int `json:"available_bytes"`
+	// wire uint64 (64-bit) · min 0
 	SwapTotalBytes int `json:"swap_total_bytes"`
-	SwapUsedBytes  int `json:"swap_used_bytes"`
-	TotalBytes     int `json:"total_bytes"`
-	UsedBytes      int `json:"used_bytes"`
+	// wire uint64 (64-bit) · min 0
+	SwapUsedBytes int `json:"swap_used_bytes"`
+	// wire uint64 (64-bit) · min 0
+	TotalBytes int `json:"total_bytes"`
+	// wire uint64 (64-bit) · min 0
+	UsedBytes int `json:"used_bytes"`
 }
 
 // MenuItem is auto-generated from the OpenRPC spec.
+// A menu bar item (or submenu) from an application.
+//
+// Self-referential via `children: Vec<MenuItem>`. schemars handles
+// the recursion via a `$defs` entry; the previous utoipa-specific
+// `#[schema(no_recursion)]` annotation was dropped in
+// Phase 2j-utoipa-removal.
 type MenuItem struct {
+	// Child menu items (submenus).
 	Children []MenuItem `json:"children"`
-	Enabled  bool       `json:"enabled"`
-	Index    int        `json:"index"`
-	Shortcut *string    `json:"shortcut,omitempty"`
-	Title    string     `json:"title"`
+	// Whether the menu item is enabled.
+	Enabled bool `json:"enabled"`
+	// Zero-based index within the parent menu.
+	// wire uint32 · min 0
+	Index int `json:"index"`
+	// Keyboard shortcut string (e.g. "⌘S"), if any.
+	Shortcut *string `json:"shortcut,omitempty"`
+	// The title of the menu item.
+	Title string `json:"title"`
 }
 
 // MergeStrategy is auto-generated from the OpenRPC spec.
@@ -567,23 +1005,30 @@ type NetworkInterface struct {
 
 // NowPlayingInfo is auto-generated from the OpenRPC spec.
 type NowPlayingInfo struct {
-	Album       *string  `json:"album,omitempty"`
-	AppBundleID *string  `json:"app_bundle_id,omitempty"`
-	Artist      *string  `json:"artist,omitempty"`
-	Duration    *float64 `json:"duration,omitempty"`
-	Elapsed     *float64 `json:"elapsed,omitempty"`
-	IsPlaying   bool     `json:"is_playing"`
-	Title       *string  `json:"title,omitempty"`
+	Album       *string `json:"album,omitempty"`
+	AppBundleID *string `json:"app_bundle_id,omitempty"`
+	Artist      *string `json:"artist,omitempty"`
+	// wire double
+	Duration *float64 `json:"duration,omitempty"`
+	// wire double
+	Elapsed   *float64 `json:"elapsed,omitempty"`
+	IsPlaying bool     `json:"is_playing"`
+	Title     *string  `json:"title,omitempty"`
 }
 
 // OcrRegion is auto-generated from the OpenRPC spec.
 type OcrRegion struct {
+	// wire double
 	Confidence float64 `json:"confidence"`
-	Height     float64 `json:"height"`
-	Text       string  `json:"text"`
-	Width      float64 `json:"width"`
-	X          float64 `json:"x"`
-	Y          float64 `json:"y"`
+	// wire double
+	Height float64 `json:"height"`
+	Text   string  `json:"text"`
+	// wire double
+	Width float64 `json:"width"`
+	// wire double
+	X float64 `json:"x"`
+	// wire double
+	Y float64 `json:"y"`
 }
 
 // OnActionStatus is auto-generated from the OpenRPC spec.
@@ -605,65 +1050,166 @@ const (
 )
 
 // OutputAction is auto-generated from the OpenRPC spec.
+// What confirming an item does — EXACTLY ONE of `say` or `dispatch`.
+//
+// `say` is the common case for commands: the words are routed through the
+// same matcher the person's voice would reach, so confirming an item is
+// indistinguishable from speaking it. `dispatch` names an action type
+// directly, for items that are not commands.
 type OutputAction struct {
-	Dispatch *string         `json:"dispatch,omitempty"`
-	Params   json.RawMessage `json:"params,omitempty"`
-	Say      *string         `json:"say,omitempty"`
+	// An action type to dispatch — `windows.desk`.
+	Dispatch *string `json:"dispatch,omitempty"`
+	// Parameters for `dispatch`. Meaningless with `say`.
+	Params json.RawMessage `json:"params,omitempty"`
+	// Words to inject as if spoken.
+	Say *string `json:"say,omitempty"`
 }
 
 // OutputItem is auto-generated from the OpenRPC spec.
+// One thing the person can know about or act on.
+//
+// Every item has a `phrase`; an item with an `action` can be confirmed, and
+// confirming it does what the action says. Without an action, an item is
+// information, and a renderer that offers items in turn skips it.
 type OutputItem struct {
-	Action   *OutputAction              `json:"action,omitempty"`
-	Extra    map[string]json.RawMessage `json:"extra,omitempty"`
-	ID       string                     `json:"id"`
-	Phrase   string                     `json:"phrase"`
-	Subtitle *string                    `json:"subtitle,omitempty"`
-	Title    string                     `json:"title"`
+	// What confirming this item does. Absent means information only.
+	Action *OutputAction `json:"action,omitempty"`
+	// Open extension, namespaced by plugin id — see [`OutputState::extra`].
+	Extra map[string]json.RawMessage `json:"extra,omitempty"`
+	// Stable within the document — what a renderer reports back as chosen.
+	ID string `json:"id"`
+	// The item in human words — "snap left", "desk two". The utterance, the
+	// cells, the text — and the words injected when the item is confirmed
+	// through the same matcher a voice would use.
+	Phrase string `json:"phrase"`
+	// A second line — "move the window to the left half".
+	Subtitle *string `json:"subtitle,omitempty"`
+	// The item as a label — "snap left".
+	Title string `json:"title"`
 }
 
 // OutputProgress is auto-generated from the OpenRPC spec.
+// How far along something measurable is, in time.
 type OutputProgress struct {
+	// wire uint64 (64-bit) · min 0
 	RemainingMs int `json:"remaining_ms"`
-	TotalMs     int `json:"total_ms"`
+	// wire uint64 (64-bit) · min 0
+	TotalMs int `json:"total_ms"`
 }
 
 // OutputSection is auto-generated from the OpenRPC spec.
+// A titled group of items.
 type OutputSection struct {
+	// default []
 	Items []OutputItem `json:"items,omitempty"`
-	Title string       `json:"title"`
+	// The group's name — "Windows". May be empty for an ungrouped list.
+	Title string `json:"title"`
 }
 
 // OutputState is auto-generated from the OpenRPC spec.
+// A superseding statement of what is true for the person on one channel.
+//
+// A push REPLACES the channel's current state; it is never appended. The
+// person needs what is true now, never a transcript of what was true, and a
+// renderer mid-utterance abandons it when the next state arrives.
+//
+// Core (every renderer must understand): `kind`, `title`, `phrase`, each
+// item's `phrase` and `action`, `urgency`, `locale`, `v`. Beside it, `extra`
+// is open and namespaced by plugin id for what the shape did not
+// anticipate; a renderer ignores what it does not understand, so an
+// extension never breaks a modality.
 type OutputState struct {
-	Channel  string                     `json:"channel"`
-	Extra    map[string]json.RawMessage `json:"extra,omitempty"`
-	Footer   *string                    `json:"footer,omitempty"`
-	Kind     string                     `json:"kind"`
-	Locale   string                     `json:"locale"`
-	Phrase   string                     `json:"phrase"`
-	Progress *OutputProgress            `json:"progress,omitempty"`
-	Sections []OutputSection            `json:"sections,omitempty"`
-	Title    string                     `json:"title"`
-	Urgency  string                     `json:"urgency"`
-	V        int                        `json:"v"`
+	// The HUD channel this state belongs to. Declared by the calling plugin
+	// in its manifest (`hud_windows`) or created at runtime; the platform
+	// verifies ownership exactly as it does for `hud.push`.
+	Channel string `json:"channel"`
+	// Open extension, namespaced by plugin id (`{"voice": {...}}`). Nothing
+	// in core may depend on it; the platform promotes what gets used into
+	// core deliberately, as a versioned addition.
+	Extra map[string]json.RawMessage `json:"extra,omitempty"`
+	// A trailing line — "say a command, or wait".
+	Footer *string `json:"footer,omitempty"`
+	// One of the closed [`OutputKind`] vocabulary: `choices`, `mode`,
+	// `outcome`, `problem`, `progress`. Carried as a string so a kind this
+	// platform does not know degrades to `outcome` instead of failing.
+	Kind string `json:"kind"`
+	// BCP 47 language tag of every phrase in this document — "en", "pt-BR".
+	Locale string `json:"locale"`
+	// The state in human words — "twelve commands", "snapped left". The
+	// carrier of meaning for every receiver, named after none of them.
+	Phrase string `json:"phrase"`
+	// How far along something measurable is. Usually with `kind: progress`.
+	Progress *OutputProgress `json:"progress,omitempty"`
+	// Grouped items, when the state has parts — the commands open to the
+	// person, the entries in a selection. Empty for a state with none.
+	// `null` is accepted as empty: a Go producer's nil slice marshals to
+	// `null` (`operations::types::serde_compat`).
+	// default []
+	Sections []OutputSection `json:"sections,omitempty"`
+	// The state in a few words — what a screen shows as the heading.
+	Title string `json:"title"`
+	// One of the closed [`OutputUrgency`] vocabulary: `ambient`, `notable`,
+	// `interrupt`. A string for the same reason `kind` is; unknown degrades
+	// to `ambient`.
+	Urgency string `json:"urgency"`
+	// The contract version this document was written against
+	// ([`OUTPUT_STATE_V`]). Information for a renderer, never a gate.
+	// wire uint32 · min 0
+	V int `json:"v"`
 }
 
 // OverlayRow is auto-generated from the OpenRPC spec.
+// One (tenant, collection) overlay entry with content.
 type OverlayRow struct {
-	Added         int               `json:"added"`
-	Collection    string            `json:"collection"`
+	// User band only (plugin overlays cannot add or remove records).
+	// wire uint · min 0
+	Added      int    `json:"added"`
+	Collection string `json:"collection"`
+	// Which field of which record this tenant currently manages, and the
+	// decision that set it. Named for Kubernetes Server-Side Apply's
+	// `managedFields`, whose SHAPE this is — per-field ownership records —
+	// but deliberately not its vocabulary: SSA's `conflict` and `force` are
+	// answers to two managers claiming one field, and annotations are
+	// namespaced per tenant, so that situation does not arise here. Importing
+	// those names would name behaviour this platform does not have.
 	ManagedFields []ManagedFieldRow `json:"managed_fields"`
-	PatchedIds    []string          `json:"patched_ids"`
-	Removed       int               `json:"removed"`
-	Tenant        string            `json:"tenant"`
+	// Record ids this tenant patches — INCLUDING dangling ones whose record
+	// no longer exists. Annotations key on identity, so a patch survives its
+	// record being unpublished (and resurrects if the id returns); this list
+	// is how a tenant finds strays to `restore`.
+	PatchedIds []string `json:"patched_ids"`
+	// wire uint · min 0
+	Removed int `json:"removed"`
+	// Whose overlay: `"_user"` or a plugin id.
+	Tenant string `json:"tenant"`
 }
 
 // OwnedCollection is auto-generated from the OpenRPC spec.
+// One (collection, group) pair the caller owns records in.
+//
+// (collection, group) PAIRS rather than bare collection names because
+// `(writer, group)` is already the ownership key everything else reasons in:
+// a plugin sweeping per-collection state wants the name, one managing named
+// replace-sets wants the group, and one surface serves both. A collection
+// holding both grouped and ungrouped records of the same writer yields one
+// row per distinct group.
 type OwnedCollection struct {
-	Count  int     `json:"count"`
-	Group  *string `json:"group,omitempty"`
-	Name   string  `json:"name"`
-	Writer string  `json:"writer"`
+	// How many of the caller's records carry this (collection, group).
+	//
+	// A count rather than a bare existence flag because it distinguishes
+	// "registered but empty" from "absent", which is what the sweeps
+	// actually want — wiping an already-empty collection is a wasted
+	// replace. Never zero: a group with no records yields no row.
+	// wire uint · min 0
+	Count int `json:"count"`
+	// The writer-chosen group label, or null for the ungrouped records —
+	// see `Record::group`. Null is the ungrouped bucket, not "any group".
+	Group *string `json:"group,omitempty"`
+	Name  string  `json:"name"`
+	// Who owns these records. Redundant on `collections.owned` (always the
+	// caller) but not on the unfiltered census the ownership diagnostics
+	// run, which is the same walk — so the row is self-describing either way.
+	Writer string `json:"writer"`
 }
 
 // PipelineStatusEntry is auto-generated from the OpenRPC spec.
@@ -685,7 +1231,8 @@ const (
 
 // PoolStageStatusEntry is auto-generated from the OpenRPC spec.
 type PoolStageStatusEntry struct {
-	Alive      bool   `json:"alive"`
+	Alive bool `json:"alive"`
+	// wire uint64 (64-bit) · min 0
 	Generation int    `json:"generation"`
 	Leased     bool   `json:"leased"`
 	Name       string `json:"name"`
@@ -699,45 +1246,76 @@ type PrinterInfo struct {
 }
 
 // PrivilegeStatusEntry is auto-generated from the OpenRPC spec.
+// One privilege the caller declared, with its live state — what a plugin
+// needs to adapt its own UI ("this feature is pending your approval")
+// without waiting to hit a -32003.
 type PrivilegeStatusEntry struct {
-	Denied    bool   `json:"denied"`
-	Granted   bool   `json:"granted"`
-	OneShot   bool   `json:"one_shot"`
+	// The user dismissed a request for it; a grant clears this.
+	Denied bool `json:"denied"`
+	// In the caller's effective set right now — calls gated on it succeed.
+	Granted bool `json:"granted"`
+	// An allow-once grant is waiting: the next call gated on this
+	// privilege succeeds, then the grant is spent. Never reported in
+	// `granted` — a one-shot is not a standing grant.
+	// default false
+	OneShot bool `json:"one_shot"`
+	// A privileges.request for it is awaiting the user.
 	Pending   bool   `json:"pending"`
 	Privilege string `json:"privilege"`
-	Required  bool   `json:"required"`
+	// Declared in `privileges` (true) vs `optional_privileges` (false).
+	Required bool `json:"required"`
 }
 
 // ProcessInfo is auto-generated from the OpenRPC spec.
 type ProcessInfo struct {
-	CpuPercent  *float64 `json:"cpu_percent,omitempty"`
-	MemoryBytes *int     `json:"memory_bytes,omitempty"`
-	Name        string   `json:"name"`
-	Path        *string  `json:"path,omitempty"`
-	Pid         int      `json:"pid"`
-	User        *string  `json:"user,omitempty"`
+	// wire double
+	CpuPercent *float64 `json:"cpu_percent,omitempty"`
+	// wire uint64 (64-bit) · min 0
+	MemoryBytes *int    `json:"memory_bytes,omitempty"`
+	Name        string  `json:"name"`
+	Path        *string `json:"path,omitempty"`
+	// wire int32
+	Pid  int     `json:"pid"`
+	User *string `json:"user,omitempty"`
 }
 
 // RedecodeItem is auto-generated from the OpenRPC spec.
 type RedecodeItem struct {
-	ApplyBias    *bool          `json:"apply_bias,omitempty"`
-	Audio        string         `json:"audio"`
+	// When set, the actuator stamps the live never-standalone Lever E penalty
+	// (`build_never_standalone_weights_inner`) onto this item so the re-decode
+	// reproduces the biased live behavior. The word set is the actuator's, not the
+	// caller's — the plugin only opts in. Off = unbiased decode.
+	// default false
+	ApplyBias *bool `json:"apply_bias,omitempty"`
+	// WAV path relative to the CALLER's own data dir (e.g.
+	// `calibration-capture/<game>/seg_0.wav`). Confined to that root.
+	Audio string `json:"audio"`
+	// L2 strength sweep: when set, the actuator stamps the never-standalone word set
+	// at exactly this cost (instead of the configured live penalty), so the caller
+	// can probe the same clip across a ladder of strengths and find its flip
+	// threshold. The word set is still the actuator's — only the cost is requested.
+	// Takes precedence over `apply_bias`; <= 0 means unbiased.
+	// wire double · default null
 	BiasStrength *float64       `json:"bias_strength,omitempty"`
 	ID           string         `json:"id"`
 	Noise        *RedecodeNoise `json:"noise,omitempty"`
-	Words        []string       `json:"words,omitempty"`
+	// default []
+	Words []string `json:"words,omitempty"`
 }
 
 // RedecodeLine is auto-generated from the OpenRPC spec.
 type RedecodeLine struct {
 	Error string `json:"error"`
 	ID    string `json:"id"`
-	Text  string `json:"text"`
+	// default ""
+	Text string `json:"text"`
 }
 
 // RedecodeNoise is auto-generated from the OpenRPC spec.
 type RedecodeNoise struct {
-	Seed  int     `json:"seed"`
+	// wire uint64 (64-bit) · min 0
+	Seed int `json:"seed"`
+	// wire double
 	SnrDb float64 `json:"snr_db"`
 }
 
@@ -746,8 +1324,9 @@ type ReminderItem struct {
 	DueDate     *string `json:"due_date,omitempty"`
 	IsCompleted bool    `json:"is_completed"`
 	ListName    *string `json:"list_name,omitempty"`
-	Priority    int     `json:"priority"`
-	Title       string  `json:"title"`
+	// wire int32
+	Priority int    `json:"priority"`
+	Title    string `json:"title"`
 }
 
 // ReplaceScope is auto-generated from the OpenRPC spec.
@@ -796,38 +1375,58 @@ const (
 )
 
 // ResolveTelemetry is auto-generated from the OpenRPC spec.
+// Serializable mirror of `crate::matching::MatchDecisionTelemetry`. The
+// internal type can't derive `Serialize`/`JsonSchema` because it lives in
+// the matching crate alongside non-serializable internals — this struct
+// is the wire shape exposed through `commands.resolve`.
 type ResolveTelemetry struct {
+	// True iff any gated command's Partial was observed during
+	// categorization. When `winner == Ungated` and this is `true`, the
+	// matcher's `suppress_ungated` propagation failed to fire.
 	GatedPartialSeen bool        `json:"gated_partial_seen"`
 	Winner           MatchWinner `json:"winner"`
-	WinningPattern   *string     `json:"winning_pattern,omitempty"`
+	// The pattern that won (`None` when `winner == NoMatch`). Surfaces the
+	// internal `MatchDecisionTelemetry.winning_pattern` so a consumer can
+	// confirm *which* command resolved — e.g. calibration command-practice
+	// compares this against the enumerated command it asked the user to say.
+	WinningPattern *string `json:"winning_pattern,omitempty"`
 }
 
 // RunningApp is auto-generated from the OpenRPC spec.
+// A running application as reported by the OS.
 type RunningApp struct {
 	BundleID *string `json:"bundle_id,omitempty"`
 	IsActive bool    `json:"is_active"`
 	IsHidden bool    `json:"is_hidden"`
 	Name     string  `json:"name"`
-	Pid      int     `json:"pid"`
+	// wire int32
+	Pid int `json:"pid"`
 }
 
 // ScreenshotRegion is auto-generated from the OpenRPC spec.
 type ScreenshotRegion struct {
+	// wire int32
 	H int `json:"h"`
+	// wire int32
 	W int `json:"w"`
+	// wire int32
 	X int `json:"x"`
+	// wire int32
 	Y int `json:"y"`
 }
 
 // SettingsListSchemaInfo is auto-generated from the OpenRPC spec.
+// List schema info sent to plugins in render_settings (enriched with entry count + source).
 type SettingsListSchemaInfo struct {
-	Description  string `json:"description"`
+	Description string `json:"description"`
+	// wire uint · min 0
 	EntryCount   int    `json:"entry_count"`
 	Label        string `json:"label"`
 	SourcePlugin string `json:"source_plugin"`
 }
 
 // SettingsTagSchemaInfo is auto-generated from the OpenRPC spec.
+// Tag schema info sent to plugins in render_settings.
 type SettingsTagSchemaInfo struct {
 	Description  string `json:"description"`
 	Label        string `json:"label"`
@@ -841,10 +1440,17 @@ type ShortcutInfo struct {
 }
 
 // SpaceInfo is auto-generated from the OpenRPC spec.
+// Information about a macOS Space.
 type SpaceInfo struct {
-	DisplayID int    `json:"display_id"`
-	IsActive  bool   `json:"is_active"`
-	SpaceID   int    `json:"space_id"`
+	// The display ID this space belongs to.
+	// wire uint32 · min 0
+	DisplayID int `json:"display_id"`
+	// Whether this is the currently active space on its display.
+	IsActive bool `json:"is_active"`
+	// The Space ID (from CGS private APIs).
+	// wire uint64 (64-bit) · min 0
+	SpaceID int `json:"space_id"`
+	// Space type: "user", "fullscreen", or "unknown".
 	SpaceType string `json:"space_type"`
 }
 
@@ -856,12 +1462,19 @@ type SpeechLocale struct {
 }
 
 // SpotlightResult is auto-generated from the OpenRPC spec.
+// A Spotlight search result.
 type SpotlightResult struct {
-	Kind     string `json:"kind"`
+	// Content kind (e.g. "Document", "Image", "Folder").
+	Kind string `json:"kind"`
+	// Last modified date (ISO 8601).
 	Modified string `json:"modified"`
-	Name     string `json:"name"`
-	Path     string `json:"path"`
-	Size     *int   `json:"size,omitempty"`
+	// File name.
+	Name string `json:"name"`
+	// File path.
+	Path string `json:"path"`
+	// File size in bytes, if available.
+	// wire uint64 (64-bit) · min 0
+	Size *int `json:"size,omitempty"`
 }
 
 // SystemAppearance is auto-generated from the OpenRPC spec.
@@ -874,15 +1487,32 @@ type SystemAppearance struct {
 }
 
 // TiedCandidate is auto-generated from the OpenRPC spec.
+// One entry in `ResolveResult.tied_candidates` — the dispatchable subset of a
+// resolved command, so a consumer can fire the chosen one directly after the
+// user picks. Mirrors the dispatch fields the single-winner envelope carries
+// (`action` is template-resolved; `args` is empty unless resolution failed),
+// plus a human-readable `label` for the disambiguation UI. See the tie-signal
+// protocol doc in branchkit-web.
 type TiedCandidate struct {
-	Action        json.RawMessage            `json:"action,omitempty"`
-	Args          map[string]json.RawMessage `json:"args"`
-	ClearsTags    []string                   `json:"clears_tags"`
-	ConsumedCount int                        `json:"consumed_count"`
-	Label         string                     `json:"label"`
-	OwnerPlugin   string                     `json:"owner_plugin"`
-	RequiresTags  []string                   `json:"requires_tags"`
-	SetsTags      []string                   `json:"sets_tags"`
+	// Template-resolved action to dispatch if this candidate is chosen.
+	// `Action` is opaque to schemars (free-form JSON value), matching
+	// `ResolveResult.action`.
+	Action json.RawMessage `json:"action,omitempty"`
+	// Named captures, keyed by binding name. Empty when `action` is a
+	// fully-resolved template; populated only when resolution failed.
+	Args       map[string]json.RawMessage `json:"args"`
+	ClearsTags []string                   `json:"clears_tags"`
+	// wire uint · min 0
+	ConsumedCount int `json:"consumed_count"`
+	// Human-readable label for a disambiguation UI — the command's
+	// description, falling back to a summary of its phrase pattern (and, when
+	// neither is set, to the owning plugin plus action type). Pair it with
+	// `owner_plugin` to render which command this candidate is.
+	Label string `json:"label"`
+	// The plugin that owns this command.
+	OwnerPlugin  string   `json:"owner_plugin"`
+	RequiresTags []string `json:"requires_tags"`
+	SetsTags     []string `json:"sets_tags"`
 }
 
 // TileableEntry is auto-generated from the OpenRPC spec.
@@ -909,70 +1539,130 @@ type UsbDevice struct {
 }
 
 // WindowBounds is auto-generated from the OpenRPC spec.
+// Window bounds in screen coordinates.
 type WindowBounds struct {
+	// wire int32
 	H int `json:"h"`
+	// wire int32
 	W int `json:"w"`
+	// wire int32
 	X int `json:"x"`
+	// wire int32
 	Y int `json:"y"`
 }
 
 // WindowDetail is auto-generated from the OpenRPC spec.
+// Detailed info about a single window.
 type WindowDetail struct {
-	Alpha        *float64     `json:"alpha,omitempty"`
-	Bounds       WindowBounds `json:"bounds"`
-	DisplayID    int          `json:"display_id"`
-	IsFocused    bool         `json:"is_focused"`
-	IsFullscreen bool         `json:"is_fullscreen"`
-	IsMinimized  bool         `json:"is_minimized"`
-	Subrole      *string      `json:"subrole,omitempty"`
-	Title        *string      `json:"title,omitempty"`
-	WindowID     string       `json:"window_id"`
+	// wire double
+	Alpha  *float64     `json:"alpha,omitempty"`
+	Bounds WindowBounds `json:"bounds"`
+	// wire uint32 · min 0
+	DisplayID    int     `json:"display_id"`
+	IsFocused    bool    `json:"is_focused"`
+	IsFullscreen bool    `json:"is_fullscreen"`
+	IsMinimized  bool    `json:"is_minimized"`
+	Subrole      *string `json:"subrole,omitempty"`
+	Title        *string `json:"title,omitempty"`
+	WindowID     string  `json:"window_id"`
 }
 
 // WindowFrame is auto-generated from the OpenRPC spec.
+// A target frame for a window. Used for both `batch_set_frames` input
+// and its result (the result reuses the same shape so callers can compare
+// requested vs actual positions).
 type WindowFrame struct {
-	H        int    `json:"h"`
+	// wire int32
+	H int `json:"h"`
+	// wire int32
 	W        int    `json:"w"`
 	WindowID string `json:"window_id"`
-	X        int    `json:"x"`
-	Y        int    `json:"y"`
+	// wire int32
+	X int `json:"x"`
+	// wire int32
+	Y int `json:"y"`
 }
 
 // WindowInfo is auto-generated from the OpenRPC spec.
 type WindowInfo struct {
-	AppID    string `json:"app_id"`
-	AppName  string `json:"app_name"`
-	Desk     *int   `json:"desk,omitempty"`
-	H        int    `json:"h"`
-	ID       string `json:"id"`
-	Source   string `json:"source"`
-	SpaceIds []int  `json:"space_ids"`
-	Title    string `json:"title"`
-	W        int    `json:"w"`
-	X        int    `json:"x"`
-	Y        int    `json:"y"`
+	// default ""
+	AppID string `json:"app_id"`
+	// default ""
+	AppName string `json:"app_name"`
+	// Desk ordinal of the window's space: user spaces counted 1..N in
+	// managed-display order (on macOS, the Mission Control / Ctrl+N index —
+	// the same convention as `windows.desk_switch`). Absent when the window
+	// is not on exactly one user space: minimized (no space), fullscreen
+	// (its space is not a user desk), or pinned to multiple spaces.
+	// wire uint32 · default null · min 0
+	Desk *int `json:"desk,omitempty"`
+	// wire int32 · default 0
+	H int `json:"h"`
+	// default ""
+	ID string `json:"id"`
+	// "observed" = discovered via OS accessibility APIs.
+	// "managed" = HUD window created by actuator channel infrastructure.
+	// default "observed"
+	Source string `json:"source"`
+	// Space (virtual desktop) ids this window belongs to. Usually one;
+	// several when the window is pinned to multiple spaces; empty when the
+	// OS reports none (minimized windows) or the platform has no space
+	// support.
+	// default []
+	SpaceIds []int `json:"space_ids"`
+	// default ""
+	Title string `json:"title"`
+	// wire int32 · default 0
+	W int `json:"w"`
+	// wire int32 · default 0
+	X int `json:"x"`
+	// wire int32 · default 0
+	Y int `json:"y"`
 }
 
 // WiringCollection is auto-generated from the OpenRPC spec.
+// One collection in the resolved wiring graph.
 type WiringCollection struct {
-	Access     string   `json:"access"`
-	DenyReason *string  `json:"deny_reason,omitempty"`
-	Fields     []string `json:"fields"`
-	Introducer string   `json:"introducer"`
-	Merge      string   `json:"merge"`
-	Name       string   `json:"name"`
-	Readable   bool     `json:"readable"`
-	Writable   bool     `json:"writable"`
-	Writers    string   `json:"writers"`
+	Access string `json:"access"`
+	// Why the caller cannot reach it, when it cannot.
+	//
+	// Scoped to the caller's OWN denials, which is what keeps this method
+	// unprivileged. Reporting why some OTHER pair is denied would expose
+	// that pair's grant state, and no plugin-facing surface leaks that; the
+	// caller's own grant state is not a disclosure to the caller. So the
+	// teaching case is served and nothing else is.
+	DenyReason *string `json:"deny_reason,omitempty"`
+	// Declared field keys, in declaration order. Empty when the introducer
+	// publishes no field schema — which is itself the answer to "can I bind
+	// a shape to this".
+	Fields []string `json:"fields"`
+	// Plugin id, `_platform`, or `_user`.
+	Introducer string `json:"introducer"`
+	Merge      string `json:"merge"`
+	Name       string `json:"name"`
+	// Whether the CALLER can read it right now.
+	Readable bool `json:"readable"`
+	// Whether the CALLER can write it right now.
+	Writable bool `json:"writable"`
+	// Resolved, not declared: the preset's expansion is what actually
+	// governs, and a consumer reasoning about the declared value would be
+	// reasoning about the wrong thing.
+	Writers string `json:"writers"`
 }
 
 // WorldModel is auto-generated from the OpenRPC spec.
 type WorldModel struct {
-	ActiveApp        *string       `json:"active_app,omitempty"`
-	ActiveWindowID   *string       `json:"active_window_id,omitempty"`
-	Displays         []DisplayInfo `json:"displays"`
-	KeyboardLayoutID string        `json:"keyboard_layout_id"`
-	Windows          []WindowInfo  `json:"windows"`
+	// default null
+	ActiveApp *string `json:"active_app,omitempty"`
+	// default null
+	ActiveWindowID *string `json:"active_window_id,omitempty"`
+	// default []
+	Displays []DisplayInfo `json:"displays"`
+	// Active keyboard layout ID (e.g. "com.apple.keylayout.US").
+	// default ""
+	KeyboardLayoutID string `json:"keyboard_layout_id"`
+	// default []
+	Windows []WindowInfo `json:"windows"`
 }
 
 // ===== Plugin → Actuator request/response types =====
@@ -994,24 +1684,35 @@ type ArtifactDeleteResponse struct {
 
 // CollectionAppendRequest is the request type for collection.append.
 type CollectionAppendRequest struct {
-	Name    string          `json:"name"`
+	// Collection name. Must be a `kind: "log"` collection.
+	Name string `json:"name"`
+	// Entry payload — validated against the collection's `fields` schema.
 	Payload json.RawMessage `json:"payload"`
 }
 
 // CollectionAppendResponse is the response type for collection.append.
 type CollectionAppendResponse struct {
+	// The newly-appended entry, including its assigned ULID and timestamp.
 	Entry LogEntry `json:"entry"`
 }
 
 // CollectionAppendKeyedRequest is the request type for collection.append_keyed.
 type CollectionAppendKeyedRequest struct {
-	Key     string          `json:"key"`
-	Name    string          `json:"name"`
+	// The fold key — stamped into the payload's key field. Appending another
+	// record with the same key annotates the first (compacted-changelog
+	// shape); a compacted read folds them into one record.
+	Key string `json:"key"`
+	// Collection name. Must be a keyed (`id_strategy: by_field`) `log`
+	// collection.
+	Name string `json:"name"`
+	// Entry payload — validated against the collection's `fields` schema (the
+	// key field is supplied via `key`, not here).
 	Payload json.RawMessage `json:"payload"`
 }
 
 // CollectionAppendKeyedResponse is the response type for collection.append_keyed.
 type CollectionAppendKeyedResponse struct {
+	// The newly-appended entry, including its assigned ULID and timestamp.
 	Entry LogEntry `json:"entry"`
 }
 
@@ -1022,19 +1723,27 @@ type CollectionCountRequest struct {
 
 // CollectionCountResponse is the response type for collection.count.
 type CollectionCountResponse struct {
+	// wire uint · min 0
 	Count int `json:"count"`
 }
 
 // CollectionDeleteRecordsRequest is the request type for collection.delete_records.
 type CollectionDeleteRecordsRequest struct {
+	// Record ids to remove. Always an array; single-record callers wrap
+	// one id. SDK helpers (`Delete` vs `DeleteMany`) hide the wrapping.
+	// default []
 	Ids  []string `json:"ids,omitempty"`
 	Name string   `json:"name"`
 }
 
 // CollectionDeleteRecordsResponse is the response type for collection.delete_records.
 type CollectionDeleteRecordsResponse struct {
+	// Number of ids that were already absent (no-op).
+	// wire uint · min 0
 	AlreadyAbsent int `json:"already_absent"`
-	Deleted       int `json:"deleted"`
+	// Number of records that existed and were removed.
+	// wire uint · min 0
+	Deleted int `json:"deleted"`
 }
 
 // CollectionFetchRequest is the request type for collection.fetch.
@@ -1045,6 +1754,7 @@ type CollectionFetchRequest struct {
 
 // CollectionFetchResponse is the response type for collection.fetch.
 type CollectionFetchResponse struct {
+	// The record, or null if no record with that id exists.
 	Record *CollectionRecord `json:"record,omitempty"`
 }
 
@@ -1056,6 +1766,7 @@ type CollectionFetchCompactedRequest struct {
 
 // CollectionFetchCompactedResponse is the response type for collection.fetch_compacted.
 type CollectionFetchCompactedResponse struct {
+	// The record, or null if no record with that id exists.
 	Record *CollectionRecord `json:"record,omitempty"`
 }
 
@@ -1066,7 +1777,10 @@ type CollectionGetRequest struct {
 
 // CollectionGetResponse is the response type for collection.get.
 type CollectionGetResponse struct {
-	Data       json.RawMessage            `json:"data"`
+	Data json.RawMessage `json:"data"`
+	// Derived flat map (key_field → value_field) for capture collections.
+	// Only present when the collection schema has key_field and value_field.
+	// Contains bare values — no provenance metadata.
 	Entries    map[string]json.RawMessage `json:"entries,omitempty"`
 	Introducer string                     `json:"introducer"`
 	Merge      MergeStrategy              `json:"merge"`
@@ -1075,18 +1789,22 @@ type CollectionGetResponse struct {
 
 // CollectionListRequest is the request type for collection.list.
 type CollectionListRequest struct {
-	Name string    `json:"name"`
+	Name string `json:"name"`
+	// default {}
 	Opts *ListOpts `json:"opts,omitempty"`
 }
 
 // CollectionListResponse is the response type for collection.list.
 type CollectionListResponse struct {
 	Records []CollectionRecord `json:"records"`
-	Total   int                `json:"total"`
+	// Total record count for the collection, independent of filter / limit.
+	// wire uint · min 0
+	Total int `json:"total"`
 }
 
 // CollectionPatchRequest is the request type for collection.patch.
 type CollectionPatchRequest struct {
+	// Object of fields to merge over the existing record.
 	Fields json.RawMessage `json:"fields"`
 	ID     string          `json:"id"`
 	Name   string          `json:"name"`
@@ -1099,49 +1817,107 @@ type CollectionPatchResponse struct {
 
 // CollectionPutRequest is the request type for collection.put.
 type CollectionPutRequest struct {
-	Entries []CollectionPutEntry    `json:"entries,omitempty"`
-	Group   *string                 `json:"group,omitempty"`
-	Label   *string                 `json:"label,omitempty"`
-	Name    string                  `json:"name"`
-	Roles   map[string]FieldDisplay `json:"roles,omitempty"`
+	// Records to upsert. Always an array; single-record callers wrap one
+	// entry. The wire format is uniform across single and bulk callers;
+	// the SDK helpers (`Put` vs `PutMany`) hide the wrapping for the
+	// single-record case. See docs/design/DESIGN_BROWSER_HINT_SILENT_EVICTION.md
+	// for the rationale.
+	// default []
+	Entries []CollectionPutEntry `json:"entries,omitempty"`
+	// Writer-chosen group label stamped on EVERY entry in this call — which
+	// of the caller's named replace-sets these records belong to. See the
+	// record envelope's `group`: last-write placement, meaningful only
+	// within a writer. Absent = ungrouped, the common case. Call-level
+	// rather than per-entry because a put that mixes groups is a caller
+	// composing two writes, not one write with two meanings.
+	Group *string `json:"group,omitempty"`
+	// Optional human-readable label for the collection as a whole — the
+	// friendly category name shown on the Discovery HUD's tag badge and in
+	// the Settings UI, in place of the raw collection id (`Badge` instead of
+	// `browser_hints_arch_strict`). This is the dynamic-collection counterpart
+	// to a manifest-declared collection's `schema.label`; a plugin creating a
+	// collection at runtime declares its label here. Same persistence
+	// semantics as `roles`: last-write-wins, and a put omitting `label`
+	// leaves the prior setting in place. See
+	// `docs/design/DESIGN_COLLECTION_FIELD_ROLES.md`.
+	Label *string `json:"label,omitempty"`
+	Name  string  `json:"name"`
+	// Optional per-payload-field display roles. Used by the Settings
+	// UI / discovery HUD to know which payload field is the primary
+	// label, which is the subtitle, etc. Equivalent to the `roles`
+	// argument on `collection.push`. Mostly meaningful for
+	// auto-registered dynamic collections — manifest-declared
+	// collections get their roles from the schema. On the first
+	// `collection.put` to a not-yet-registered name, the roles are
+	// stored alongside the auto-registered schema. Subsequent puts
+	// with `roles` overwrite the prior setting; puts omitting
+	// `roles` leave roles unchanged.
+	//
+	// Wire-lenient: an entry whose role string this host doesn't know
+	// binds nothing but does NOT fail the put — see `DisplayRoles`.
+	Roles map[string]FieldDisplay `json:"roles,omitempty"`
 }
 
 // CollectionPutResponse is the response type for collection.put.
 type CollectionPutResponse struct {
+	// Number of records upserted. Equals `entries.len()` on success.
+	// wire uint · min 0
 	Count int  `json:"count"`
 	Ok    bool `json:"ok"`
 }
 
 // CollectionReplaceRequest is the request type for collection.replace.
 type CollectionReplaceRequest struct {
-	Entries []CollectionPutEntry    `json:"entries,omitempty"`
-	Label   *string                 `json:"label,omitempty"`
-	Name    string                  `json:"name"`
-	Roles   map[string]FieldDisplay `json:"roles,omitempty"`
-	Scope   ReplaceScope            `json:"scope"`
+	// The desired set. After the call, the records in scope are exactly these.
+	// default []
+	Entries []CollectionPutEntry `json:"entries,omitempty"`
+	// Same semantics as `collection.put`'s `label`.
+	Label *string `json:"label,omitempty"`
+	Name  string  `json:"name"`
+	// Same semantics as `collection.put`'s `roles`.
+	Roles map[string]FieldDisplay `json:"roles,omitempty"`
+	// What the call is allowed to delete. Required — see `ReplaceScope`.
+	Scope ReplaceScope `json:"scope"`
 }
 
 // CollectionReplaceResponse is the response type for collection.replace.
 type CollectionReplaceResponse struct {
+	// Records removed because they were in scope but not in `entries`.
+	// wire uint · min 0
 	Deleted int `json:"deleted"`
-	Put     int `json:"put"`
+	// Records written — new, or whose payload differed.
+	// wire uint · min 0
+	Put int `json:"put"`
+	// Records left untouched because their payload was byte-identical.
+	//
+	// Load-bearing, not a statistic: skipping identical payloads is what keeps
+	// a periodic refresh from re-firing `_platform.collection.updated` for
+	// every record and waking every subscriber. It is the property that makes
+	// this a real verb rather than sugar for put-then-delete.
+	// wire uint · min 0
 	Skipped int `json:"skipped"`
 }
 
 // CollectionsCreateUserRequest is the request type for collections.create_user.
 type CollectionsCreateUserRequest struct {
+	// default ""
 	Description *string `json:"description,omitempty"`
-	Name        string  `json:"name"`
-	WordsText   *string `json:"words_text,omitempty"`
+	// Collection name (lowercase, underscores).
+	Name string `json:"name"`
+	// default ""
+	WordsText *string `json:"words_text,omitempty"`
 }
 
 // CollectionsCreateUserResponse is the response type for collections.create_user.
 type CollectionsCreateUserResponse struct {
+	// The created collection's name (echoed so callers can select it).
 	Name string `json:"name"`
 }
 
 // CollectionsListRequest is the request type for collections.list.
 type CollectionsListRequest struct {
+	// Filter by collection kind: "entity", "data", "commands", "log". If omitted, returns all.
+	// default null
 	Kind *string `json:"kind,omitempty"`
 }
 
@@ -1169,8 +1945,13 @@ type CommandsAddAliasResponse struct {
 
 // CommandsConfusabilityRequest is the request type for commands.confusability.
 type CommandsConfusabilityRequest struct {
+	// The command's context (its `requires_tags`); empty = free context. Used by
+	// tier-2 so a warning only fires when the confuser is co-eligible here.
+	// default []
 	RequiresTags []string `json:"requires_tags,omitempty"`
-	Words        []string `json:"words,omitempty"`
+	// The literal spoken words of the phrase being authored.
+	// default []
+	Words []string `json:"words,omitempty"`
 }
 
 // CommandsConfusabilityResponse is the response type for commands.confusability.
@@ -1212,12 +1993,37 @@ type CommandsListOverridesResponse struct {
 
 // CommandsPushRequest is the request type for commands.push.
 type CommandsPushRequest struct {
+	// Array of `CommandSpec` JSON objects to push to the matching
+	// engine. Replaces the current commands contributed by the
+	// calling plugin. Wire-level type is opaque
+	// (`serde_json::Value`) to keep the deserializer flexible; see
+	// `CommandSpec` for the canonical field list including
+	// `cancels_bridge`.
+	// default null
 	Commands json.RawMessage `json:"commands,omitempty"`
-	Group    *string         `json:"group,omitempty"`
+	// Optional named group this push owns. Absent replaces the plugin's
+	// ENTIRE command set (the original semantics, unchanged); present
+	// replaces only the records in that group and leaves the plugin's other
+	// groups intact.
+	//
+	// Exists because the single implicit slot is a race whenever a plugin has
+	// more than one command source. Browser has five (scroll, find,
+	// references, hint skeleton, palette) and each used to push
+	// independently — whichever landed last was the only set the matcher saw,
+	// and the hint skeleton routinely lost. Its workaround is a mutex plus
+	// rebuilding the union from every builder on each call. With groups each
+	// source owns its own, and dropping a source drops its group.
+	//
+	// See docs/design/PRINCIPLE_PLUGIN_HELD_STATE.md — this is the same
+	// "can two of these coexist?" failure that `collection.replace`'s scope
+	// fixes for records.
+	Group *string `json:"group,omitempty"`
 }
 
 // CommandsPushResponse is the response type for commands.push.
 type CommandsPushResponse struct {
+	// Number of commands registered with the matching engine.
+	// wire uint · min 0
 	Count int  `json:"count"`
 	Ok    bool `json:"ok"`
 }
@@ -1231,7 +2037,8 @@ type CommandsRemoveAliasRequest struct {
 
 // CommandsRemoveAliasResponse is the response type for commands.remove_alias.
 type CommandsRemoveAliasResponse struct {
-	Ok      bool `json:"ok"`
+	Ok bool `json:"ok"`
+	// Whether an alias actually matched and was removed.
 	Removed bool `json:"removed"`
 }
 
@@ -1253,43 +2060,119 @@ type CommandsResetOverrideRequest struct {
 
 // CommandsResetOverrideResponse is the response type for commands.reset_override.
 type CommandsResetOverrideResponse struct {
-	Ok      bool `json:"ok"`
+	Ok bool `json:"ok"`
+	// Whether an override actually matched and was removed.
 	Removed bool `json:"removed"`
 }
 
 // CommandsResolveRequest is the request type for commands.resolve.
 type CommandsResolveRequest struct {
-	ActiveTags  []string `json:"active_tags,omitempty"`
+	// Active tags for tag-based scoping. If None, uses the state's active_tags.
+	// default null
+	ActiveTags []string `json:"active_tags,omitempty"`
+	// Narrow completions to commands contributed by these collections'
+	// contributors. None or empty = all.
+	// default null
 	Collections []string `json:"collections,omitempty"`
-	PreferOwner *string  `json:"prefer_owner,omitempty"`
-	Preview     *bool    `json:"preview,omitempty"`
-	RequireTag  *string  `json:"require_tag,omitempty"`
-	SessionID   *string  `json:"session_id,omitempty"`
-	Source      *string  `json:"source,omitempty"`
-	Words       []string `json:"words,omitempty"`
+	// Tiebreak hint for a genuine tie. When resolution reduces to 2+ equally-
+	// eligible commands the matcher cannot separate, and exactly one of them
+	// is owned by this plugin, that candidate is dispatched as a normal single
+	// winner instead of the tie being surfaced. It selects *only* among the
+	// already-tied candidates — it never overrides normal precedence
+	// (longest-match, gated-over-ungated, scope) and has no effect when there
+	// is no tie or when zero/multiple tied candidates match. Transient and
+	// per-resolve; the caller supplies it for one call, it is not a stored
+	// preference.
+	PreferOwner *string `json:"prefer_owner,omitempty"`
+	// Dry-run / verify-don't-execute mode. When true, the matcher computes
+	// the full decision (winner, completions, telemetry) but commits
+	// nothing: no tag writes are applied, no `sets_on_partial` bridge is
+	// seeded, and no `command_matched`/`command_no_match` telemetry is
+	// emitted. The action is never dispatched by `resolve` in either mode —
+	// `preview` additionally suppresses the *side effects* of resolution so
+	// a consumer (e.g. calibration command-practice) can score "would this
+	// fire the right command?" without mutating live state or polluting the
+	// no-match dashboards. Default false: normal resolve commits as before.
+	// default false
+	Preview *bool `json:"preview,omitempty"`
+	// Restrict completions to commands requiring this tag.
+	// default null
+	RequireTag *string `json:"require_tag,omitempty"`
+	// Audio session ID from the Swift shell. Informational — links audio
+	// lifecycle events to command matches.
+	SessionID *string `json:"session_id,omitempty"`
+	// Input source: "command_hold", "continuous", "selection", "api".
+	Source *string `json:"source,omitempty"`
+	// Words to match against the command registry.
+	// default []
+	Words []string `json:"words,omitempty"`
 }
 
 // CommandsResolveResponse is the response type for commands.resolve.
 type CommandsResolveResponse struct {
-	Action            json.RawMessage            `json:"action,omitempty"`
-	ActivePluginGates []string                   `json:"active_plugin_gates,omitempty"`
-	Args              map[string]json.RawMessage `json:"args"`
-	BridgeActive      *bool                      `json:"bridge_active,omitempty"`
-	ClearsTags        []string                   `json:"clears_tags"`
-	ConsumedCount     int                        `json:"consumed_count"`
-	HasCompletions    bool                       `json:"has_completions"`
-	Items             []DiscoverItem             `json:"items"`
-	Matched           bool                       `json:"matched"`
-	NextWords         []string                   `json:"next_words"`
-	OwnerPlugin       *string                    `json:"owner_plugin,omitempty"`
-	RequiresTags      []string                   `json:"requires_tags"`
-	ScopedPrefixes    []string                   `json:"scoped_prefixes,omitempty"`
-	ScopedTags        []string                   `json:"scoped_tags,omitempty"`
-	SetsTags          []string                   `json:"sets_tags"`
-	Telemetry         ResolveTelemetry           `json:"telemetry"`
-	TiedCandidates    []TiedCandidate            `json:"tied_candidates,omitempty"`
-	Title             string                     `json:"title"`
-	TraceID           *string                    `json:"trace_id,omitempty"`
+	// Opaque to schemars: `Action` is a large enum whose schema is treated
+	// as a free-form JSON value in OpenAPI. The inventory closure still
+	// produces a fully-typed Action.
+	Action json.RawMessage `json:"action,omitempty"`
+	// All currently-active gates from `plugin.<X>.*` namespaces other than
+	// the resolving caller's own (`plugin.<caller>.*`). Lets the caller
+	// make session-end cleanup decisions ("is any other plugin's mode
+	// active?") without maintaining a parallel local view of state. Host
+	// callers see all plugin gates.
+	ActivePluginGates []string `json:"active_plugin_gates,omitempty"`
+	// Named captures, keyed by binding name. Empty when the matched action
+	// is a template the platform has already resolved into the concrete
+	// `action`; populated only when template resolution failed.
+	Args map[string]json.RawMessage `json:"args"`
+	// True when an active `PendingPartial` bridge survived this resolve
+	// (either advanced one token, or rejected the new utterance without
+	// dropping). Tells the voice plugin to leave the discovery HUD as-is
+	// — the bridge's previously-rendered items are still the correct view
+	// of what completes the in-progress capture. Without this flag the
+	// voice plugin would either replace the HUD with empty/AIR content
+	// (because `items` is empty under bridge survival) or close it via
+	// the "no match, no partial" branch. See actuator commit history for
+	// the matching `capture.progress` suppression. False by
+	// default; only true when the bridge survived.
+	BridgeActive *bool    `json:"bridge_active,omitempty"`
+	ClearsTags   []string `json:"clears_tags"`
+	// wire uint · min 0
+	ConsumedCount int `json:"consumed_count"`
+	// The winning command's dictated-argument descriptor, if declared: the
+	HasCompletions bool           `json:"has_completions"`
+	Items          []DiscoverItem `json:"items"`
+	Matched        bool           `json:"matched"`
+	NextWords      []string       `json:"next_words"`
+	OwnerPlugin    *string        `json:"owner_plugin,omitempty"`
+	RequiresTags   []string       `json:"requires_tags"`
+	// Platform-wide list of namespace prefixes that mark a tag as
+	// "scoped." Voice plugin uses this to classify `sets_tags` entries
+	// from a matched command as scoped mode tags without shadowing the
+	// configuration locally.
+	ScopedPrefixes []string `json:"scoped_prefixes,omitempty"`
+	// Currently active scoped tags at match time.
+	ScopedTags []string         `json:"scoped_tags,omitempty"`
+	SetsTags   []string         `json:"sets_tags"`
+	Telemetry  ResolveTelemetry `json:"telemetry"`
+	// The genuinely-tied candidate set, populated only when resolution
+	// reduced to 2+ equally-eligible commands the matcher could not
+	// separate (same gating + scope, same winning length). When non-empty,
+	// `matched` is `false`, NO tag writes were applied, and `command_no_match`
+	// was suppressed: rather than arbitrarily pick an iteration-order winner,
+	// the platform hands the consuming plugin the full set to disambiguate.
+	// The signal is generic — any plugin can read it and resolve the tie
+	// however its surface allows. Additive — a non-tie-aware consumer sees an
+	// empty list and a normal single-winner response.
+	TiedCandidates []TiedCandidate `json:"tied_candidates,omitempty"`
+	Title          string          `json:"title"`
+	// Trace ID generated by the actuator for causal correlation. Links
+	// this resolve result to downstream dispatch, state writes, and HUD
+	// events. Per-match — bridge-driven multi-utterance completions
+	// produce different trace_ids for seed and completion. Cross-
+	// resolve threading for the same push-to-talk hold goes through
+	// the ambient `correlation_id` derived from `session_id`. See
+	// `MatchCommandsResult.trace_id` for the full discussion.
+	TraceID *string `json:"trace_id,omitempty"`
 }
 
 // CommandsSetOverrideRequest is the request type for commands.set_override.
@@ -1306,6 +2189,8 @@ type CommandsSetOverrideResponse struct {
 
 // ControlSignalRequest is the request type for control.signal.
 type ControlSignalRequest struct {
+	// Raw control-stream signal string (e.g. "open hud", "hide discovery").
+	// Forwarded verbatim to the Swift shell via the actuator's control stream.
 	Signal string `json:"signal"`
 }
 
@@ -1321,58 +2206,116 @@ type DiscoveryClosedResponse struct {
 
 // DispatchRequest is the request type for dispatch.
 type DispatchRequest struct {
+	// Typed `Action` variant to dispatch. Schema is loose
+	// (`serde_json::Value`) — see module-level docs for the rationale.
+	// The runtime closure still deserializes the typed
+	// `crate::actions::Action` from this field.
 	Action json.RawMessage `json:"action"`
 }
 
 // DispatchResponse is the response type for dispatch.
 type DispatchResponse struct {
-	ControlMessage *string         `json:"control_message,omitempty"`
-	Handler        *string         `json:"handler,omitempty"`
-	Message        *string         `json:"message,omitempty"`
-	Result         json.RawMessage `json:"result,omitempty"`
-	Status         string          `json:"status"`
+	// Control message to forward to the Swift host (if any).
+	// Present on `status == "ok"`; absent on `status == "error"`.
+	ControlMessage *string `json:"control_message,omitempty"`
+	// Plugin that handled the action. Present on `status == "ok"`.
+	Handler *string `json:"handler,omitempty"`
+	// Error or denial message. Omitted on success.
+	Message *string `json:"message,omitempty"`
+	// Structured result payload from the handling plugin's action handler.
+	// Opaque to the actuator — piped through from the plugin's response.
+	Result json.RawMessage `json:"result,omitempty"`
+	// `"ok"` for success, `"denied"` if the caller lacks dispatch
+	// permission, `"error"` for an internal panic captured by
+	// `std::panic::catch_unwind`.
+	Status string `json:"status"`
 }
 
 // EffectsAssertRequest is the request type for effects.assert.
 type EffectsAssertRequest struct {
+	// Registered effect name (e.g. `suppress_notifications`). Must be
+	// declared in the plugin's manifest `consumes.effects.asserts` and
+	// match an entry in the closed `effects::REGISTERED_EFFECTS` registry.
 	Name string `json:"name"`
 }
 
 // EffectsAssertResponse is the response type for effects.assert.
 type EffectsAssertResponse struct {
-	AlreadyHeld bool    `json:"already_held"`
-	Displaced   *string `json:"displaced,omitempty"`
-	Enforced    bool    `json:"enforced"`
-	Granted     bool    `json:"granted"`
+	// True when this plugin already held an active assertion for this
+	// effect — assert is idempotent. Implies `granted=true`.
+	AlreadyHeld bool `json:"already_held"`
+	// When the assertion displaced an existing top-of-stack owner, this
+	// names that plugin. The displaced plugin should receive an
+	// `effect_displaced` notification (section 10.2). Notification path is
+	// stubbed in v1 — see registered handler.
+	Displaced *string `json:"displaced,omitempty"`
+	// True when the platform actually delivers this effect's semantics
+	// while you hold ownership. Signal-shape effects (whose entire
+	// meaning is the queryable ownership stack, e.g.
+	// `signal_recording_active`) are always enforced. False means the
+	// OS/platform handler for this effect is not implemented yet: you
+	// get ownership bookkeeping, displacement events, and `is_active`
+	// queries, but the OS-level behavior (actual notification muting,
+	// focus-steal blocking, …) does NOT happen. Always serialized —
+	// this field is the honesty fence for the stub-handler era.
+	Enforced bool `json:"enforced"`
+	// True when the assertion is now top-of-stack and effective.
+	// False when the user has revoked consent for this effect on this
+	// plugin (fail-next-assertion semantics per section 10.3) or when the
+	// effect name is unknown.
+	Granted bool `json:"granted"`
 }
 
 // EffectsIsActiveRequest is the request type for effects.is_active.
 type EffectsIsActiveRequest struct {
+	// Registered effect name to query.
 	Name string `json:"name"`
 }
 
 // EffectsIsActiveResponse is the response type for effects.is_active.
 type EffectsIsActiveResponse struct {
-	Active       bool    `json:"active"`
+	// True when the calling plugin currently holds top-of-stack
+	// (i.e. is the effective owner) for this effect. False otherwise —
+	// including when the plugin has a frame underneath someone else's,
+	// when the stack is empty, or when the effect name is unknown.
+	Active bool `json:"active"`
+	// The current effective owner, if any. Useful for plugins that
+	// want to surface "Meeting Mode is overriding Focus Mode" UI.
 	CurrentOwner *string `json:"current_owner,omitempty"`
 }
 
 // EffectsRetractRequest is the request type for effects.retract.
 type EffectsRetractRequest struct {
+	// Registered effect name to retract. The plugin's frame is removed
+	// from this effect's ownership stack. If no frame exists, the call
+	// is a no-op (`retracted=false`, no error).
 	Name string `json:"name"`
 }
 
 // EffectsRetractResponse is the response type for effects.retract.
 type EffectsRetractResponse struct {
-	NewOwner  *string `json:"new_owner,omitempty"`
-	Retracted bool    `json:"retracted"`
+	// Effective owner after the retract — `None` when the stack is
+	// now empty. Equal to the previous top when the retract removed
+	// a non-top frame (current top unchanged).
+	NewOwner *string `json:"new_owner,omitempty"`
+	// True when a frame was actually removed. False when this plugin
+	// held no assertion (idempotent retract) or when the effect name
+	// is unknown.
+	Retracted bool `json:"retracted"`
 }
 
 // EventsAppendRequest is the request type for events.append.
 type EventsAppendRequest struct {
-	Data      json.RawMessage `json:"data,omitempty"`
-	EventType string          `json:"event_type"`
-	SessionID *string         `json:"session_id,omitempty"`
+	// Free-form event payload. Stored as a raw JSON object on the event
+	// log line.
+	// default null
+	Data json.RawMessage `json:"data,omitempty"`
+	// Event type discriminator (e.g. "session_start", "match", "miss").
+	EventType string `json:"event_type"`
+	// Logical session id this event belongs to (8-char prefix used by
+	// the event-stream tooling). Defaults to "?" if absent.
+	// default "?"
+	SessionID *string `json:"session_id,omitempty"`
 }
 
 // EventsAppendResponse is the response type for events.append.
@@ -1382,9 +2325,17 @@ type EventsAppendResponse struct {
 
 // EventsEmitRequest is the request type for events.emit.
 type EventsEmitRequest struct {
-	CorrelationID *string         `json:"correlation_id,omitempty"`
-	Data          json.RawMessage `json:"data,omitempty"`
-	EventType     string          `json:"event_type"`
+	// Optional correlation id linking related events together for
+	// debugging. Auto-generated by the platform when omitted and the
+	// emitting plugin is processing an event that already carried one.
+	// default null · pattern ^tr_[0-9A-Za-z]{11}$
+	CorrelationID *string `json:"correlation_id,omitempty"`
+	// Free-form event payload published to subscribers.
+	// default null
+	Data json.RawMessage `json:"data,omitempty"`
+	// Convention-based event type (e.g. "clipboard.copied"). The
+	// `_platform.*` namespace is reserved for the actuator.
+	EventType string `json:"event_type"`
 }
 
 // EventsEmitResponse is the response type for events.emit.
@@ -1394,17 +2345,51 @@ type EventsEmitResponse struct {
 
 // HUDCreateChannelRequest is the request type for hud.create_channel.
 type HUDCreateChannelRequest struct {
-	AcceptsInput *bool           `json:"accepts_input,omitempty"`
-	Anchor       json.RawMessage `json:"anchor,omitempty"`
-	Channel      string          `json:"channel"`
-	Description  *string         `json:"description,omitempty"`
-	Draggable    *bool           `json:"draggable,omitempty"`
-	FollowsFocus *bool           `json:"follows_focus,omitempty"`
-	MinHeight    *int            `json:"min_height,omitempty"`
-	OnPointer    *OnPointer      `json:"on_pointer,omitempty"`
-	StackOrder   *int            `json:"stack_order,omitempty"`
-	Transparent  *bool           `json:"transparent,omitempty"`
-	Width        *int            `json:"width,omitempty"`
+	// Whether the channel's window receives keyboard/mouse input.
+	// Defaults to false.
+	// default false
+	AcceptsInput *bool `json:"accepts_input,omitempty"`
+	// Anchor position on screen (`Anchor` enum, kebab-case strings:
+	// `"top-left"`, `"top-right"`, `"bottom-left"`, `"bottom-right"`,
+	// `"bottom-center"`, `"center"`). Defaults to `"top-right"`.
+	// default null
+	Anchor json.RawMessage `json:"anchor,omitempty"`
+	// Channel name. Must be unique across all plugins.
+	Channel string `json:"channel"`
+	// Optional human-readable description shown in dev tooling.
+	// default ""
+	Description *string `json:"description,omitempty"`
+	// Whether the shell lets the user drag this window and remembers its
+	// position. Draggable windows should also set `follows_focus: false`.
+	// Defaults to false.
+	// default false
+	Draggable *bool `json:"draggable,omitempty"`
+	// Whether this channel follows the active display on focus changes.
+	// Defaults to true. Set to false for user-initiated HUDs that should
+	// stay pinned to the display where they were opened.
+	// default true
+	FollowsFocus *bool `json:"follows_focus,omitempty"`
+	// Minimum window height in points. Defaults to 100.
+	// wire uint32 · default 100 · min 0
+	MinHeight *int `json:"min_height,omitempty"`
+	// Pointer-dodge behavior: "none" (default) or "fade" (dodge the mouse —
+	// fade to near-transparent while the pointer is inside the frame).
+	// default "none"
+	OnPointer *OnPointer `json:"on_pointer,omitempty"`
+	// Stack position among windows sharing this anchor: offsets ascend from the
+	// anchor edge, so the lowest pins at the corner (a persistent status window)
+	// and higher values stack away (transient toasts). Ties broken by channel
+	// name. Defaults to 0.
+	// wire int32 · default 0
+	StackOrder *int `json:"stack_order,omitempty"`
+	// Fully transparent window — the shell skips its frosted vibrancy panel
+	// and window shadow, so only the plugin's own markup paints. Defaults
+	// to false (frosted).
+	// default false
+	Transparent *bool `json:"transparent,omitempty"`
+	// Window width in points. Defaults to 320.
+	// wire uint32 · default 320 · min 0
+	Width *int `json:"width,omitempty"`
 }
 
 // HUDCreateChannelResponse is the response type for hud.create_channel.
@@ -1414,6 +2399,8 @@ type HUDCreateChannelResponse struct {
 
 // HUDHideRequest is the request type for hud.hide.
 type HUDHideRequest struct {
+	// Channel name to hide. Sends a `close <channel>` (or
+	// `hide <channel>` for built-in channels) to the Swift shell.
 	Channel string `json:"channel"`
 }
 
@@ -1424,7 +2411,11 @@ type HUDHideResponse struct {
 
 // HUDPushRequest is the request type for hud.push.
 type HUDPushRequest struct {
-	Channel   string          `json:"channel"`
+	// Name of the HUD channel to push fragments into. Must be owned by
+	// the calling plugin (verified via
+	// `HudChannelRegistry::verify_owner`).
+	Channel string `json:"channel"`
+	// Array of `HudFragment` objects: `{ target_id, html, raw? }`.
 	Fragments json.RawMessage `json:"fragments"`
 }
 
@@ -1435,19 +2426,26 @@ type HUDPushResponse struct {
 
 // HUDRemoveChannelRequest is the request type for hud.remove_channel.
 type HUDRemoveChannelRequest struct {
+	// Channel name to remove. Must be owned by the calling plugin.
 	Channel string `json:"channel"`
 }
 
 // HUDRemoveChannelResponse is the response type for hud.remove_channel.
 type HUDRemoveChannelResponse struct {
-	Ok      bool `json:"ok"`
+	Ok bool `json:"ok"`
+	// Whether a channel was actually removed (false if it was already
+	// absent).
 	Removed bool `json:"removed"`
 }
 
 // HUDSetSizeRequest is the request type for hud.set_size.
 type HUDSetSizeRequest struct {
+	// Channel name whose actual rendered size is being reported.
 	Channel string `json:"channel"`
-	Height  int    `json:"height"`
+	// Actual rendered height in points (used by world-model entries
+	// instead of `min_height` when known).
+	// wire uint32 · min 0
+	Height int `json:"height"`
 }
 
 // HUDSetSizeResponse is the response type for hud.set_size.
@@ -1457,6 +2455,8 @@ type HUDSetSizeResponse struct {
 
 // HUDShowRequest is the request type for hud.show.
 type HUDShowRequest struct {
+	// Channel name to show. Sends an `open <channel>` message to the
+	// Swift shell.
 	Channel string `json:"channel"`
 }
 
@@ -1467,6 +2467,8 @@ type HUDShowResponse struct {
 
 // InputClickRequest is the request type for input.click.
 type InputClickRequest struct {
+	// Mouse button: "left", "right", or "middle". Defaults to "left".
+	// default "left"
 	Button *string `json:"button,omitempty"`
 }
 
@@ -1477,8 +2479,11 @@ type InputClickResponse struct {
 
 // InputClipboardActionRequest is the request type for input.clipboard_action.
 type InputClipboardActionRequest struct {
-	Action string  `json:"action"`
-	Text   *string `json:"text,omitempty"`
+	// Action: "copy", "paste", or "set".
+	Action string `json:"action"`
+	// Text to set (only used by `action: "set"`).
+	// default null
+	Text *string `json:"text,omitempty"`
 }
 
 // InputClipboardActionResponse is the response type for input.clipboard_action.
@@ -1533,6 +2538,7 @@ type InputClipboardWriteResponse struct {
 
 // InputClipboardWriteItemsRequest is the request type for input.clipboard_write_items.
 type InputClipboardWriteItemsRequest struct {
+	// default []
 	Items []ClipboardWriteItem `json:"items,omitempty"`
 }
 
@@ -1543,7 +2549,9 @@ type InputClipboardWriteItemsResponse struct {
 
 // InputDoubleClickRequest is the request type for input.double_click.
 type InputDoubleClickRequest struct {
+	// wire int32 · default null
 	X *int `json:"x,omitempty"`
+	// wire int32 · default null
 	Y *int `json:"y,omitempty"`
 }
 
@@ -1554,11 +2562,16 @@ type InputDoubleClickResponse struct {
 
 // InputDragRequest is the request type for input.drag.
 type InputDragRequest struct {
+	// wire uint64 (64-bit) · default 0 · min 0
 	DurationMs *int `json:"duration_ms,omitempty"`
-	FromX      int  `json:"from_x"`
-	FromY      int  `json:"from_y"`
-	ToX        int  `json:"to_x"`
-	ToY        int  `json:"to_y"`
+	// wire int32
+	FromX int `json:"from_x"`
+	// wire int32
+	FromY int `json:"from_y"`
+	// wire int32
+	ToX int `json:"to_x"`
+	// wire int32
+	ToY int `json:"to_y"`
 }
 
 // InputDragResponse is the response type for input.drag.
@@ -1573,8 +2586,14 @@ type InputListInputSourcesResponse struct {
 
 // InputMouseButtonRequest is the request type for input.mouse_button.
 type InputMouseButtonRequest struct {
-	Button    *string `json:"button,omitempty"`
-	Direction string  `json:"direction"`
+	// Button: "left", "right", or "middle". Defaults to "left".
+	// default "left"
+	Button *string `json:"button,omitempty"`
+	// Direction: "press", "release", or "drag". "drag" posts a
+	// zero-distance dragged event at the current cursor position — macOS
+	// only treats a window as grabbed once a dragged event follows the
+	// press, so drag-based operations need it between press and release.
+	Direction string `json:"direction"`
 }
 
 // InputMouseButtonResponse is the response type for input.mouse_button.
@@ -1584,28 +2603,49 @@ type InputMouseButtonResponse struct {
 
 // InputParseKeyEventRequest is the request type for input.parse_key_event.
 type InputParseKeyEventRequest struct {
-	Alt   *bool   `json:"alt,omitempty"`
-	Code  *string `json:"code,omitempty"`
-	Ctrl  *bool   `json:"ctrl,omitempty"`
-	Key   *string `json:"key,omitempty"`
-	Meta  *bool   `json:"meta,omitempty"`
-	Shift *bool   `json:"shift,omitempty"`
+	// default false
+	Alt *bool `json:"alt,omitempty"`
+	// `KeyboardEvent.code` — the physical key, layout-independent.
+	// default ""
+	Code *string `json:"code,omitempty"`
+	// default false
+	Ctrl *bool `json:"ctrl,omitempty"`
+	// `KeyboardEvent.key` — used only to spot a bare modifier press.
+	// default ""
+	Key *string `json:"key,omitempty"`
+	// default false
+	Meta *bool `json:"meta,omitempty"`
+	// default false
+	Shift *bool `json:"shift,omitempty"`
 }
 
 // InputParseKeyEventResponse is the response type for input.parse_key_event.
 type InputParseKeyEventResponse struct {
-	Combo          string `json:"combo"`
-	HasModifiers   bool   `json:"has_modifiers"`
-	IsBareModifier bool   `json:"is_bare_modifier"`
-	IsEscape       bool   `json:"is_escape"`
-	KeyName        string `json:"key_name"`
+	// `cmd+shift+k`, or the bare key name when no modifier is held. Empty
+	// when the event is not a binding (a bare modifier, escape, or a physical
+	// key the platform has no name for).
+	Combo        string `json:"combo"`
+	HasModifiers bool   `json:"has_modifiers"`
+	// A modifier pressed on its own. A capture UI waits rather than binding.
+	IsBareModifier bool `json:"is_bare_modifier"`
+	// Escape, which capture UIs conventionally treat as cancel.
+	IsEscape bool `json:"is_escape"`
+	// The key name alone, resolvable through `_platform.key_names`.
+	KeyName string `json:"key_name"`
 }
 
 // InputPressKeyRequest is the request type for input.press_key.
 type InputPressKeyRequest struct {
-	Code      *int     `json:"code,omitempty"`
+	// Raw keycode (takes priority over `name` if both are present).
+	// wire uint16 · default null · min 0 · max 65535
+	Code *int `json:"code,omitempty"`
+	// Modifier keys to hold during the tap (e.g. "command", "shift").
+	// default []
 	Modifiers []string `json:"modifiers,omitempty"`
-	Name      *string  `json:"name,omitempty"`
+	// Named key (e.g. "return", "tab"). Resolved via `resolve_key_name`.
+	// Required if `code` is absent.
+	// default null
+	Name *string `json:"name,omitempty"`
 }
 
 // InputPressKeyResponse is the response type for input.press_key.
@@ -1615,7 +2655,10 @@ type InputPressKeyResponse struct {
 
 // InputRawKeyRequest is the request type for input.raw_key.
 type InputRawKeyRequest struct {
-	Code      int    `json:"code"`
+	// Raw macOS keycode.
+	// wire uint16 · min 0 · max 65535
+	Code int `json:"code"`
+	// One of "press", "release", or "click".
 	Direction string `json:"direction"`
 }
 
@@ -1626,7 +2669,9 @@ type InputRawKeyResponse struct {
 
 // InputRightClickRequest is the request type for input.right_click.
 type InputRightClickRequest struct {
+	// wire int32 · default null
 	X *int `json:"x,omitempty"`
+	// wire int32 · default null
 	Y *int `json:"y,omitempty"`
 }
 
@@ -1637,9 +2682,15 @@ type InputRightClickResponse struct {
 
 // InputScrollRequest is the request type for input.scroll.
 type InputScrollRequest struct {
-	Amount    *int    `json:"amount,omitempty"`
-	Direction string  `json:"direction"`
-	Unit      *string `json:"unit,omitempty"`
+	// Amount in pixels/units. Defaults to 5.
+	// wire int32 · default 5
+	Amount *int `json:"amount,omitempty"`
+	// Direction: "up", "down", "left", or "right".
+	Direction string `json:"direction"`
+	// Scroll unit: "line" (discrete, default) or "pixel" (continuous/smooth).
+	// Pixel units are needed for horizontal scroll in most browsers.
+	// default "line"
+	Unit *string `json:"unit,omitempty"`
 }
 
 // InputScrollResponse is the response type for input.scroll.
@@ -1664,7 +2715,9 @@ type InputSwitchInputSourceResponse struct {
 
 // InputTripleClickRequest is the request type for input.triple_click.
 type InputTripleClickRequest struct {
+	// wire int32 · default null
 	X *int `json:"x,omitempty"`
+	// wire int32 · default null
 	Y *int `json:"y,omitempty"`
 }
 
@@ -1675,6 +2728,7 @@ type InputTripleClickResponse struct {
 
 // InputTypeTextRequest is the request type for input.type_text.
 type InputTypeTextRequest struct {
+	// Text to type into the active application.
 	Text string `json:"text"`
 }
 
@@ -1685,11 +2739,15 @@ type InputTypeTextResponse struct {
 
 // KeybindsRegisterRequest is the request type for keybinds.register.
 type KeybindsRegisterRequest struct {
+	// `RegistrySnapshot` JSON: `{ entries: [...], listen_up: [...] }`.
+	// Each entry is `{ combo, action, source }`.
 	Snapshot json.RawMessage `json:"snapshot"`
 }
 
 // KeybindsRegisterResponse is the response type for keybinds.register.
 type KeybindsRegisterResponse struct {
+	// Number of entries cached after the registration.
+	// wire uint · min 0
 	Count int  `json:"count"`
 	Ok    bool `json:"ok"`
 }
@@ -1711,6 +2769,7 @@ type NativeAccessibilityEnabledResponse struct {
 
 // NativeActivateAppRequest is the request type for native.activate_app.
 type NativeActivateAppRequest struct {
+	// default false
 	AllWindows *bool  `json:"all_windows,omitempty"`
 	BundleID   string `json:"bundle_id"`
 }
@@ -1778,12 +2837,15 @@ type NativeAppFocusedWindowIDRequest struct {
 // NativeAppIconRequest is the request type for native.app_icon.
 type NativeAppIconRequest struct {
 	BundleID string `json:"bundle_id"`
-	Size     *int   `json:"size,omitempty"`
+	// wire uint32 · default 64 · min 0
+	Size *int `json:"size,omitempty"`
 }
 
 // NativeAppIconResponse is the response type for native.app_icon.
 type NativeAppIconResponse struct {
-	Format      string `json:"format"`
+	// Always `"png"` -- exposed for forward compatibility.
+	Format string `json:"format"`
+	// Base64-encoded PNG bytes.
 	ImageBase64 string `json:"image_base64"`
 }
 
@@ -1890,8 +2952,9 @@ type NativeAudioDeviceVolumeRequest struct {
 
 // NativeAudioDeviceVolumeResponse is the response type for native.audio_device_volume.
 type NativeAudioDeviceVolumeResponse struct {
-	IsMuted bool    `json:"is_muted"`
-	Volume  float64 `json:"volume"`
+	IsMuted bool `json:"is_muted"`
+	// wire double
+	Volume float64 `json:"volume"`
 }
 
 // NativeAudioDevicesResponse is the response type for native.audio_devices.
@@ -1946,15 +3009,19 @@ type NativeAutomationPermissionResponse struct {
 
 // NativeAxElementAtPointRequest is the request type for native.ax_element_at_point.
 type NativeAxElementAtPointRequest struct {
+	// wire int32
 	Pid int `json:"pid"`
-	X   int `json:"x"`
-	Y   int `json:"y"`
+	// wire int32
+	X int `json:"x"`
+	// wire int32
+	Y int `json:"y"`
 }
 
 // NativeAxElementAtPointResponse is the response type for native.ax_element_at_point.
 type NativeAxElementAtPointResponse struct {
-	Actions       []string        `json:"actions"`
-	Attributes    []string        `json:"attributes"`
+	Actions    []string `json:"actions"`
+	Attributes []string `json:"attributes"`
+	// wire uint32 · min 0
 	ChildrenCount int             `json:"children_count"`
 	Description   *string         `json:"description,omitempty"`
 	Enabled       bool            `json:"enabled"`
@@ -1970,14 +3037,17 @@ type NativeAxElementAtPointResponse struct {
 
 // NativeAxElementTreeRequest is the request type for native.ax_element_tree.
 type NativeAxElementTreeRequest struct {
+	// wire uint32 · default 3 · min 0
 	Depth   *int         `json:"depth,omitempty"`
 	Element AXElementRef `json:"element"`
 }
 
 // NativeAxObserveRequest is the request type for native.ax_observe.
 type NativeAxObserveRequest struct {
+	// default []
 	Notifications []string `json:"notifications,omitempty"`
-	Pid           int      `json:"pid"`
+	// wire int32
+	Pid int `json:"pid"`
 }
 
 // NativeAxObserveResponse is the response type for native.ax_observe.
@@ -1998,6 +3068,7 @@ type NativeAxPerformActionResponse struct {
 
 // NativeAxReadAttributesRequest is the request type for native.ax_read_attributes.
 type NativeAxReadAttributesRequest struct {
+	// default []
 	Attributes []string     `json:"attributes,omitempty"`
 	Element    AXElementRef `json:"element"`
 }
@@ -2026,6 +3097,7 @@ type NativeAxUnobserveResponse struct {
 
 // NativeBatchIsTileableRequest is the request type for native.batch_is_tileable.
 type NativeBatchIsTileableRequest struct {
+	// default []
 	WindowIds []string `json:"window_ids,omitempty"`
 }
 
@@ -2036,8 +3108,12 @@ type NativeBatchIsTileableResponse struct {
 
 // NativeBatchSetFramesRequest is the request type for native.batch_set_frames.
 type NativeBatchSetFramesRequest struct {
-	Frames   []WindowFrame `json:"frames,omitempty"`
-	Readback *bool         `json:"readback,omitempty"`
+	// default []
+	Frames []WindowFrame `json:"frames,omitempty"`
+	// If true, sleep 10ms after applying frames and read back the actual
+	// positions (defaults to true). Set false to skip the readback round-trip.
+	// default true
+	Readback *bool `json:"readback,omitempty"`
 }
 
 // NativeBatchSetFramesResponse is the response type for native.batch_set_frames.
@@ -2047,11 +3123,18 @@ type NativeBatchSetFramesResponse struct {
 
 // NativeBatteryResponse is the response type for native.battery.
 type NativeBatteryResponse struct {
-	IsCharging           bool    `json:"is_charging"`
-	IsPluggedIn          bool    `json:"is_plugged_in"`
-	IsPresent            bool    `json:"is_present"`
-	Level                float64 `json:"level"`
-	TimeRemainingMinutes *int    `json:"time_remaining_minutes,omitempty"`
+	// Whether the battery is currently charging.
+	IsCharging bool `json:"is_charging"`
+	// Whether the device is plugged in to external power.
+	IsPluggedIn bool `json:"is_plugged_in"`
+	// Whether a battery is present (false on desktops without a UPS).
+	IsPresent bool `json:"is_present"`
+	// Battery level from 0.0 to 1.0.
+	// wire double
+	Level float64 `json:"level"`
+	// Estimated minutes until empty (or full if charging). None if unknown.
+	// wire int32
+	TimeRemainingMinutes *int `json:"time_remaining_minutes,omitempty"`
 }
 
 // NativeBatteryHealthResponse is the response type for native.battery_health.
@@ -2061,6 +3144,9 @@ type NativeBatteryHealthResponse struct {
 
 // NativeBleDiscoverServicesRequest is the request type for native.ble_discover_services.
 type NativeBleDiscoverServicesRequest struct {
+	// Identifier for the paired BLE device. Accepts a CoreBluetooth
+	// peripheral UUID (e.g. "12345678-...") or a device name to match
+	// among connected BLE HID peripherals (e.g. "Shortcut Remote").
 	DeviceIdentifier string `json:"device_identifier"`
 }
 
@@ -2071,9 +3157,12 @@ type NativeBleDiscoverServicesResponse struct {
 
 // NativeBleSubscribeRequest is the request type for native.ble_subscribe.
 type NativeBleSubscribeRequest struct {
+	// GATT characteristic UUID to subscribe to (must support notify).
 	CharacteristicUuid string `json:"characteristic_uuid"`
-	DeviceIdentifier   string `json:"device_identifier"`
-	ServiceUuid        string `json:"service_uuid"`
+	// CoreBluetooth peripheral UUID or device name.
+	DeviceIdentifier string `json:"device_identifier"`
+	// GATT service UUID containing the characteristic.
+	ServiceUuid string `json:"service_uuid"`
 }
 
 // NativeBleSubscribeResponse is the response type for native.ble_subscribe.
@@ -2083,9 +3172,14 @@ type NativeBleSubscribeResponse struct {
 
 // NativeBleSubscribeAllThenWriteRequest is the request type for native.ble_subscribe_all_then_write.
 type NativeBleSubscribeAllThenWriteRequest struct {
-	DeviceIdentifier  string          `json:"device_identifier"`
-	SubscribeServices []string        `json:"subscribe_services,omitempty"`
-	Writes            []BleWriteEntry `json:"writes,omitempty"`
+	// CoreBluetooth peripheral UUID or device name.
+	DeviceIdentifier string `json:"device_identifier"`
+	// GATT service UUIDs to subscribe to all notify characteristics on.
+	// default []
+	SubscribeServices []string `json:"subscribe_services,omitempty"`
+	// Writes to perform after subscribing. The last `with_response` write
+	// determines when the operation completes.
+	Writes []BleWriteEntry `json:"writes,omitempty"`
 }
 
 // NativeBleSubscribeAllThenWriteResponse is the response type for native.ble_subscribe_all_then_write.
@@ -2095,11 +3189,19 @@ type NativeBleSubscribeAllThenWriteResponse struct {
 
 // NativeBleWriteRequest is the request type for native.ble_write.
 type NativeBleWriteRequest struct {
-	CharacteristicUuid string  `json:"characteristic_uuid"`
-	Data               []int   `json:"data,omitempty"`
-	DeviceIdentifier   string  `json:"device_identifier"`
-	ServiceUuid        string  `json:"service_uuid"`
-	WriteType          *string `json:"write_type,omitempty"`
+	// GATT characteristic UUID (e.g. "FFF1").
+	CharacteristicUuid string `json:"characteristic_uuid"`
+	// Bytes to write to the characteristic.
+	// default []
+	Data []int `json:"data,omitempty"`
+	// Identifier for the paired BLE device. Accepts a CoreBluetooth
+	// peripheral UUID or a device name (see ble_discover_services).
+	DeviceIdentifier string `json:"device_identifier"`
+	// GATT service UUID (e.g. "FFF0").
+	ServiceUuid string `json:"service_uuid"`
+	// Write type: "with_response" (default, reliable) or "without_response" (fire-and-forget).
+	// default "with_response"
+	WriteType *string `json:"write_type,omitempty"`
 }
 
 // NativeBleWriteResponse is the response type for native.ble_write.
@@ -2134,16 +3236,19 @@ type NativeBordersResponse struct {
 
 // NativeBrightnessRequest is the request type for native.brightness.
 type NativeBrightnessRequest struct {
+	// wire uint32 · default null · min 0
 	DisplayID *int `json:"display_id,omitempty"`
 }
 
 // NativeBrightnessResponse is the response type for native.brightness.
 type NativeBrightnessResponse struct {
+	// wire double
 	Brightness float64 `json:"brightness"`
 }
 
 // NativeBundleForRemotePortRequest is the request type for native.bundle_for_remote_port.
 type NativeBundleForRemotePortRequest struct {
+	// wire int32
 	RemotePort int `json:"remote_port"`
 }
 
@@ -2195,7 +3300,9 @@ type NativeCaptureWindowRequest struct {
 
 // NativeCaptureWindowResponse is the response type for native.capture_window.
 type NativeCaptureWindowResponse struct {
-	Format      string `json:"format"`
+	// Always `"png"`.
+	Format string `json:"format"`
+	// Base64-encoded PNG bytes.
 	ImageBase64 string `json:"image_base64"`
 }
 
@@ -2252,8 +3359,10 @@ type NativeClearNotificationsResponse struct {
 
 // NativeClickMenuItemRequest is the request type for native.click_menu_item.
 type NativeClickMenuItemRequest struct {
+	// default []
 	Path []string `json:"path,omitempty"`
-	Pid  int      `json:"pid"`
+	// wire int32
+	Pid int `json:"pid"`
 }
 
 // NativeClickMenuItemResponse is the response type for native.click_menu_item.
@@ -2263,6 +3372,7 @@ type NativeClickMenuItemResponse struct {
 
 // NativeClipboardChangeCountResponse is the response type for native.clipboard_change_count.
 type NativeClipboardChangeCountResponse struct {
+	// wire uint64 (64-bit) · min 0
 	Count int `json:"count"`
 }
 
@@ -2318,6 +3428,7 @@ type NativeClipboardSetTextResponse struct {
 
 // NativeClipboardTypesRequest is the request type for native.clipboard_types.
 type NativeClipboardTypesRequest struct {
+	// default ""
 	Pasteboard *string `json:"pasteboard,omitempty"`
 }
 
@@ -2338,17 +3449,23 @@ type NativeCloseWindowResponse struct {
 
 // NativeColorAtPointRequest is the request type for native.color_at_point.
 type NativeColorAtPointRequest struct {
+	// wire int32
 	X int `json:"x"`
+	// wire int32
 	Y int `json:"y"`
 }
 
 // NativeColorAtPointResponse is the response type for native.color_at_point.
 type NativeColorAtPointResponse struct {
-	A   int    `json:"a"`
-	B   int    `json:"b"`
+	// wire uint8 · min 0 · max 255
+	A int `json:"a"`
+	// wire uint8 · min 0 · max 255
+	B int `json:"b"`
+	// wire uint8 · min 0 · max 255
 	G   int    `json:"g"`
 	Hex string `json:"hex"`
-	R   int    `json:"r"`
+	// wire uint8 · min 0 · max 255
+	R int `json:"r"`
 }
 
 // NativeComputerNameResponse is the response type for native.computer_name.
@@ -2421,15 +3538,22 @@ type NativeCurrentWallpaperResponse struct {
 
 // NativeCursorResponse is the response type for native.cursor.
 type NativeCursorResponse struct {
+	// wire int32
 	X int `json:"x"`
+	// wire int32
 	Y int `json:"y"`
 }
 
 // NativeCursorInfoResponse is the response type for native.cursor_info.
 type NativeCursorInfoResponse struct {
+	// Cursor type name (e.g. "arrow", "ibeam", "crosshair", "pointingHand").
 	CursorType string `json:"cursor_type"`
-	X          int    `json:"x"`
-	Y          int    `json:"y"`
+	// Cursor X position in screen coordinates.
+	// wire int32
+	X int `json:"x"`
+	// Cursor Y position in screen coordinates.
+	// wire int32
+	Y int `json:"y"`
 }
 
 // NativeCursorShakeToLocateResponse is the response type for native.cursor_shake_to_locate.
@@ -2514,6 +3638,7 @@ type NativeDifferentiateWithoutColorResponse struct {
 
 // NativeDirectoryContentsRequest is the request type for native.directory_contents.
 type NativeDirectoryContentsRequest struct {
+	// default false
 	IncludeHidden *bool  `json:"include_hidden,omitempty"`
 	Path          string `json:"path"`
 }
@@ -2525,15 +3650,19 @@ type NativeDirectoryContentsResponse struct {
 
 // NativeDiskSpaceRequest is the request type for native.disk_space.
 type NativeDiskSpaceRequest struct {
+	// default ""
 	Path *string `json:"path,omitempty"`
 }
 
 // NativeDiskSpaceResponse is the response type for native.disk_space.
 type NativeDiskSpaceResponse struct {
+	// wire uint64 (64-bit) · min 0
 	AvailableBytes int    `json:"available_bytes"`
 	MountPoint     string `json:"mount_point"`
-	TotalBytes     int    `json:"total_bytes"`
-	UsedBytes      int    `json:"used_bytes"`
+	// wire uint64 (64-bit) · min 0
+	TotalBytes int `json:"total_bytes"`
+	// wire uint64 (64-bit) · min 0
+	UsedBytes int `json:"used_bytes"`
 }
 
 // NativeDiskUsageRequest is the request type for native.disk_usage.
@@ -2563,6 +3692,7 @@ type NativeDisplayColorProfilesResponse struct {
 
 // NativeDisplayCountResponse is the response type for native.display_count.
 type NativeDisplayCountResponse struct {
+	// wire uint64 (64-bit) · min 0
 	Count int `json:"count"`
 }
 
@@ -2573,6 +3703,7 @@ type NativeDisplayMirroringResponse struct {
 
 // NativeDisplayRefreshRateRequest is the request type for native.display_refresh_rate.
 type NativeDisplayRefreshRateRequest struct {
+	// wire uint32 · min 0
 	DisplayID int `json:"display_id"`
 }
 
@@ -2583,6 +3714,7 @@ type NativeDisplayRotationResponse struct {
 
 // NativeDisplayScaleFactorRequest is the request type for native.display_scale_factor.
 type NativeDisplayScaleFactorRequest struct {
+	// wire uint32 · min 0
 	DisplayID int `json:"display_id"`
 }
 
@@ -2598,7 +3730,9 @@ type NativeDisplaysResponse struct {
 
 // NativeDndResponse is the response type for native.dnd.
 type NativeDndResponse struct {
-	Enabled   bool    `json:"enabled"`
+	// Whether Do Not Disturb / Focus mode is enabled.
+	Enabled bool `json:"enabled"`
+	// Name of the active Focus mode, if available.
 	FocusName *string `json:"focus_name,omitempty"`
 }
 
@@ -2679,6 +3813,7 @@ type NativeEnvVarResponse struct {
 
 // NativeEpochTimeResponse is the response type for native.epoch_time.
 type NativeEpochTimeResponse struct {
+	// wire uint64 (64-bit) · min 0
 	Seconds int `json:"seconds"`
 }
 
@@ -2739,6 +3874,7 @@ type NativeFileExtendedAttributesResponse struct {
 
 // NativeFileHashRequest is the request type for native.file_hash.
 type NativeFileHashRequest struct {
+	// default ""
 	Algorithm *string `json:"algorithm,omitempty"`
 	Path      string  `json:"path"`
 }
@@ -2755,13 +3891,17 @@ type NativeFileMetadataRequest struct {
 
 // NativeFileMetadataResponse is the response type for native.file_metadata.
 type NativeFileMetadataResponse struct {
-	Accessed  *int `json:"accessed,omitempty"`
+	// wire uint64 (64-bit) · min 0
+	Accessed *int `json:"accessed,omitempty"`
+	// wire uint64 (64-bit) · min 0
 	Created   *int `json:"created,omitempty"`
 	IsDir     bool `json:"is_dir"`
 	IsSymlink bool `json:"is_symlink"`
-	Modified  *int `json:"modified,omitempty"`
-	Readonly  bool `json:"readonly"`
-	Size      int  `json:"size"`
+	// wire uint64 (64-bit) · min 0
+	Modified *int `json:"modified,omitempty"`
+	Readonly bool `json:"readonly"`
+	// wire uint64 (64-bit) · min 0
+	Size int `json:"size"`
 }
 
 // NativeFileModificationDateRequest is the request type for native.file_modification_date.
@@ -2801,7 +3941,8 @@ type NativeFileSizeRequest struct {
 
 // NativeFileTagsRequest is the request type for native.file_tags.
 type NativeFileTagsRequest struct {
-	Path string   `json:"path"`
+	Path string `json:"path"`
+	// default null
 	Tags []string `json:"tags,omitempty"`
 }
 
@@ -2953,19 +4094,22 @@ type NativeGetWindowInfoRequest struct {
 
 // NativeGetWindowInfoResponse is the response type for native.get_window_info.
 type NativeGetWindowInfoResponse struct {
-	Alpha        *float64     `json:"alpha,omitempty"`
-	Bounds       WindowBounds `json:"bounds"`
-	DisplayID    int          `json:"display_id"`
-	IsFocused    bool         `json:"is_focused"`
-	IsFullscreen bool         `json:"is_fullscreen"`
-	IsMinimized  bool         `json:"is_minimized"`
-	Subrole      *string      `json:"subrole,omitempty"`
-	Title        *string      `json:"title,omitempty"`
-	WindowID     string       `json:"window_id"`
+	// wire double
+	Alpha  *float64     `json:"alpha,omitempty"`
+	Bounds WindowBounds `json:"bounds"`
+	// wire uint32 · min 0
+	DisplayID    int     `json:"display_id"`
+	IsFocused    bool    `json:"is_focused"`
+	IsFullscreen bool    `json:"is_fullscreen"`
+	IsMinimized  bool    `json:"is_minimized"`
+	Subrole      *string `json:"subrole,omitempty"`
+	Title        *string `json:"title,omitempty"`
+	WindowID     string  `json:"window_id"`
 }
 
 // NativeGlobFilesRequest is the request type for native.glob_files.
 type NativeGlobFilesRequest struct {
+	// wire uint32 · default 0 · min 0
 	MaxResults *int   `json:"max_results,omitempty"`
 	Pattern    string `json:"pattern"`
 }
@@ -3007,6 +4151,7 @@ type NativeHardwareUuidResponse struct {
 
 // NativeHidClaimRequest is the request type for native.hid_claim.
 type NativeHidClaimRequest struct {
+	// Device ID (e.g. "0x28bd:0x0202:0x48f42695").
 	DeviceID string `json:"device_id"`
 }
 
@@ -3022,6 +4167,7 @@ type NativeHidDevicesResponse struct {
 
 // NativeHidElementsRequest is the request type for native.hid_elements.
 type NativeHidElementsRequest struct {
+	// Device ID (e.g. "0x28bd:0x0202:0x48f42695").
 	DeviceID string `json:"device_id"`
 }
 
@@ -3032,6 +4178,7 @@ type NativeHidElementsResponse struct {
 
 // NativeHidReleaseRequest is the request type for native.hid_release.
 type NativeHidReleaseRequest struct {
+	// Device ID (e.g. "0x28bd:0x0202:0x48f42695").
 	DeviceID string `json:"device_id"`
 }
 
@@ -3042,9 +4189,15 @@ type NativeHidReleaseResponse struct {
 
 // NativeHidSendReportRequest is the request type for native.hid_send_report.
 type NativeHidSendReportRequest struct {
-	Data       []int  `json:"data,omitempty"`
-	DeviceID   string `json:"device_id"`
-	ReportID   int    `json:"report_id"`
+	// Raw report bytes to send.
+	// default []
+	Data []int `json:"data,omitempty"`
+	// Device ID (e.g. "0x28bd:0x0202:0x48f42695").
+	DeviceID string `json:"device_id"`
+	// HID report ID.
+	// wire uint32 · min 0
+	ReportID int `json:"report_id"`
+	// Report type: "output" or "feature".
 	ReportType string `json:"report_type"`
 }
 
@@ -3175,9 +4328,10 @@ type NativeKernelVersionResponse struct {
 
 // NativeKeyboardLayoutResponse is the response type for native.keyboard_layout.
 type NativeKeyboardLayoutResponse struct {
-	LayoutID   string            `json:"layout_id"`
-	LayoutName string            `json:"layout_name"`
-	Mappings   map[string]string `json:"mappings"`
+	LayoutID   string `json:"layout_id"`
+	LayoutName string `json:"layout_name"`
+	// Maps keycode (as string) → character produced on the current layout.
+	Mappings map[string]string `json:"mappings"`
 }
 
 // NativeKeychainDeleteRequest is the request type for native.keychain_delete.
@@ -3216,7 +4370,9 @@ type NativeKeychainWriteResponse struct {
 
 // NativeKillProcessRequest is the request type for native.kill_process.
 type NativeKillProcessRequest struct {
-	Pid    int  `json:"pid"`
+	// wire int32
+	Pid int `json:"pid"`
+	// wire int32 · default 0
 	Signal *int `json:"signal,omitempty"`
 }
 
@@ -3232,8 +4388,9 @@ type NativeLastRebootResponse struct {
 
 // NativeLaunchAppRequest is the request type for native.launch_app.
 type NativeLaunchAppRequest struct {
-	BundleID    string `json:"bundle_id"`
-	NewInstance *bool  `json:"new_instance,omitempty"`
+	BundleID string `json:"bundle_id"`
+	// default false
+	NewInstance *bool `json:"new_instance,omitempty"`
 }
 
 // NativeLaunchAppResponse is the response type for native.launch_app.
@@ -3368,6 +4525,7 @@ type NativeMemoryPressureResponse struct {
 
 // NativeMenuBarRequest is the request type for native.menu_bar.
 type NativeMenuBarRequest struct {
+	// wire int32
 	Pid int `json:"pid"`
 }
 
@@ -3418,9 +4576,12 @@ type NativeMountPointsResponse struct {
 
 // NativeMouseButtonClickRequest is the request type for native.mouse_button_click.
 type NativeMouseButtonClickRequest struct {
-	Button int  `json:"button"`
-	X      *int `json:"x,omitempty"`
-	Y      *int `json:"y,omitempty"`
+	// wire uint32 · min 0
+	Button int `json:"button"`
+	// wire int32 · default null
+	X *int `json:"x,omitempty"`
+	// wire int32 · default null
+	Y *int `json:"y,omitempty"`
 }
 
 // NativeMouseButtonClickResponse is the response type for native.mouse_button_click.
@@ -3441,6 +4602,7 @@ type NativeMoveFileResponse struct {
 
 // NativeMoveWindowToDisplayRequest is the request type for native.move_window_to_display.
 type NativeMoveWindowToDisplayRequest struct {
+	// wire uint32 · min 0
 	DisplayID int    `json:"display_id"`
 	WindowID  string `json:"window_id"`
 }
@@ -3452,6 +4614,7 @@ type NativeMoveWindowToDisplayResponse struct {
 
 // NativeMoveWindowToSpaceRequest is the request type for native.move_window_to_space.
 type NativeMoveWindowToSpaceRequest struct {
+	// wire uint64 (64-bit) · min 0
 	SpaceID  int    `json:"space_id"`
 	WindowID string `json:"window_id"`
 }
@@ -3533,8 +4696,11 @@ type NativeNotificationSoundEnabledResponse struct {
 
 // NativeNotifyRequest is the request type for native.notify.
 type NativeNotifyRequest struct {
-	Body     *string `json:"body,omitempty"`
-	Sound    *string `json:"sound,omitempty"`
+	// default null
+	Body *string `json:"body,omitempty"`
+	// default null
+	Sound *string `json:"sound,omitempty"`
+	// default null
 	Subtitle *string `json:"subtitle,omitempty"`
 	Title    string  `json:"title"`
 }
@@ -3556,6 +4722,7 @@ type NativeNumberFormatDecimalResponse struct {
 
 // NativeObserveWindowsRequest is the request type for native.observe_windows.
 type NativeObserveWindowsRequest struct {
+	// wire int32
 	Pid int `json:"pid"`
 }
 
@@ -3586,10 +4753,14 @@ type NativeOcrScreenResponse struct {
 
 // NativeOcrScreenRegionRequest is the request type for native.ocr_screen_region.
 type NativeOcrScreenRegionRequest struct {
+	// wire double
 	Height float64 `json:"height"`
-	Width  float64 `json:"width"`
-	X      float64 `json:"x"`
-	Y      float64 `json:"y"`
+	// wire double
+	Width float64 `json:"width"`
+	// wire double
+	X float64 `json:"x"`
+	// wire double
+	Y float64 `json:"y"`
 }
 
 // NativeOcrScreenRegionResponse is the response type for native.ocr_screen_region.
@@ -3599,6 +4770,7 @@ type NativeOcrScreenRegionResponse struct {
 
 // NativeOcrWindowRequest is the request type for native.ocr_window.
 type NativeOcrWindowRequest struct {
+	// wire uint32 · min 0
 	WindowID int `json:"window_id"`
 }
 
@@ -3629,6 +4801,7 @@ type NativeOpenFinderWindowResponse struct {
 
 // NativeOpenSystemSettingsRequest is the request type for native.open_system_settings.
 type NativeOpenSystemSettingsRequest struct {
+	// default null
 	Pane *string `json:"pane,omitempty"`
 }
 
@@ -3675,6 +4848,7 @@ type NativeOptimizedChargingResponse struct {
 
 // NativePdfExtractTextRequest is the request type for native.pdf_extract_text.
 type NativePdfExtractTextRequest struct {
+	// wire uint64 (64-bit) · default 0 · min 0
 	Page *int   `json:"page,omitempty"`
 	Path string `json:"path"`
 }
@@ -3742,8 +4916,10 @@ type NativePressAndHoldEnabledResponse struct {
 
 // NativePreventSleepRequest is the request type for native.prevent_sleep.
 type NativePreventSleepRequest struct {
+	// default null
 	AssertionID *string `json:"assertion_id,omitempty"`
-	Reason      *string `json:"reason,omitempty"`
+	// default "BranchKit plugin"
+	Reason *string `json:"reason,omitempty"`
 }
 
 // NativePreventSleepResponse is the response type for native.prevent_sleep.
@@ -3758,6 +4934,7 @@ type NativePrimaryDisplayResponse struct {
 
 // NativePrimaryDisplayIDResponse is the response type for native.primary_display_id.
 type NativePrimaryDisplayIDResponse struct {
+	// wire uint64 (64-bit) · min 0
 	Value int `json:"value"`
 }
 
@@ -3773,16 +4950,19 @@ type NativePrintersResponse struct {
 
 // NativeProcessCountResponse is the response type for native.process_count.
 type NativeProcessCountResponse struct {
+	// wire uint64 (64-bit) · min 0
 	Count int `json:"count"`
 }
 
 // NativeProcessCpuUsageRequest is the request type for native.process_cpu_usage.
 type NativeProcessCpuUsageRequest struct {
+	// wire int32
 	Pid int `json:"pid"`
 }
 
 // NativeProcessExistsRequest is the request type for native.process_exists.
 type NativeProcessExistsRequest struct {
+	// wire int32
 	Pid int `json:"pid"`
 }
 
@@ -3793,17 +4973,21 @@ type NativeProcessExistsResponse struct {
 
 // NativeProcessInfoRequest is the request type for native.process_info.
 type NativeProcessInfoRequest struct {
+	// wire int32
 	Pid int `json:"pid"`
 }
 
 // NativeProcessInfoResponse is the response type for native.process_info.
 type NativeProcessInfoResponse struct {
-	CpuPercent  *float64 `json:"cpu_percent,omitempty"`
-	MemoryBytes *int     `json:"memory_bytes,omitempty"`
-	Name        string   `json:"name"`
-	Path        *string  `json:"path,omitempty"`
-	Pid         int      `json:"pid"`
-	User        *string  `json:"user,omitempty"`
+	// wire double
+	CpuPercent *float64 `json:"cpu_percent,omitempty"`
+	// wire uint64 (64-bit) · min 0
+	MemoryBytes *int    `json:"memory_bytes,omitempty"`
+	Name        string  `json:"name"`
+	Path        *string `json:"path,omitempty"`
+	// wire int32
+	Pid  int     `json:"pid"`
+	User *string `json:"user,omitempty"`
 }
 
 // NativeProcessListResponse is the response type for native.process_list.
@@ -3813,26 +4997,31 @@ type NativeProcessListResponse struct {
 
 // NativeProcessMemoryUsageRequest is the request type for native.process_memory_usage.
 type NativeProcessMemoryUsageRequest struct {
+	// wire int32
 	Pid int `json:"pid"`
 }
 
 // NativeProcessNameRequest is the request type for native.process_name.
 type NativeProcessNameRequest struct {
+	// wire int32
 	Pid int `json:"pid"`
 }
 
 // NativeProcessParentPidRequest is the request type for native.process_parent_pid.
 type NativeProcessParentPidRequest struct {
+	// wire int32
 	Pid int `json:"pid"`
 }
 
 // NativeProcessPathRequest is the request type for native.process_path.
 type NativeProcessPathRequest struct {
+	// wire int32
 	Pid int `json:"pid"`
 }
 
 // NativeProcessStartTimeRequest is the request type for native.process_start_time.
 type NativeProcessStartTimeRequest struct {
+	// wire int32
 	Pid int `json:"pid"`
 }
 
@@ -3854,12 +5043,15 @@ type NativePurgeMemoryResponse struct {
 // NativeQuickLookRequest is the request type for native.quick_look.
 type NativeQuickLookRequest struct {
 	Path string `json:"path"`
-	Size *int   `json:"size,omitempty"`
+	// wire uint32 · default 512 · min 0
+	Size *int `json:"size,omitempty"`
 }
 
 // NativeQuickLookResponse is the response type for native.quick_look.
 type NativeQuickLookResponse struct {
-	Format      string `json:"format"`
+	// Always `"png"`.
+	Format string `json:"format"`
+	// Base64-encoded PNG bytes.
 	ImageBase64 string `json:"image_base64"`
 }
 
@@ -3906,6 +5098,7 @@ type NativeReadFileResponse struct {
 
 // NativeReadFileBinaryRequest is the request type for native.read_file_binary.
 type NativeReadFileBinaryRequest struct {
+	// wire uint64 (64-bit) · default null · min 0
 	MaxBytes *int   `json:"max_bytes,omitempty"`
 	Path     string `json:"path"`
 }
@@ -3968,10 +5161,14 @@ type NativeRequestScreenCaptureResponse struct {
 
 // NativeResourceUsageResponse is the response type for native.resource_usage.
 type NativeResourceUsageResponse struct {
-	CpuUsagePercent       float64 `json:"cpu_usage_percent"`
+	// wire double
+	CpuUsagePercent float64 `json:"cpu_usage_percent"`
+	// wire double
 	MemoryPressurePercent float64 `json:"memory_pressure_percent"`
-	MemoryTotalBytes      int     `json:"memory_total_bytes"`
-	MemoryUsedBytes       int     `json:"memory_used_bytes"`
+	// wire uint64 (64-bit) · min 0
+	MemoryTotalBytes int `json:"memory_total_bytes"`
+	// wire uint64 (64-bit) · min 0
+	MemoryUsedBytes int `json:"memory_used_bytes"`
 }
 
 // NativeRestartAppRequest is the request type for native.restart_app.
@@ -4001,11 +5198,13 @@ type NativeRosettaInstalledResponse struct {
 
 // NativeRunApplescriptRequest is the request type for native.run_applescript.
 type NativeRunApplescriptRequest struct {
+	// AppleScript source to execute via `osascript`.
 	Script string `json:"script"`
 }
 
 // NativeRunApplescriptResponse is the response type for native.run_applescript.
 type NativeRunApplescriptResponse struct {
+	// wire int32
 	ExitCode int    `json:"exit_code"`
 	Stderr   string `json:"stderr"`
 	Stdout   string `json:"stdout"`
@@ -4023,6 +5222,7 @@ type NativeRunJxaResponse struct {
 
 // NativeRunShortcutRequest is the request type for native.run_shortcut.
 type NativeRunShortcutRequest struct {
+	// default null
 	Input *string `json:"input,omitempty"`
 	Name  string  `json:"name"`
 }
@@ -4044,6 +5244,7 @@ type NativeScreenCapturePermissionResponse struct {
 
 // NativeScreenCountResponse is the response type for native.screen_count.
 type NativeScreenCountResponse struct {
+	// wire uint64 (64-bit) · min 0
 	Count int `json:"count"`
 }
 
@@ -4084,14 +5285,18 @@ type NativeScreenSharingEnabledResponse struct {
 
 // NativeScreenshotRequest is the request type for native.screenshot.
 type NativeScreenshotRequest struct {
+	// wire uint32 · default null · min 0
 	DisplayID *int              `json:"display_id,omitempty"`
 	Region    *ScreenshotRegion `json:"region,omitempty"`
-	WindowID  *string           `json:"window_id,omitempty"`
+	// default null
+	WindowID *string `json:"window_id,omitempty"`
 }
 
 // NativeScreenshotResponse is the response type for native.screenshot.
 type NativeScreenshotResponse struct {
-	Format      string `json:"format"`
+	// Always `"png"`.
+	Format string `json:"format"`
+	// Base64-encoded PNG bytes.
 	ImageBase64 string `json:"image_base64"`
 }
 
@@ -4178,6 +5383,7 @@ type NativeSetAppHiddenResponse struct {
 
 // NativeSetAudioDeviceRequest is the request type for native.set_audio_device.
 type NativeSetAudioDeviceRequest struct {
+	// "input" or "output".
 	DeviceType string `json:"device_type"`
 	UID        string `json:"uid"`
 }
@@ -4189,8 +5395,9 @@ type NativeSetAudioDeviceResponse struct {
 
 // NativeSetAudioDeviceVolumeRequest is the request type for native.set_audio_device_volume.
 type NativeSetAudioDeviceVolumeRequest struct {
-	DeviceUID string  `json:"device_uid"`
-	Volume    float64 `json:"volume"`
+	DeviceUID string `json:"device_uid"`
+	// wire double
+	Volume float64 `json:"volume"`
 }
 
 // NativeSetAudioDeviceVolumeResponse is the response type for native.set_audio_device_volume.
@@ -4240,8 +5447,10 @@ type NativeSetBluetoothPowerResponse struct {
 
 // NativeSetBrightnessRequest is the request type for native.set_brightness.
 type NativeSetBrightnessRequest struct {
+	// wire double
 	Brightness float64 `json:"brightness"`
-	DisplayID  *int    `json:"display_id,omitempty"`
+	// wire uint32 · default null · min 0
+	DisplayID *int `json:"display_id,omitempty"`
 }
 
 // NativeSetBrightnessResponse is the response type for native.set_brightness.
@@ -4331,6 +5540,7 @@ type NativeSetDockShowRecentsResponse struct {
 
 // NativeSetDockSizeRequest is the request type for native.set_dock_size.
 type NativeSetDockSizeRequest struct {
+	// wire double
 	Size float64 `json:"size"`
 }
 
@@ -4405,6 +5615,7 @@ type NativeSetHighlightColorResponse struct {
 
 // NativeSetHotCornerRequest is the request type for native.set_hot_corner.
 type NativeSetHotCornerRequest struct {
+	// wire uint32 · min 0
 	Action int    `json:"action"`
 	Corner string `json:"corner"`
 }
@@ -4426,6 +5637,7 @@ type NativeSetInputSourceResponse struct {
 
 // NativeSetKeyRepeatDelayRequest is the request type for native.set_key_repeat_delay.
 type NativeSetKeyRepeatDelayRequest struct {
+	// wire double
 	Delay float64 `json:"delay"`
 }
 
@@ -4436,6 +5648,7 @@ type NativeSetKeyRepeatDelayResponse struct {
 
 // NativeSetKeyRepeatRateRequest is the request type for native.set_key_repeat_rate.
 type NativeSetKeyRepeatRateRequest struct {
+	// wire double
 	Rate float64 `json:"rate"`
 }
 
@@ -4456,6 +5669,7 @@ type NativeSetMenuBarAutoHideResponse struct {
 
 // NativeSetMouseSpeedRequest is the request type for native.set_mouse_speed.
 type NativeSetMouseSpeedRequest struct {
+	// wire double
 	Speed float64 `json:"speed"`
 }
 
@@ -4516,6 +5730,7 @@ type NativeSetScrollDirectionNaturalResponse struct {
 
 // NativeSetSidebarIconSizeRequest is the request type for native.set_sidebar_icon_size.
 type NativeSetSidebarIconSizeRequest struct {
+	// wire uint32 · min 0
 	Size int `json:"size"`
 }
 
@@ -4546,6 +5761,7 @@ type NativeSetTapToClickResponse struct {
 
 // NativeSetTrackpadSpeedRequest is the request type for native.set_trackpad_speed.
 type NativeSetTrackpadSpeedRequest struct {
+	// wire double
 	Speed float64 `json:"speed"`
 }
 
@@ -4567,6 +5783,7 @@ type NativeSetURLSchemeHandlerResponse struct {
 
 // NativeSetVolumeRequest is the request type for native.set_volume.
 type NativeSetVolumeRequest struct {
+	// wire double
 	Volume float64 `json:"volume"`
 }
 
@@ -4587,6 +5804,7 @@ type NativeSetWallpaperResponse struct {
 
 // NativeSetWindowAlphaRequest is the request type for native.set_window_alpha.
 type NativeSetWindowAlphaRequest struct {
+	// wire double
 	Alpha    float64 `json:"alpha"`
 	WindowID string  `json:"window_id"`
 }
@@ -4610,8 +5828,10 @@ type NativeSetWindowLevelResponse struct {
 // NativeSetWindowPositionRequest is the request type for native.set_window_position.
 type NativeSetWindowPositionRequest struct {
 	WindowID string `json:"window_id"`
-	X        int    `json:"x"`
-	Y        int    `json:"y"`
+	// wire int32
+	X int `json:"x"`
+	// wire int32
+	Y int `json:"y"`
 }
 
 // NativeSetWindowPositionResponse is the response type for native.set_window_position.
@@ -4632,7 +5852,9 @@ type NativeSetWindowShadowResponse struct {
 
 // NativeSetWindowSizeRequest is the request type for native.set_window_size.
 type NativeSetWindowSizeRequest struct {
-	H        int    `json:"h"`
+	// wire int32
+	H int `json:"h"`
+	// wire int32
 	W        int    `json:"w"`
 	WindowID string `json:"window_id"`
 }
@@ -4710,9 +5932,11 @@ type NativeSpacesSpanDisplaysResponse struct {
 
 // NativeSpeakRequest is the request type for native.speak.
 type NativeSpeakRequest struct {
-	Rate  *float64 `json:"rate,omitempty"`
-	Text  string   `json:"text"`
-	Voice *string  `json:"voice,omitempty"`
+	// wire double · default null
+	Rate *float64 `json:"rate,omitempty"`
+	Text string   `json:"text"`
+	// default null
+	Voice *string `json:"voice,omitempty"`
 }
 
 // NativeSpeakResponse is the response type for native.speak.
@@ -4732,6 +5956,7 @@ type NativeSpeechRecognitionAvailableResponse struct {
 
 // NativeSpeechRecognizeFileRequest is the request type for native.speech_recognize_file.
 type NativeSpeechRecognizeFileRequest struct {
+	// default ""
 	Locale *string `json:"locale,omitempty"`
 	Path   string  `json:"path"`
 }
@@ -4743,8 +5968,10 @@ type NativeSpellingLanguageResponse struct {
 
 // NativeSpotlightRequest is the request type for native.spotlight.
 type NativeSpotlightRequest struct {
-	Limit *int     `json:"limit,omitempty"`
-	Query string   `json:"query"`
+	// wire uint32 · default 20 · min 0
+	Limit *int   `json:"limit,omitempty"`
+	Query string `json:"query"`
+	// default null
 	Scope []string `json:"scope,omitempty"`
 }
 
@@ -4785,6 +6012,7 @@ type NativeSwipeBetweenPagesResponse struct {
 
 // NativeSwitchSpaceRequest is the request type for native.switch_space.
 type NativeSwitchSpaceRequest struct {
+	// wire uint64 (64-bit) · min 0
 	SpaceID int `json:"space_id"`
 }
 
@@ -4845,12 +6073,16 @@ type NativeSystemSoundsResponse struct {
 
 // NativeSystemUptimeResponse is the response type for native.system_uptime.
 type NativeSystemUptimeResponse struct {
-	Formatted     string  `json:"formatted"`
+	// Human-readable uptime string.
+	Formatted string `json:"formatted"`
+	// Seconds since boot.
+	// wire double
 	UptimeSeconds float64 `json:"uptime_seconds"`
 }
 
 // NativeSystemUptimeSecondsResponse is the response type for native.system_uptime_seconds.
 type NativeSystemUptimeSecondsResponse struct {
+	// wire uint64 (64-bit) · min 0
 	Seconds int `json:"seconds"`
 }
 
@@ -5052,8 +6284,9 @@ type NativeVoiceoverEnabledResponse struct {
 
 // NativeVolumeResponse is the response type for native.volume.
 type NativeVolumeResponse struct {
-	IsMuted bool    `json:"is_muted"`
-	Volume  float64 `json:"volume"`
+	IsMuted bool `json:"is_muted"`
+	// wire double
+	Volume float64 `json:"volume"`
 }
 
 // NativeVpnStatusResponse is the response type for native.vpn_status.
@@ -5063,7 +6296,9 @@ type NativeVpnStatusResponse struct {
 
 // NativeWarpCursorRequest is the request type for native.warp_cursor.
 type NativeWarpCursorRequest struct {
+	// wire int32
 	X int `json:"x"`
+	// wire int32
 	Y int `json:"y"`
 }
 
@@ -5074,11 +6309,17 @@ type NativeWarpCursorResponse struct {
 
 // NativeWifiResponse is the response type for native.wifi.
 type NativeWifiResponse struct {
-	Bssid       *string `json:"bssid,omitempty"`
-	IsConnected bool    `json:"is_connected"`
-	IsEnabled   bool    `json:"is_enabled"`
-	Rssi        *int    `json:"rssi,omitempty"`
-	Ssid        *string `json:"ssid,omitempty"`
+	// BSSID of the connected access point, if any.
+	Bssid *string `json:"bssid,omitempty"`
+	// Whether WiFi is currently connected to a network.
+	IsConnected bool `json:"is_connected"`
+	// Whether the WiFi interface is powered on.
+	IsEnabled bool `json:"is_enabled"`
+	// Signal strength in dBm, if connected.
+	// wire int32
+	Rssi *int `json:"rssi,omitempty"`
+	// SSID of the connected network, if any.
+	Ssid *string `json:"ssid,omitempty"`
 }
 
 // NativeWifiNetworksResponse is the response type for native.wifi_networks.
@@ -5098,9 +6339,13 @@ type NativeWindowBoundsRequest struct {
 
 // NativeWindowBoundsResponse is the response type for native.window_bounds.
 type NativeWindowBoundsResponse struct {
+	// wire int32
 	H int `json:"h"`
+	// wire int32
 	W int `json:"w"`
+	// wire int32
 	X int `json:"x"`
+	// wire int32
 	Y int `json:"y"`
 }
 
@@ -5136,6 +6381,7 @@ type NativeWindowLayerRequest struct {
 
 // NativeWindowScreenshotRequest is the request type for native.window_screenshot.
 type NativeWindowScreenshotRequest struct {
+	// wire uint32 · min 0
 	WindowID int `json:"window_id"`
 }
 
@@ -5151,6 +6397,8 @@ type NativeWindowTitleRequest struct {
 
 // NativeWorldModelRequest is the request type for native.world_model.
 type NativeWorldModelRequest struct {
+	// If true, only return windows visible on screen.
+	// default false
 	OnScreen *bool `json:"on_screen,omitempty"`
 }
 
@@ -5205,28 +6453,63 @@ type NativeZoomEnabledResponse struct {
 
 // OutputStateRequest is the request type for output.state.
 type OutputStateRequest struct {
+	// The document that becomes the channel's current state. Its `channel`
+	// must be owned by the calling plugin.
 	State OutputState `json:"state"`
 }
 
 // OutputStateResponse is the response type for output.state.
 type OutputStateResponse struct {
+	// The generation the platform stamped on this state — monotonic, so a
+	// renderer can tell which of two states is newer.
+	// wire uint64 (64-bit) · min 0
 	Generation int  `json:"generation"`
 	Ok         bool `json:"ok"`
 }
 
 // OverridesApplyRequest is the request type for overrides.apply.
 type OverridesApplyRequest struct {
-	Action     string          `json:"action"`
-	Collection string          `json:"collection"`
-	Field      *string         `json:"field,omitempty"`
-	Fields     json.RawMessage `json:"fields,omitempty"`
-	ID         *string         `json:"id,omitempty"`
-	NewID      *string         `json:"new_id,omitempty"`
-	Tenant     *string         `json:"tenant,omitempty"`
+	// Action: "add", "remove", "restore", "reset", "patch", "rename", or
+	// "revert".
+	Action string `json:"action"`
+	// Collection name to override.
+	Collection string `json:"collection"`
+	// Field key for the "unpatch" action — removes ONE field from the
+	// tenant's patch of `id` (the per-field inverse of "patch"; the patch
+	// entry is dropped when its last field goes). The settings form's
+	// per-field revert: sparse by construction, so the reverted field
+	// resumes tracking the shipped default. Ignored by other actions.
+	// default null
+	Field *string `json:"field,omitempty"`
+	// Partial record fields for "patch", or complete record for "add".
+	// default null
+	Fields json.RawMessage `json:"fields,omitempty"`
+	// Record ID (id_field value) for patch/remove/restore actions. For
+	// "rename" it is the entry's *current* key (surface form) to replace; for
+	// "revert" the current key of the entry to reset to its plugin default.
+	// default null
+	ID *string `json:"id,omitempty"`
+	// New key (id_field value) for the "rename" action — the entry is re-added
+	// under this key with every other field (value, aliases) preserved.
+	// Ignored by other actions.
+	// default null
+	NewID *string `json:"new_id,omitempty"`
+	// Which overlay tenant this mutation targets — a writer-namespace value
+	// (`"_user"` or a plugin id). Defaults: a plugin caller targets its OWN
+	// overlay; a host caller targets `"_user"`. A plugin transporting a user
+	// gesture from its settings tab says `"_user"` explicitly; it may never
+	// target another plugin's overlay. Plugin overlays carry per-field
+	// patches only (`patch`/`restore`/`reset`) — annotation, not authorship
+	// (docs/design/DESIGN_WRITER_SCOPED_OVERLAY.md).
+	// default null
+	Tenant *string `json:"tenant,omitempty"`
 }
 
 // OverridesApplyResponse is the response type for overrides.apply.
 type OverridesApplyResponse struct {
+	// The entry's resulting key after the mutation, when the caller can't know
+	// it up front. Set by "revert" to the plugin-default key the entry fell
+	// back to (so a caller can re-point at it); None for other actions.
 	Key *string `json:"key,omitempty"`
 	Ok  bool    `json:"ok"`
 }
@@ -5238,21 +6521,38 @@ type OverridesListResponse struct {
 
 // PipelinesGrammarRequest is the request type for pipelines.grammar.
 type PipelinesGrammarRequest struct {
+	// When true, also return the full `vocabulary_update` payload a starting
+	// recognition pipeline would be seeded with — words plus narrow_to,
+	// word_weights, and the structured grammar DAG. Read-only: exporting
+	// does not touch the committed-vocab accounting. Used by the
+	// voice-regress harness to decode against the exact live grammar.
+	// default false
 	Full *bool `json:"full,omitempty"`
 }
 
 // PipelinesGrammarResponse is the response type for pipelines.grammar.
 type PipelinesGrammarResponse struct {
+	// Full seed payload (only with `full: true`).
 	VocabularyUpdate json.RawMessage `json:"vocabulary_update,omitempty"`
 	Words            []string        `json:"words"`
 }
 
 // PipelinesInjectRequest is the request type for pipelines.inject.
 type PipelinesInjectRequest struct {
-	Data      json.RawMessage `json:"data,omitempty"`
-	EventType string          `json:"event_type"`
-	Name      string          `json:"name"`
-	Stage     string          `json:"stage"`
+	// default null
+	Data json.RawMessage `json:"data,omitempty"`
+	// Must be a custom event type — `ext.<vendor>.<name>`. The typed families
+	// (`audio_*`, `transcript`, `vocabulary_update`) are the platform's to
+	// send; a plugin forging one into its own pipeline was previously
+	// unchecked here.
+	EventType string `json:"event_type"`
+	// Pipeline to configure. The caller must have introduced it.
+	Name string `json:"name"`
+	// Stage within that pipeline, spelled as the pipeline definition spells
+	// it — a role like `_platform.stt` or a qualified stage name. Required:
+	// before per-stage channels existed this operation could only ever reach
+	// the terminal stage, and silently did nothing for any other.
+	Stage string `json:"stage"`
 }
 
 // PipelinesInjectResponse is the response type for pipelines.inject.
@@ -5262,8 +6562,10 @@ type PipelinesInjectResponse struct {
 
 // PipelinesRunRequest is the request type for pipelines.run.
 type PipelinesRunRequest struct {
-	Ephemeral      *bool                      `json:"ephemeral,omitempty"`
-	Name           string                     `json:"name"`
+	// default false
+	Ephemeral *bool  `json:"ephemeral,omitempty"`
+	Name      string `json:"name"`
+	// default {}
 	ParamOverrides map[string]json.RawMessage `json:"param_overrides,omitempty"`
 }
 
@@ -5282,6 +6584,11 @@ type PipelinesStatusResponse struct {
 
 // PipelinesStopRequest is the request type for pipelines.stop.
 type PipelinesStopRequest struct {
+	// Shared-clock position (the AudioChunk timestamp_ms timebase) after
+	// which buffered audio must not be processed — e.g. the onset of a
+	// detected dictation stop phrase, from the transcript's word_onsets_ms.
+	// Absent = process everything.
+	// wire uint64 (64-bit) · default null · min 0
 	AudioCutoffMs *int   `json:"audio_cutoff_ms,omitempty"`
 	Name          string `json:"name"`
 }
@@ -5293,7 +6600,11 @@ type PipelinesStopResponse struct {
 
 // PipelinesWarmRequest is the request type for pipelines.warm.
 type PipelinesWarmRequest struct {
-	Name           string                     `json:"name"`
+	Name string `json:"name"`
+	// Per-stage param overrides applied to the warmed consumer stages, mirroring
+	// `pipelines.run`. Lets a caller prewarm the model it will actually run (e.g.
+	// a user-selected STT model) instead of only the pipeline's default.
+	// default {}
 	ParamOverrides map[string]json.RawMessage `json:"param_overrides,omitempty"`
 }
 
@@ -5304,21 +6615,42 @@ type PipelinesWarmResponse struct {
 
 // PluginDataExportRequest is the request type for plugin.data.export.
 type PluginDataExportRequest struct {
+	// Name to save it under. Defaults to the source file's name. A path
+	// separator here is refused rather than resolved — this names a file in
+	// Downloads, not a location.
+	// default null
 	Filename *string `json:"filename,omitempty"`
-	Path     string  `json:"path"`
+	// Path of the file to export, relative to the caller's data dir.
+	Path string `json:"path"`
 }
 
 // PluginDataExportResponse is the response type for plugin.data.export.
 type PluginDataExportResponse struct {
-	Bytes int    `json:"bytes"`
-	Path  string `json:"path"`
+	// wire uint64 (64-bit) · min 0
+	Bytes int `json:"bytes"`
+	// Absolute path of the exported copy, for the caller to show the user.
+	Path string `json:"path"`
 }
 
 // PluginDebugRequest is the request type for plugin.debug.
 type PluginDebugRequest struct {
-	Data  json.RawMessage `json:"data,omitempty"`
+	// Arbitrary JSON payload — serialized to one line in the log file
+	// so `tail -f` and `grep` work, while `jq` can still operate on
+	// the payload column.
+	// default null
+	Data json.RawMessage `json:"data,omitempty"`
+	// Severity level for the line. v1 callers omit this and the handler
+	// falls through to `Debug`; v2 callers pass one of
+	// `trace`/`debug`/`info`/`warn`/`error`. Lines below the per-plugin
+	// threshold are dropped at the handler; `warn`/`error` additionally
+	// cross-post to `actuator.log` via the `plugin.diagnostic` event.
 	Level *PluginLogLevel `json:"level,omitempty"`
-	Tag   *string         `json:"tag,omitempty"`
+	// Optional structural tag (e.g. `BK_ACTIVATE_PATH`, `STT_BATCH`).
+	// Renders between the timestamp and the payload in the per-plugin
+	// log file, matching the actuator log's `[TAG]` column convention.
+	// Empty/missing renders as `[<ts>] <payload>` with no tag bracket.
+	// default null
+	Tag *string `json:"tag,omitempty"`
 }
 
 // PluginDebugResponse is the response type for plugin.debug.
@@ -5328,8 +6660,24 @@ type PluginDebugResponse struct {
 
 // PluginReportHealthRequest is the request type for plugin.report_health.
 type PluginReportHealthRequest struct {
-	Degraded bool    `json:"degraded"`
-	Reason   *string `json:"reason,omitempty"`
+	// `true` when the plugin is running but cannot do its job — an external
+	// dependency it needs is gone, a device it drives is unplugged, a
+	// companion it talks to has disconnected. `false` clears the report.
+	//
+	// This is NOT for "something failed once": a failed call is a failed
+	// call. It is for a standing condition the user can act on and would
+	// otherwise have to guess at.
+	Degraded bool `json:"degraded"`
+	// One user-facing sentence saying what is wrong and, where possible, what
+	// to do about it — "Chrome — extension disconnected; reload it at
+	// chrome://extensions". The plugin owns this text; the platform invents
+	// no copy for a plugin's failure.
+	//
+	// Required when `degraded` is true and ignored otherwise. Truncated to
+	// 200 characters (one status line; a plugin with more to say has
+	// `plugin.debug`) and rendered as data, never markup.
+	// default null
+	Reason *string `json:"reason,omitempty"`
 }
 
 // PluginReportHealthResponse is the response type for plugin.report_health.
@@ -5344,6 +6692,8 @@ type PrivacyGetRecordingRequest struct {
 
 // PrivacyGetRecordingResponse is the response type for privacy.get_recording.
 type PrivacyGetRecordingResponse struct {
+	// Effective recording flag — the user override if set, otherwise the
+	// manifest's `default_recording_enabled`.
 	Enabled bool `json:"enabled"`
 }
 
@@ -5360,94 +6710,147 @@ type PrivacySetRecordingResponse struct {
 
 // PrivilegesListResponse is the response type for privileges.list.
 type PrivilegesListResponse struct {
+	// Required first, then optional, manifest order within each.
 	Privileges []PrivilegeStatusEntry `json:"privileges"`
 }
 
 // PrivilegesRelinquishRequest is the request type for privileges.relinquish.
 type PrivilegesRelinquishRequest struct {
+	// Privilege name — must appear in the calling plugin's
+	// `optional_privileges`.
 	Privilege string `json:"privilege"`
 }
 
 // PrivilegesRelinquishResponse is the response type for privileges.relinquish.
 type PrivilegesRelinquishResponse struct {
+	// "released" — a live grant was returned (effective + persisted).
+	// "withdrawn" — only a pending request existed; it was cleared.
+	// "noop" — neither granted nor pending.
 	Status string `json:"status"`
 }
 
 // PrivilegesRequestRequest is the request type for privileges.request.
 type PrivilegesRequestRequest struct {
-	Privilege string  `json:"privilege"`
-	Reason    *string `json:"reason,omitempty"`
+	// Privilege name — must appear in the calling plugin's
+	// `optional_privileges`.
+	Privilege string `json:"privilege"`
+	// Short attributed reason shown to the user next to the Approve
+	// button (e.g. "script 'headphones' uses query:power"). Untrusted
+	// text; capped server-side.
+	// default ""
+	Reason *string `json:"reason,omitempty"`
 }
 
 // PrivilegesRequestResponse is the response type for privileges.request.
 type PrivilegesRequestResponse struct {
+	// "granted" — already effective, proceed (treat as a race won).
+	// "pending" — recorded as a to-do awaiting the user.
+	// "denied" — the user dismissed this request earlier; not re-asked.
 	Status string `json:"status"`
 }
 
 // RecognitionBiasApplyRequest is the request type for recognition.bias.apply.
 type RecognitionBiasApplyRequest struct {
-	Force    *bool   `json:"force,omitempty"`
+	// Overwrite a manually-set value. Without it, `manual` provenance refuses
+	// (`applied: false`) so the caller can confirm with the user first — a
+	// calibration apply must never silently clobber a hand-set value.
+	// default false
+	Force *bool `json:"force,omitempty"`
+	// Strength to apply (> 0; the setting is also switched on).
+	// wire double
 	Strength float64 `json:"strength"`
 }
 
 // RecognitionBiasApplyResponse is the response type for recognition.bias.apply.
 type RecognitionBiasApplyResponse struct {
-	Applied            bool   `json:"applied"`
+	Applied bool `json:"applied"`
+	// Provenance of the value in place before this call
+	// ("default" | "manual" | "calibration").
 	PreviousProvenance string `json:"previous_provenance"`
 }
 
 // RecognitionBiasGetResponse is the response type for recognition.bias.get.
 type RecognitionBiasGetResponse struct {
-	Enabled    bool    `json:"enabled"`
-	Provenance string  `json:"provenance"`
-	Strength   float64 `json:"strength"`
+	Enabled bool `json:"enabled"`
+	// "default" | "manual" | "calibration"
+	Provenance string `json:"provenance"`
+	// wire double
+	Strength float64 `json:"strength"`
 }
 
 // RecognitionBiasSetRequest is the request type for recognition.bias.set.
 type RecognitionBiasSetRequest struct {
-	Enabled  *bool    `json:"enabled,omitempty"`
+	// Omitted = leave the on/off half unchanged.
+	// default null
+	Enabled *bool `json:"enabled,omitempty"`
+	// Omitted = leave the stored strength unchanged. Negative → 0.
+	// wire double · default null
 	Strength *float64 `json:"strength,omitempty"`
 }
 
 // RecognitionBiasSetResponse is the response type for recognition.bias.set.
 type RecognitionBiasSetResponse struct {
-	Enabled    bool    `json:"enabled"`
-	Provenance string  `json:"provenance"`
-	Strength   float64 `json:"strength"`
+	Enabled bool `json:"enabled"`
+	// "default" | "manual" | "calibration"
+	Provenance string `json:"provenance"`
+	// wire double
+	Strength float64 `json:"strength"`
 }
 
 // RecognitionRedecodeRequest is the request type for recognition.redecode.
 type RecognitionRedecodeRequest struct {
-	Items     []RedecodeItem `json:"items"`
-	MaxActive *int           `json:"max_active,omitempty"`
-	Model     string         `json:"model"`
-	Stage     string         `json:"stage"`
+	Items []RedecodeItem `json:"items"`
+	// wire uint32 · default null · min 0
+	MaxActive *int `json:"max_active,omitempty"`
+	// Model dir name under app-support `models/` (single component, no
+	// traversal), e.g. `"sherpa-offline-nemo"`.
+	Model string `json:"model"`
+	// Registered stage id whose binary's `probe` subcommand runs the re-decode,
+	// e.g. `"voice.sherpa_commands"`. Validated against the stage registry.
+	Stage string `json:"stage"`
 }
 
 // RecognitionRedecodeResponse is the response type for recognition.redecode.
 type RecognitionRedecodeResponse struct {
-	Lines        []RedecodeLine `json:"lines"`
-	ModelVersion *string        `json:"model_version,omitempty"`
+	Lines []RedecodeLine `json:"lines"`
+	// Stable content version of the acoustic model used for this re-decode — a
+	// hash of the model dir's `model.onnx`. Lets a per-clip fragility history
+	// distinguish re-probes across a model swap (a constant engine id can't).
+	// Empty when the model file is unreadable.
+	ModelVersion *string `json:"model_version,omitempty"`
 }
 
 // SelectionPickRequest is the request type for selection.pick.
 type SelectionPickRequest struct {
+	// Zero-based index into the previously-set selection items array.
+	// wire uint64 (64-bit) · min 0
 	Index int `json:"index"`
 }
 
 // SelectionPickResponse is the response type for selection.pick.
 type SelectionPickResponse struct {
+	// Control message to forward to the Swift host
+	// (always `"close hud"` here).
 	ControlMessage string `json:"control_message"`
-	ItemID         string `json:"item_id"`
-	Ok             bool   `json:"ok"`
-	ResetEngine    bool   `json:"reset_engine"`
+	// Id of the picked item (from the original `HUDItem.id`).
+	ItemID string `json:"item_id"`
+	Ok     bool   `json:"ok"`
+	// Whether the input plugin should reset its recognition engine
+	// after the pick. Always `true` for `selection.pick`.
+	ResetEngine bool `json:"reset_engine"`
 }
 
 // SelectionSetRequest is the request type for selection.set.
 type SelectionSetRequest struct {
-	Channel *string         `json:"channel,omitempty"`
-	Items   json.RawMessage `json:"items,omitempty"`
-	Title   *string         `json:"title,omitempty"`
+	// HUD channel to show the selection in. Defaults to `"main"`.
+	// default null
+	Channel *string `json:"channel,omitempty"`
+	// Array of `HUDItem` objects: `{ id, tag?, title, subtitle?, icon? }`.
+	// default null
+	Items json.RawMessage `json:"items,omitempty"`
+	// Optional title displayed at the top of the selection HUD.
+	// default null
+	Title *string `json:"title,omitempty"`
 }
 
 // SelectionSetResponse is the response type for selection.set.
@@ -5462,13 +6865,19 @@ type SessionBoundaryResponse struct {
 
 // SessionEndCleanupResponse is the response type for session.end_cleanup.
 type SessionEndCleanupResponse struct {
+	// Control message to forward to the Swift host
+	// (e.g. "hide discovery", "hide hud"), if any.
 	ControlMessage *string `json:"control_message,omitempty"`
 	Ok             bool    `json:"ok"`
-	ResetEngine    bool    `json:"reset_engine"`
+	// Whether the input plugin should reset its recognition engine after
+	// the session ends. Always `true` for `session.end_cleanup`.
+	ResetEngine bool `json:"reset_engine"`
 }
 
 // SettingsPatchSignalsRequest is the request type for settings.patch_signals.
 type SettingsPatchSignalsRequest struct {
+	// Datastar signal expression, e.g. `{activeGroup: 2, activeDialModeIndex: 1}`.
+	// Sent as a `datastar-patch-signals` SSE event to all active settings streams.
 	Signals string `json:"signals"`
 }
 
@@ -5494,47 +6903,89 @@ type SettingsRefreshResponse struct {
 
 // SettingsRulesCreateRequest is the request type for settings.rules_create.
 type SettingsRulesCreateRequest struct {
-	Newruleactionjson   *string `json:"newruleactionjson,omitempty"`
-	Newruleactiontype   *string `json:"newruleactiontype,omitempty"`
-	Newruleactionval    *string `json:"newruleactionval,omitempty"`
-	Newrulecategory     *string `json:"newrulecategory,omitempty"`
-	Newruleclearstags   *string `json:"newruleclearstags,omitempty"`
-	Newruledescription  *string `json:"newruledescription,omitempty"`
-	Newrulephrase       *string `json:"newrulephrase,omitempty"`
+	// Raw JSON action body, used when `newruleactiontype = "json"`.
+	// default null
+	Newruleactionjson *string `json:"newruleactionjson,omitempty"`
+	// Action variant (dotted type like "system.volume_up", "sequence", "json", ...).
+	// Determines which other `newruleaction*` fields are consumed.
+	// default null
+	Newruleactiontype *string `json:"newruleactiontype,omitempty"`
+	// Action value used by simple action types (e.g. text for "input.type").
+	// default null
+	Newruleactionval *string `json:"newruleactionval,omitempty"`
+	// Category bucket the rule belongs to. Defaults to "User".
+	// default null
+	Newrulecategory *string `json:"newrulecategory,omitempty"`
+	// Comma-separated tags the rule clears when it fires.
+	// default null
+	Newruleclearstags *string `json:"newruleclearstags,omitempty"`
+	// Optional human-readable description shown in the rules table.
+	// default null
+	Newruledescription *string `json:"newruledescription,omitempty"`
+	// The phrase the user wants matched (with optional `<slot>` placeholders).
+	// Required — `build_command_from_signals` rejects an empty phrase.
+	// default null
+	Newrulephrase *string `json:"newrulephrase,omitempty"`
+	// Comma-separated tags required for the rule to match.
+	// default null
 	Newrulerequirestags *string `json:"newrulerequirestags,omitempty"`
-	Newrulesetstags     *string `json:"newrulesetstags,omitempty"`
+	// Comma-separated tags the rule sets when it fires.
+	// default null
+	Newrulesetstags *string `json:"newrulesetstags,omitempty"`
 }
 
 // SettingsRulesCreateResponse is the response type for settings.rules_create.
 type SettingsRulesCreateResponse struct {
+	// Terminal-command-rule conflict report: a human-readable reason if this
+	// candidate command would make another command unreachable (or be
+	// unreachable itself). **Advisory only** — the actuator does NOT block the
+	// save; the caller decides what to do. Null when there's no conflict. With
+	// `check_only: true` in the request, the candidate is checked and reported
+	// but NOT saved. See docs/design/DESIGN_COMMAND_FINALIZATION_RULE.md.
 	Conflict *string `json:"conflict,omitempty"`
 	Ok       bool    `json:"ok"`
 }
 
 // SettingsRulesUpdateRequest is the request type for settings.rules_update.
 type SettingsRulesUpdateRequest struct {
-	Canonical           string  `json:"canonical"`
-	Newruleactionjson   *string `json:"newruleactionjson,omitempty"`
-	Newruleactiontype   *string `json:"newruleactiontype,omitempty"`
-	Newruleactionval    *string `json:"newruleactionval,omitempty"`
-	Newrulecategory     *string `json:"newrulecategory,omitempty"`
-	Newruleclearstags   *string `json:"newruleclearstags,omitempty"`
-	Newruledescription  *string `json:"newruledescription,omitempty"`
-	Newrulephrase       *string `json:"newrulephrase,omitempty"`
+	// Existing canonical command id (the previous canonical phrase) of
+	// the rule being updated. Required.
+	Canonical string `json:"canonical"`
+	// default null
+	Newruleactionjson *string `json:"newruleactionjson,omitempty"`
+	// default null
+	Newruleactiontype *string `json:"newruleactiontype,omitempty"`
+	// default null
+	Newruleactionval *string `json:"newruleactionval,omitempty"`
+	// default null
+	Newrulecategory *string `json:"newrulecategory,omitempty"`
+	// default null
+	Newruleclearstags *string `json:"newruleclearstags,omitempty"`
+	// default null
+	Newruledescription *string `json:"newruledescription,omitempty"`
+	// default null
+	Newrulephrase *string `json:"newrulephrase,omitempty"`
+	// default null
 	Newrulerequirestags *string `json:"newrulerequirestags,omitempty"`
-	Newrulesetstags     *string `json:"newrulesetstags,omitempty"`
+	// default null
+	Newrulesetstags *string `json:"newrulesetstags,omitempty"`
 }
 
 // SettingsRulesUpdateResponse is the response type for settings.rules_update.
 type SettingsRulesUpdateResponse struct {
+	// See `SettingsRulesCreateResult::conflict` — advisory conflict report;
+	// the actuator reports but never blocks.
 	Conflict *string `json:"conflict,omitempty"`
 	Ok       bool    `json:"ok"`
 }
 
 // SystemLaunchAppRequest is the request type for system.launch_app.
 type SystemLaunchAppRequest struct {
-	BundleID    string `json:"bundle_id"`
-	NewInstance *bool  `json:"new_instance,omitempty"`
+	// Bundle ID of the application to launch (e.g. "com.apple.Safari").
+	BundleID string `json:"bundle_id"`
+	// Whether to launch a fresh instance even if the app is already running.
+	// default false
+	NewInstance *bool `json:"new_instance,omitempty"`
 }
 
 // SystemLaunchAppResponse is the response type for system.launch_app.
@@ -5544,9 +6995,16 @@ type SystemLaunchAppResponse struct {
 
 // SystemNotifyRequest is the request type for system.notify.
 type SystemNotifyRequest struct {
-	Body         string `json:"body"`
-	DurationSecs *int   `json:"duration_secs,omitempty"`
-	Title        string `json:"title"`
+	// Notification body text (rendered inside `<div id="body-text">`).
+	Body string `json:"body"`
+	// Auto-dismiss duration in seconds. When absent, defaults to
+	// [`DEFAULT_NOTIFY_DURATION_SECS`] (5s). Pass `0` for a sticky
+	// notification that only closes when the user clicks Dismiss.
+	// Pass any positive integer for a custom duration.
+	// wire uint32 · default null · min 0
+	DurationSecs *int `json:"duration_secs,omitempty"`
+	// Notification title (rendered as `<h1 id="title">`).
+	Title string `json:"title"`
 }
 
 // SystemNotifyResponse is the response type for system.notify.
@@ -5556,6 +7014,7 @@ type SystemNotifyResponse struct {
 
 // SystemRunShellRequest is the request type for system.run_shell.
 type SystemRunShellRequest struct {
+	// Shell command to execute via `/bin/bash -c`.
 	Command string `json:"command"`
 }
 
@@ -5576,20 +7035,35 @@ type TrialEndRequest struct {
 
 // TrialEndResponse is the response type for trial.end.
 type TrialEndResponse struct {
+	// Number of fixture-release RPCs spawned. Caller doesn't await them
+	// — best-effort cleanup that runs in the background.
+	// wire uint · min 0
 	ReleasedHandleCount int `json:"released_handle_count"`
 }
 
 // TrialEnterContextRequest is the request type for trial.enter_context.
 type TrialEnterContextRequest struct {
+	// Command id from `commands.enumerate` — `<owner_plugin>:<pattern>`.
 	CommandID string `json:"command_id"`
 	TrialID   string `json:"trial_id"`
 }
 
 // TrialEnterContextResponse is the response type for trial.enter_context.
 type TrialEnterContextResponse struct {
-	FixtureHandle string   `json:"fixture_handle"`
-	Kind          string   `json:"kind"`
-	Tags          []string `json:"tags"`
+	// Fixture handle returned by a dynamic command's owner; empty for
+	// static tiers. The actuator already registered it under the trial.
+	FixtureHandle string `json:"fixture_handle"`
+	// `"static"` (base / mode-gated / slotted) or `"dynamic"` (hints) —
+	// matches the host-side `ContextSpec.Kind`.
+	Kind string `json:"kind"`
+	// Active-tag set the matcher sees during the trial: a mode-gated
+	// command's `requires_tags` (empty for base/slotted). Empty for the
+	// dynamic tier, whose tags are written plugin-side by the fixture.
+	// The actuator platform-wrote these and recorded them on the trial so
+	// `trial_end` clears them. The host passes them to
+	// `commands.resolve --preview` to compute the functional (Resolves)
+	// signal.
+	Tags []string `json:"tags"`
 }
 
 // TrialRegisterFixtureRequest is the request type for trial.register_fixture.
@@ -5601,11 +7075,17 @@ type TrialRegisterFixtureRequest struct {
 
 // TrialResolveSamplesRequest is the request type for trial.resolve_samples.
 type TrialResolveSamplesRequest struct {
+	// Command id from `commands.enumerate` — `<owner_plugin>:<pattern>`.
 	CommandID string `json:"command_id"`
 }
 
 // TrialResolveSamplesResponse is the response type for trial.resolve_samples.
 type TrialResolveSamplesResponse struct {
+	// Concrete prompts to walk for this command, supplied by its owning
+	// plugin's `trial_samples` hook. Empty when the command's owner
+	// doesn't implement the (optional) hook or declines — the calibration
+	// host then falls back to its own default sample derivation (codewords
+	// for dynamic commands, the generic filler for free-text slots).
 	Prompts []string `json:"prompts"`
 }
 
@@ -5623,88 +7103,163 @@ type WiringDescribeResponse struct {
 
 // OnActionRequest is the request type for on_action.
 type OnActionRequest struct {
-	Action         string          `json:"action"`
-	ActiveApp      *string         `json:"active_app,omitempty"`
-	ActiveWindowID *string         `json:"active_window_id,omitempty"`
-	Params         json.RawMessage `json:"params,omitempty"`
-	Phase          *string         `json:"phase,omitempty"`
+	// Fully qualified action type (e.g., 'voice.dictation', 'windows.snap').
+	Action string `json:"action"`
+	// Active application bundle ID.
+	// default ""
+	ActiveApp *string `json:"active_app,omitempty"`
+	// default ""
+	ActiveWindowID *string `json:"active_window_id,omitempty"`
+	// Typed action parameters.
+	// default null
+	Params json.RawMessage `json:"params,omitempty"`
+	// Optional phase: `"start"` or `"stop"`. Empty for non-phased actions
+	// (single-fire keybinds, tap-mode voice commands).
+	// default ""
+	Phase *string `json:"phase,omitempty"`
 }
 
 // OnActionResponse is the response type for on_action.
 type OnActionResponse struct {
-	ControlMessage *string         `json:"control_message,omitempty"`
-	Result         json.RawMessage `json:"result,omitempty"`
-	Status         OnActionStatus  `json:"status"`
+	// Control message to forward to the Swift host (e.g., 'show commands').
+	// default ""
+	ControlMessage *string `json:"control_message,omitempty"`
+	// Structured result payload. Opaque to the actuator — piped through
+	// to the dispatch caller as-is. Plugins use this to return data from
+	// action handlers (e.g., computed values, confirmation details).
+	Result json.RawMessage `json:"result,omitempty"`
+	// `"ok"`, `"error"`, or `"not_handled"`.
+	Status OnActionStatus `json:"status"`
 }
 
 // OnCommandsChangedRequest is the request type for on_commands_changed.
 type OnCommandsChangedRequest struct {
-	CommandsByPlugin json.RawMessage   `json:"commands_by_plugin"`
-	UserCommands     []json.RawMessage `json:"user_commands,omitempty"`
+	// All commands grouped by plugin ID.
+	CommandsByPlugin json.RawMessage `json:"commands_by_plugin"`
+	// default []
+	UserCommands []json.RawMessage `json:"user_commands,omitempty"`
 }
 
 // OnCommandsChangedResponse is the response type for on_commands_changed.
 type OnCommandsChangedResponse struct {
+	// wire int64 (64-bit)
 	ProcessedCount int `json:"processed_count"`
 }
 
 // OnTranscriptRequest is the request type for on_transcript.
 type OnTranscriptRequest struct {
-	ActiveTags       []string  `json:"active_tags,omitempty"`
-	Confidence       *float64  `json:"confidence,omitempty"`
-	DictationProfile *string   `json:"dictation_profile,omitempty"`
-	IsFinal          *bool     `json:"is_final,omitempty"`
-	Pipeline         string    `json:"pipeline"`
-	Text             string    `json:"text"`
-	WordOnsetsMs     []int     `json:"word_onsets_ms,omitempty"`
-	WordScores       []float64 `json:"word_scores,omitempty"`
+	// Tags active when the transcript was received. Advisory: the matcher
+	// consults authoritative state during `commands.resolve`, so a tag
+	// absent here can still gate matching.
+	// default []
+	ActiveTags []string `json:"active_tags,omitempty"`
+	// Mean per-word acoustic margin, when the stage carried one.
+	// wire float
+	Confidence *float64 `json:"confidence,omitempty"`
+	// What the active gates declare this utterance IS, if any declared one.
+	// Empty means none did, and the consumer's default stands.
+	// default ""
+	DictationProfile *string `json:"dictation_profile,omitempty"`
+	// Whether the recognition stage marked this segment final.
+	//
+	// Do not read this as "the utterance is over". Command recognizers
+	// finalize per utterance and emit their recognitions NON-final,
+	// signalling end-of-hold only by stopping the pipeline — so on the
+	// command path `is_final` marks an empty end-of-stream marker, not the
+	// content. The platform does not deliver empty-text transcripts here.
+	// default false
+	IsFinal *bool `json:"is_final,omitempty"`
+	// Pipeline that produced this transcript. A plugin may own several.
+	Pipeline string `json:"pipeline"`
+	// Recognized text.
+	Text string `json:"text"`
+	// Shared-clock onset of each word, aligned 1:1 with `text`'s words.
+	// default []
+	WordOnsetsMs []int `json:"word_onsets_ms,omitempty"`
+	// Per-word acoustic margin, aligned 1:1 with `text`'s words: positive =
+	// the audio supported the word, negative = the closed grammar coerced it.
+	// default []
+	WordScores []float64 `json:"word_scores,omitempty"`
 }
 
 // OnTranscriptResponse is the response type for on_transcript.
 type OnTranscriptResponse struct {
+	// Typed `Action` values. Loose in the schema for the same reason
+	// `dispatch`'s `action` is: the Action enum's wire shape is the
+	// dispatch contract, documented there rather than duplicated per
+	// method.
+	// default []
 	Actions []json.RawMessage `json:"actions,omitempty"`
 }
 
 // RenderSettingsRequest is the request type for render_settings.
 type RenderSettingsRequest struct {
-	ActionTypeSchemas map[string]ActionTypeSchema       `json:"action_type_schemas,omitempty"`
-	CollectionData    map[string]json.RawMessage        `json:"collection_data,omitempty"`
-	CommandFilter     *string                           `json:"command_filter,omitempty"`
-	Commands          []CommandRowData                  `json:"commands,omitempty"`
-	ListSchemas       map[string]SettingsListSchemaInfo `json:"list_schemas,omitempty"`
-	Search            string                            `json:"search"`
-	TabKey            string                            `json:"tab_key"`
-	TagSchemas        map[string]SettingsTagSchemaInfo  `json:"tag_schemas,omitempty"`
+	// Action type schemas (built-in + all plugin-declared) for editor rendering.
+	// Keyed by fully-qualified action type (e.g. "voice.dictate", "keyboard.press").
+	ActionTypeSchemas map[string]ActionTypeSchema `json:"action_type_schemas,omitempty"`
+	// Collection data populated from the tab's `reads` declaration.
+	// Keyed by collection name, values are the raw collection data.
+	CollectionData map[string]json.RawMessage `json:"collection_data,omitempty"`
+	// Filter string for the commands tab (e.g. plugin name or category).
+	CommandFilter *string `json:"command_filter,omitempty"`
+	// Command rows for plugins that render command editors.
+	Commands []CommandRowData `json:"commands,omitempty"`
+	// Named list schemas from plugin manifests (list_name → schema info).
+	ListSchemas map[string]SettingsListSchemaInfo `json:"list_schemas,omitempty"`
+	// Search query for filtering content (empty string when no search active).
+	Search string `json:"search"`
+	// Which settings tab to render (from manifest implements.settings_tabs[].key).
+	TabKey string `json:"tab_key"`
+	// Tag schemas from plugin manifests (tag_name → schema info).
+	TagSchemas map[string]SettingsTagSchemaInfo `json:"tag_schemas,omitempty"`
 }
 
 // RenderSettingsResponse is the response type for render_settings.
 type RenderSettingsResponse struct {
-	CSS  *string `json:"css,omitempty"`
-	HTML string  `json:"html"`
+	// CSS styles scoped to this settings tab. Injected as an inline style element in the iframe.
+	// default ""
+	CSS *string `json:"css,omitempty"`
+	// HTML content for the settings tab. May include Datastar attributes for reactivity.
+	HTML string `json:"html"`
 }
 
 // TrialApplyFixtureRequest is the request type for trial_apply_fixture.
 type TrialApplyFixtureRequest struct {
+	// The dynamic command being calibrated — formatted as
+	// `<owner_plugin>:<display_pattern>`, matching `commands.enumerate`'s
+	// `id` field. The plugin uses this to decide which fixture recipe to
+	// run (most owners have one canonical fixture per command).
 	CommandID string `json:"command_id"`
 }
 
 // TrialApplyFixtureResponse is the response type for trial_apply_fixture.
 type TrialApplyFixtureResponse struct {
+	// Opaque, plugin-chosen handle. The actuator hands it back via
+	// `trial_release_fixture` so the plugin can reverse this
+	// specific fixture's writes without keeping ambient state.
 	FixtureHandle string `json:"fixture_handle"`
 }
 
 // TrialReleaseFixtureRequest is the request type for trial_release_fixture.
 type TrialReleaseFixtureRequest struct {
+	// Handle previously returned by `trial_apply_fixture`.
 	FixtureHandle string `json:"fixture_handle"`
 }
 
 // TrialSamplesRequest is the request type for trial_samples.
 type TrialSamplesRequest struct {
+	// The command being calibrated — `<owner_plugin>:<display_pattern>`,
+	// matching `commands.enumerate`'s `id`.
 	CommandID string `json:"command_id"`
 }
 
 // TrialSamplesResponse is the response type for trial_samples.
 type TrialSamplesResponse struct {
+	// Concrete phrases the calibration host should walk for this command —
+	// the owner's realistic sample of an otherwise un-derivable vocabulary
+	// (a runtime list, a dynamic hint cross-product, free-text examples).
+	// The owner owns the count and how slots combine; the host walks them
+	// as-is. An empty list declines — the host falls back to its own default.
 	Prompts []string `json:"prompts"`
 }
 
@@ -5712,52 +7267,83 @@ type TrialSamplesResponse struct {
 
 // ActionExecutedEventParams is the payload of the _platform.action.executed event.
 type ActionExecutedEventParams struct {
+	// Human-readable description of the executed action.
 	Action string `json:"action"`
 }
 
 // AppFocusedEventParams is the payload of the _platform.app.focused event.
 type AppFocusedEventParams struct {
+	// macOS bundle identifier (e.g., `com.google.Chrome`).
 	BundleID string `json:"bundle_id"`
 }
 
 // AudioDevicesChangedEventParams is the payload of the _platform.audio_devices.changed event.
 type AudioDevicesChangedEventParams struct {
-	DeviceID  int     `json:"device_id"`
+	// CoreAudio device id.
+	// wire uint32 · min 0
+	DeviceID int `json:"device_id"`
+	// For kind="default_changed": which default moved ("input" or "output").
 	Direction *string `json:"direction,omitempty"`
-	IsInput   *bool   `json:"is_input,omitempty"`
-	IsOutput  *bool   `json:"is_output,omitempty"`
-	Kind      string  `json:"kind"`
-	Name      string  `json:"name"`
-	UID       string  `json:"uid"`
+	// For kind="added": whether the device has input streams.
+	IsInput *bool `json:"is_input,omitempty"`
+	// For kind="added": whether the device has output streams.
+	IsOutput *bool `json:"is_output,omitempty"`
+	// What changed: "added", "removed", or "default_changed".
+	Kind string `json:"kind"`
+	// Device name (e.g. "External Headphones").
+	Name string `json:"name"`
+	// CoreAudio device UID.
+	UID string `json:"uid"`
 }
 
 // BleNotificationEventParams is the payload of the _platform.ble.notification event.
 type BleNotificationEventParams struct {
+	// GATT characteristic UUID.
 	CharacteristicUuid string `json:"characteristic_uuid"`
-	Data               []int  `json:"data"`
-	DeviceIdentifier   string `json:"device_identifier"`
-	ServiceUuid        string `json:"service_uuid"`
+	// Notification payload bytes.
+	Data []int `json:"data"`
+	// CoreBluetooth peripheral UUID.
+	DeviceIdentifier string `json:"device_identifier"`
+	// GATT service UUID.
+	ServiceUuid string `json:"service_uuid"`
 }
 
 // CaptureProgressEventParams is the payload of the _platform.capture.progress event.
 type CaptureProgressEventParams struct {
-	Captured       map[string]json.RawMessage `json:"captured"`
-	CommandPhrase  string                     `json:"command_phrase"`
-	NextCapture    string                     `json:"next_capture"`
-	NextCollection string                     `json:"next_collection"`
-	OwnerPlugin    string                     `json:"owner_plugin"`
+	// All captures bound by the partial match, keyed by binding name.
+	Captured map[string]json.RawMessage `json:"captured"`
+	// Display form of the command's pattern (for log readability).
+	CommandPhrase string `json:"command_phrase"`
+	// Capture name the dependent capture is waiting to fill
+	// (e.g. `"suffix"`).
+	NextCapture string `json:"next_capture"`
+	// Collection name resolved by substituting bound captures into
+	// the dependent capture's template (e.g. `"browser_hints_arch"`).
+	NextCollection string `json:"next_collection"`
+	// The plugin that owns the command being partially matched.
+	// Subscribers filter on this to receive only events for their
+	// own commands.
+	OwnerPlugin string `json:"owner_plugin"`
 }
 
 // ClipboardChangedEventParams is the payload of the _platform.clipboard.changed event.
 type ClipboardChangedEventParams struct {
-	ChangeCount int      `json:"change_count"`
-	Types       []string `json:"types"`
+	// `NSPasteboard.changeCount` after the change. Monotonic per session;
+	// useful for deduping and for detecting missed changes.
+	// wire uint64 (64-bit) · min 0
+	ChangeCount int `json:"change_count"`
+	// Pasteboard type identifiers now available (e.g.
+	// `public.utf8-plain-text`, `public.png`). Enough to filter on without
+	// reading anything.
+	Types []string `json:"types"`
 }
 
 // CollectionUpdatedEventParams is the payload of the _platform.collection.updated event.
 type CollectionUpdatedEventParams struct {
+	// Name of the collection that was updated.
 	Collection string `json:"collection"`
-	Writer     string `json:"writer"`
+	// Plugin ID or `_platform` that wrote the update.
+	Writer string `json:"writer"`
 }
 
 // DisplayChangedEventParams is the payload of the _platform.display.changed event.
@@ -5767,28 +7353,44 @@ type DisplayChangedEventParams struct {
 
 // EffectDisplacedEventParams is the payload of the _platform.effect.displaced event.
 type EffectDisplacedEventParams struct {
+	// Plugin id that lost top-of-stack ownership. Subscribers filter on
+	// this to know whether *they* are the displaced plugin (vs. another
+	// plugin's stack frame being overridden).
 	DisplacedOwner string `json:"displaced_owner"`
-	Effect         string `json:"effect"`
-	NewOwner       string `json:"new_owner"`
+	// The effect name that was displaced (e.g. "suppress_notifications").
+	Effect string `json:"effect"`
+	// Plugin id that just took top-of-stack ownership of the effect.
+	NewOwner string `json:"new_owner"`
 }
 
 // EffectOwnershipChangedEventParams is the payload of the _platform.effect.ownership_changed event.
 type EffectOwnershipChangedEventParams struct {
-	Effect   string  `json:"effect"`
-	Owner    *string `json:"owner,omitempty"`
+	// The effect whose effective owner changed — a bare platform name or
+	// a qualified `<plugin_id>.<name>`.
+	Effect string `json:"effect"`
+	// Plugin now holding the top of the stack. `None` means the effect
+	// went free — the transition a behaviour-applying provider unapplies
+	// on.
+	Owner *string `json:"owner,omitempty"`
+	// Plugin that held the top before this change. `None` means the
+	// effect was previously free.
 	Previous *string `json:"previous,omitempty"`
 }
 
 // HidConnectedEventParams is the payload of the _platform.hid.connected event.
 type HidConnectedEventParams struct {
-	Axes      int     `json:"axes"`
-	BleUuid   *string `json:"ble_uuid,omitempty"`
-	Buttons   int     `json:"buttons"`
-	DeviceID  string  `json:"device_id"`
-	Product   string  `json:"product"`
-	ProductID int     `json:"product_id"`
-	Transport string  `json:"transport"`
-	VendorID  int     `json:"vendor_id"`
+	// wire uint32 · min 0
+	Axes    int     `json:"axes"`
+	BleUuid *string `json:"ble_uuid,omitempty"`
+	// wire uint32 · min 0
+	Buttons  int    `json:"buttons"`
+	DeviceID string `json:"device_id"`
+	Product  string `json:"product"`
+	// wire uint32 · min 0
+	ProductID int    `json:"product_id"`
+	Transport string `json:"transport"`
+	// wire uint32 · min 0
+	VendorID int `json:"vendor_id"`
 }
 
 // HidDisconnectedEventParams is the payload of the _platform.hid.disconnected event.
@@ -5800,54 +7402,87 @@ type HidDisconnectedEventParams struct {
 
 // HidInputEventParams is the payload of the _platform.hid.input event.
 type HidInputEventParams struct {
-	DeviceID  string `json:"device_id"`
-	Product   string `json:"product"`
-	Timestamp int    `json:"timestamp"`
-	Usage     int    `json:"usage"`
-	UsagePage int    `json:"usage_page"`
-	Value     int    `json:"value"`
+	DeviceID string `json:"device_id"`
+	Product  string `json:"product"`
+	// wire uint64 (64-bit) · min 0
+	Timestamp int `json:"timestamp"`
+	// HID usage code within the usage page.
+	// wire uint32 · min 0
+	Usage int `json:"usage"`
+	// HID usage page (e.g. 0x09 = Button, 0x07 = Keyboard, 0x01 = Generic Desktop).
+	// wire uint32 · min 0
+	UsagePage int `json:"usage_page"`
+	// The input value (e.g. 1 = pressed, 0 = released for buttons).
+	// wire int64 (64-bit)
+	Value int `json:"value"`
 }
 
 // HidReportEventParams is the payload of the _platform.hid.report event.
 type HidReportEventParams struct {
-	Data       []int  `json:"data"`
-	DeviceID   string `json:"device_id"`
-	Product    string `json:"product"`
-	ReportID   int    `json:"report_id"`
-	ReportType int    `json:"report_type"`
-	Timestamp  int    `json:"timestamp"`
+	// Raw report bytes.
+	Data     []int  `json:"data"`
+	DeviceID string `json:"device_id"`
+	Product  string `json:"product"`
+	// HID report ID.
+	// wire uint32 · min 0
+	ReportID int `json:"report_id"`
+	// IOHIDReportType (0 = input, 1 = output, 2 = feature).
+	// wire uint32 · min 0
+	ReportType int `json:"report_type"`
+	// wire uint64 (64-bit) · min 0
+	Timestamp int `json:"timestamp"`
 }
 
 // KeyboardLayoutChangedEventParams is the payload of the _platform.keyboard.layout_changed event.
 type KeyboardLayoutChangedEventParams struct {
+	// New keyboard layout ID.
 	NewLayoutID string `json:"new_layout_id"`
+	// Previous keyboard layout ID.
 	OldLayoutID string `json:"old_layout_id"`
 }
 
 // MemoryPressureChangedEventParams is the payload of the _platform.memory_pressure.changed event.
 type MemoryPressureChangedEventParams struct {
+	// "nominal", "warn", or "critical".
 	Level string `json:"level"`
 }
 
 // NetworkChangedEventParams is the payload of the _platform.network.changed event.
 type NetworkChangedEventParams struct {
-	Constrained bool   `json:"constrained"`
-	Expensive   bool   `json:"expensive"`
-	Interface   string `json:"interface"`
-	Reachable   bool   `json:"reachable"`
+	// The user asked for reduced data use (Low Data Mode).
+	Constrained bool `json:"constrained"`
+	// The path costs money or battery (cellular, personal hotspot).
+	Expensive bool `json:"expensive"`
+	// Interface carrying the path: "wifi", "ethernet", "cellular", "loopback",
+	// "other", or "none" when unreachable.
+	Interface string `json:"interface"`
+	// Whether a usable network path exists right now.
+	Reachable bool `json:"reachable"`
 }
 
 // OutputStateEventParams is the payload of the _platform.output.state event.
 type OutputStateEventParams struct {
-	Channel    string      `json:"channel"`
-	Generation int         `json:"generation"`
-	PluginID   string      `json:"plugin_id"`
-	State      OutputState `json:"state"`
+	// The channel whose state changed.
+	Channel string `json:"channel"`
+	// Monotonic across the actuator process. A renderer mid-utterance
+	// abandons what it is conveying when a newer generation arrives.
+	// wire uint64 (64-bit) · min 0
+	Generation int `json:"generation"`
+	// The plugin that owns the channel and produced the state.
+	PluginID string `json:"plugin_id"`
+	// The new current state — the previous one is gone.
+	State OutputState `json:"state"`
 }
 
 // PermissionChangedEventParams is the payload of the _platform.permission.changed event.
 type PermissionChangedEventParams struct {
-	Granted    bool   `json:"granted"`
+	// Its state after the change.
+	Granted bool `json:"granted"`
+	// Which permission moved: "accessibility", "microphone", "camera",
+	// "full_disk_access", "automation", "post_event" (the WindowServer
+	// accepts this process's synthesized keystrokes), "secure_input" (the
+	// keyboard is free of secure-input fields; `granted: true` = free).
+	// The shell reports every state once shortly after boot, then on change.
 	Permission string `json:"permission"`
 }
 
@@ -5859,6 +7494,7 @@ type PipelineErrorEventParams struct {
 
 // PipelineStartedEventParams is the payload of the _platform.pipeline.started event.
 type PipelineStartedEventParams struct {
+	// default false
 	Ephemeral *bool  `json:"ephemeral,omitempty"`
 	Pipeline  string `json:"pipeline"`
 }
@@ -5870,13 +7506,35 @@ type PipelineStoppedEventParams struct {
 
 // PipelineTranscriptEventParams is the payload of the _platform.pipeline.transcript event.
 type PipelineTranscriptEventParams struct {
-	Confidence       *float64  `json:"confidence,omitempty"`
-	DictationProfile *string   `json:"dictation_profile,omitempty"`
-	IsFinal          bool      `json:"is_final"`
-	Pipeline         string    `json:"pipeline"`
-	Text             string    `json:"text"`
-	WordOnsetsMs     []int     `json:"word_onsets_ms,omitempty"`
-	WordScores       []float64 `json:"word_scores,omitempty"`
+	// Coarse scalar confidence. On the sherpa CTC command path this is the
+	// MEAN of `word_scores`; absent when the engine carries no confidence
+	// signal. A confidence gate must read `word_scores` (the min margin), not
+	// this — the mean hides a single deeply-coerced word. Display/logging only.
+	// wire float
+	Confidence *float64 `json:"confidence,omitempty"`
+	// What this utterance IS, per the modes active when it was emitted:
+	// `query` (a search box, a field name — prosody punctuation is noise) or
+	// `prose` (writing — punctuation is intended). Declared by a gate
+	// collection, carried verbatim; the platform never interprets it. Absent
+	// means no active mode declared one, and the engine owner's default
+	// (prose) stands. See `docs/design/DESIGN_DICTATION_PROFILES.md`.
+	DictationProfile *string `json:"dictation_profile,omitempty"`
+	IsFinal          bool    `json:"is_final"`
+	Pipeline         string  `json:"pipeline"`
+	Text             string  `json:"text"`
+	// Shared-clock onset (ms, the audio chunk timebase) of each word of
+	// `text`, aligned 1:1 with its whitespace-split words. Emitted by
+	// engines with time alignment (sherpa's CTC path); converts a word
+	// position into an audio position other pipelines understand — the
+	// dictation stop-phrase audio cutoff.
+	WordOnsetsMs []int `json:"word_onsets_ms,omitempty"`
+	// Per-word acoustic score, aligned 1:1 with `text`'s whitespace-split
+	// words (same alignment contract as `word_onsets_ms`). Engine-defined
+	// scale; on the closed-grammar CTC command engine this is the word's
+	// min token argmax-margin — positive means the audio supported the
+	// word, negative means the grammar coerced it. When present,
+	// `confidence` is the mean of these.
+	WordScores []float64 `json:"word_scores,omitempty"`
 }
 
 // PipelineWarmedEventParams is the payload of the _platform.pipeline.warmed event.
@@ -5886,9 +7544,17 @@ type PipelineWarmedEventParams struct {
 
 // PluginDegradedEventParams is the payload of the _platform.plugin.degraded event.
 type PluginDegradedEventParams struct {
-	ConsecutiveTimeouts int     `json:"consecutive_timeouts"`
-	PluginID            string  `json:"plugin_id"`
-	Reason              *string `json:"reason,omitempty"`
+	// How many consecutive RPC timeouts drove this. `0` when the plugin
+	// reported itself degraded — accurate, not a placeholder: nothing timed
+	// out.
+	// wire int64 (64-bit)
+	ConsecutiveTimeouts int    `json:"consecutive_timeouts"`
+	PluginID            string `json:"plugin_id"`
+	// The plugin's own sentence, present IFF this came from
+	// `plugin.report_health` rather than the timeout ladder — the
+	// discriminator between a plugin that stopped answering and one that
+	// answers fine but cannot reach something it needs.
+	Reason *string `json:"reason,omitempty"`
 }
 
 // PluginDisabledEventParams is the payload of the _platform.plugin.disabled event.
@@ -5903,27 +7569,41 @@ type PluginEnabledEventParams struct {
 
 // PowerChangedEventParams is the payload of the _platform.power.changed event.
 type PowerChangedEventParams struct {
+	// Battery charge percentage (0-100). Absent on machines with no battery.
+	// wire double
 	BatteryLevel *float64 `json:"battery_level,omitempty"`
-	IsCharging   bool     `json:"is_charging"`
-	Source       string   `json:"source"`
-	TimeToEmpty  *int     `json:"time_to_empty,omitempty"`
-	TimeToFull   *int     `json:"time_to_full,omitempty"`
+	// Whether the battery is currently charging.
+	IsCharging bool `json:"is_charging"`
+	// Power source: "battery", "ac", or "ups".
+	Source string `json:"source"`
+	// Estimated minutes until empty. Absent when unknown or on AC.
+	// wire int64 (64-bit)
+	TimeToEmpty *int `json:"time_to_empty,omitempty"`
+	// Estimated minutes until full. Absent when unknown or not charging.
+	// wire int64 (64-bit)
+	TimeToFull *int `json:"time_to_full,omitempty"`
 }
 
 // PrivilegeGrantedEventParams is the payload of the _platform.privilege.granted event.
 type PrivilegeGrantedEventParams struct {
-	PluginID  string `json:"plugin_id"`
+	// The plugin the grant landed on — consumers filter to their own id.
+	PluginID string `json:"plugin_id"`
+	// The privilege name that is now effective.
 	Privilege string `json:"privilege"`
 }
 
 // SelectionPickedEventParams is the payload of the _platform.selection.picked event.
 type SelectionPickedEventParams struct {
+	// ID of the selected item.
 	ItemID string `json:"item_id"`
-	Tag    string `json:"tag"`
+	// Phonetic tag used to select the item.
+	Tag string `json:"tag"`
 }
 
 // ThermalChangedEventParams is the payload of the _platform.thermal.changed event.
 type ThermalChangedEventParams struct {
+	// "nominal", "fair", "serious", or "critical" — `ProcessInfo.ThermalState`
+	// in ascending severity.
 	State string `json:"state"`
 }
 
@@ -5935,7 +7615,8 @@ type WindowClosedEventParams struct {
 
 // WindowCreatedEventParams is the payload of the _platform.window.created event.
 type WindowCreatedEventParams struct {
-	AppID    string  `json:"app_id"`
+	AppID string `json:"app_id"`
+	// default null
 	AppName  *string `json:"app_name,omitempty"`
 	Frame    Frame   `json:"frame"`
 	WindowID string  `json:"window_id"`
@@ -5949,7 +7630,9 @@ type WindowFocusedEventParams struct {
 
 // WindowFrameChangedEventParams is the payload of the _platform.window.frame_changed event.
 type WindowFrameChangedEventParams struct {
-	New      Frame  `json:"new"`
+	// New frame.
+	New Frame `json:"new"`
+	// Previous frame.
 	Old      Frame  `json:"old"`
 	WindowID string `json:"window_id"`
 }
@@ -5963,13 +7646,20 @@ type WindowTitleChangedEventParams struct {
 
 // WorkspaceChangedEventParams is the payload of the _platform.workspace.changed event.
 type WorkspaceChangedEventParams struct {
+	// Freeform reason hint from the host (e.g. "space_switched",
+	// "app_launched", "display_changed"). Optional — the host may
+	// not always have a specific reason.
 	Reason *string `json:"reason,omitempty"`
 }
 
 // WorldUpdatedEventParams is the payload of the _platform.world.updated event.
 type WorldUpdatedEventParams struct {
-	ActiveApp      *string       `json:"active_app,omitempty"`
-	ActiveWindowID *string       `json:"active_window_id,omitempty"`
-	Displays       []DisplayInfo `json:"displays,omitempty"`
-	Windows        []WindowInfo  `json:"windows,omitempty"`
+	// default null
+	ActiveApp *string `json:"active_app,omitempty"`
+	// default null
+	ActiveWindowID *string `json:"active_window_id,omitempty"`
+	// default null
+	Displays []DisplayInfo `json:"displays,omitempty"`
+	// default null
+	Windows []WindowInfo `json:"windows,omitempty"`
 }

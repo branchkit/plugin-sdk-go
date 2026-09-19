@@ -27,6 +27,9 @@ func (p *Plugin) ArtifactDelete(ref string) error {
 }
 
 // CollectionAppend append an entry to a log-kind collection.
+//
+//   - name: Collection name. Must be a `kind: "log"` collection.
+//   - payload: Entry payload — validated against the collection's `fields` schema.
 func (p *Plugin) CollectionAppend(name string, payload json.RawMessage) (*LogEntry, error) {
 	req := &CollectionAppendRequest{
 		Name:    name,
@@ -43,6 +46,14 @@ func (p *Plugin) CollectionAppend(name string, payload json.RawMessage) (*LogEnt
 }
 
 // CollectionAppendKeyed append a keyed annotation to a keyed log (compacted-changelog shape).
+//
+//   - key: The fold key — stamped into the payload's key field. Appending another
+//     record with the same key annotates the first (compacted-changelog
+//     shape); a compacted read folds them into one record.
+//   - name: Collection name. Must be a keyed (`id_strategy: by_field`) `log`
+//     collection.
+//   - payload: Entry payload — validated against the collection's `fields` schema (the
+//     key field is supplied via `key`, not here).
 func (p *Plugin) CollectionAppendKeyed(key string, name string, payload json.RawMessage) (*LogEntry, error) {
 	req := &CollectionAppendKeyedRequest{
 		Key:     key,
@@ -73,6 +84,10 @@ func (p *Plugin) CollectionCount(name string) (*CollectionCountResponse, error) 
 }
 
 // CollectionDeleteRecords delete records from a collection by id (bulk)..
+//
+//   - ids: Record ids to remove. Always an array; single-record callers wrap
+//     one id. SDK helpers (`Delete` vs `DeleteMany`) hide the wrapping.
+//     default []
 func (p *Plugin) CollectionDeleteRecords(ids []string, name string) (*CollectionDeleteRecordsResponse, error) {
 	req := &CollectionDeleteRecordsRequest{
 		Ids:  ids,
@@ -128,6 +143,8 @@ func (p *Plugin) CollectionGet(name string) (*CollectionGetResponse, error) {
 }
 
 // CollectionList list records in a collection (paginated).
+//
+//   - opts: default {}
 func (p *Plugin) CollectionList(name string, opts *ListOpts) (*CollectionListResponse, error) {
 	req := &CollectionListRequest{
 		Name: name,
@@ -142,6 +159,8 @@ func (p *Plugin) CollectionList(name string, opts *ListOpts) (*CollectionListRes
 }
 
 // CollectionPatch partial update of an existing record.
+//
+//   - fields: Object of fields to merge over the existing record.
 func (p *Plugin) CollectionPatch(fields json.RawMessage, id string, name string) error {
 	req := &CollectionPatchRequest{
 		Fields: fields,
@@ -152,6 +171,44 @@ func (p *Plugin) CollectionPatch(fields json.RawMessage, id string, name string)
 }
 
 // CollectionPut upsert records by id (bulk). Auto-registers the target as a record-keyed dynamic collection on first plugin call to an unknown name..
+//
+//   - entries: Records to upsert. Always an array; single-record callers wrap one
+//     entry. The wire format is uniform across single and bulk callers;
+//     the SDK helpers (`Put` vs `PutMany`) hide the wrapping for the
+//     single-record case. See docs/design/DESIGN_BROWSER_HINT_SILENT_EVICTION.md
+//     for the rationale.
+//     default []
+//
+//   - group: Writer-chosen group label stamped on EVERY entry in this call — which
+//     of the caller's named replace-sets these records belong to. See the
+//     record envelope's `group`: last-write placement, meaningful only
+//     within a writer. Absent = ungrouped, the common case. Call-level
+//     rather than per-entry because a put that mixes groups is a caller
+//     composing two writes, not one write with two meanings.
+//
+//   - label: Optional human-readable label for the collection as a whole — the
+//     friendly category name shown on the Discovery HUD's tag badge and in
+//     the Settings UI, in place of the raw collection id (`Badge` instead of
+//     `browser_hints_arch_strict`). This is the dynamic-collection counterpart
+//     to a manifest-declared collection's `schema.label`; a plugin creating a
+//     collection at runtime declares its label here. Same persistence
+//     semantics as `roles`: last-write-wins, and a put omitting `label`
+//     leaves the prior setting in place. See
+//     `docs/design/DESIGN_COLLECTION_FIELD_ROLES.md`.
+//
+//   - roles: Optional per-payload-field display roles. Used by the Settings
+//     UI / discovery HUD to know which payload field is the primary
+//     label, which is the subtitle, etc. Equivalent to the `roles`
+//     argument on `collection.push`. Mostly meaningful for
+//     auto-registered dynamic collections — manifest-declared
+//     collections get their roles from the schema. On the first
+//     `collection.put` to a not-yet-registered name, the roles are
+//     stored alongside the auto-registered schema. Subsequent puts
+//     with `roles` overwrite the prior setting; puts omitting
+//     `roles` leave roles unchanged.
+//
+//     Wire-lenient: an entry whose role string this host doesn't know
+//     binds nothing but does NOT fail the put — see `DisplayRoles`.
 func (p *Plugin) CollectionPut(entries []CollectionPutEntry, group *string, label *string, name string, roles map[string]FieldDisplay) (*CollectionPutResponse, error) {
 	req := &CollectionPutRequest{
 		Entries: entries,
@@ -169,6 +226,12 @@ func (p *Plugin) CollectionPut(entries []CollectionPutEntry, group *string, labe
 }
 
 // CollectionReplace make the records in scope exactly the given set: upsert changed, delete absent, skip byte-identical. Scope is required and bounds what may be deleted..
+//
+//   - entries: The desired set. After the call, the records in scope are exactly these.
+//     default []
+//   - label: Same semantics as `collection.put`'s `label`.
+//   - roles: Same semantics as `collection.put`'s `roles`.
+//   - scope: What the call is allowed to delete. Required — see `ReplaceScope`.
 func (p *Plugin) CollectionReplace(entries []CollectionPutEntry, label *string, name string, roles map[string]FieldDisplay, scope ReplaceScope) (*CollectionReplaceResponse, error) {
 	req := &CollectionReplaceRequest{
 		Entries: entries,
@@ -186,6 +249,10 @@ func (p *Plugin) CollectionReplace(entries []CollectionPutEntry, label *string, 
 }
 
 // CollectionsCreateUser create a simple user list of words (name + words_text, one entry per line, optional `word = value`) and seed its entries.
+//
+//   - description: default ""
+//   - name: Collection name (lowercase, underscores).
+//   - wordsText: default ""
 func (p *Plugin) CollectionsCreateUser(description *string, name string, wordsText *string) (*CollectionsCreateUserResponse, error) {
 	req := &CollectionsCreateUserRequest{
 		Description: description,
@@ -201,6 +268,9 @@ func (p *Plugin) CollectionsCreateUser(description *string, name string, wordsTe
 }
 
 // CollectionsList list collections with entries for display, optionally filtered by kind.
+//
+//   - kind: Filter by collection kind: "entity", "data", "commands", "log". If omitted, returns all.
+//     default null
 func (p *Plugin) CollectionsList(kind *string) ([]CollectionsListSection, error) {
 	req := &CollectionsListRequest{
 		Kind: kind,
@@ -238,6 +308,12 @@ func (p *Plugin) CommandsAddAlias(action string, defaultPattern string, newPatte
 }
 
 // CommandsConfusability author-time acoustic confusability for a phrase: existing command words it may be misheard as that are co-eligible in its context.
+//
+//   - requiresTags: The command's context (its `requires_tags`); empty = free context. Used by
+//     tier-2 so a warning only fires when the confuser is co-eligible here.
+//     default []
+//   - words: The literal spoken words of the phrase being authored.
+//     default []
 func (p *Plugin) CommandsConfusability(requiresTags []string, words []string) ([]ConfusabilityFinding, error) {
 	req := &CommandsConfusabilityRequest{
 		RequiresTags: requiresTags,
@@ -308,6 +384,31 @@ func (p *Plugin) CommandsListOverrides() ([]CommandOverride, error) {
 }
 
 // CommandsPush register commands with the matching engine to the matching engine.
+//
+//   - commands: Array of `CommandSpec` JSON objects to push to the matching
+//     engine. Replaces the current commands contributed by the
+//     calling plugin. Wire-level type is opaque
+//     (`serde_json::Value`) to keep the deserializer flexible; see
+//     `CommandSpec` for the canonical field list including
+//     `cancels_bridge`.
+//     default null
+//
+//   - group: Optional named group this push owns. Absent replaces the plugin's
+//     ENTIRE command set (the original semantics, unchanged); present
+//     replaces only the records in that group and leaves the plugin's other
+//     groups intact.
+//
+//     Exists because the single implicit slot is a race whenever a plugin has
+//     more than one command source. Browser has five (scroll, find,
+//     references, hint skeleton, palette) and each used to push
+//     independently — whichever landed last was the only set the matcher saw,
+//     and the hint skeleton routinely lost. Its workaround is a mutex plus
+//     rebuilding the union from every builder on each call. With groups each
+//     source owns its own, and dropping a source drops its group.
+//
+//     See docs/design/PRINCIPLE_PLUGIN_HELD_STATE.md — this is the same
+//     "can two of these coexist?" failure that `collection.replace`'s scope
+//     fixes for records.
 func (p *Plugin) CommandsPush(commands json.RawMessage, group *string) (*CommandsPushResponse, error) {
 	req := &CommandsPushRequest{
 		Commands: commands,
@@ -359,6 +460,38 @@ func (p *Plugin) CommandsResetOverride(action string, defaultPattern string) (*C
 }
 
 // CommandsResolve resolve words against the command registry — returns dispatch decision, partial-match feedback, and tiebreaker telemetry in one envelope.
+//
+//   - activeTags: Active tags for tag-based scoping. If None, uses the state's active_tags.
+//     default null
+//   - collections: Narrow completions to commands contributed by these collections'
+//     contributors. None or empty = all.
+//     default null
+//   - preferOwner: Tiebreak hint for a genuine tie. When resolution reduces to 2+ equally-
+//     eligible commands the matcher cannot separate, and exactly one of them
+//     is owned by this plugin, that candidate is dispatched as a normal single
+//     winner instead of the tie being surfaced. It selects *only* among the
+//     already-tied candidates — it never overrides normal precedence
+//     (longest-match, gated-over-ungated, scope) and has no effect when there
+//     is no tie or when zero/multiple tied candidates match. Transient and
+//     per-resolve; the caller supplies it for one call, it is not a stored
+//     preference.
+//   - preview: Dry-run / verify-don't-execute mode. When true, the matcher computes
+//     the full decision (winner, completions, telemetry) but commits
+//     nothing: no tag writes are applied, no `sets_on_partial` bridge is
+//     seeded, and no `command_matched`/`command_no_match` telemetry is
+//     emitted. The action is never dispatched by `resolve` in either mode —
+//     `preview` additionally suppresses the *side effects* of resolution so
+//     a consumer (e.g. calibration command-practice) can score "would this
+//     fire the right command?" without mutating live state or polluting the
+//     no-match dashboards. Default false: normal resolve commits as before.
+//     default false
+//   - requireTag: Restrict completions to commands requiring this tag.
+//     default null
+//   - sessionID: Audio session ID from the Swift shell. Informational — links audio
+//     lifecycle events to command matches.
+//   - source: Input source: "command_hold", "continuous", "selection", "api".
+//   - words: Words to match against the command registry.
+//     default []
 func (p *Plugin) CommandsResolve(activeTags []string, collections []string, preferOwner *string, preview *bool, requireTag *string, sessionID *string, source *string, words []string) (*CommandsResolveResponse, error) {
 	req := &CommandsResolveRequest{
 		ActiveTags:  activeTags,
@@ -389,6 +522,9 @@ func (p *Plugin) CommandsSetOverride(action string, defaultPattern string, newPa
 }
 
 // ControlSignal send a control signal to the Swift shell via the control stream.
+//
+//   - signal: Raw control-stream signal string (e.g. "open hud", "hide discovery").
+//     Forwarded verbatim to the Swift shell via the actuator's control stream.
 func (p *Plugin) ControlSignal(signal string) error {
 	req := &ControlSignalRequest{
 		Signal: signal,
@@ -402,6 +538,11 @@ func (p *Plugin) DiscoveryClosed() error {
 }
 
 // Dispatch dispatch a typed Action to a plugin or platform builtin.
+//
+//   - action: Typed `Action` variant to dispatch. Schema is loose
+//     (`serde_json::Value`) — see module-level docs for the rationale.
+//     The runtime closure still deserializes the typed
+//     `crate::actions::Action` from this field.
 func (p *Plugin) Dispatch(action json.RawMessage) (*DispatchResponse, error) {
 	req := &DispatchRequest{
 		Action: action,
@@ -415,6 +556,10 @@ func (p *Plugin) Dispatch(action json.RawMessage) (*DispatchResponse, error) {
 }
 
 // EffectsAssert assert an exclusivity-shape platform effect on behalf of this plugin.
+//
+//   - name: Registered effect name (e.g. `suppress_notifications`). Must be
+//     declared in the plugin's manifest `consumes.effects.asserts` and
+//     match an entry in the closed `effects::REGISTERED_EFFECTS` registry.
 func (p *Plugin) EffectsAssert(name string) (*EffectsAssertResponse, error) {
 	req := &EffectsAssertRequest{
 		Name: name,
@@ -428,6 +573,8 @@ func (p *Plugin) EffectsAssert(name string) (*EffectsAssertResponse, error) {
 }
 
 // EffectsIsActive query whether this plugin holds top-of-stack for the named effect.
+//
+//   - name: Registered effect name to query.
 func (p *Plugin) EffectsIsActive(name string) (*EffectsIsActiveResponse, error) {
 	req := &EffectsIsActiveRequest{
 		Name: name,
@@ -441,6 +588,10 @@ func (p *Plugin) EffectsIsActive(name string) (*EffectsIsActiveResponse, error) 
 }
 
 // EffectsRetract retract this plugin's assertion of an exclusivity-shape platform effect.
+//
+//   - name: Registered effect name to retract. The plugin's frame is removed
+//     from this effect's ownership stack. If no frame exists, the call
+//     is a no-op (`retracted=false`, no error).
 func (p *Plugin) EffectsRetract(name string) (*EffectsRetractResponse, error) {
 	req := &EffectsRetractRequest{
 		Name: name,
@@ -454,6 +605,14 @@ func (p *Plugin) EffectsRetract(name string) (*EffectsRetractResponse, error) {
 }
 
 // EventsAppend append an event to the structured event log.
+//
+//   - data: Free-form event payload. Stored as a raw JSON object on the event
+//     log line.
+//     default null
+//   - eventType: Event type discriminator (e.g. "session_start", "match", "miss").
+//   - sessionID: Logical session id this event belongs to (8-char prefix used by
+//     the event-stream tooling). Defaults to "?" if absent.
+//     default "?"
 func (p *Plugin) EventsAppend(data json.RawMessage, eventType string, sessionID *string) error {
 	req := &EventsAppendRequest{
 		Data:      data,
@@ -464,6 +623,15 @@ func (p *Plugin) EventsAppend(data json.RawMessage, eventType string, sessionID 
 }
 
 // EventsEmit emit a plugin event on the event bus.
+//
+//   - correlationID: Optional correlation id linking related events together for
+//     debugging. Auto-generated by the platform when omitted and the
+//     emitting plugin is processing an event that already carried one.
+//     default null · pattern ^tr_[0-9A-Za-z]{11}$
+//   - data: Free-form event payload published to subscribers.
+//     default null
+//   - eventType: Convention-based event type (e.g. "clipboard.copied"). The
+//     `_platform.*` namespace is reserved for the actuator.
 func (p *Plugin) EventsEmit(correlationID *string, data json.RawMessage, eventType string) error {
 	req := &EventsEmitRequest{
 		CorrelationID: correlationID,
@@ -474,6 +642,41 @@ func (p *Plugin) EventsEmit(correlationID *string, data json.RawMessage, eventTy
 }
 
 // HUDCreateChannel create a new HUD broadcast channel at runtime.
+//
+//   - acceptsInput: Whether the channel's window receives keyboard/mouse input.
+//     Defaults to false.
+//     default false
+//   - anchor: Anchor position on screen (`Anchor` enum, kebab-case strings:
+//     `"top-left"`, `"top-right"`, `"bottom-left"`, `"bottom-right"`,
+//     `"bottom-center"`, `"center"`). Defaults to `"top-right"`.
+//     default null
+//   - channel: Channel name. Must be unique across all plugins.
+//   - description: Optional human-readable description shown in dev tooling.
+//     default ""
+//   - draggable: Whether the shell lets the user drag this window and remembers its
+//     position. Draggable windows should also set `follows_focus: false`.
+//     Defaults to false.
+//     default false
+//   - followsFocus: Whether this channel follows the active display on focus changes.
+//     Defaults to true. Set to false for user-initiated HUDs that should
+//     stay pinned to the display where they were opened.
+//     default true
+//   - minHeight: Minimum window height in points. Defaults to 100.
+//     wire uint32 · default 100 · min 0
+//   - onPointer: Pointer-dodge behavior: "none" (default) or "fade" (dodge the mouse —
+//     fade to near-transparent while the pointer is inside the frame).
+//     default "none"
+//   - stackOrder: Stack position among windows sharing this anchor: offsets ascend from the
+//     anchor edge, so the lowest pins at the corner (a persistent status window)
+//     and higher values stack away (transient toasts). Ties broken by channel
+//     name. Defaults to 0.
+//     wire int32 · default 0
+//   - transparent: Fully transparent window — the shell skips its frosted vibrancy panel
+//     and window shadow, so only the plugin's own markup paints. Defaults
+//     to false (frosted).
+//     default false
+//   - width: Window width in points. Defaults to 320.
+//     wire uint32 · default 320 · min 0
 func (p *Plugin) HUDCreateChannel(acceptsInput *bool, anchor json.RawMessage, channel string, description *string, draggable *bool, followsFocus *bool, minHeight *int, onPointer *OnPointer, stackOrder *int, transparent *bool, width *int) error {
 	req := &HUDCreateChannelRequest{
 		AcceptsInput: acceptsInput,
@@ -492,6 +695,9 @@ func (p *Plugin) HUDCreateChannel(acceptsInput *bool, anchor json.RawMessage, ch
 }
 
 // HUDHide hide a HUD channel's window.
+//
+//   - channel: Channel name to hide. Sends a `close <channel>` (or
+//     `hide <channel>` for built-in channels) to the Swift shell.
 func (p *Plugin) HUDHide(channel string) error {
 	req := &HUDHideRequest{
 		Channel: channel,
@@ -500,6 +706,11 @@ func (p *Plugin) HUDHide(channel string) error {
 }
 
 // HUDPush push HTML fragments to a named HUD channel.
+//
+//   - channel: Name of the HUD channel to push fragments into. Must be owned by
+//     the calling plugin (verified via
+//     `HudChannelRegistry::verify_owner`).
+//   - fragments: Array of `HudFragment` objects: `{ target_id, html, raw? }`.
 func (p *Plugin) HUDPush(channel string, fragments json.RawMessage) error {
 	req := &HUDPushRequest{
 		Channel:   channel,
@@ -509,6 +720,8 @@ func (p *Plugin) HUDPush(channel string, fragments json.RawMessage) error {
 }
 
 // HUDRemoveChannel remove a HUD broadcast channel.
+//
+//   - channel: Channel name to remove. Must be owned by the calling plugin.
 func (p *Plugin) HUDRemoveChannel(channel string) (*HUDRemoveChannelResponse, error) {
 	req := &HUDRemoveChannelRequest{
 		Channel: channel,
@@ -522,6 +735,11 @@ func (p *Plugin) HUDRemoveChannel(channel string) (*HUDRemoveChannelResponse, er
 }
 
 // HUDSetSize report actual rendered size for a HUD channel window.
+//
+//   - channel: Channel name whose actual rendered size is being reported.
+//   - height: Actual rendered height in points (used by world-model entries
+//     instead of `min_height` when known).
+//     wire uint32 · min 0
 func (p *Plugin) HUDSetSize(channel string, height int) error {
 	req := &HUDSetSizeRequest{
 		Channel: channel,
@@ -531,6 +749,9 @@ func (p *Plugin) HUDSetSize(channel string, height int) error {
 }
 
 // HUDShow show a HUD channel's window.
+//
+//   - channel: Channel name to show. Sends an `open <channel>` message to the
+//     Swift shell.
 func (p *Plugin) HUDShow(channel string) error {
 	req := &HUDShowRequest{
 		Channel: channel,
@@ -539,6 +760,9 @@ func (p *Plugin) HUDShow(channel string) error {
 }
 
 // InputClick click a mouse button.
+//
+//   - button: Mouse button: "left", "right", or "middle". Defaults to "left".
+//     default "left"
 func (p *Plugin) InputClick(button *string) error {
 	req := &InputClickRequest{
 		Button: button,
@@ -547,6 +771,10 @@ func (p *Plugin) InputClick(button *string) error {
 }
 
 // InputClipboardAction perform a clipboard action (copy, paste, or set text).
+//
+//   - action: Action: "copy", "paste", or "set".
+//   - text: Text to set (only used by `action: "set"`).
+//     default null
 func (p *Plugin) InputClipboardAction(action string, text *string) error {
 	req := &InputClipboardActionRequest{
 		Action: action,
@@ -615,6 +843,8 @@ func (p *Plugin) InputClipboardWrite(contentType string, data string) error {
 }
 
 // InputClipboardWriteItems write multiple typed items to the clipboard.
+//
+//   - items: default []
 func (p *Plugin) InputClipboardWriteItems(items []ClipboardWriteItem) error {
 	req := &InputClipboardWriteItemsRequest{
 		Items: items,
@@ -623,6 +853,9 @@ func (p *Plugin) InputClipboardWriteItems(items []ClipboardWriteItem) error {
 }
 
 // InputDoubleClick double-click at position.
+//
+//   - x: wire int32 · default null
+//   - y: wire int32 · default null
 func (p *Plugin) InputDoubleClick(x *int, y *int) error {
 	req := &InputDoubleClickRequest{
 		X: x,
@@ -632,6 +865,12 @@ func (p *Plugin) InputDoubleClick(x *int, y *int) error {
 }
 
 // InputDrag atomic drag: mouse down, move, mouse up.
+//
+//   - durationMs: wire uint64 (64-bit) · default 0 · min 0
+//   - fromX: wire int32
+//   - fromY: wire int32
+//   - toX: wire int32
+//   - toY: wire int32
 func (p *Plugin) InputDrag(durationMs *int, fromX int, fromY int, toX int, toY int) error {
 	req := &InputDragRequest{
 		DurationMs: durationMs,
@@ -656,6 +895,13 @@ func (p *Plugin) InputListInputSources() ([]InputSource, error) {
 }
 
 // InputMouseButton press, release, or drag-latch a mouse button (for drag operations, etc.).
+//
+//   - button: Button: "left", "right", or "middle". Defaults to "left".
+//     default "left"
+//   - direction: Direction: "press", "release", or "drag". "drag" posts a
+//     zero-distance dragged event at the current cursor position — macOS
+//     only treats a window as grabbed once a dragged event follows the
+//     press, so drag-based operations need it between press and release.
 func (p *Plugin) InputMouseButton(button *string, direction string) error {
 	req := &InputMouseButtonRequest{
 		Button:    button,
@@ -665,6 +911,15 @@ func (p *Plugin) InputMouseButton(button *string, direction string) error {
 }
 
 // InputParseKeyEvent parse a browser key event into a BranchKit combo string.
+//
+//   - alt: default false
+//   - code: `KeyboardEvent.code` — the physical key, layout-independent.
+//     default ""
+//   - ctrl: default false
+//   - key: `KeyboardEvent.key` — used only to spot a bare modifier press.
+//     default ""
+//   - meta: default false
+//   - shift: default false
 func (p *Plugin) InputParseKeyEvent(alt *bool, code *string, ctrl *bool, key *string, meta *bool, shift *bool) (*InputParseKeyEventResponse, error) {
 	req := &InputParseKeyEventRequest{
 		Alt:   alt,
@@ -683,6 +938,14 @@ func (p *Plugin) InputParseKeyEvent(alt *bool, code *string, ctrl *bool, key *st
 }
 
 // InputPressKey press a key by raw keycode or name, with optional modifiers.
+//
+//   - code: Raw keycode (takes priority over `name` if both are present).
+//     wire uint16 · default null · min 0 · max 65535
+//   - modifiers: Modifier keys to hold during the tap (e.g. "command", "shift").
+//     default []
+//   - name: Named key (e.g. "return", "tab"). Resolved via `resolve_key_name`.
+//     Required if `code` is absent.
+//     default null
 func (p *Plugin) InputPressKey(code *int, modifiers []string, name *string) error {
 	req := &InputPressKeyRequest{
 		Code:      code,
@@ -693,6 +956,10 @@ func (p *Plugin) InputPressKey(code *int, modifiers []string, name *string) erro
 }
 
 // InputRawKey send a raw key event (press, release, or click) without modifier lifting.
+//
+//   - code: Raw macOS keycode.
+//     wire uint16 · min 0 · max 65535
+//   - direction: One of "press", "release", or "click".
 func (p *Plugin) InputRawKey(code int, direction string) error {
 	req := &InputRawKeyRequest{
 		Code:      code,
@@ -702,6 +969,9 @@ func (p *Plugin) InputRawKey(code int, direction string) error {
 }
 
 // InputRightClick right-click at position.
+//
+//   - x: wire int32 · default null
+//   - y: wire int32 · default null
 func (p *Plugin) InputRightClick(x *int, y *int) error {
 	req := &InputRightClickRequest{
 		X: x,
@@ -711,6 +981,13 @@ func (p *Plugin) InputRightClick(x *int, y *int) error {
 }
 
 // InputScroll scroll the mouse wheel.
+//
+//   - amount: Amount in pixels/units. Defaults to 5.
+//     wire int32 · default 5
+//   - direction: Direction: "up", "down", "left", or "right".
+//   - unit: Scroll unit: "line" (discrete, default) or "pixel" (continuous/smooth).
+//     Pixel units are needed for horizontal scroll in most browsers.
+//     default "line"
 func (p *Plugin) InputScroll(amount *int, direction string, unit *string) error {
 	req := &InputScrollRequest{
 		Amount:    amount,
@@ -738,6 +1015,9 @@ func (p *Plugin) InputSwitchInputSource(sourceID string) (bool, error) {
 }
 
 // InputTripleClick triple-click at position (select paragraph/line).
+//
+//   - x: wire int32 · default null
+//   - y: wire int32 · default null
 func (p *Plugin) InputTripleClick(x *int, y *int) error {
 	req := &InputTripleClickRequest{
 		X: x,
@@ -747,6 +1027,8 @@ func (p *Plugin) InputTripleClick(x *int, y *int) error {
 }
 
 // InputTypeText type text into the active application via clipboard paste.
+//
+//   - text: Text to type into the active application.
 func (p *Plugin) InputTypeText(text string) error {
 	req := &InputTypeTextRequest{
 		Text: text,
@@ -755,6 +1037,9 @@ func (p *Plugin) InputTypeText(text string) error {
 }
 
 // KeybindsRegister register keybind snapshot with the platform (caches and sends to Swift shell).
+//
+//   - snapshot: `RegistrySnapshot` JSON: `{ entries: [...], listen_up: [...] }`.
+//     Each entry is `{ combo, action, source }`.
 func (p *Plugin) KeybindsRegister(snapshot json.RawMessage) (*KeybindsRegisterResponse, error) {
 	req := &KeybindsRegisterRequest{
 		Snapshot: snapshot,
@@ -798,6 +1083,8 @@ func (p *Plugin) NativeAccessibilityEnabled() (*NativeAccessibilityEnabledRespon
 }
 
 // NativeActivateApp bring an app to front by bundle ID.
+//
+//   - allWindows: default false
 func (p *Plugin) NativeActivateApp(allWindows *bool, bundleID string) error {
 	req := &NativeActivateAppRequest{
 		AllWindows: allWindows,
@@ -919,6 +1206,8 @@ func (p *Plugin) NativeAppFocusedWindowID(bundleID string) error {
 }
 
 // NativeAppIcon get app icon as PNG (base64).
+//
+//   - size: wire uint32 · default 64 · min 0
 func (p *Plugin) NativeAppIcon(bundleID string, size *int) (*NativeAppIconResponse, error) {
 	req := &NativeAppIconRequest{
 		BundleID: bundleID,
@@ -1178,6 +1467,10 @@ func (p *Plugin) NativeAutomationPermission(bundleID string) (*NativeAutomationP
 }
 
 // NativeAxElementAtPoint get the accessibility element at a screen point.
+//
+//   - pid: wire int32
+//   - x: wire int32
+//   - y: wire int32
 func (p *Plugin) NativeAxElementAtPoint(pid int, x int, y int) (*NativeAxElementAtPointResponse, error) {
 	req := &NativeAxElementAtPointRequest{
 		Pid: pid,
@@ -1193,6 +1486,8 @@ func (p *Plugin) NativeAxElementAtPoint(pid int, x int, y int) (*NativeAxElement
 }
 
 // NativeAxElementTree get the accessibility element tree rooted at an element.
+//
+//   - depth: wire uint32 · default 3 · min 0
 func (p *Plugin) NativeAxElementTree(depth *int, element AXElementRef) (*AXElementNode, error) {
 	req := &NativeAxElementTreeRequest{
 		Depth:   depth,
@@ -1207,6 +1502,9 @@ func (p *Plugin) NativeAxElementTree(depth *int, element AXElementRef) (*AXEleme
 }
 
 // NativeAxObserve start observing AX notifications (STUB -- not yet implemented).
+//
+//   - notifications: default []
+//   - pid: wire int32
 func (p *Plugin) NativeAxObserve(notifications []string, pid int) (*NativeAxObserveResponse, error) {
 	req := &NativeAxObserveRequest{
 		Notifications: notifications,
@@ -1234,6 +1532,8 @@ func (p *Plugin) NativeAxPerformAction(action string, element AXElementRef) (boo
 }
 
 // NativeAxReadAttributes read specific attributes from an accessibility element.
+//
+//   - attributes: default []
 func (p *Plugin) NativeAxReadAttributes(attributes []string, element AXElementRef) error {
 	req := &NativeAxReadAttributesRequest{
 		Attributes: attributes,
@@ -1269,6 +1569,8 @@ func (p *Plugin) NativeAxUnobserve(subscriptionID string) (bool, error) {
 }
 
 // NativeBatchIsTileable check which windows can be tiled.
+//
+//   - windowIds: default []
 func (p *Plugin) NativeBatchIsTileable(windowIds []string) ([]TileableEntry, error) {
 	req := &NativeBatchIsTileableRequest{
 		WindowIds: windowIds,
@@ -1284,6 +1586,11 @@ func (p *Plugin) NativeBatchIsTileable(windowIds []string) ([]TileableEntry, err
 }
 
 // NativeBatchSetFrames set positions/sizes for multiple windows.
+//
+//   - frames: default []
+//   - readback: If true, sleep 10ms after applying frames and read back the actual
+//     positions (defaults to true). Set false to skip the readback round-trip.
+//     default true
 func (p *Plugin) NativeBatchSetFrames(frames []WindowFrame, readback *bool) ([]WindowFrame, error) {
 	req := &NativeBatchSetFramesRequest{
 		Frames:   frames,
@@ -1330,6 +1637,10 @@ func (p *Plugin) NativeBatteryMaxCapacity() error {
 }
 
 // NativeBleDiscoverServices discover GATT services and characteristics on a paired BLE device.
+//
+//   - deviceIdentifier: Identifier for the paired BLE device. Accepts a CoreBluetooth
+//     peripheral UUID (e.g. "12345678-...") or a device name to match
+//     among connected BLE HID peripherals (e.g. "Shortcut Remote").
 func (p *Plugin) NativeBleDiscoverServices(deviceIdentifier string) ([]BleService, error) {
 	req := &NativeBleDiscoverServicesRequest{
 		DeviceIdentifier: deviceIdentifier,
@@ -1345,6 +1656,10 @@ func (p *Plugin) NativeBleDiscoverServices(deviceIdentifier string) ([]BleServic
 }
 
 // NativeBleSubscribe subscribe to GATT notifications on a BLE characteristic.
+//
+//   - characteristicUuid: GATT characteristic UUID to subscribe to (must support notify).
+//   - deviceIdentifier: CoreBluetooth peripheral UUID or device name.
+//   - serviceUuid: GATT service UUID containing the characteristic.
 func (p *Plugin) NativeBleSubscribe(characteristicUuid string, deviceIdentifier string, serviceUuid string) (*NativeBleSubscribeResponse, error) {
 	req := &NativeBleSubscribeRequest{
 		CharacteristicUuid: characteristicUuid,
@@ -1360,6 +1675,12 @@ func (p *Plugin) NativeBleSubscribe(characteristicUuid string, deviceIdentifier 
 }
 
 // NativeBleSubscribeAllThenWrite subscribe to all notify characteristics on listed services, then write — single GATT cycle.
+//
+//   - deviceIdentifier: CoreBluetooth peripheral UUID or device name.
+//   - subscribeServices: GATT service UUIDs to subscribe to all notify characteristics on.
+//     default []
+//   - writes: Writes to perform after subscribing. The last `with_response` write
+//     determines when the operation completes.
 func (p *Plugin) NativeBleSubscribeAllThenWrite(deviceIdentifier string, subscribeServices []string, writes []BleWriteEntry) (*NativeBleSubscribeAllThenWriteResponse, error) {
 	req := &NativeBleSubscribeAllThenWriteRequest{
 		DeviceIdentifier:  deviceIdentifier,
@@ -1375,6 +1696,15 @@ func (p *Plugin) NativeBleSubscribeAllThenWrite(deviceIdentifier string, subscri
 }
 
 // NativeBleWrite write bytes to a GATT characteristic on a paired BLE device.
+//
+//   - characteristicUuid: GATT characteristic UUID (e.g. "FFF1").
+//   - data: Bytes to write to the characteristic.
+//     default []
+//   - deviceIdentifier: Identifier for the paired BLE device. Accepts a CoreBluetooth
+//     peripheral UUID or a device name (see ble_discover_services).
+//   - serviceUuid: GATT service UUID (e.g. "FFF0").
+//   - writeType: Write type: "with_response" (default, reliable) or "without_response" (fire-and-forget).
+//     default "with_response"
 func (p *Plugin) NativeBleWrite(characteristicUuid string, data []int, deviceIdentifier string, serviceUuid string, writeType *string) (*NativeBleWriteResponse, error) {
 	req := &NativeBleWriteRequest{
 		CharacteristicUuid: characteristicUuid,
@@ -1439,6 +1769,8 @@ func (p *Plugin) NativeBorders() error {
 }
 
 // NativeBrightness get display brightness (0.0-1.0).
+//
+//   - displayID: wire uint32 · default null · min 0
 func (p *Plugin) NativeBrightness(displayID *int) (*NativeBrightnessResponse, error) {
 	req := &NativeBrightnessRequest{
 		DisplayID: displayID,
@@ -1452,6 +1784,8 @@ func (p *Plugin) NativeBrightness(displayID *int) (*NativeBrightnessResponse, er
 }
 
 // NativeBundleForRemotePort resolve a loopback TCP connection's remote port to the owning process's app bundle ID.
+//
+//   - remotePort: wire int32
 func (p *Plugin) NativeBundleForRemotePort(remotePort int) (*NativeBundleForRemotePortResponse, error) {
 	req := &NativeBundleForRemotePortRequest{
 		RemotePort: remotePort,
@@ -1593,6 +1927,9 @@ func (p *Plugin) NativeClearNotifications(bundleID string) error {
 }
 
 // NativeClickMenuItem click a menu item by navigating the menu bar path.
+//
+//   - path: default []
+//   - pid: wire int32
 func (p *Plugin) NativeClickMenuItem(path []string, pid int) (bool, error) {
 	req := &NativeClickMenuItemRequest{
 		Path: path,
@@ -1692,6 +2029,8 @@ func (p *Plugin) NativeClipboardSetText(text string) error {
 }
 
 // NativeClipboardTypes list available pasteboard types on the clipboard.
+//
+//   - pasteboard: default ""
 func (p *Plugin) NativeClipboardTypes(pasteboard *string) ([]string, error) {
 	req := &NativeClipboardTypesRequest{
 		Pasteboard: pasteboard,
@@ -1715,6 +2054,9 @@ func (p *Plugin) NativeCloseWindow(windowID string) error {
 }
 
 // NativeColorAtPoint sample pixel color at screen coordinate.
+//
+//   - x: wire int32
+//   - y: wire int32
 func (p *Plugin) NativeColorAtPoint(x int, y int) (*NativeColorAtPointResponse, error) {
 	req := &NativeColorAtPointRequest{
 		X: x,
@@ -2011,6 +2353,8 @@ func (p *Plugin) NativeDifferentiateWithoutColor() (*NativeDifferentiateWithoutC
 }
 
 // NativeDirectoryContents list files and directories at a path.
+//
+//   - includeHidden: default false
 func (p *Plugin) NativeDirectoryContents(includeHidden *bool, path string) ([]DirectoryEntry, error) {
 	req := &NativeDirectoryContentsRequest{
 		IncludeHidden: includeHidden,
@@ -2027,6 +2371,8 @@ func (p *Plugin) NativeDirectoryContents(includeHidden *bool, path string) ([]Di
 }
 
 // NativeDiskSpace get disk space for a volume (default: /).
+//
+//   - path: default ""
 func (p *Plugin) NativeDiskSpace(path *string) (*NativeDiskSpaceResponse, error) {
 	req := &NativeDiskSpaceRequest{
 		Path: path,
@@ -2098,6 +2444,8 @@ func (p *Plugin) NativeDisplayMirroring() (*NativeDisplayMirroringResponse, erro
 }
 
 // NativeDisplayRefreshRate get display refresh rate in Hz.
+//
+//   - displayID: wire uint32 · min 0
 func (p *Plugin) NativeDisplayRefreshRate(displayID int) error {
 	req := &NativeDisplayRefreshRateRequest{
 		DisplayID: displayID,
@@ -2118,6 +2466,8 @@ func (p *Plugin) NativeDisplayRotation() ([]DisplayRotation, error) {
 }
 
 // NativeDisplayScaleFactor get display scale factor.
+//
+//   - displayID: wire uint32 · min 0
 func (p *Plugin) NativeDisplayScaleFactor(displayID int) error {
 	req := &NativeDisplayScaleFactorRequest{
 		DisplayID: displayID,
@@ -2402,6 +2752,8 @@ func (p *Plugin) NativeFileExtendedAttributes(path string) ([]string, error) {
 }
 
 // NativeFileHash compute SHA-256 hash of a file.
+//
+//   - algorithm: default ""
 func (p *Plugin) NativeFileHash(algorithm *string, path string) (*NativeFileHashResponse, error) {
 	req := &NativeFileHashRequest{
 		Algorithm: algorithm,
@@ -2481,6 +2833,8 @@ func (p *Plugin) NativeFileSize(path string) error {
 }
 
 // NativeFileTags read or write Finder tags on a file.
+//
+//   - tags: default null
 func (p *Plugin) NativeFileTags(path string, tags []string) error {
 	req := &NativeFileTagsRequest{
 		Path: path,
@@ -2757,6 +3111,8 @@ func (p *Plugin) NativeGetWindowInfo(windowID string) (*NativeGetWindowInfoRespo
 }
 
 // NativeGlobFiles find files matching a glob pattern.
+//
+//   - maxResults: wire uint32 · default 0 · min 0
 func (p *Plugin) NativeGlobFiles(maxResults *int, pattern string) ([]string, error) {
 	req := &NativeGlobFilesRequest{
 		MaxResults: maxResults,
@@ -2833,6 +3189,8 @@ func (p *Plugin) NativeHardwareUuid() (*NativeHardwareUuidResponse, error) {
 }
 
 // NativeHidClaim seize exclusive access to a HID device, suppressing native macOS events.
+//
+//   - deviceID: Device ID (e.g. "0x28bd:0x0202:0x48f42695").
 func (p *Plugin) NativeHidClaim(deviceID string) (*NativeHidClaimResponse, error) {
 	req := &NativeHidClaimRequest{
 		DeviceID: deviceID,
@@ -2858,6 +3216,8 @@ func (p *Plugin) NativeHidDevices() ([]HidDeviceEntry, error) {
 }
 
 // NativeHidElements return the parsed HID element tree (buttons, axes, dials) for a connected device.
+//
+//   - deviceID: Device ID (e.g. "0x28bd:0x0202:0x48f42695").
 func (p *Plugin) NativeHidElements(deviceID string) ([]HidElementEntry, error) {
 	req := &NativeHidElementsRequest{
 		DeviceID: deviceID,
@@ -2873,6 +3233,8 @@ func (p *Plugin) NativeHidElements(deviceID string) ([]HidElementEntry, error) {
 }
 
 // NativeHidRelease release exclusive access to a HID device, restoring native macOS behavior.
+//
+//   - deviceID: Device ID (e.g. "0x28bd:0x0202:0x48f42695").
 func (p *Plugin) NativeHidRelease(deviceID string) (*NativeHidReleaseResponse, error) {
 	req := &NativeHidReleaseRequest{
 		DeviceID: deviceID,
@@ -2886,6 +3248,13 @@ func (p *Plugin) NativeHidRelease(deviceID string) (*NativeHidReleaseResponse, e
 }
 
 // NativeHidSendReport send an output or feature report to a connected HID device.
+//
+//   - data: Raw report bytes to send.
+//     default []
+//   - deviceID: Device ID (e.g. "0x28bd:0x0202:0x48f42695").
+//   - reportID: HID report ID.
+//     wire uint32 · min 0
+//   - reportType: Report type: "output" or "feature".
 func (p *Plugin) NativeHidSendReport(data []int, deviceID string, reportID int, reportType string) (*NativeHidSendReportResponse, error) {
 	req := &NativeHidSendReportRequest{
 		Data:       data,
@@ -3165,6 +3534,9 @@ func (p *Plugin) NativeKeychainWrite(account string, password string, service st
 }
 
 // NativeKillProcess send a signal to a process by PID.
+//
+//   - pid: wire int32
+//   - signal: wire int32 · default 0
 func (p *Plugin) NativeKillProcess(pid int, signal *int) error {
 	req := &NativeKillProcessRequest{
 		Pid:    pid,
@@ -3184,6 +3556,8 @@ func (p *Plugin) NativeLastReboot() (*NativeLastRebootResponse, error) {
 }
 
 // NativeLaunchApp launch an application by bundle ID.
+//
+//   - newInstance: default false
 func (p *Plugin) NativeLaunchApp(bundleID string, newInstance *bool) error {
 	req := &NativeLaunchAppRequest{
 		BundleID:    bundleID,
@@ -3431,6 +3805,8 @@ func (p *Plugin) NativeMemoryPressure() (*NativeMemoryPressureResponse, error) {
 }
 
 // NativeMenuBar read the menu bar structure of an application by PID.
+//
+//   - pid: wire int32
 func (p *Plugin) NativeMenuBar(pid int) ([]MenuItem, error) {
 	req := &NativeMenuBarRequest{
 		Pid: pid,
@@ -3516,6 +3892,10 @@ func (p *Plugin) NativeMountPoints() ([]string, error) {
 }
 
 // NativeMouseButtonClick click a specific mouse button (middle, button4, etc.).
+//
+//   - button: wire uint32 · min 0
+//   - x: wire int32 · default null
+//   - y: wire int32 · default null
 func (p *Plugin) NativeMouseButtonClick(button int, x *int, y *int) error {
 	req := &NativeMouseButtonClickRequest{
 		Button: button,
@@ -3540,6 +3920,8 @@ func (p *Plugin) NativeMoveFile(destination string, source string) error {
 }
 
 // NativeMoveWindowToDisplay move a window to a different display.
+//
+//   - displayID: wire uint32 · min 0
 func (p *Plugin) NativeMoveWindowToDisplay(displayID int, windowID string) error {
 	req := &NativeMoveWindowToDisplayRequest{
 		DisplayID: displayID,
@@ -3549,6 +3931,8 @@ func (p *Plugin) NativeMoveWindowToDisplay(displayID int, windowID string) error
 }
 
 // NativeMoveWindowToSpace dEPRECATED, silent no-op on modern macOS: the private CGS move APIs this calls are dead (verified on Sequoia 2026-07-25) — the window does not move and the call still reports true. Kept for older systems. For a working move, drive the visible path the bundled windows plugin uses: mouse-hold the title bar + Ctrl+N. space_id here is an opaque CGS space id from native.list_spaces, NOT the 1-based ordinal that native.switch_space takes.
+//
+//   - spaceID: wire uint64 (64-bit) · min 0
 func (p *Plugin) NativeMoveWindowToSpace(spaceID int, windowID string) (bool, error) {
 	req := &NativeMoveWindowToSpaceRequest{
 		SpaceID:  spaceID,
@@ -3678,6 +4062,10 @@ func (p *Plugin) NativeNotificationSoundEnabled() (*NativeNotificationSoundEnabl
 }
 
 // NativeNotify post a rich notification (osascript fallback).
+//
+//   - body: default null
+//   - sound: default null
+//   - subtitle: default null
 func (p *Plugin) NativeNotify(body *string, sound *string, subtitle *string, title string) (*NativeNotifyResponse, error) {
 	req := &NativeNotifyRequest{
 		Body:     body,
@@ -3714,6 +4102,8 @@ func (p *Plugin) NativeNumberFormatDecimal() (*NativeNumberFormatDecimalResponse
 }
 
 // NativeObserveWindows start observing window events for a PID (STUB -- not yet implemented).
+//
+//   - pid: wire int32
 func (p *Plugin) NativeObserveWindows(pid int) (*NativeObserveWindowsResponse, error) {
 	req := &NativeObserveWindowsRequest{
 		Pid: pid,
@@ -3766,6 +4156,11 @@ func (p *Plugin) NativeOcrScreen() ([]OcrRegion, error) {
 }
 
 // NativeOcrScreenRegion oCR text from a screen region (x, y, width, height).
+//
+//   - height: wire double
+//   - width: wire double
+//   - x: wire double
+//   - y: wire double
 func (p *Plugin) NativeOcrScreenRegion(height float64, width float64, x float64, y float64) ([]OcrRegion, error) {
 	req := &NativeOcrScreenRegionRequest{
 		Height: height,
@@ -3784,6 +4179,8 @@ func (p *Plugin) NativeOcrScreenRegion(height float64, width float64, x float64,
 }
 
 // NativeOcrWindow oCR text from a specific window by ID.
+//
+//   - windowID: wire uint32 · min 0
 func (p *Plugin) NativeOcrWindow(windowID int) ([]OcrRegion, error) {
 	req := &NativeOcrWindowRequest{
 		WindowID: windowID,
@@ -3815,6 +4212,8 @@ func (p *Plugin) NativeOpenFinderWindow(path string) error {
 }
 
 // NativeOpenSystemSettings open System Settings to a specific pane (e.g. 'Privacy_Accessibility').
+//
+//   - pane: default null
 func (p *Plugin) NativeOpenSystemSettings(pane *string) error {
 	req := &NativeOpenSystemSettingsRequest{
 		Pane: pane,
@@ -3858,6 +4257,8 @@ func (p *Plugin) NativeOptimizedCharging() (*NativeOptimizedChargingResponse, er
 }
 
 // NativePdfExtractText extract text from a PDF file.
+//
+//   - page: wire uint64 (64-bit) · default 0 · min 0
 func (p *Plugin) NativePdfExtractText(page *int, path string) error {
 	req := &NativePdfExtractTextRequest{
 		Page: page,
@@ -3955,6 +4356,9 @@ func (p *Plugin) NativePressAndHoldEnabled() (*NativePressAndHoldEnabledResponse
 }
 
 // NativePreventSleep assert or release sleep prevention.
+//
+//   - assertionID: default null
+//   - reason: default "BranchKit plugin"
 func (p *Plugin) NativePreventSleep(assertionID *string, reason *string) (*NativePreventSleepResponse, error) {
 	req := &NativePreventSleepRequest{
 		AssertionID: assertionID,
@@ -4021,6 +4425,8 @@ func (p *Plugin) NativeProcessCount() (*NativeProcessCountResponse, error) {
 }
 
 // NativeProcessCpuUsage get CPU usage for process by PID.
+//
+//   - pid: wire int32
 func (p *Plugin) NativeProcessCpuUsage(pid int) error {
 	req := &NativeProcessCpuUsageRequest{
 		Pid: pid,
@@ -4029,6 +4435,8 @@ func (p *Plugin) NativeProcessCpuUsage(pid int) error {
 }
 
 // NativeProcessExists check if a process with given PID exists.
+//
+//   - pid: wire int32
 func (p *Plugin) NativeProcessExists(pid int) (*NativeProcessExistsResponse, error) {
 	req := &NativeProcessExistsRequest{
 		Pid: pid,
@@ -4042,6 +4450,8 @@ func (p *Plugin) NativeProcessExists(pid int) (*NativeProcessExistsResponse, err
 }
 
 // NativeProcessInfo get info about a process by PID (name, cpu, memory, path).
+//
+//   - pid: wire int32
 func (p *Plugin) NativeProcessInfo(pid int) (*NativeProcessInfoResponse, error) {
 	req := &NativeProcessInfoRequest{
 		Pid: pid,
@@ -4067,6 +4477,8 @@ func (p *Plugin) NativeProcessList() ([]ProcessInfo, error) {
 }
 
 // NativeProcessMemoryUsage get memory usage in bytes for process by PID.
+//
+//   - pid: wire int32
 func (p *Plugin) NativeProcessMemoryUsage(pid int) error {
 	req := &NativeProcessMemoryUsageRequest{
 		Pid: pid,
@@ -4075,6 +4487,8 @@ func (p *Plugin) NativeProcessMemoryUsage(pid int) error {
 }
 
 // NativeProcessName get process name by PID.
+//
+//   - pid: wire int32
 func (p *Plugin) NativeProcessName(pid int) error {
 	req := &NativeProcessNameRequest{
 		Pid: pid,
@@ -4083,6 +4497,8 @@ func (p *Plugin) NativeProcessName(pid int) error {
 }
 
 // NativeProcessParentPid get parent PID of a process.
+//
+//   - pid: wire int32
 func (p *Plugin) NativeProcessParentPid(pid int) error {
 	req := &NativeProcessParentPidRequest{
 		Pid: pid,
@@ -4091,6 +4507,8 @@ func (p *Plugin) NativeProcessParentPid(pid int) error {
 }
 
 // NativeProcessPath get the executable path for a PID.
+//
+//   - pid: wire int32
 func (p *Plugin) NativeProcessPath(pid int) error {
 	req := &NativeProcessPathRequest{
 		Pid: pid,
@@ -4099,6 +4517,8 @@ func (p *Plugin) NativeProcessPath(pid int) error {
 }
 
 // NativeProcessStartTime get process start time as ISO string.
+//
+//   - pid: wire int32
 func (p *Plugin) NativeProcessStartTime(pid int) error {
 	req := &NativeProcessStartTimeRequest{
 		Pid: pid,
@@ -4137,6 +4557,8 @@ func (p *Plugin) NativePurgeableSpace() error {
 }
 
 // NativeQuickLook generate Quick Look thumbnail as PNG (base64).
+//
+//   - size: wire uint32 · default 512 · min 0
 func (p *Plugin) NativeQuickLook(path string, size *int) (*NativeQuickLookResponse, error) {
 	req := &NativeQuickLookRequest{
 		Path: path,
@@ -4203,6 +4625,8 @@ func (p *Plugin) NativeReadFile(path string) (*NativeReadFileResponse, error) {
 }
 
 // NativeReadFileBinary read a file as base64-encoded binary.
+//
+//   - maxBytes: wire uint64 (64-bit) · default null · min 0
 func (p *Plugin) NativeReadFileBinary(maxBytes *int, path string) (*NativeReadFileBinaryResponse, error) {
 	req := &NativeReadFileBinaryRequest{
 		MaxBytes: maxBytes,
@@ -4337,6 +4761,8 @@ func (p *Plugin) NativeRosettaInstalled() (*NativeRosettaInstalledResponse, erro
 }
 
 // NativeRunApplescript execute an AppleScript via osascript.
+//
+//   - script: AppleScript source to execute via `osascript`.
 func (p *Plugin) NativeRunApplescript(script string) (*NativeRunApplescriptResponse, error) {
 	req := &NativeRunApplescriptRequest{
 		Script: script,
@@ -4363,6 +4789,8 @@ func (p *Plugin) NativeRunJxa(script string) (*NativeRunJxaResponse, error) {
 }
 
 // NativeRunShortcut run a Shortcuts.app shortcut by name.
+//
+//   - input: default null
 func (p *Plugin) NativeRunShortcut(input *string, name string) (*NativeRunShortcutResponse, error) {
 	req := &NativeRunShortcutRequest{
 		Input: input,
@@ -4474,6 +4902,9 @@ func (p *Plugin) NativeScreenSharingEnabled() (*NativeScreenSharingEnabledRespon
 }
 
 // NativeScreenshot capture a screenshot as base64-encoded PNG.
+//
+//   - displayID: wire uint32 · default null · min 0
+//   - windowID: default null
 func (p *Plugin) NativeScreenshot(displayID *int, region *ScreenshotRegion, windowID *string) (*NativeScreenshotResponse, error) {
 	req := &NativeScreenshotRequest{
 		DisplayID: displayID,
@@ -4623,6 +5054,8 @@ func (p *Plugin) NativeSetAppHidden(bundleID string, hidden bool) error {
 }
 
 // NativeSetAudioDevice set the default audio input or output device.
+//
+//   - deviceType: "input" or "output".
 func (p *Plugin) NativeSetAudioDevice(deviceType string, uid string) error {
 	req := &NativeSetAudioDeviceRequest{
 		DeviceType: deviceType,
@@ -4632,6 +5065,8 @@ func (p *Plugin) NativeSetAudioDevice(deviceType string, uid string) error {
 }
 
 // NativeSetAudioDeviceVolume set volume for a specific audio device by UID.
+//
+//   - volume: wire double
 func (p *Plugin) NativeSetAudioDeviceVolume(deviceUID string, volume float64) error {
 	req := &NativeSetAudioDeviceVolumeRequest{
 		DeviceUID: deviceUID,
@@ -4673,6 +5108,9 @@ func (p *Plugin) NativeSetBluetoothPower(on bool) error {
 }
 
 // NativeSetBrightness set display brightness (0.0-1.0).
+//
+//   - brightness: wire double
+//   - displayID: wire uint32 · default null · min 0
 func (p *Plugin) NativeSetBrightness(brightness float64, displayID *int) error {
 	req := &NativeSetBrightnessRequest{
 		Brightness: brightness,
@@ -4746,6 +5184,8 @@ func (p *Plugin) NativeSetDockShowRecents(enabled bool) error {
 }
 
 // NativeSetDockSize set Dock tile size.
+//
+//   - size: wire double
 func (p *Plugin) NativeSetDockSize(size float64) error {
 	req := &NativeSetDockSizeRequest{
 		Size: size,
@@ -4806,6 +5246,8 @@ func (p *Plugin) NativeSetHighlightColor(color string) error {
 }
 
 // NativeSetHotCorner set a hot corner action.
+//
+//   - action: wire uint32 · min 0
 func (p *Plugin) NativeSetHotCorner(action int, corner string) error {
 	req := &NativeSetHotCornerRequest{
 		Action: action,
@@ -4823,6 +5265,8 @@ func (p *Plugin) NativeSetInputSource(sourceID string) error {
 }
 
 // NativeSetKeyRepeatDelay set initial key repeat delay.
+//
+//   - delay: wire double
 func (p *Plugin) NativeSetKeyRepeatDelay(delay float64) error {
 	req := &NativeSetKeyRepeatDelayRequest{
 		Delay: delay,
@@ -4831,6 +5275,8 @@ func (p *Plugin) NativeSetKeyRepeatDelay(delay float64) error {
 }
 
 // NativeSetKeyRepeatRate set key repeat rate.
+//
+//   - rate: wire double
 func (p *Plugin) NativeSetKeyRepeatRate(rate float64) error {
 	req := &NativeSetKeyRepeatRateRequest{
 		Rate: rate,
@@ -4847,6 +5293,8 @@ func (p *Plugin) NativeSetMenuBarAutoHide(enabled bool) error {
 }
 
 // NativeSetMouseSpeed set mouse tracking speed.
+//
+//   - speed: wire double
 func (p *Plugin) NativeSetMouseSpeed(speed float64) error {
 	req := &NativeSetMouseSpeedRequest{
 		Speed: speed,
@@ -4895,6 +5343,8 @@ func (p *Plugin) NativeSetScrollDirectionNatural(enabled bool) error {
 }
 
 // NativeSetSidebarIconSize set sidebar icon size (1=small,2=medium,3=large).
+//
+//   - size: wire uint32 · min 0
 func (p *Plugin) NativeSetSidebarIconSize(size int) error {
 	req := &NativeSetSidebarIconSizeRequest{
 		Size: size,
@@ -4919,6 +5369,8 @@ func (p *Plugin) NativeSetTapToClick(enabled bool) error {
 }
 
 // NativeSetTrackpadSpeed set trackpad tracking speed.
+//
+//   - speed: wire double
 func (p *Plugin) NativeSetTrackpadSpeed(speed float64) error {
 	req := &NativeSetTrackpadSpeedRequest{
 		Speed: speed,
@@ -4936,6 +5388,8 @@ func (p *Plugin) NativeSetURLSchemeHandler(bundleID string, scheme string) error
 }
 
 // NativeSetVolume set system volume (0.0–1.0).
+//
+//   - volume: wire double
 func (p *Plugin) NativeSetVolume(volume float64) error {
 	req := &NativeSetVolumeRequest{
 		Volume: volume,
@@ -4952,6 +5406,8 @@ func (p *Plugin) NativeSetWallpaper(path string) error {
 }
 
 // NativeSetWindowAlpha set window transparency.
+//
+//   - alpha: wire double
 func (p *Plugin) NativeSetWindowAlpha(alpha float64, windowID string) error {
 	req := &NativeSetWindowAlphaRequest{
 		Alpha:    alpha,
@@ -4974,6 +5430,9 @@ func (p *Plugin) NativeSetWindowLevel(level string, windowID string) (bool, erro
 }
 
 // NativeSetWindowPosition move a window to x,y without changing size.
+//
+//   - x: wire int32
+//   - y: wire int32
 func (p *Plugin) NativeSetWindowPosition(windowID string, x int, y int) error {
 	req := &NativeSetWindowPositionRequest{
 		WindowID: windowID,
@@ -4993,6 +5452,9 @@ func (p *Plugin) NativeSetWindowShadow(enabled bool, windowID string) error {
 }
 
 // NativeSetWindowSize resize a window without changing position.
+//
+//   - h: wire int32
+//   - w: wire int32
 func (p *Plugin) NativeSetWindowSize(h int, w int, windowID string) error {
 	req := &NativeSetWindowSizeRequest{
 		H:        h,
@@ -5117,6 +5579,9 @@ func (p *Plugin) NativeSpacesSpanDisplays() (*NativeSpacesSpanDisplaysResponse, 
 }
 
 // NativeSpeak speak text using the system text-to-speech engine.
+//
+//   - rate: wire double · default null
+//   - voice: default null
 func (p *Plugin) NativeSpeak(rate *float64, text string, voice *string) error {
 	req := &NativeSpeakRequest{
 		Rate:  rate,
@@ -5149,6 +5614,8 @@ func (p *Plugin) NativeSpeechRecognitionAvailable() (*NativeSpeechRecognitionAva
 }
 
 // NativeSpeechRecognizeFile recognize speech from an audio file (returns transcript).
+//
+//   - locale: default ""
 func (p *Plugin) NativeSpeechRecognizeFile(locale *string, path string) error {
 	req := &NativeSpeechRecognizeFileRequest{
 		Locale: locale,
@@ -5168,6 +5635,9 @@ func (p *Plugin) NativeSpellingLanguage() (*NativeSpellingLanguageResponse, erro
 }
 
 // NativeSpotlight search files via Spotlight.
+//
+//   - limit: wire uint32 · default 20 · min 0
+//   - scope: default null
 func (p *Plugin) NativeSpotlight(limit *int, query string, scope []string) ([]SpotlightResult, error) {
 	req := &NativeSpotlightRequest{
 		Limit: limit,
@@ -5245,6 +5715,8 @@ func (p *Plugin) NativeSwipeBetweenPages() (*NativeSwipeBetweenPagesResponse, er
 }
 
 // NativeSwitchSpace switch to a Mission Control desktop by number (1-16) via the user's Switch-to-Desktop symbolic hotkey (respects remaps, auto-enables disabled shortcuts; falls back to default Ctrl+N).
+//
+//   - spaceID: wire uint64 (64-bit) · min 0
 func (p *Plugin) NativeSwitchSpace(spaceID int) error {
 	req := &NativeSwitchSpaceRequest{
 		SpaceID: spaceID,
@@ -5682,6 +6154,9 @@ func (p *Plugin) NativeVpnStatus() (*NativeVpnStatusResponse, error) {
 }
 
 // NativeWarpCursor move the cursor to a position.
+//
+//   - x: wire int32
+//   - y: wire int32
 func (p *Plugin) NativeWarpCursor(x int, y int) error {
 	req := &NativeWarpCursorRequest{
 		X: x,
@@ -5776,6 +6251,8 @@ func (p *Plugin) NativeWindowLayer(windowID string) error {
 }
 
 // NativeWindowScreenshot take a screenshot of a specific window as base64 PNG.
+//
+//   - windowID: wire uint32 · min 0
 func (p *Plugin) NativeWindowScreenshot(windowID int) error {
 	req := &NativeWindowScreenshotRequest{
 		WindowID: windowID,
@@ -5800,6 +6277,9 @@ func (p *Plugin) NativeWindowTitle(windowID string) error {
 }
 
 // NativeWorldModel get a snapshot of all windows and displays (with managed HUD windows).
+//
+//   - onScreen: If true, only return windows visible on screen.
+//     default false
 func (p *Plugin) NativeWorldModel(onScreen *bool) (*WorldModel, error) {
 	req := &NativeWorldModelRequest{
 		OnScreen: onScreen,
@@ -5871,6 +6351,9 @@ func (p *Plugin) NativeZoomEnabled() (*NativeZoomEnabledResponse, error) {
 }
 
 // OutputState set a HUD channel's current semantic output state — a document of what is true for the person, in human language, consumed by every renderer; supersedes the previous state.
+//
+//   - state: The document that becomes the channel's current state. Its `channel`
+//     must be owned by the calling plugin.
 func (p *Plugin) OutputState(state OutputState) (*OutputStateResponse, error) {
 	req := &OutputStateRequest{
 		State: state,
@@ -5884,6 +6367,34 @@ func (p *Plugin) OutputState(state OutputState) (*OutputStateResponse, error) {
 }
 
 // OverridesApply add, remove, restore, patch, rename, revert (reset one entry to its plugin default), or reset user overrides for a collection.
+//
+//   - action: Action: "add", "remove", "restore", "reset", "patch", "rename", or
+//     "revert".
+//   - collection: Collection name to override.
+//   - field: Field key for the "unpatch" action — removes ONE field from the
+//     tenant's patch of `id` (the per-field inverse of "patch"; the patch
+//     entry is dropped when its last field goes). The settings form's
+//     per-field revert: sparse by construction, so the reverted field
+//     resumes tracking the shipped default. Ignored by other actions.
+//     default null
+//   - fields: Partial record fields for "patch", or complete record for "add".
+//     default null
+//   - id: Record ID (id_field value) for patch/remove/restore actions. For
+//     "rename" it is the entry's *current* key (surface form) to replace; for
+//     "revert" the current key of the entry to reset to its plugin default.
+//     default null
+//   - newID: New key (id_field value) for the "rename" action — the entry is re-added
+//     under this key with every other field (value, aliases) preserved.
+//     Ignored by other actions.
+//     default null
+//   - tenant: Which overlay tenant this mutation targets — a writer-namespace value
+//     (`"_user"` or a plugin id). Defaults: a plugin caller targets its OWN
+//     overlay; a host caller targets `"_user"`. A plugin transporting a user
+//     gesture from its settings tab says `"_user"` explicitly; it may never
+//     target another plugin's overlay. Plugin overlays carry per-field
+//     patches only (`patch`/`restore`/`reset`) — annotation, not authorship
+//     (docs/design/DESIGN_WRITER_SCOPED_OVERLAY.md).
+//     default null
 func (p *Plugin) OverridesApply(action string, collection string, field *string, fields json.RawMessage, id *string, newID *string, tenant *string) (*OverridesApplyResponse, error) {
 	req := &OverridesApplyRequest{
 		Action:     action,
@@ -5915,6 +6426,13 @@ func (p *Plugin) OverridesList() ([]OverlayRow, error) {
 }
 
 // PipelinesGrammar get the current command grammar word list — or, with full=true, the complete vocabulary_update seed payload (words, narrow_to, weights, DAG).
+//
+//   - full: When true, also return the full `vocabulary_update` payload a starting
+//     recognition pipeline would be seeded with — words plus narrow_to,
+//     word_weights, and the structured grammar DAG. Read-only: exporting
+//     does not touch the committed-vocab accounting. Used by the
+//     voice-regress harness to decode against the exact live grammar.
+//     default false
 func (p *Plugin) PipelinesGrammar(full *bool) (*PipelinesGrammarResponse, error) {
 	req := &PipelinesGrammarRequest{
 		Full: full,
@@ -5928,6 +6446,17 @@ func (p *Plugin) PipelinesGrammar(full *bool) (*PipelinesGrammarResponse, error)
 }
 
 // PipelinesInject send a custom configuration event to one stage of a running pipeline.
+//
+//   - data: default null
+//   - eventType: Must be a custom event type — `ext.<vendor>.<name>`. The typed families
+//     (`audio_*`, `transcript`, `vocabulary_update`) are the platform's to
+//     send; a plugin forging one into its own pipeline was previously
+//     unchecked here.
+//   - name: Pipeline to configure. The caller must have introduced it.
+//   - stage: Stage within that pipeline, spelled as the pipeline definition spells
+//     it — a role like `_platform.stt` or a qualified stage name. Required:
+//     before per-stage channels existed this operation could only ever reach
+//     the terminal stage, and silently did nothing for any other.
 func (p *Plugin) PipelinesInject(data json.RawMessage, eventType string, name string, stage string) (*PipelinesInjectResponse, error) {
 	req := &PipelinesInjectRequest{
 		Data:      data,
@@ -5944,6 +6473,9 @@ func (p *Plugin) PipelinesInject(data json.RawMessage, eventType string, name st
 }
 
 // PipelinesRun start a named pipeline.
+//
+//   - ephemeral: default false
+//   - paramOverrides: default {}
 func (p *Plugin) PipelinesRun(ephemeral *bool, name string, paramOverrides map[string]json.RawMessage) (*PipelinesRunResponse, error) {
 	req := &PipelinesRunRequest{
 		Ephemeral:      ephemeral,
@@ -5969,6 +6501,12 @@ func (p *Plugin) PipelinesStatus() (*PipelinesStatusResponse, error) {
 }
 
 // PipelinesStop stop a running pipeline by name.
+//
+//   - audioCutoffMs: Shared-clock position (the AudioChunk timestamp_ms timebase) after
+//     which buffered audio must not be processed — e.g. the onset of a
+//     detected dictation stop phrase, from the transcript's word_onsets_ms.
+//     Absent = process everything.
+//     wire uint64 (64-bit) · default null · min 0
 func (p *Plugin) PipelinesStop(audioCutoffMs *int, name string) (*PipelinesStopResponse, error) {
 	req := &PipelinesStopRequest{
 		AudioCutoffMs: audioCutoffMs,
@@ -5983,6 +6521,11 @@ func (p *Plugin) PipelinesStop(audioCutoffMs *int, name string) (*PipelinesStopR
 }
 
 // PipelinesWarm pre-spawn + pre-load a pipeline's recognizer stages (grammar built off the hold path).
+//
+//   - paramOverrides: Per-stage param overrides applied to the warmed consumer stages, mirroring
+//     `pipelines.run`. Lets a caller prewarm the model it will actually run (e.g.
+//     a user-selected STT model) instead of only the pipeline's default.
+//     default {}
 func (p *Plugin) PipelinesWarm(name string, paramOverrides map[string]json.RawMessage) (*PipelinesWarmResponse, error) {
 	req := &PipelinesWarmRequest{
 		Name:           name,
@@ -5997,6 +6540,12 @@ func (p *Plugin) PipelinesWarm(name string, paramOverrides map[string]json.RawMe
 }
 
 // PluginDataExport copy one file out of the caller's own data dir into Downloads and reveal it (the one egress a plugin cannot perform itself).
+//
+//   - filename: Name to save it under. Defaults to the source file's name. A path
+//     separator here is refused rather than resolved — this names a file in
+//     Downloads, not a location.
+//     default null
+//   - path: Path of the file to export, relative to the caller's data dir.
 func (p *Plugin) PluginDataExport(filename *string, path string) (*PluginDataExportResponse, error) {
 	req := &PluginDataExportRequest{
 		Filename: filename,
@@ -6011,6 +6560,21 @@ func (p *Plugin) PluginDataExport(filename *string, path string) (*PluginDataExp
 }
 
 // PluginDebug write a diagnostic line to this plugin's per-plugin log file. Use shared.Logf instead for cross-cutting coordination lines that belong in actuator.log..
+//
+//   - data: Arbitrary JSON payload — serialized to one line in the log file
+//     so `tail -f` and `grep` work, while `jq` can still operate on
+//     the payload column.
+//     default null
+//   - level: Severity level for the line. v1 callers omit this and the handler
+//     falls through to `Debug`; v2 callers pass one of
+//     `trace`/`debug`/`info`/`warn`/`error`. Lines below the per-plugin
+//     threshold are dropped at the handler; `warn`/`error` additionally
+//     cross-post to `actuator.log` via the `plugin.diagnostic` event.
+//   - tag: Optional structural tag (e.g. `BK_ACTIVATE_PATH`, `STT_BATCH`).
+//     Renders between the timestamp and the payload in the per-plugin
+//     log file, matching the actuator log's `[TAG]` column convention.
+//     Empty/missing renders as `[<ts>] <payload>` with no tag bracket.
+//     default null
 func (p *Plugin) PluginDebug(data json.RawMessage, level *PluginLogLevel, tag *string) error {
 	req := &PluginDebugRequest{
 		Data:  data,
@@ -6021,6 +6585,24 @@ func (p *Plugin) PluginDebug(data json.RawMessage, level *PluginLogLevel, tag *s
 }
 
 // PluginReportHealth report whether this plugin can do its job. For a standing condition the platform cannot see from outside — a companion app disconnected, a device unplugged — not for a call that failed once..
+//
+//   - degraded: `true` when the plugin is running but cannot do its job — an external
+//     dependency it needs is gone, a device it drives is unplugged, a
+//     companion it talks to has disconnected. `false` clears the report.
+//
+//     This is NOT for "something failed once": a failed call is a failed
+//     call. It is for a standing condition the user can act on and would
+//     otherwise have to guess at.
+//
+//   - reason: One user-facing sentence saying what is wrong and, where possible, what
+//     to do about it — "Chrome — extension disconnected; reload it at
+//     chrome://extensions". The plugin owns this text; the platform invents
+//     no copy for a plugin's failure.
+//
+//     Required when `degraded` is true and ignored otherwise. Truncated to
+//     200 characters (one status line; a plugin with more to say has
+//     `plugin.debug`) and rendered as data, never markup.
+//     default null
 func (p *Plugin) PluginReportHealth(degraded bool, reason *string) error {
 	req := &PluginReportHealthRequest{
 		Degraded: degraded,
@@ -6064,6 +6646,9 @@ func (p *Plugin) PrivilegesList() ([]PrivilegeStatusEntry, error) {
 }
 
 // PrivilegesRelinquish give back one of the caller's optional privileges: returns a live grant and/or withdraws a pending request; de-escalation, no consent needed.
+//
+//   - privilege: Privilege name — must appear in the calling plugin's
+//     `optional_privileges`.
 func (p *Plugin) PrivilegesRelinquish(privilege string) (*PrivilegesRelinquishResponse, error) {
 	req := &PrivilegesRelinquishRequest{
 		Privilege: privilege,
@@ -6077,6 +6662,13 @@ func (p *Plugin) PrivilegesRelinquish(privilege string) (*PrivilegesRelinquishRe
 }
 
 // PrivilegesRequest request one of the caller's declared optional privileges; lands as an Approve/Dismiss to-do on the Plugins page.
+//
+//   - privilege: Privilege name — must appear in the calling plugin's
+//     `optional_privileges`.
+//   - reason: Short attributed reason shown to the user next to the Approve
+//     button (e.g. "script 'headphones' uses query:power"). Untrusted
+//     text; capped server-side.
+//     default ""
 func (p *Plugin) PrivilegesRequest(privilege string, reason *string) (*PrivilegesRequestResponse, error) {
 	req := &PrivilegesRequestRequest{
 		Privilege: privilege,
@@ -6091,6 +6683,13 @@ func (p *Plugin) PrivilegesRequest(privilege string, reason *string) (*Privilege
 }
 
 // RecognitionBiasApply apply a calibration-measured strength to the never-standalone recognition bias (provenance: calibration); refuses over a manually-set value unless force.
+//
+//   - force: Overwrite a manually-set value. Without it, `manual` provenance refuses
+//     (`applied: false`) so the caller can confirm with the user first — a
+//     calibration apply must never silently clobber a hand-set value.
+//     default false
+//   - strength: Strength to apply (> 0; the setting is also switched on).
+//     wire double
 func (p *Plugin) RecognitionBiasApply(force *bool, strength float64) (*RecognitionBiasApplyResponse, error) {
 	req := &RecognitionBiasApplyRequest{
 		Force:    force,
@@ -6115,6 +6714,11 @@ func (p *Plugin) RecognitionBiasGet() (*RecognitionBiasGetResponse, error) {
 }
 
 // RecognitionBiasSet manually set the never-standalone recognition bias (provenance: manual); the write path behind the Recordings tab's control.
+//
+//   - enabled: Omitted = leave the on/off half unchanged.
+//     default null
+//   - strength: Omitted = leave the stored strength unchanged. Negative → 0.
+//     wire double · default null
 func (p *Plugin) RecognitionBiasSet(enabled *bool, strength *float64) (*RecognitionBiasSetResponse, error) {
 	req := &RecognitionBiasSetRequest{
 		Enabled:  enabled,
@@ -6129,6 +6733,12 @@ func (p *Plugin) RecognitionBiasSet(enabled *bool, strength *float64) (*Recognit
 }
 
 // RecognitionRedecode re-decode the caller's own captured audio through a registered recognizer stage against the LIVE grammar (the fragility ladder) — the actuator runs it because the grammar is platform state and plugins cannot exec.
+//
+//   - maxActive: wire uint32 · default null · min 0
+//   - model: Model dir name under app-support `models/` (single component, no
+//     traversal), e.g. `"sherpa-offline-nemo"`.
+//   - stage: Registered stage id whose binary's `probe` subcommand runs the re-decode,
+//     e.g. `"voice.sherpa_commands"`. Validated against the stage registry.
 func (p *Plugin) RecognitionRedecode(items []RedecodeItem, maxActive *int, model string, stage string) (*RecognitionRedecodeResponse, error) {
 	req := &RecognitionRedecodeRequest{
 		Items:     items,
@@ -6145,6 +6755,9 @@ func (p *Plugin) RecognitionRedecode(items []RedecodeItem, maxActive *int, model
 }
 
 // SelectionPick resolve a selection pick by index — clears selection state, emits event, closes HUD.
+//
+//   - index: Zero-based index into the previously-set selection items array.
+//     wire uint64 (64-bit) · min 0
 func (p *Plugin) SelectionPick(index int) (*SelectionPickResponse, error) {
 	req := &SelectionPickRequest{
 		Index: index,
@@ -6158,6 +6771,13 @@ func (p *Plugin) SelectionPick(index int) (*SelectionPickResponse, error) {
 }
 
 // SelectionSet show the selection HUD with items for the user to pick from.
+//
+//   - channel: HUD channel to show the selection in. Defaults to `"main"`.
+//     default null
+//   - items: Array of `HUDItem` objects: `{ id, tag?, title, subtitle?, icon? }`.
+//     default null
+//   - title: Optional title displayed at the top of the selection HUD.
+//     default null
 func (p *Plugin) SelectionSet(channel *string, items json.RawMessage, title *string) error {
 	req := &SelectionSetRequest{
 		Channel: channel,
@@ -6183,6 +6803,9 @@ func (p *Plugin) SessionEndCleanup() (*SessionEndCleanupResponse, error) {
 }
 
 // SettingsPatchSignals push Datastar signal patches to the calling plugin's active settings SSE streams.
+//
+//   - signals: Datastar signal expression, e.g. `{activeGroup: 2, activeDialModeIndex: 1}`.
+//     Sent as a `datastar-patch-signals` SSE event to all active settings streams.
 func (p *Plugin) SettingsPatchSignals(signals string) error {
 	req := &SettingsPatchSignalsRequest{
 		Signals: signals,
@@ -6204,6 +6827,27 @@ func (p *Plugin) SettingsRefresh() error {
 }
 
 // SettingsRulesCreate create a new user voice command from settings-UI signals.
+//
+//   - newruleactionjson: Raw JSON action body, used when `newruleactiontype = "json"`.
+//     default null
+//   - newruleactiontype: Action variant (dotted type like "system.volume_up", "sequence", "json", ...).
+//     Determines which other `newruleaction*` fields are consumed.
+//     default null
+//   - newruleactionval: Action value used by simple action types (e.g. text for "input.type").
+//     default null
+//   - newrulecategory: Category bucket the rule belongs to. Defaults to "User".
+//     default null
+//   - newruleclearstags: Comma-separated tags the rule clears when it fires.
+//     default null
+//   - newruledescription: Optional human-readable description shown in the rules table.
+//     default null
+//   - newrulephrase: The phrase the user wants matched (with optional `<slot>` placeholders).
+//     Required — `build_command_from_signals` rejects an empty phrase.
+//     default null
+//   - newrulerequirestags: Comma-separated tags required for the rule to match.
+//     default null
+//   - newrulesetstags: Comma-separated tags the rule sets when it fires.
+//     default null
 func (p *Plugin) SettingsRulesCreate(newruleactionjson *string, newruleactiontype *string, newruleactionval *string, newrulecategory *string, newruleclearstags *string, newruledescription *string, newrulephrase *string, newrulerequirestags *string, newrulesetstags *string) (*SettingsRulesCreateResponse, error) {
 	req := &SettingsRulesCreateRequest{
 		Newruleactionjson:   newruleactionjson,
@@ -6225,6 +6869,18 @@ func (p *Plugin) SettingsRulesCreate(newruleactionjson *string, newruleactiontyp
 }
 
 // SettingsRulesUpdate update an existing user voice command from settings-UI signals.
+//
+//   - canonical: Existing canonical command id (the previous canonical phrase) of
+//     the rule being updated. Required.
+//   - newruleactionjson: default null
+//   - newruleactiontype: default null
+//   - newruleactionval: default null
+//   - newrulecategory: default null
+//   - newruleclearstags: default null
+//   - newruledescription: default null
+//   - newrulephrase: default null
+//   - newrulerequirestags: default null
+//   - newrulesetstags: default null
 func (p *Plugin) SettingsRulesUpdate(canonical string, newruleactionjson *string, newruleactiontype *string, newruleactionval *string, newrulecategory *string, newruleclearstags *string, newruledescription *string, newrulephrase *string, newrulerequirestags *string, newrulesetstags *string) (*SettingsRulesUpdateResponse, error) {
 	req := &SettingsRulesUpdateRequest{
 		Canonical:           canonical,
@@ -6247,6 +6903,10 @@ func (p *Plugin) SettingsRulesUpdate(canonical string, newruleactionjson *string
 }
 
 // SystemLaunchApp launch an app and post a 'Launching' notification to the HUD.
+//
+//   - bundleID: Bundle ID of the application to launch (e.g. "com.apple.Safari").
+//   - newInstance: Whether to launch a fresh instance even if the app is already running.
+//     default false
 func (p *Plugin) SystemLaunchApp(bundleID string, newInstance *bool) error {
 	req := &SystemLaunchAppRequest{
 		BundleID:    bundleID,
@@ -6256,6 +6916,14 @@ func (p *Plugin) SystemLaunchApp(bundleID string, newInstance *bool) error {
 }
 
 // SystemNotify show a HUD notification with title and body text.
+//
+//   - body: Notification body text (rendered inside `<div id="body-text">`).
+//   - durationSecs: Auto-dismiss duration in seconds. When absent, defaults to
+//     [`DEFAULT_NOTIFY_DURATION_SECS`] (5s). Pass `0` for a sticky
+//     notification that only closes when the user clicks Dismiss.
+//     Pass any positive integer for a custom duration.
+//     wire uint32 · default null · min 0
+//   - title: Notification title (rendered as `<h1 id="title">`).
 func (p *Plugin) SystemNotify(body string, durationSecs *int, title string) error {
 	req := &SystemNotifyRequest{
 		Body:         body,
@@ -6266,6 +6934,8 @@ func (p *Plugin) SystemNotify(body string, durationSecs *int, title string) erro
 }
 
 // SystemRunShell run a shell command via /bin/bash -c (security-sensitive).
+//
+//   - command: Shell command to execute via `/bin/bash -c`.
 func (p *Plugin) SystemRunShell(command string) error {
 	req := &SystemRunShellRequest{
 		Command: command,
@@ -6297,6 +6967,8 @@ func (p *Plugin) TrialEnd(trialID string) (*TrialEndResponse, error) {
 }
 
 // TrialEnterContext enter a command's context for a trial — writes mode-gated requires_tags (platform write) or forwards trial_apply_fixture to a dynamic command's owner — and returns the entered context (kind + tags + fixture_handle).
+//
+//   - commandID: Command id from `commands.enumerate` — `<owner_plugin>:<pattern>`.
 func (p *Plugin) TrialEnterContext(commandID string, trialID string) (*TrialEnterContextResponse, error) {
 	req := &TrialEnterContextRequest{
 		CommandID: commandID,
@@ -6321,6 +6993,8 @@ func (p *Plugin) TrialRegisterFixture(fixtureHandle string, ownerPluginID string
 }
 
 // TrialResolveSamples resolve concrete prompt phrases for a command whose vocabulary the caller can't derive — forwards trial_samples to a dynamic command's owner (empty when the owner doesn't implement the optional hook; the host then falls back to its own default)..
+//
+//   - commandID: Command id from `commands.enumerate` — `<owner_plugin>:<pattern>`.
 func (p *Plugin) TrialResolveSamples(commandID string) ([]string, error) {
 	req := &TrialResolveSamplesRequest{
 		CommandID: commandID,
