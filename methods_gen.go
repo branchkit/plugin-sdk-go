@@ -6350,6 +6350,22 @@ func (p *Plugin) NativeZoomEnabled() (*NativeZoomEnabledResponse, error) {
 	return &result, nil
 }
 
+// OutputClear nothing is true on one of your HUD channels now: clears its semantic state so every renderer stops conveying it; visibility stays yours (hud.hide).
+//
+//   - channel: The channel on which nothing is true now. Must be owned by the
+//     calling plugin.
+func (p *Plugin) OutputClear(channel string) (*OutputClearResponse, error) {
+	req := &OutputClearRequest{
+		Channel: channel,
+	}
+	var result OutputClearResponse
+	err := p.Call(MethodOutputClear, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // OutputState set a HUD channel's current semantic output state — a document of what is true for the person, in human language, consumed by every renderer; supersedes the previous state.
 //
 //   - state: The document that becomes the channel's current state. Its `channel`
