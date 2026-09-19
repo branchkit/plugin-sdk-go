@@ -5870,6 +5870,19 @@ func (p *Plugin) NativeZoomEnabled() (*NativeZoomEnabledResponse, error) {
 	return &result, nil
 }
 
+// OutputState set a HUD channel's current semantic output state — a document of what is true for the person, in human language, consumed by every renderer; supersedes the previous state.
+func (p *Plugin) OutputState(state OutputState) (*OutputStateResponse, error) {
+	req := &OutputStateRequest{
+		State: state,
+	}
+	var result OutputStateResponse
+	err := p.Call(MethodOutputState, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // OverridesApply add, remove, restore, patch, rename, revert (reset one entry to its plugin default), or reset user overrides for a collection.
 func (p *Plugin) OverridesApply(action string, collection string, field *string, fields json.RawMessage, id *string, newID *string, tenant *string) (*OverridesApplyResponse, error) {
 	req := &OverridesApplyRequest{

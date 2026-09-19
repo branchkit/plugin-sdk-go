@@ -106,3 +106,44 @@ type FaultData struct {
 	Op         string    `json:"op,omitempty"`
 	Privilege  string    `json:"privilege,omitempty"`
 }
+
+// OutputKind* are the closed-vocabulary `kind` values of a semantic
+// output document (`output.state`): what a person needs in order to
+// act. A plugin never invents a kind — the actuator renders an
+// unknown one as OutputKindOutcome. Untyped so they assign straight
+// into OutputState.Kind. Source of truth:
+// `actuator/src/output_state.rs::OutputKind`.
+const (
+	OutputKindChoices  = "choices"
+	OutputKindMode     = "mode"
+	OutputKindOutcome  = "outcome"
+	OutputKindProblem  = "problem"
+	OutputKindProgress = "progress"
+)
+
+// KnownOutputKinds lists the full closed-vocabulary set, in the
+// platform's own order.
+var KnownOutputKinds = []string{
+	"choices",
+	"mode",
+	"outcome",
+	"problem",
+	"progress",
+}
+
+// OutputUrgency* are the closed-vocabulary `urgency` values of a
+// semantic output document — the producer's claim; what it means is
+// each renderer's policy. Unknown degrades to OutputUrgencyAmbient.
+// Source of truth: `actuator/src/output_state.rs::OutputUrgency`.
+const (
+	OutputUrgencyAmbient   = "ambient"
+	OutputUrgencyNotable   = "notable"
+	OutputUrgencyInterrupt = "interrupt"
+)
+
+// KnownOutputUrgencies lists the full closed-vocabulary set.
+var KnownOutputUrgencies = []string{
+	"ambient",
+	"notable",
+	"interrupt",
+}

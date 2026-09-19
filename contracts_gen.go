@@ -580,6 +580,7 @@ const (
 	MethodNativeXcodeVersion                  = "native.xcode_version"                     // since 0.1.0
 	MethodNativeZip                           = "native.zip"                               // since 0.1.0
 	MethodNativeZoomEnabled                   = "native.zoom_enabled"                      // since 0.1.0
+	MethodOutputState                         = "output.state"                             // since 0.1.0
 	MethodOverridesApply                      = "overrides.apply"                          // stable, since 0.1.0
 	MethodOverridesList                       = "overrides.list"                           // since 0.1.0
 	MethodPipelinesGrammar                    = "pipelines.grammar"                        // since 0.1.0
@@ -654,6 +655,7 @@ const (
 	EventKeyboardLayoutChanged  = "_platform.keyboard.layout_changed"
 	EventMemoryPressureChanged  = "_platform.memory_pressure.changed"
 	EventNetworkChanged         = "_platform.network.changed"
+	EventOutputState            = "_platform.output.state"
 	EventPermissionChanged      = "_platform.permission.changed"
 	EventPipelineError          = "_platform.pipeline.error"
 	EventPipelineStarted        = "_platform.pipeline.started"

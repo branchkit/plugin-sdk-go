@@ -604,6 +604,50 @@ const (
 	OnPointerFade OnPointer = "fade"
 )
 
+// OutputAction is auto-generated from the OpenRPC spec.
+type OutputAction struct {
+	Dispatch *string         `json:"dispatch,omitempty"`
+	Params   json.RawMessage `json:"params,omitempty"`
+	Say      *string         `json:"say,omitempty"`
+}
+
+// OutputItem is auto-generated from the OpenRPC spec.
+type OutputItem struct {
+	Action   json.RawMessage `json:"action,omitempty"`
+	Extra    json.RawMessage `json:"extra,omitempty"`
+	ID       string          `json:"id"`
+	Phrase   string          `json:"phrase"`
+	Subtitle *string         `json:"subtitle,omitempty"`
+	Title    string          `json:"title"`
+}
+
+// OutputProgress is auto-generated from the OpenRPC spec.
+type OutputProgress struct {
+	RemainingMs int `json:"remaining_ms"`
+	TotalMs     int `json:"total_ms"`
+}
+
+// OutputSection is auto-generated from the OpenRPC spec.
+type OutputSection struct {
+	Items []OutputItem `json:"items"`
+	Title string       `json:"title"`
+}
+
+// OutputState is auto-generated from the OpenRPC spec.
+type OutputState struct {
+	Channel  string          `json:"channel"`
+	Extra    json.RawMessage `json:"extra,omitempty"`
+	Footer   *string         `json:"footer,omitempty"`
+	Kind     string          `json:"kind"`
+	Locale   string          `json:"locale"`
+	Phrase   string          `json:"phrase"`
+	Progress json.RawMessage `json:"progress,omitempty"`
+	Sections []OutputSection `json:"sections"`
+	Title    string          `json:"title"`
+	Urgency  string          `json:"urgency"`
+	V        int             `json:"v"`
+}
+
 // OverlayRow is auto-generated from the OpenRPC spec.
 type OverlayRow struct {
 	Added         int               `json:"added"`
@@ -5114,6 +5158,17 @@ type NativeZoomEnabledResponse struct {
 	Enabled bool `json:"enabled"`
 }
 
+// OutputStateRequest is the request type for output.state.
+type OutputStateRequest struct {
+	State OutputState `json:"state"`
+}
+
+// OutputStateResponse is the response type for output.state.
+type OutputStateResponse struct {
+	Generation int  `json:"generation"`
+	Ok         bool `json:"ok"`
+}
+
 // OverridesApplyRequest is the request type for overrides.apply.
 type OverridesApplyRequest struct {
 	Action     string          `json:"action"`
@@ -5735,6 +5790,14 @@ type NetworkChangedEventParams struct {
 	Expensive   bool   `json:"expensive"`
 	Interface   string `json:"interface"`
 	Reachable   bool   `json:"reachable"`
+}
+
+// OutputStateEventParams is the payload of the _platform.output.state event.
+type OutputStateEventParams struct {
+	Channel    string      `json:"channel"`
+	Generation int         `json:"generation"`
+	PluginID   string      `json:"plugin_id"`
+	State      OutputState `json:"state"`
 }
 
 // PermissionChangedEventParams is the payload of the _platform.permission.changed event.
