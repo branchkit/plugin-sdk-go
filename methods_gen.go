@@ -539,11 +539,8 @@ func (p *Plugin) DiscoveryClosed() error {
 
 // Dispatch dispatch a typed Action to a plugin or platform builtin.
 //
-//   - action: Typed `Action` variant to dispatch. Schema is loose
-//     (`serde_json::Value`) — see module-level docs for the rationale.
-//     The runtime closure still deserializes the typed
-//     `crate::actions::Action` from this field.
-func (p *Plugin) Dispatch(action json.RawMessage) (*DispatchResponse, error) {
+//   - action: The action to dispatch.
+func (p *Plugin) Dispatch(action Action) (*DispatchResponse, error) {
 	req := &DispatchRequest{
 		Action: action,
 	}
