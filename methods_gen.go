@@ -169,7 +169,7 @@ func (p *Plugin) CollectionPut(entries []CollectionPutEntry, group *string, labe
 }
 
 // CollectionReplace make the records in scope exactly the given set: upsert changed, delete absent, skip byte-identical. Scope is required and bounds what may be deleted..
-func (p *Plugin) CollectionReplace(entries []CollectionPutEntry, label *string, name string, roles map[string]FieldDisplay, scope json.RawMessage) (*CollectionReplaceResponse, error) {
+func (p *Plugin) CollectionReplace(entries []CollectionPutEntry, label *string, name string, roles map[string]FieldDisplay, scope ReplaceScope) (*CollectionReplaceResponse, error) {
 	req := &CollectionReplaceRequest{
 		Entries: entries,
 		Label:   label,

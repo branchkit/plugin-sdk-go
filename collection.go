@@ -421,11 +421,6 @@ func (p *Plugin) Subscribe(name string, fn CollectionChangedHandler) {
 // them is how a refresh silently becomes a wipe.
 //
 // Construct with ScopeCollection or ScopeGroup.
-type ReplaceScope struct {
-	kind  string
-	value string
-}
-
 // ScopeCollection makes every other record THIS PLUGIN owns in the collection
 // the complement: after the call, the records you own here are exactly the ones
 // you passed. Other plugins' records, and any the user added through Settings,
@@ -435,7 +430,7 @@ type ReplaceScope struct {
 // collections are meant to have several contributors, and each can manage its
 // own with this. Reach for ScopeGroup when you keep SEVERAL independent
 // replace-sets in one collection, not merely because you are not the owner.
-func ScopeCollection() ReplaceScope { return ReplaceScope{kind: "collection"} }
+func ScopeCollection() ReplaceScope { return ReplaceScope{Kind: ReplaceScopeKindCollection} }
 
 // ScopeGroup narrows further, to this plugin's records carrying the named
 // group label — and stamps that label on every entry written, so membership
@@ -447,18 +442,7 @@ func ScopeCollection() ReplaceScope { return ReplaceScope{kind: "collection"} }
 // "ungrouped" on the records it writes, which would silently make this a
 // collection-wide replace. The platform refuses it.
 func ScopeGroup(group string) ReplaceScope {
-	return ReplaceScope{kind: "group", value: group}
-}
-
-func (s ReplaceScope) marshal() (json.RawMessage, error) {
-	if s.kind == "" {
-		return nil, fmt.Errorf("replace scope is required — use ScopeCollection() or ScopeGroup()")
-	}
-	m := map[string]string{"kind": s.kind}
-	if s.kind == "group" {
-		m["value"] = s.value
-	}
-	return json.Marshal(m)
+	return ReplaceScope{Kind: ReplaceScopeKindGroup, Value: &group}
 }
 
 // ReplaceResult reports what a Replace changed. The counts are split for drift
@@ -527,9 +511,11 @@ func (p *Plugin) Replace(
 	scope ReplaceScope,
 	opts ...ReplaceOption,
 ) (ReplaceResult, error) {
-	rawScope, err := scope.marshal()
-	if err != nil {
-		return ReplaceResult{}, err
+	// The generated ReplaceScope is a plain struct (fidelity layer 2), so a
+	// zero value can reach here; the platform refuses it too, but this is the
+	// message that names the fix.
+	if scope.Kind == "" {
+		return ReplaceResult{}, fmt.Errorf("replace scope is required — use ScopeCollection() or ScopeGroup()")
 	}
 	var o replaceOpts
 	for _, opt := range opts {
@@ -539,7 +525,7 @@ func (p *Plugin) Replace(
 	if o.label != "" {
 		label = &o.label
 	}
-	resp, err := p.CollectionReplace(entries, label, name, o.roles, rawScope)
+	resp, err := p.CollectionReplace(entries, label, name, o.roles, scope)
 	if err != nil {
 		return ReplaceResult{}, err
 	}

@@ -12,19 +12,19 @@ var _ json.RawMessage
 
 // AXElementInfo is auto-generated from the OpenRPC spec.
 type AXElementInfo struct {
-	Actions       []string          `json:"actions"`
-	Attributes    []string          `json:"attributes"`
-	ChildrenCount int               `json:"children_count"`
-	Description   *string           `json:"description,omitempty"`
-	Enabled       bool              `json:"enabled"`
-	Focused       bool              `json:"focused"`
-	Path          []AXPathSegment   `json:"path"`
-	Position      []json.RawMessage `json:"position,omitempty"`
-	Role          string            `json:"role"`
-	Size          []json.RawMessage `json:"size,omitempty"`
-	Subrole       *string           `json:"subrole,omitempty"`
-	Title         *string           `json:"title,omitempty"`
-	Value         json.RawMessage   `json:"value,omitempty"`
+	Actions       []string        `json:"actions"`
+	Attributes    []string        `json:"attributes"`
+	ChildrenCount int             `json:"children_count"`
+	Description   *string         `json:"description,omitempty"`
+	Enabled       bool            `json:"enabled"`
+	Focused       bool            `json:"focused"`
+	Path          []AXPathSegment `json:"path"`
+	Position      *[2]int         `json:"position,omitempty"`
+	Role          string          `json:"role"`
+	Size          *[2]int         `json:"size,omitempty"`
+	Subrole       *string         `json:"subrole,omitempty"`
+	Title         *string         `json:"title,omitempty"`
+	Value         json.RawMessage `json:"value,omitempty"`
 }
 
 // AXElementNode is auto-generated from the OpenRPC spec.
@@ -750,6 +750,51 @@ type ReminderItem struct {
 	Title       string  `json:"title"`
 }
 
+// ReplaceScope is auto-generated from the OpenRPC spec.
+// Which of the CALLER'S OWN records `collection.replace` may delete — the
+// "complement" it is allowed to clear.
+//
+// The complement is always computed over records whose `writer` is the caller,
+// so no scope can reach another plugin's records or the user's. Scope chooses
+// among the caller's own; the worst a wrong one can do is clear too much of
+// what you yourself published.
+//
+// Still explicit and required, never inferred: "everything I own here" and
+// "the subset under this key space" are different intentions, and guessing
+// between them is how a refresh silently becomes a wipe. See
+// docs/design/DESIGN_RECORD_OWNERSHIP.md and docs/design/DESIGN_COLLECTION_REPLACE.md.
+//
+// Exactly one variant applies, selected by Kind; the other variants' fields are ignored.
+type ReplaceScope struct {
+	Kind  ReplaceScopeKind `json:"kind"`
+	Value *string          `json:"value,omitempty"` // Kind == ReplaceScopeKindGroup
+}
+
+// ReplaceScopeKind selects the variant of ReplaceScope.
+type ReplaceScopeKind string
+
+const (
+	// Every other record the CALLER OWNS in this collection is the
+	// complement — whatever group it carries, ungrouped included. Permitted
+	// for any writer the collection accepts, not only its introducer: a
+	// co-writer on a `writers: anyone_who_declares` collection manages its
+	// own contribution this way, and cannot touch anyone else's.
+	ReplaceScopeKindCollection ReplaceScopeKind = "collection"
+	// Narrows to the caller's own records carrying this group label, and
+	// stamps `value` on every entry written. Lets one plugin maintain
+	// several independent replace-sets in one collection — command sources
+	// are the motivating case (`commands.push`'s `group` is exactly this).
+	//
+	// Replaces the earlier `prefix` scope, which expressed the same intent
+	// as an id-prefix convention — the id doing double duty as identity and
+	// scope, with an error class ("entry outside the declared prefix") that
+	// existed only to police the convention. A group is a real envelope
+	// attribute, so none of that polices anything: entries in a grouped
+	// replace are in its group by definition. (`prefix` shipped 2026-08-12
+	// and accumulated zero production callers before its removal.)
+	ReplaceScopeKindGroup ReplaceScopeKind = "group"
+)
+
 // ResolveTelemetry is auto-generated from the OpenRPC spec.
 type ResolveTelemetry struct {
 	GatedPartialSeen bool        `json:"gated_partial_seen"`
@@ -1073,7 +1118,7 @@ type CollectionReplaceRequest struct {
 	Label   *string                 `json:"label,omitempty"`
 	Name    string                  `json:"name"`
 	Roles   map[string]FieldDisplay `json:"roles,omitempty"`
-	Scope   json.RawMessage         `json:"scope"`
+	Scope   ReplaceScope            `json:"scope"`
 }
 
 // CollectionReplaceResponse is the response type for collection.replace.
@@ -1908,19 +1953,19 @@ type NativeAxElementAtPointRequest struct {
 
 // NativeAxElementAtPointResponse is the response type for native.ax_element_at_point.
 type NativeAxElementAtPointResponse struct {
-	Actions       []string          `json:"actions"`
-	Attributes    []string          `json:"attributes"`
-	ChildrenCount int               `json:"children_count"`
-	Description   *string           `json:"description,omitempty"`
-	Enabled       bool              `json:"enabled"`
-	Focused       bool              `json:"focused"`
-	Path          []AXPathSegment   `json:"path"`
-	Position      []json.RawMessage `json:"position,omitempty"`
-	Role          string            `json:"role"`
-	Size          []json.RawMessage `json:"size,omitempty"`
-	Subrole       *string           `json:"subrole,omitempty"`
-	Title         *string           `json:"title,omitempty"`
-	Value         json.RawMessage   `json:"value,omitempty"`
+	Actions       []string        `json:"actions"`
+	Attributes    []string        `json:"attributes"`
+	ChildrenCount int             `json:"children_count"`
+	Description   *string         `json:"description,omitempty"`
+	Enabled       bool            `json:"enabled"`
+	Focused       bool            `json:"focused"`
+	Path          []AXPathSegment `json:"path"`
+	Position      *[2]int         `json:"position,omitempty"`
+	Role          string          `json:"role"`
+	Size          *[2]int         `json:"size,omitempty"`
+	Subrole       *string         `json:"subrole,omitempty"`
+	Title         *string         `json:"title,omitempty"`
+	Value         json.RawMessage `json:"value,omitempty"`
 }
 
 // NativeAxElementTreeRequest is the request type for native.ax_element_tree.
