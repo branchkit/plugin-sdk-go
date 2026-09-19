@@ -6918,6 +6918,33 @@ func (p *Plugin) SettingsRulesUpdate(canonical string, newruleactionjson *string
 	return &result, nil
 }
 
+// SpeechAnnounce post a VoiceOver announcement (spoken in the person's VoiceOver voice when VoiceOver is running; ignored otherwise).
+func (p *Plugin) SpeechAnnounce(text string) error {
+	req := &SpeechAnnounceRequest{
+		Text: text,
+	}
+	return p.Call(MethodSpeechAnnounce, req, nil)
+}
+
+// SpeechSay speak words through the system voice (a primitive: the platform makes the sound and reports the span for echo suppression; what to say is the caller's policy).
+//
+//   - priority: `"normal"` queues behind whatever is playing; `"high"` cuts it off
+//     and speaks now. Defaults to normal.
+//     default null
+//   - text: The words. Plain language, no markup; the system voice reads it as is.
+func (p *Plugin) SpeechSay(priority *string, text string) error {
+	req := &SpeechSayRequest{
+		Priority: priority,
+		Text:     text,
+	}
+	return p.Call(MethodSpeechSay, req, nil)
+}
+
+// SpeechStop stop the system voice now and drop anything queued behind it.
+func (p *Plugin) SpeechStop() error {
+	return p.Call(MethodSpeechStop, nil, nil)
+}
+
 // SystemLaunchApp launch an app and post a 'Launching' notification to the HUD.
 //
 //   - bundleID: Bundle ID of the application to launch (e.g. "com.apple.Safari").

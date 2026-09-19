@@ -7006,6 +7006,36 @@ type SettingsRulesUpdateResponse struct {
 	Ok       bool    `json:"ok"`
 }
 
+// SpeechAnnounceRequest is the request type for speech.announce.
+type SpeechAnnounceRequest struct {
+	Text string `json:"text"`
+}
+
+// SpeechAnnounceResponse is the response type for speech.announce.
+type SpeechAnnounceResponse struct {
+	Ok bool `json:"ok"`
+}
+
+// SpeechSayRequest is the request type for speech.say.
+type SpeechSayRequest struct {
+	// `"normal"` queues behind whatever is playing; `"high"` cuts it off
+	// and speaks now. Defaults to normal.
+	// default null
+	Priority *string `json:"priority,omitempty"`
+	// The words. Plain language, no markup; the system voice reads it as is.
+	Text string `json:"text"`
+}
+
+// SpeechSayResponse is the response type for speech.say.
+type SpeechSayResponse struct {
+	Ok bool `json:"ok"`
+}
+
+// SpeechStopResponse is the response type for speech.stop.
+type SpeechStopResponse struct {
+	Ok bool `json:"ok"`
+}
+
 // SystemLaunchAppRequest is the request type for system.launch_app.
 type SystemLaunchAppRequest struct {
 	// Bundle ID of the application to launch (e.g. "com.apple.Safari").
