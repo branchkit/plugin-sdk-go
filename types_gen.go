@@ -158,6 +158,19 @@ type ActiveSpace struct {
 	SpaceID int `json:"space_id"`
 }
 
+// Anchor is auto-generated from the OpenRPC spec.
+// Anchor position for a HUD window on screen.
+type Anchor string
+
+const (
+	AnchorTopLeft      Anchor = "top-left"
+	AnchorTopRight     Anchor = "top-right"
+	AnchorBottomLeft   Anchor = "bottom-left"
+	AnchorBottomRight  Anchor = "bottom-right"
+	AnchorBottomCenter Anchor = "bottom-center"
+	AnchorCenter       Anchor = "center"
+)
+
 // AudioDevice is auto-generated from the OpenRPC spec.
 // An audio input/output device.
 type AudioDevice struct {
@@ -678,12 +691,15 @@ type EnumeratedCommand struct {
 	// spoken command with the action it triggers (the pattern is display text,
 	// not an identifier).
 	Action string `json:"action"`
-	// The ready-to-store keybind value (`{"action": "<dotted.type>",
-	// "params": {…}}`) when the command's action is statically bindable —
-	// a concrete plugin action with no capture template, no sequence, and
-	// no intrinsic phase. Absent otherwise. This is what the Keybinds
-	// tab's bind-a-command flow copies.
-	Binding json.RawMessage `json:"binding,omitempty"`
+	// The ready-to-store keybind value when the command's action is
+	// statically bindable — a concrete plugin action with no capture
+	// template, no sequence, and no intrinsic phase. Absent otherwise.
+	// This is what the Keybinds tab's bind-a-command flow copies.
+	//
+	// Declared 2026-09-19 (census). It was built here as a two-key
+	// `serde_json::Map` and described in this comment; `KeybindBinding`
+	// is that shape, and `RegistryEntry` is it plus combo and source.
+	Binding *KeybindBinding `json:"binding,omitempty"`
 	// Optional grouping label from the command definition (e.g. "Navigation").
 	Category *string `json:"category,omitempty"`
 	// Optional human-readable "what it does / use case" text from the command
@@ -772,6 +788,15 @@ type Frame struct {
 	Y int `json:"y"`
 }
 
+// HUDItem is auto-generated from the OpenRPC spec.
+type HUDItem struct {
+	Icon     *string `json:"icon,omitempty"`
+	ID       string  `json:"id"`
+	Subtitle *string `json:"subtitle,omitempty"`
+	Tag      *string `json:"tag,omitempty"`
+	Title    string  `json:"title"`
+}
+
 // HidDeviceEntry is auto-generated from the OpenRPC spec.
 type HidDeviceEntry struct {
 	// wire uint32 · min 0
@@ -813,6 +838,17 @@ type HidElementEntry struct {
 	UsagePage int `json:"usage_page"`
 }
 
+// HudFragment is auto-generated from the OpenRPC spec.
+// An HTML fragment pushed to a HUD channel. The `target_id` is the DOM element
+// ID to patch (e.g. "content", "title"); `html` is the innerHTML replacement.
+// When `raw` is true, `html` is sent as-is (multiple elements, Datastar patches each by ID).
+type HudFragment struct {
+	HTML string `json:"html"`
+	// default false
+	Raw      *bool  `json:"raw,omitempty"`
+	TargetID string `json:"target_id"`
+}
+
 // InputSource is auto-generated from the OpenRPC spec.
 // An available keyboard input source.
 type InputSource struct {
@@ -829,6 +865,24 @@ type InputSource struct {
 type InstalledApp struct {
 	BundleID string `json:"bundle_id"`
 	Name     string `json:"name"`
+}
+
+// KeybindBinding is auto-generated from the OpenRPC spec.
+// The stored value of one keybind: which action it fires and with what.
+//
+// This is what a `keybinds` collection record holds, and what the Keybinds
+// tab's bind-a-command flow copies out of `commands.enumerate`
+// (`EnumeratedCommand.binding`). A `RegistryEntry` is this plus the combo
+// and where it came from.
+type KeybindBinding struct {
+	// Exact dotted action type, e.g. `"voice.dictation"`.
+	Action string `json:"action"`
+	// Params for the dispatch; absent means `{}`.
+	//
+	// Open by design: the receiving plugin's shape, typed per-plugin by
+	// `branchkit-gen` from that plugin's `action_types`, exactly like
+	// `Action::Plugin.params`.
+	Params json.RawMessage `json:"params,omitempty"`
 }
 
 // ListCommandItem is auto-generated from the OpenRPC spec.
@@ -1377,6 +1431,27 @@ type RedecodeNoise struct {
 	Seed int `json:"seed"`
 	// wire double
 	SnrDb float64 `json:"snr_db"`
+}
+
+// RegistryEntry is auto-generated from the OpenRPC spec.
+type RegistryEntry struct {
+	Action string `json:"action"`
+	Combo  string `json:"combo"`
+	// Params for the dispatch; absent means `{}`. Every fired bind
+	// executes `Action::Plugin { action_type, params, phase }` through the
+	// shared executor — the string-routing dialect is gone (2026-08-28).
+	//
+	// Open by design, and the only open field in this shape: it is the
+	// receiving plugin's params, typed per-plugin by `branchkit-gen` from
+	// that plugin's `action_types`, exactly like `Action::Plugin.params`.
+	Params json.RawMessage `json:"params,omitempty"`
+	Source string          `json:"source"`
+}
+
+// RegistrySnapshot is auto-generated from the OpenRPC spec.
+type RegistrySnapshot struct {
+	Entries  []RegistryEntry `json:"entries"`
+	ListenUp []string        `json:"listen_up"`
 }
 
 // ReminderItem is auto-generated from the OpenRPC spec.
@@ -2405,11 +2480,16 @@ type HUDCreateChannelRequest struct {
 	// Defaults to false.
 	// default false
 	AcceptsInput *bool `json:"accepts_input,omitempty"`
-	// Anchor position on screen (`Anchor` enum, kebab-case strings:
-	// `"top-left"`, `"top-right"`, `"bottom-left"`, `"bottom-right"`,
-	// `"bottom-center"`, `"center"`). Defaults to `"top-right"`.
-	// default null
-	Anchor json.RawMessage `json:"anchor,omitempty"`
+	// Anchor position on screen. Defaults to `"top-right"`.
+	//
+	// Declared 2026-09-19 (census) — the enum has existed all along and
+	// the doc comment was spelling out its variants by hand. Note the
+	// behaviour change that comes with it: an unrecognised anchor used to
+	// fall back to the default SILENTLY (`unwrap_or_else`), putting the
+	// window somewhere the caller did not ask for with nothing said; it
+	// now fails the call by name. Absent still means the default.
+	// default "top-right"
+	Anchor *Anchor `json:"anchor,omitempty"`
 	// Channel name. Must be unique across all plugins.
 	Channel string `json:"channel"`
 	// Optional human-readable description shown in dev tooling.
@@ -2471,8 +2551,13 @@ type HUDPushRequest struct {
 	// the calling plugin (verified via
 	// `HudChannelRegistry::verify_owner`).
 	Channel string `json:"channel"`
-	// Array of `HudFragment` objects: `{ target_id, html, raw? }`.
-	Fragments json.RawMessage `json:"fragments"`
+	// The fragments to patch into the channel, in order.
+	//
+	// Declared 2026-09-19 (census). The handler already deserialized
+	// exactly `Vec<HudFragment>` and failed the call otherwise, so the
+	// opaque schema described nothing the platform actually accepted.
+	// default []
+	Fragments []HudFragment `json:"fragments,omitempty"`
 }
 
 // HUDPushResponse is the response type for hud.push.
@@ -2795,9 +2880,13 @@ type InputTypeTextResponse struct {
 
 // KeybindsRegisterRequest is the request type for keybinds.register.
 type KeybindsRegisterRequest struct {
-	// `RegistrySnapshot` JSON: `{ entries: [...], listen_up: [...] }`.
-	// Each entry is `{ combo, action, source }`.
-	Snapshot json.RawMessage `json:"snapshot"`
+	// The full keybind registry to install, replacing what is there.
+	//
+	// Declared 2026-09-19 (census). The handler already deserialized
+	// exactly `RegistrySnapshot` and refused anything else; the doc
+	// comment was transcribing the shape by hand, and had gone stale —
+	// an entry is `{ combo, action, source, params? }`.
+	Snapshot RegistrySnapshot `json:"snapshot"`
 }
 
 // KeybindsRegisterResponse is the response type for keybinds.register.
@@ -6920,9 +7009,13 @@ type SelectionSetRequest struct {
 	// HUD channel to show the selection in. Defaults to `"main"`.
 	// default null
 	Channel *string `json:"channel,omitempty"`
-	// Array of `HUDItem` objects: `{ id, tag?, title, subtitle?, icon? }`.
-	// default null
-	Items json.RawMessage `json:"items,omitempty"`
+	// The selectable items, in display order.
+	//
+	// Declared 2026-09-19 (census). The handler already deserialized
+	// exactly `Vec<HUDItem>`; the doc comment was listing the fields a
+	// generated type can list itself.
+	// default []
+	Items []HUDItem `json:"items,omitempty"`
 	// Optional title displayed at the top of the selection HUD.
 	// default null
 	Title *string `json:"title,omitempty"`

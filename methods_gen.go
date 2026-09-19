@@ -643,38 +643,53 @@ func (p *Plugin) EventsEmit(correlationID *string, data json.RawMessage, eventTy
 //   - acceptsInput: Whether the channel's window receives keyboard/mouse input.
 //     Defaults to false.
 //     default false
-//   - anchor: Anchor position on screen (`Anchor` enum, kebab-case strings:
-//     `"top-left"`, `"top-right"`, `"bottom-left"`, `"bottom-right"`,
-//     `"bottom-center"`, `"center"`). Defaults to `"top-right"`.
-//     default null
+//
+//   - anchor: Anchor position on screen. Defaults to `"top-right"`.
+//
+//     Declared 2026-09-19 (census) — the enum has existed all along and
+//     the doc comment was spelling out its variants by hand. Note the
+//     behaviour change that comes with it: an unrecognised anchor used to
+//     fall back to the default SILENTLY (`unwrap_or_else`), putting the
+//     window somewhere the caller did not ask for with nothing said; it
+//     now fails the call by name. Absent still means the default.
+//     default "top-right"
+//
 //   - channel: Channel name. Must be unique across all plugins.
+//
 //   - description: Optional human-readable description shown in dev tooling.
 //     default ""
+//
 //   - draggable: Whether the shell lets the user drag this window and remembers its
 //     position. Draggable windows should also set `follows_focus: false`.
 //     Defaults to false.
 //     default false
+//
 //   - followsFocus: Whether this channel follows the active display on focus changes.
 //     Defaults to true. Set to false for user-initiated HUDs that should
 //     stay pinned to the display where they were opened.
 //     default true
+//
 //   - minHeight: Minimum window height in points. Defaults to 100.
 //     wire uint32 · default 100 · min 0
+//
 //   - onPointer: Pointer-dodge behavior: "none" (default) or "fade" (dodge the mouse —
 //     fade to near-transparent while the pointer is inside the frame).
 //     default "none"
+//
 //   - stackOrder: Stack position among windows sharing this anchor: offsets ascend from the
 //     anchor edge, so the lowest pins at the corner (a persistent status window)
 //     and higher values stack away (transient toasts). Ties broken by channel
 //     name. Defaults to 0.
 //     wire int32 · default 0
+//
 //   - transparent: Fully transparent window — the shell skips its frosted vibrancy panel
 //     and window shadow, so only the plugin's own markup paints. Defaults
 //     to false (frosted).
 //     default false
+//
 //   - width: Window width in points. Defaults to 320.
 //     wire uint32 · default 320 · min 0
-func (p *Plugin) HUDCreateChannel(acceptsInput *bool, anchor json.RawMessage, channel string, description *string, draggable *bool, followsFocus *bool, minHeight *int, onPointer *OnPointer, stackOrder *int, transparent *bool, width *int) error {
+func (p *Plugin) HUDCreateChannel(acceptsInput *bool, anchor *Anchor, channel string, description *string, draggable *bool, followsFocus *bool, minHeight *int, onPointer *OnPointer, stackOrder *int, transparent *bool, width *int) error {
 	req := &HUDCreateChannelRequest{
 		AcceptsInput: acceptsInput,
 		Anchor:       anchor,
@@ -707,8 +722,14 @@ func (p *Plugin) HUDHide(channel string) error {
 //   - channel: Name of the HUD channel to push fragments into. Must be owned by
 //     the calling plugin (verified via
 //     `HudChannelRegistry::verify_owner`).
-//   - fragments: Array of `HudFragment` objects: `{ target_id, html, raw? }`.
-func (p *Plugin) HUDPush(channel string, fragments json.RawMessage) error {
+//
+//   - fragments: The fragments to patch into the channel, in order.
+//
+//     Declared 2026-09-19 (census). The handler already deserialized
+//     exactly `Vec<HudFragment>` and failed the call otherwise, so the
+//     opaque schema described nothing the platform actually accepted.
+//     default []
+func (p *Plugin) HUDPush(channel string, fragments []HudFragment) error {
 	req := &HUDPushRequest{
 		Channel:   channel,
 		Fragments: fragments,
@@ -1035,9 +1056,13 @@ func (p *Plugin) InputTypeText(text string) error {
 
 // KeybindsRegister register keybind snapshot with the platform (caches and sends to Swift shell).
 //
-//   - snapshot: `RegistrySnapshot` JSON: `{ entries: [...], listen_up: [...] }`.
-//     Each entry is `{ combo, action, source }`.
-func (p *Plugin) KeybindsRegister(snapshot json.RawMessage) (*KeybindsRegisterResponse, error) {
+//   - snapshot: The full keybind registry to install, replacing what is there.
+//
+//     Declared 2026-09-19 (census). The handler already deserialized
+//     exactly `RegistrySnapshot` and refused anything else; the doc
+//     comment was transcribing the shape by hand, and had gone stale —
+//     an entry is `{ combo, action, source, params? }`.
+func (p *Plugin) KeybindsRegister(snapshot RegistrySnapshot) (*KeybindsRegisterResponse, error) {
 	req := &KeybindsRegisterRequest{
 		Snapshot: snapshot,
 	}
@@ -6787,11 +6812,17 @@ func (p *Plugin) SelectionPick(index int) (*SelectionPickResponse, error) {
 //
 //   - channel: HUD channel to show the selection in. Defaults to `"main"`.
 //     default null
-//   - items: Array of `HUDItem` objects: `{ id, tag?, title, subtitle?, icon? }`.
-//     default null
+//
+//   - items: The selectable items, in display order.
+//
+//     Declared 2026-09-19 (census). The handler already deserialized
+//     exactly `Vec<HUDItem>`; the doc comment was listing the fields a
+//     generated type can list itself.
+//     default []
+//
 //   - title: Optional title displayed at the top of the selection HUD.
 //     default null
-func (p *Plugin) SelectionSet(channel *string, items json.RawMessage, title *string) error {
+func (p *Plugin) SelectionSet(channel *string, items []HUDItem, title *string) error {
 	req := &SelectionSetRequest{
 		Channel: channel,
 		Items:   items,
