@@ -291,18 +291,12 @@ func PushCommandGroup(p *Plugin, group string, specs []CommandSpec) (int, error)
 }
 
 func pushCommandSpecs(p *Plugin, specs []CommandSpec, group *string) (int, error) {
-	wire := make([]CommandSpec, len(specs))
-	for i, s := range specs {
-		wire[i] = s
-	}
-	params := map[string]any{"commands": wire}
-	if group != nil {
-		params["group"] = *group
-	}
-	var resp struct {
-		Count int `json:"count"`
-	}
-	if err := p.Call("commands.push", params, &resp); err != nil {
+	// Straight through the generated wrapper: `commands.push` declares
+	// `[]CommandSpec` as of 2026-09-19. This used to copy the slice into an
+	// identical one, build a map[string]any and hand-roll p.Call with a
+	// private response struct — all of it because the wrapper took raw JSON.
+	resp, err := p.CommandsPush(specs, group)
+	if err != nil {
 		return 0, fmt.Errorf("commands.push: %w", err)
 	}
 	return resp.Count, nil

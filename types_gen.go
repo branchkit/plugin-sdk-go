@@ -454,6 +454,18 @@ type CommandRowData struct {
 	Variants []string `json:"variants"`
 }
 
+// CommandSnapshot is auto-generated from the OpenRPC spec.
+// Snapshot of a command for sending to plugins (e.g. plugin command processing).
+type CommandSnapshot struct {
+	Canonical string  `json:"canonical"`
+	Category  *string `json:"category,omitempty"`
+	// Only set for key-type commands (input.key action type).
+	// wire uint16 · min 0 · max 65535
+	Keycode *int `json:"keycode,omitempty"`
+	// The actual word (from phrase slots). May differ from canonical for user overrides.
+	Word string `json:"word"`
+}
+
 // CommandSpec is auto-generated from the OpenRPC spec.
 // One Command in a `commands.push` payload — published purely for
 // discoverability. Wire deserialization goes through
@@ -2127,14 +2139,23 @@ type CommandsListOverridesResponse struct {
 
 // CommandsPushRequest is the request type for commands.push.
 type CommandsPushRequest struct {
-	// Array of `CommandSpec` JSON objects to push to the matching
-	// engine. Replaces the current commands contributed by the
-	// calling plugin. Wire-level type is opaque
-	// (`serde_json::Value`) to keep the deserializer flexible; see
-	// `CommandSpec` for the canonical field list including
-	// `cancels_bridge`.
+	// The commands to push. Replaces the commands contributed by the
+	// calling plugin (the whole set, or one `group`).
+	//
+	// The RUNTIME type stays `serde_json::Value` deliberately: each entry
+	// is parsed individually into `commands::PartialCommand` further in,
+	// so one malformed command is reported as one malformed command
+	// rather than failing the caller's whole push. The SCHEMA says what
+	// the entries are (2026-09-19 census) — this is the one place
+	// `#[schemars(with = ...)]` earns its keep, making the schema MORE
+	// precise than the declaration rather than less, which is the exact
+	// opposite of every other use of it this census deleted.
+	//
+	// Until now the generated wrapper took raw JSON, which is why all
+	// three SDKs hand-wrote a typed push beside it (Go's
+	// `PushCommandSpecs`).
 	// default null
-	Commands json.RawMessage `json:"commands,omitempty"`
+	Commands []CommandSpec `json:"commands,omitempty"`
 	// Optional named group this push owns. Absent replaces the plugin's
 	// ENTIRE command set (the original semantics, unchanged); present
 	// replaces only the records in that group and leaves the plugin's other
@@ -7332,10 +7353,15 @@ type OnActionResponse struct {
 
 // OnCommandsChangedRequest is the request type for on_commands_changed.
 type OnCommandsChangedRequest struct {
-	// All commands grouped by plugin ID.
-	CommandsByPlugin json.RawMessage `json:"commands_by_plugin"`
+	// Every plugin's commands, keyed by plugin id.
+	CommandsByPlugin map[string][]CommandSnapshot `json:"commands_by_plugin"`
+	// Plugins that are installed but disabled, so a consumer can leave
+	// their words out of whatever it builds.
 	// default []
-	UserCommands []json.RawMessage `json:"user_commands,omitempty"`
+	DisabledPlugins []string `json:"disabled_plugins,omitempty"`
+	// The user's own commands — the matcher's second input.
+	// default []
+	UserCommands []CommandSnapshot `json:"user_commands,omitempty"`
 }
 
 // OnCommandsChangedResponse is the response type for on_commands_changed.
