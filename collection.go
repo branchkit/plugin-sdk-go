@@ -276,19 +276,13 @@ func (p *Plugin) PutManyWithDisplay(
 	if len(entries) == 0 {
 		return 0, nil
 	}
-	var rolesRaw json.RawMessage
-	if roles != nil {
-		raw, err := json.Marshal(roles)
-		if err != nil {
-			return 0, fmt.Errorf("marshal roles: %w", err)
-		}
-		rolesRaw = raw
-	}
 	var labelPtr *string
 	if label != "" {
 		labelPtr = &label
 	}
-	res, err := p.CollectionPut(entries, nil, labelPtr, name, rolesRaw)
+	// `roles` rides typed: the generated parameter is map[string]FieldDisplay
+	// (fidelity layer 2), and a nil map is omitted from the wire.
+	res, err := p.CollectionPut(entries, nil, labelPtr, name, roles)
 	if err != nil {
 		return 0, err
 	}
@@ -541,17 +535,11 @@ func (p *Plugin) Replace(
 	for _, opt := range opts {
 		opt(&o)
 	}
-	var rawRoles json.RawMessage
-	if len(o.roles) > 0 {
-		if rawRoles, err = json.Marshal(o.roles); err != nil {
-			return ReplaceResult{}, fmt.Errorf("replace %s: marshal roles: %w", name, err)
-		}
-	}
 	var label *string
 	if o.label != "" {
 		label = &o.label
 	}
-	resp, err := p.CollectionReplace(entries, label, name, rawRoles, rawScope)
+	resp, err := p.CollectionReplace(entries, label, name, o.roles, rawScope)
 	if err != nil {
 		return ReplaceResult{}, err
 	}

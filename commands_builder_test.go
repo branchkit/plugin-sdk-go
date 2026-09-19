@@ -10,7 +10,7 @@ import (
 // the test asserts the exact wire bytes the actuator receives.
 func marshalSpec(t *testing.T, spec CommandSpec) map[string]any {
 	t.Helper()
-	b, err := json.Marshal(normalizeCommandSpec(spec))
+	b, err := json.Marshal(spec)
 	if err != nil {
 		t.Fatalf("marshal: %v", err)
 	}
@@ -96,15 +96,21 @@ func TestCaptureDefaultNameAndText(t *testing.T) {
 	}
 }
 
-func TestNormalizeAvoidsNullArrays(t *testing.T) {
-	// A spec built without tags must serialize its tag fields as [] (not
-	// null) — the actuator's parser rejects null for these fields.
+func TestUnsetTagFieldsAreOmittedNeverNull(t *testing.T) {
+	// A spec built without tags must not put `null` on the wire for its
+	// slice fields — the actuator's parser rejects null. The generated
+	// CommandSpec carries `omitempty` on every field the schema marks
+	// optional (fidelity layer 2), so a nil slice is simply absent and the
+	// actuator applies its default. The SDK used to force `[]` by hand.
 	spec := Command(Word("ping")).Action("noop").Build()
-	b, _ := json.Marshal(normalizeCommandSpec(spec))
+	b, _ := json.Marshal(spec)
 	s := string(b)
-	for _, field := range []string{`"requires_tags":[]`, `"sets_tags":[]`, `"clears_tags":[]`, `"sets_on_partial":[]`, `"variants":[]`} {
-		if !strings.Contains(s, field) {
-			t.Fatalf("expected %s in wire form, got: %s", field, s)
+	if strings.Contains(s, "null") {
+		t.Fatalf("nil slice leaked as null: %s", s)
+	}
+	for _, field := range []string{`"requires_tags"`, `"sets_tags"`, `"clears_tags"`, `"sets_on_partial"`, `"variants"`, `"cancels_bridge"`} {
+		if strings.Contains(s, field) {
+			t.Fatalf("unset %s should be absent from the wire, got: %s", field, s)
 		}
 	}
 }

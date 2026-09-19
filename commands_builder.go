@@ -153,7 +153,8 @@ func (b *CommandBuilder) SetsOnPartial(tags ...string) *CommandBuilder {
 // CancelsBridge marks the command as allowed to interrupt an in-progress
 // multi-utterance bridge (cancel-style words like "dismiss").
 func (b *CommandBuilder) CancelsBridge() *CommandBuilder {
-	b.spec.CancelsBridge = true
+	yes := true
+	b.spec.CancelsBridge = &yes
 	return b
 }
 
@@ -292,7 +293,7 @@ func PushCommandGroup(p *Plugin, group string, specs []CommandSpec) (int, error)
 func pushCommandSpecs(p *Plugin, specs []CommandSpec, group *string) (int, error) {
 	wire := make([]CommandSpec, len(specs))
 	for i, s := range specs {
-		wire[i] = normalizeCommandSpec(s)
+		wire[i] = s
 	}
 	params := map[string]any{"commands": wire}
 	if group != nil {
@@ -305,28 +306,4 @@ func pushCommandSpecs(p *Plugin, specs []CommandSpec, group *string) (int, error
 		return 0, fmt.Errorf("commands.push: %w", err)
 	}
 	return resp.Count, nil
-}
-
-// normalizeCommandSpec coerces nil slice fields to empty slices. The
-// generated CommandSpec lacks `omitempty` on its slice fields, so a nil slice
-// would marshal to JSON `null`, which the actuator's command parser rejects
-// (it expects an array or an absent field). File-loaded specs (absent fields)
-// and partially-built specs both flow through here before the wire.
-func normalizeCommandSpec(s CommandSpec) CommandSpec {
-	if s.RequiresTags == nil {
-		s.RequiresTags = []string{}
-	}
-	if s.SetsTags == nil {
-		s.SetsTags = []string{}
-	}
-	if s.ClearsTags == nil {
-		s.ClearsTags = []string{}
-	}
-	if s.SetsOnPartial == nil {
-		s.SetsOnPartial = []string{}
-	}
-	if s.Variants == nil {
-		s.Variants = []json.RawMessage{}
-	}
-	return s
 }

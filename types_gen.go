@@ -12,19 +12,19 @@ var _ json.RawMessage
 
 // AXElementInfo is auto-generated from the OpenRPC spec.
 type AXElementInfo struct {
-	Actions       []string        `json:"actions"`
-	Attributes    []string        `json:"attributes"`
-	ChildrenCount int             `json:"children_count"`
-	Description   *string         `json:"description,omitempty"`
-	Enabled       bool            `json:"enabled"`
-	Focused       bool            `json:"focused"`
-	Path          []AXPathSegment `json:"path"`
-	Position      json.RawMessage `json:"position,omitempty"`
-	Role          string          `json:"role"`
-	Size          json.RawMessage `json:"size,omitempty"`
-	Subrole       *string         `json:"subrole,omitempty"`
-	Title         *string         `json:"title,omitempty"`
-	Value         json.RawMessage `json:"value,omitempty"`
+	Actions       []string          `json:"actions"`
+	Attributes    []string          `json:"attributes"`
+	ChildrenCount int               `json:"children_count"`
+	Description   *string           `json:"description,omitempty"`
+	Enabled       bool              `json:"enabled"`
+	Focused       bool              `json:"focused"`
+	Path          []AXPathSegment   `json:"path"`
+	Position      []json.RawMessage `json:"position,omitempty"`
+	Role          string            `json:"role"`
+	Size          []json.RawMessage `json:"size,omitempty"`
+	Subrole       *string           `json:"subrole,omitempty"`
+	Title         *string           `json:"title,omitempty"`
+	Value         json.RawMessage   `json:"value,omitempty"`
 }
 
 // AXElementNode is auto-generated from the OpenRPC spec.
@@ -35,7 +35,7 @@ type AXElementNode struct {
 
 // AXElementRef is auto-generated from the OpenRPC spec.
 type AXElementRef struct {
-	Path []AXPathSegment `json:"path"`
+	Path []AXPathSegment `json:"path,omitempty"`
 	Pid  int             `json:"pid"`
 }
 
@@ -107,10 +107,10 @@ type BleService struct {
 
 // BleWriteEntry is auto-generated from the OpenRPC spec.
 type BleWriteEntry struct {
-	CharacteristicUuid string `json:"characteristic_uuid"`
-	Data               []int  `json:"data"`
-	ServiceUuid        string `json:"service_uuid"`
-	WriteType          string `json:"write_type"`
+	CharacteristicUuid string  `json:"characteristic_uuid"`
+	Data               []int   `json:"data,omitempty"`
+	ServiceUuid        string  `json:"service_uuid"`
+	WriteType          *string `json:"write_type,omitempty"`
 }
 
 // BluetoothDevice is auto-generated from the OpenRPC spec.
@@ -142,19 +142,19 @@ type CameraDevice struct {
 
 // ClipboardContents is auto-generated from the OpenRPC spec.
 type ClipboardContents struct {
-	AvailableTypes []string        `json:"available_types"`
-	ContentType    string          `json:"content_type"`
-	FileUrls       json.RawMessage `json:"file_urls,omitempty"`
-	ImageBase64    *string         `json:"image_base64,omitempty"`
-	Text           *string         `json:"text,omitempty"`
+	AvailableTypes []string `json:"available_types"`
+	ContentType    string   `json:"content_type"`
+	FileUrls       []string `json:"file_urls,omitempty"`
+	ImageBase64    *string  `json:"image_base64,omitempty"`
+	Text           *string  `json:"text,omitempty"`
 }
 
 // ClipboardWriteItem is auto-generated from the OpenRPC spec.
 type ClipboardWriteItem struct {
-	ContentType string          `json:"content_type"`
-	FileUrls    json.RawMessage `json:"file_urls,omitempty"`
-	ImageBase64 *string         `json:"image_base64,omitempty"`
-	Text        *string         `json:"text,omitempty"`
+	ContentType string   `json:"content_type"`
+	FileUrls    []string `json:"file_urls,omitempty"`
+	ImageBase64 *string  `json:"image_base64,omitempty"`
+	Text        *string  `json:"text,omitempty"`
 }
 
 // CollectionPutEntry is auto-generated from the OpenRPC spec.
@@ -217,18 +217,18 @@ type CommandRowData struct {
 
 // CommandSpec is auto-generated from the OpenRPC spec.
 type CommandSpec struct {
-	Action         json.RawMessage   `json:"action,omitempty"`
-	CancelsBridge  bool              `json:"cancels_bridge"`
+	Action         json.RawMessage   `json:"action"`
+	CancelsBridge  *bool             `json:"cancels_bridge,omitempty"`
 	Category       *string           `json:"category,omitempty"`
-	ClearsTags     []string          `json:"clears_tags"`
+	ClearsTags     []string          `json:"clears_tags,omitempty"`
 	Description    *string           `json:"description,omitempty"`
 	Discovery      *string           `json:"discovery,omitempty"`
-	DisplaySources map[string]string `json:"display_sources"`
+	DisplaySources map[string]string `json:"display_sources,omitempty"`
 	Pattern        []json.RawMessage `json:"pattern"`
-	RequiresTags   []string          `json:"requires_tags"`
-	SetsOnPartial  []string          `json:"sets_on_partial"`
-	SetsTags       []string          `json:"sets_tags"`
-	Variants       []json.RawMessage `json:"variants"`
+	RequiresTags   []string          `json:"requires_tags,omitempty"`
+	SetsOnPartial  []string          `json:"sets_on_partial,omitempty"`
+	SetsTags       []string          `json:"sets_tags,omitempty"`
+	Variants       []json.RawMessage `json:"variants,omitempty"`
 }
 
 // ConfusabilityFinding is auto-generated from the OpenRPC spec.
@@ -613,12 +613,12 @@ type OutputAction struct {
 
 // OutputItem is auto-generated from the OpenRPC spec.
 type OutputItem struct {
-	Action   *OutputAction   `json:"action,omitempty"`
-	Extra    json.RawMessage `json:"extra,omitempty"`
-	ID       string          `json:"id"`
-	Phrase   string          `json:"phrase"`
-	Subtitle *string         `json:"subtitle,omitempty"`
-	Title    string          `json:"title"`
+	Action   *OutputAction              `json:"action,omitempty"`
+	Extra    map[string]json.RawMessage `json:"extra,omitempty"`
+	ID       string                     `json:"id"`
+	Phrase   string                     `json:"phrase"`
+	Subtitle *string                    `json:"subtitle,omitempty"`
+	Title    string                     `json:"title"`
 }
 
 // OutputProgress is auto-generated from the OpenRPC spec.
@@ -629,23 +629,23 @@ type OutputProgress struct {
 
 // OutputSection is auto-generated from the OpenRPC spec.
 type OutputSection struct {
-	Items []OutputItem `json:"items"`
+	Items []OutputItem `json:"items,omitempty"`
 	Title string       `json:"title"`
 }
 
 // OutputState is auto-generated from the OpenRPC spec.
 type OutputState struct {
-	Channel  string          `json:"channel"`
-	Extra    json.RawMessage `json:"extra,omitempty"`
-	Footer   *string         `json:"footer,omitempty"`
-	Kind     string          `json:"kind"`
-	Locale   string          `json:"locale"`
-	Phrase   string          `json:"phrase"`
-	Progress *OutputProgress `json:"progress,omitempty"`
-	Sections []OutputSection `json:"sections"`
-	Title    string          `json:"title"`
-	Urgency  string          `json:"urgency"`
-	V        int             `json:"v"`
+	Channel  string                     `json:"channel"`
+	Extra    map[string]json.RawMessage `json:"extra,omitempty"`
+	Footer   *string                    `json:"footer,omitempty"`
+	Kind     string                     `json:"kind"`
+	Locale   string                     `json:"locale"`
+	Phrase   string                     `json:"phrase"`
+	Progress *OutputProgress            `json:"progress,omitempty"`
+	Sections []OutputSection            `json:"sections,omitempty"`
+	Title    string                     `json:"title"`
+	Urgency  string                     `json:"urgency"`
+	V        int                        `json:"v"`
 }
 
 // OverlayRow is auto-generated from the OpenRPC spec.
@@ -720,12 +720,12 @@ type ProcessInfo struct {
 
 // RedecodeItem is auto-generated from the OpenRPC spec.
 type RedecodeItem struct {
-	ApplyBias    bool           `json:"apply_bias"`
+	ApplyBias    *bool          `json:"apply_bias,omitempty"`
 	Audio        string         `json:"audio"`
 	BiasStrength *float64       `json:"bias_strength,omitempty"`
 	ID           string         `json:"id"`
 	Noise        *RedecodeNoise `json:"noise,omitempty"`
-	Words        []string       `json:"words"`
+	Words        []string       `json:"words,omitempty"`
 }
 
 // RedecodeLine is auto-generated from the OpenRPC spec.
@@ -1021,11 +1021,11 @@ type CollectionGetRequest struct {
 
 // CollectionGetResponse is the response type for collection.get.
 type CollectionGetResponse struct {
-	Data       json.RawMessage `json:"data"`
-	Entries    json.RawMessage `json:"entries,omitempty"`
-	Introducer string          `json:"introducer"`
-	Merge      MergeStrategy   `json:"merge"`
-	Name       string          `json:"name"`
+	Data       json.RawMessage            `json:"data"`
+	Entries    map[string]json.RawMessage `json:"entries,omitempty"`
+	Introducer string                     `json:"introducer"`
+	Merge      MergeStrategy              `json:"merge"`
+	Name       string                     `json:"name"`
 }
 
 // CollectionListRequest is the request type for collection.list.
@@ -1054,11 +1054,11 @@ type CollectionPatchResponse struct {
 
 // CollectionPutRequest is the request type for collection.put.
 type CollectionPutRequest struct {
-	Entries []CollectionPutEntry `json:"entries,omitempty"`
-	Group   *string              `json:"group,omitempty"`
-	Label   *string              `json:"label,omitempty"`
-	Name    string               `json:"name"`
-	Roles   json.RawMessage      `json:"roles,omitempty"`
+	Entries []CollectionPutEntry    `json:"entries,omitempty"`
+	Group   *string                 `json:"group,omitempty"`
+	Label   *string                 `json:"label,omitempty"`
+	Name    string                  `json:"name"`
+	Roles   map[string]FieldDisplay `json:"roles,omitempty"`
 }
 
 // CollectionPutResponse is the response type for collection.put.
@@ -1069,11 +1069,11 @@ type CollectionPutResponse struct {
 
 // CollectionReplaceRequest is the request type for collection.replace.
 type CollectionReplaceRequest struct {
-	Entries []CollectionPutEntry `json:"entries,omitempty"`
-	Label   *string              `json:"label,omitempty"`
-	Name    string               `json:"name"`
-	Roles   json.RawMessage      `json:"roles,omitempty"`
-	Scope   json.RawMessage      `json:"scope"`
+	Entries []CollectionPutEntry    `json:"entries,omitempty"`
+	Label   *string                 `json:"label,omitempty"`
+	Name    string                  `json:"name"`
+	Roles   map[string]FieldDisplay `json:"roles,omitempty"`
+	Scope   json.RawMessage         `json:"scope"`
 }
 
 // CollectionReplaceResponse is the response type for collection.replace.
@@ -1214,14 +1214,14 @@ type CommandsResetOverrideResponse struct {
 
 // CommandsResolveRequest is the request type for commands.resolve.
 type CommandsResolveRequest struct {
-	ActiveTags  json.RawMessage `json:"active_tags,omitempty"`
-	Collections json.RawMessage `json:"collections,omitempty"`
-	PreferOwner *string         `json:"prefer_owner,omitempty"`
-	Preview     *bool           `json:"preview,omitempty"`
-	RequireTag  *string         `json:"require_tag,omitempty"`
-	SessionID   *string         `json:"session_id,omitempty"`
-	Source      *string         `json:"source,omitempty"`
-	Words       []string        `json:"words,omitempty"`
+	ActiveTags  []string `json:"active_tags,omitempty"`
+	Collections []string `json:"collections,omitempty"`
+	PreferOwner *string  `json:"prefer_owner,omitempty"`
+	Preview     *bool    `json:"preview,omitempty"`
+	RequireTag  *string  `json:"require_tag,omitempty"`
+	SessionID   *string  `json:"session_id,omitempty"`
+	Source      *string  `json:"source,omitempty"`
+	Words       []string `json:"words,omitempty"`
 }
 
 // CommandsResolveResponse is the response type for commands.resolve.
@@ -1453,11 +1453,11 @@ type InputClipboardReadRequest struct {
 
 // InputClipboardReadResponse is the response type for input.clipboard_read.
 type InputClipboardReadResponse struct {
-	AvailableTypes []string        `json:"available_types"`
-	ContentType    string          `json:"content_type"`
-	FileUrls       json.RawMessage `json:"file_urls,omitempty"`
-	ImageBase64    *string         `json:"image_base64,omitempty"`
-	Text           *string         `json:"text,omitempty"`
+	AvailableTypes []string `json:"available_types"`
+	ContentType    string   `json:"content_type"`
+	FileUrls       []string `json:"file_urls,omitempty"`
+	ImageBase64    *string  `json:"image_base64,omitempty"`
+	Text           *string  `json:"text,omitempty"`
 }
 
 // InputClipboardReadAllResponse is the response type for input.clipboard_read_all.
@@ -1908,19 +1908,19 @@ type NativeAxElementAtPointRequest struct {
 
 // NativeAxElementAtPointResponse is the response type for native.ax_element_at_point.
 type NativeAxElementAtPointResponse struct {
-	Actions       []string        `json:"actions"`
-	Attributes    []string        `json:"attributes"`
-	ChildrenCount int             `json:"children_count"`
-	Description   *string         `json:"description,omitempty"`
-	Enabled       bool            `json:"enabled"`
-	Focused       bool            `json:"focused"`
-	Path          []AXPathSegment `json:"path"`
-	Position      json.RawMessage `json:"position,omitempty"`
-	Role          string          `json:"role"`
-	Size          json.RawMessage `json:"size,omitempty"`
-	Subrole       *string         `json:"subrole,omitempty"`
-	Title         *string         `json:"title,omitempty"`
-	Value         json.RawMessage `json:"value,omitempty"`
+	Actions       []string          `json:"actions"`
+	Attributes    []string          `json:"attributes"`
+	ChildrenCount int               `json:"children_count"`
+	Description   *string           `json:"description,omitempty"`
+	Enabled       bool              `json:"enabled"`
+	Focused       bool              `json:"focused"`
+	Path          []AXPathSegment   `json:"path"`
+	Position      []json.RawMessage `json:"position,omitempty"`
+	Role          string            `json:"role"`
+	Size          []json.RawMessage `json:"size,omitempty"`
+	Subrole       *string           `json:"subrole,omitempty"`
+	Title         *string           `json:"title,omitempty"`
+	Value         json.RawMessage   `json:"value,omitempty"`
 }
 
 // NativeAxElementTreeRequest is the request type for native.ax_element_tree.
@@ -2756,8 +2756,8 @@ type NativeFileSizeRequest struct {
 
 // NativeFileTagsRequest is the request type for native.file_tags.
 type NativeFileTagsRequest struct {
-	Path string          `json:"path"`
-	Tags json.RawMessage `json:"tags,omitempty"`
+	Path string   `json:"path"`
+	Tags []string `json:"tags,omitempty"`
 }
 
 // NativeFileTypeRequest is the request type for native.file_type.
@@ -4698,9 +4698,9 @@ type NativeSpellingLanguageResponse struct {
 
 // NativeSpotlightRequest is the request type for native.spotlight.
 type NativeSpotlightRequest struct {
-	Limit *int            `json:"limit,omitempty"`
-	Query string          `json:"query"`
-	Scope json.RawMessage `json:"scope,omitempty"`
+	Limit *int     `json:"limit,omitempty"`
+	Query string   `json:"query"`
+	Scope []string `json:"scope,omitempty"`
 }
 
 // NativeSpotlightResponse is the response type for native.spotlight.
@@ -5825,13 +5825,13 @@ type PipelineStoppedEventParams struct {
 
 // PipelineTranscriptEventParams is the payload of the _platform.pipeline.transcript event.
 type PipelineTranscriptEventParams struct {
-	Confidence       *float64        `json:"confidence,omitempty"`
-	DictationProfile *string         `json:"dictation_profile,omitempty"`
-	IsFinal          bool            `json:"is_final"`
-	Pipeline         string          `json:"pipeline"`
-	Text             string          `json:"text"`
-	WordOnsetsMs     json.RawMessage `json:"word_onsets_ms,omitempty"`
-	WordScores       json.RawMessage `json:"word_scores,omitempty"`
+	Confidence       *float64  `json:"confidence,omitempty"`
+	DictationProfile *string   `json:"dictation_profile,omitempty"`
+	IsFinal          bool      `json:"is_final"`
+	Pipeline         string    `json:"pipeline"`
+	Text             string    `json:"text"`
+	WordOnsetsMs     []int     `json:"word_onsets_ms,omitempty"`
+	WordScores       []float64 `json:"word_scores,omitempty"`
 }
 
 // PipelineWarmedEventParams is the payload of the _platform.pipeline.warmed event.
@@ -5923,8 +5923,8 @@ type WorkspaceChangedEventParams struct {
 
 // WorldUpdatedEventParams is the payload of the _platform.world.updated event.
 type WorldUpdatedEventParams struct {
-	ActiveApp      *string         `json:"active_app,omitempty"`
-	ActiveWindowID *string         `json:"active_window_id,omitempty"`
-	Displays       json.RawMessage `json:"displays,omitempty"`
-	Windows        json.RawMessage `json:"windows,omitempty"`
+	ActiveApp      *string       `json:"active_app,omitempty"`
+	ActiveWindowID *string       `json:"active_window_id,omitempty"`
+	Displays       []DisplayInfo `json:"displays,omitempty"`
+	Windows        []WindowInfo  `json:"windows,omitempty"`
 }

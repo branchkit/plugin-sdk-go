@@ -152,7 +152,7 @@ func (p *Plugin) CollectionPatch(fields json.RawMessage, id string, name string)
 }
 
 // CollectionPut upsert records by id (bulk). Auto-registers the target as a record-keyed dynamic collection on first plugin call to an unknown name..
-func (p *Plugin) CollectionPut(entries []CollectionPutEntry, group *string, label *string, name string, roles json.RawMessage) (*CollectionPutResponse, error) {
+func (p *Plugin) CollectionPut(entries []CollectionPutEntry, group *string, label *string, name string, roles map[string]FieldDisplay) (*CollectionPutResponse, error) {
 	req := &CollectionPutRequest{
 		Entries: entries,
 		Group:   group,
@@ -169,7 +169,7 @@ func (p *Plugin) CollectionPut(entries []CollectionPutEntry, group *string, labe
 }
 
 // CollectionReplace make the records in scope exactly the given set: upsert changed, delete absent, skip byte-identical. Scope is required and bounds what may be deleted..
-func (p *Plugin) CollectionReplace(entries []CollectionPutEntry, label *string, name string, roles json.RawMessage, scope json.RawMessage) (*CollectionReplaceResponse, error) {
+func (p *Plugin) CollectionReplace(entries []CollectionPutEntry, label *string, name string, roles map[string]FieldDisplay, scope json.RawMessage) (*CollectionReplaceResponse, error) {
 	req := &CollectionReplaceRequest{
 		Entries: entries,
 		Label:   label,
@@ -359,7 +359,7 @@ func (p *Plugin) CommandsResetOverride(action string, defaultPattern string) (*C
 }
 
 // CommandsResolve resolve words against the command registry — returns dispatch decision, partial-match feedback, and tiebreaker telemetry in one envelope.
-func (p *Plugin) CommandsResolve(activeTags json.RawMessage, collections json.RawMessage, preferOwner *string, preview *bool, requireTag *string, sessionID *string, source *string, words []string) (*CommandsResolveResponse, error) {
+func (p *Plugin) CommandsResolve(activeTags []string, collections []string, preferOwner *string, preview *bool, requireTag *string, sessionID *string, source *string, words []string) (*CommandsResolveResponse, error) {
 	req := &CommandsResolveRequest{
 		ActiveTags:  activeTags,
 		Collections: collections,
@@ -2481,7 +2481,7 @@ func (p *Plugin) NativeFileSize(path string) error {
 }
 
 // NativeFileTags read or write Finder tags on a file.
-func (p *Plugin) NativeFileTags(path string, tags json.RawMessage) error {
+func (p *Plugin) NativeFileTags(path string, tags []string) error {
 	req := &NativeFileTagsRequest{
 		Path: path,
 		Tags: tags,
@@ -5168,7 +5168,7 @@ func (p *Plugin) NativeSpellingLanguage() (*NativeSpellingLanguageResponse, erro
 }
 
 // NativeSpotlight search files via Spotlight.
-func (p *Plugin) NativeSpotlight(limit *int, query string, scope json.RawMessage) ([]SpotlightResult, error) {
+func (p *Plugin) NativeSpotlight(limit *int, query string, scope []string) ([]SpotlightResult, error) {
 	req := &NativeSpotlightRequest{
 		Limit: limit,
 		Query: query,
