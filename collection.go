@@ -12,24 +12,20 @@ import (
 // — for a key, the introducing record WITHOUT later annotations. Use
 // GetCompacted for the folded current state.
 //
-// CollectionFetchResponse.Record is json.RawMessage because the actuator
-// declares it as Option<CollectionRecord> and the Go emitter routes
-// Option<StructType> through RawMessage (the Phase 5 anyOf-null collapser
-// only fires on primitive inner types). Unmarshal here so callers get
-// a typed value.
+// The generated CollectionFetchResponse.Record is *CollectionRecord — the
+// actuator declares it Option<CollectionRecord>, and since fidelity layer 1
+// (2026-09-18) a nullable ref keeps its type. Absent and null both arrive
+// as nil; this wrapper exists for the (name, id) argument order and the
+// (nil, nil) contract, not to decode anything.
 func (p *Plugin) Get(name, id string) (*CollectionRecord, error) {
 	res, err := p.CollectionFetch(id, name)
 	if err != nil {
 		return nil, err
 	}
-	if res == nil || len(res.Record) == 0 || string(res.Record) == "null" {
+	if res == nil {
 		return nil, nil
 	}
-	var rec CollectionRecord
-	if err := json.Unmarshal(res.Record, &rec); err != nil {
-		return nil, fmt.Errorf("decode record: %w", err)
-	}
-	return &rec, nil
+	return res.Record, nil
 }
 
 // GetCompacted reads a keyed log's folded CURRENT state for one key — the
@@ -47,14 +43,10 @@ func (p *Plugin) GetCompacted(name, key string) (*CollectionRecord, error) {
 	if err != nil {
 		return nil, err
 	}
-	if res == nil || len(res.Record) == 0 || string(res.Record) == "null" {
+	if res == nil {
 		return nil, nil
 	}
-	var rec CollectionRecord
-	if err := json.Unmarshal(res.Record, &rec); err != nil {
-		return nil, fmt.Errorf("decode record: %w", err)
-	}
-	return &rec, nil
+	return res.Record, nil
 }
 
 // List returns ONE PAGE of records from a collection.

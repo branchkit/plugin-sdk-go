@@ -4474,7 +4474,7 @@ func (p *Plugin) NativeScreenSharingEnabled() (*NativeScreenSharingEnabledRespon
 }
 
 // NativeScreenshot capture a screenshot as base64-encoded PNG.
-func (p *Plugin) NativeScreenshot(displayID *int, region json.RawMessage, windowID *string) (*NativeScreenshotResponse, error) {
+func (p *Plugin) NativeScreenshot(displayID *int, region *ScreenshotRegion, windowID *string) (*NativeScreenshotResponse, error) {
 	req := &NativeScreenshotRequest{
 		DisplayID: displayID,
 		Region:    region,
@@ -6011,7 +6011,7 @@ func (p *Plugin) PluginDataExport(filename *string, path string) (*PluginDataExp
 }
 
 // PluginDebug write a diagnostic line to this plugin's per-plugin log file. Use shared.Logf instead for cross-cutting coordination lines that belong in actuator.log..
-func (p *Plugin) PluginDebug(data json.RawMessage, level json.RawMessage, tag *string) error {
+func (p *Plugin) PluginDebug(data json.RawMessage, level *PluginLogLevel, tag *string) error {
 	req := &PluginDebugRequest{
 		Data:  data,
 		Level: level,

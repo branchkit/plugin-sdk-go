@@ -64,9 +64,6 @@ func (p *Plugin) logAtLevel(level, tag string, data any) {
 	if err != nil {
 		return
 	}
-	levelBytes, err := json.Marshal(level)
-	if err != nil {
-		return
-	}
-	_ = p.PluginDebug(json.RawMessage(payload), json.RawMessage(levelBytes), &tag)
+	lvl := PluginLogLevel(level)
+	_ = p.PluginDebug(json.RawMessage(payload), &lvl, &tag)
 }

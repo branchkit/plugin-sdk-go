@@ -5,40 +5,40 @@ import (
 	"testing"
 )
 
+func mustJSON(t *testing.T, v any) string {
+	t.Helper()
+	b, err := json.Marshal(v)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return string(b)
+}
+
+// The helpers must marshal to exactly the wire shape the actuator validates
+// as one-of-say/dispatch, with `params` absent (not null) when not given.
 func TestSayActionShape(t *testing.T) {
-	got := string(SayAction("snap left"))
-	if got != `{"say":"snap left"}` {
+	if got := mustJSON(t, SayAction("snap left")); got != `{"say":"snap left"}` {
 		t.Fatalf("SayAction: %s", got)
 	}
 }
 
 func TestDispatchActionShape(t *testing.T) {
-	got := string(DispatchAction("windows.desk", map[string]any{"n": 2}))
+	got := mustJSON(t, DispatchAction("windows.desk", map[string]any{"n": 2}))
 	if got != `{"dispatch":"windows.desk","params":{"n":2}}` {
 		t.Fatalf("DispatchAction with params: %s", got)
 	}
-	got = string(DispatchAction("windows.close", nil))
+	got = mustJSON(t, DispatchAction("windows.close", nil))
 	if got != `{"dispatch":"windows.close"}` {
 		t.Fatalf("DispatchAction without params must omit params: %s", got)
 	}
 }
 
-// The helpers must produce exactly what the generated OutputAction type
-// decodes to — the wire shape the actuator validates as one-of-say/dispatch.
-func TestActionHelpersRoundTripThroughGeneratedType(t *testing.T) {
-	var a OutputAction
-	if err := json.Unmarshal(SayAction("snap left"), &a); err != nil {
-		t.Fatal(err)
-	}
-	if a.Say == nil || *a.Say != "snap left" || a.Dispatch != nil || a.Params != nil {
-		t.Fatalf("say round-trip: %+v", a)
-	}
-	var d OutputAction
-	if err := json.Unmarshal(DispatchAction("windows.desk", map[string]int{"n": 2}), &d); err != nil {
-		t.Fatal(err)
-	}
-	if d.Dispatch == nil || *d.Dispatch != "windows.desk" || d.Say != nil || string(d.Params) != `{"n":2}` {
-		t.Fatalf("dispatch round-trip: %+v", d)
+// An item with no action is information only — the pointer stays nil and
+// the field is omitted, never `"action": {}`.
+func TestItemWithoutActionOmitsTheField(t *testing.T) {
+	got := mustJSON(t, OutputItem{ID: "x", Title: "x", Phrase: "x"})
+	if got != `{"id":"x","phrase":"x","title":"x"}` {
+		t.Fatalf("informational item: %s", got)
 	}
 }
 
@@ -61,8 +61,9 @@ func TestOutputStateWrapperCarriesTheDocument(t *testing.T) {
 			if len(s.Sections) != 1 || len(s.Sections[0].Items) != 1 {
 				return nil, "sections not intact"
 			}
-			if string(s.Sections[0].Items[0].Action) != `{"say":"snap left"}` {
-				return nil, "action not intact: " + string(s.Sections[0].Items[0].Action)
+			a := s.Sections[0].Items[0].Action
+			if a == nil || a.Say == nil || *a.Say != "snap left" || a.Dispatch != nil {
+				return nil, "action not intact"
 			}
 			if s.Urgency != OutputUrgencyAmbient || s.V != 1 || s.Locale != "en" {
 				return nil, "core not intact"

@@ -8,10 +8,9 @@ import "encoding/json"
 // The generated OutputState(state OutputState) wrapper is the whole call; a
 // plugin states what is true for the person (OutputState, OutputSection,
 // OutputItem in types_gen.go, OutputKind* / OutputUrgency* in
-// closed_vocab_gen.go) and never sees a renderer. The one awkward corner is
-// an item's Action, which the generator types as json.RawMessage because the
-// wire allows it to be absent: these two build the only two shapes it can
-// take, so a producer never hand-writes the envelope.
+// closed_vocab_gen.go) and never sees a renderer. An item's Action is one
+// of exactly two shapes — say these words, or dispatch this action type —
+// and these build them so a producer never writes `&words` by hand.
 //
 // Design: docs/design/DESIGN_SEMANTIC_OUTPUT_CHANNEL.md.
 
@@ -19,20 +18,15 @@ import "encoding/json"
 // them — routed through the same matcher their voice reaches, so confirming
 // the item is indistinguishable from saying it. The common case for a
 // command.
-func SayAction(words string) json.RawMessage {
-	b, err := json.Marshal(OutputAction{Say: &words})
-	if err != nil {
-		// A string field cannot fail to marshal; keep the signature honest
-		// without forcing every producer to handle an impossible error.
-		panic("branchkit.SayAction: " + err.Error())
-	}
-	return b
+func SayAction(words string) *OutputAction {
+	return &OutputAction{Say: &words}
 }
 
 // DispatchAction is the action that dispatches `actionType` directly with
-// `params` (nil for none) — for items that are not commands.
-func DispatchAction(actionType string, params any) json.RawMessage {
-	a := OutputAction{Dispatch: &actionType}
+// `params` (nil for none) — for items that are not commands. `params` is
+// marshalled here so the call site passes an ordinary map or struct.
+func DispatchAction(actionType string, params any) *OutputAction {
+	a := &OutputAction{Dispatch: &actionType}
 	if params != nil {
 		p, err := json.Marshal(params)
 		if err != nil {
@@ -40,9 +34,5 @@ func DispatchAction(actionType string, params any) json.RawMessage {
 		}
 		a.Params = p
 	}
-	b, err := json.Marshal(a)
-	if err != nil {
-		panic("branchkit.DispatchAction: " + err.Error())
-	}
-	return b
+	return a
 }

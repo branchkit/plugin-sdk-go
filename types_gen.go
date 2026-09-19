@@ -49,7 +49,7 @@ type AXPathSegment struct {
 type ActionFieldSchema struct {
 	Default     json.RawMessage     `json:"default,omitempty"`
 	Description string              `json:"description"`
-	Display     json.RawMessage     `json:"display,omitempty"`
+	Display     *FieldDisplay       `json:"display,omitempty"`
 	EnumValues  []string            `json:"enum_values"`
 	FieldType   FieldType           `json:"field_type"`
 	Fields      []ActionFieldSchema `json:"fields"`
@@ -613,7 +613,7 @@ type OutputAction struct {
 
 // OutputItem is auto-generated from the OpenRPC spec.
 type OutputItem struct {
-	Action   json.RawMessage `json:"action,omitempty"`
+	Action   *OutputAction   `json:"action,omitempty"`
 	Extra    json.RawMessage `json:"extra,omitempty"`
 	ID       string          `json:"id"`
 	Phrase   string          `json:"phrase"`
@@ -641,7 +641,7 @@ type OutputState struct {
 	Kind     string          `json:"kind"`
 	Locale   string          `json:"locale"`
 	Phrase   string          `json:"phrase"`
-	Progress json.RawMessage `json:"progress,omitempty"`
+	Progress *OutputProgress `json:"progress,omitempty"`
 	Sections []OutputSection `json:"sections"`
 	Title    string          `json:"title"`
 	Urgency  string          `json:"urgency"`
@@ -720,12 +720,12 @@ type ProcessInfo struct {
 
 // RedecodeItem is auto-generated from the OpenRPC spec.
 type RedecodeItem struct {
-	ApplyBias    bool            `json:"apply_bias"`
-	Audio        string          `json:"audio"`
-	BiasStrength *float64        `json:"bias_strength,omitempty"`
-	ID           string          `json:"id"`
-	Noise        json.RawMessage `json:"noise,omitempty"`
-	Words        []string        `json:"words"`
+	ApplyBias    bool           `json:"apply_bias"`
+	Audio        string         `json:"audio"`
+	BiasStrength *float64       `json:"bias_strength,omitempty"`
+	ID           string         `json:"id"`
+	Noise        *RedecodeNoise `json:"noise,omitempty"`
+	Words        []string       `json:"words"`
 }
 
 // RedecodeLine is auto-generated from the OpenRPC spec.
@@ -1000,7 +1000,7 @@ type CollectionFetchRequest struct {
 
 // CollectionFetchResponse is the response type for collection.fetch.
 type CollectionFetchResponse struct {
-	Record json.RawMessage `json:"record,omitempty"`
+	Record *CollectionRecord `json:"record,omitempty"`
 }
 
 // CollectionFetchCompactedRequest is the request type for collection.fetch_compacted.
@@ -1011,7 +1011,7 @@ type CollectionFetchCompactedRequest struct {
 
 // CollectionFetchCompactedResponse is the response type for collection.fetch_compacted.
 type CollectionFetchCompactedResponse struct {
-	Record json.RawMessage `json:"record,omitempty"`
+	Record *CollectionRecord `json:"record,omitempty"`
 }
 
 // CollectionGetRequest is the request type for collection.get.
@@ -2329,7 +2329,7 @@ type NativeCopyFileResponse struct {
 
 // NativeCpuInfoResponse is the response type for native.cpu_info.
 type NativeCpuInfoResponse struct {
-	Cpu json.RawMessage `json:"cpu,omitempty"`
+	Cpu *CpuInfo `json:"cpu,omitempty"`
 }
 
 // NativeCreateDirectoryRequest is the request type for native.create_directory.
@@ -2842,7 +2842,7 @@ type NativeFocusModesResponse struct {
 
 // NativeFocusedElementResponse is the response type for native.focused_element.
 type NativeFocusedElementResponse struct {
-	Element json.RawMessage `json:"element,omitempty"`
+	Element *AXElementInfo `json:"element,omitempty"`
 }
 
 // NativeFocusedWindowIDResponse is the response type for native.focused_window_id.
@@ -2867,7 +2867,7 @@ type NativeForceQuitAppResponse struct {
 
 // NativeFrontmostAppResponse is the response type for native.frontmost_app.
 type NativeFrontmostAppResponse struct {
-	App json.RawMessage `json:"app,omitempty"`
+	App *RunningApp `json:"app,omitempty"`
 }
 
 // NativeFullDiskAccessResponse is the response type for native.full_disk_access.
@@ -3313,7 +3313,7 @@ type NativeMediaPreviousTrackResponse struct {
 
 // NativeMemoryInfoResponse is the response type for native.memory_info.
 type NativeMemoryInfoResponse struct {
-	Memory json.RawMessage `json:"memory,omitempty"`
+	Memory *MemoryInfo `json:"memory,omitempty"`
 }
 
 // NativeMemoryPressureResponse is the response type for native.memory_pressure.
@@ -3501,7 +3501,7 @@ type NativeNotifyResponse struct {
 
 // NativeNowPlayingResponse is the response type for native.now_playing.
 type NativeNowPlayingResponse struct {
-	Info json.RawMessage `json:"info,omitempty"`
+	Info *NowPlayingInfo `json:"info,omitempty"`
 }
 
 // NativeNumberFormatDecimalResponse is the response type for native.number_format_decimal.
@@ -3708,7 +3708,7 @@ type NativePreventSleepResponse struct {
 
 // NativePrimaryDisplayResponse is the response type for native.primary_display.
 type NativePrimaryDisplayResponse struct {
-	Display json.RawMessage `json:"display,omitempty"`
+	Display *DisplayMetadata `json:"display,omitempty"`
 }
 
 // NativePrimaryDisplayIDResponse is the response type for native.primary_display_id.
@@ -4039,9 +4039,9 @@ type NativeScreenSharingEnabledResponse struct {
 
 // NativeScreenshotRequest is the request type for native.screenshot.
 type NativeScreenshotRequest struct {
-	DisplayID *int            `json:"display_id,omitempty"`
-	Region    json.RawMessage `json:"region,omitempty"`
-	WindowID  *string         `json:"window_id,omitempty"`
+	DisplayID *int              `json:"display_id,omitempty"`
+	Region    *ScreenshotRegion `json:"region,omitempty"`
+	WindowID  *string           `json:"window_id,omitempty"`
 }
 
 // NativeScreenshotResponse is the response type for native.screenshot.
@@ -4766,7 +4766,7 @@ type NativeSymlinkResponse struct {
 
 // NativeSystemAppearanceResponse is the response type for native.system_appearance.
 type NativeSystemAppearanceResponse struct {
-	Appearance json.RawMessage `json:"appearance,omitempty"`
+	Appearance *SystemAppearance `json:"appearance,omitempty"`
 }
 
 // NativeSystemInfoResponse is the response type for native.system_info.
@@ -5272,7 +5272,7 @@ type PluginDataExportResponse struct {
 // PluginDebugRequest is the request type for plugin.debug.
 type PluginDebugRequest struct {
 	Data  json.RawMessage `json:"data,omitempty"`
-	Level json.RawMessage `json:"level,omitempty"`
+	Level *PluginLogLevel `json:"level,omitempty"`
 	Tag   *string         `json:"tag,omitempty"`
 }
 
