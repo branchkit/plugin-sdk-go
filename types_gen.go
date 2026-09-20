@@ -379,9 +379,19 @@ type CollectionRecord struct {
 type CollectionsListItem struct {
 	ID string `json:"id"`
 	// Plugin ID that contributed this item.
-	Source   string  `json:"source"`
-	Subtitle *string `json:"subtitle,omitempty"`
-	Title    string  `json:"title"`
+	Source string `json:"source"`
+	// The subtitle is itself a matchable spoken form — the cache holds an
+	// alias equal to it resolving to this row's value (a promoted selection
+	// record). Browse surfaces mark the row so the user knows the name
+	// works. Same derivation as `expand_collections_to_items`; derived per
+	// call rather than stored, because the flat map already holds both
+	// halves.
+	//
+	// `commands.list` has no counterpart by construction: its subtitle is a
+	// variation count ("3 variations"), never a spoken alias.
+	Speakable bool    `json:"speakable"`
+	Subtitle  *string `json:"subtitle,omitempty"`
+	Title     string  `json:"title"`
 }
 
 // CollectionsListSection is auto-generated from the OpenRPC spec.
