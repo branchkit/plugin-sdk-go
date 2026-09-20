@@ -88,10 +88,10 @@ func (p *Plugin) CollectionCount(name string) (*CollectionCountResponse, error) 
 //   - ids: Record ids to remove. Always an array; single-record callers wrap
 //     one id. SDK helpers (`Delete` vs `DeleteMany`) hide the wrapping.
 //     default []
-func (p *Plugin) CollectionDeleteRecords(ids []string, name string) (*CollectionDeleteRecordsResponse, error) {
+func (p *Plugin) CollectionDeleteRecords(name string, ids []string) (*CollectionDeleteRecordsResponse, error) {
 	req := &CollectionDeleteRecordsRequest{
-		Ids:  ids,
 		Name: name,
+		Ids:  ids,
 	}
 	var result CollectionDeleteRecordsResponse
 	err := p.Call(MethodCollectionDeleteRecords, req, &result)
@@ -209,12 +209,12 @@ func (p *Plugin) CollectionPatch(fields json.RawMessage, id string, name string)
 //
 //     Wire-lenient: an entry whose role string this host doesn't know
 //     binds nothing but does NOT fail the put — see `DisplayRoles`.
-func (p *Plugin) CollectionPut(entries []CollectionPutEntry, group *string, label *string, name string, roles map[string]FieldDisplay) (*CollectionPutResponse, error) {
+func (p *Plugin) CollectionPut(name string, entries []CollectionPutEntry, group *string, label *string, roles map[string]FieldDisplay) (*CollectionPutResponse, error) {
 	req := &CollectionPutRequest{
+		Name:    name,
 		Entries: entries,
 		Group:   group,
 		Label:   label,
-		Name:    name,
 		Roles:   roles,
 	}
 	var result CollectionPutResponse
@@ -227,18 +227,18 @@ func (p *Plugin) CollectionPut(entries []CollectionPutEntry, group *string, labe
 
 // CollectionReplace make the records in scope exactly the given set: upsert changed, delete absent, skip byte-identical. Scope is required and bounds what may be deleted..
 //
+//   - scope: What the call is allowed to delete. Required — see `ReplaceScope`.
 //   - entries: The desired set. After the call, the records in scope are exactly these.
 //     default []
 //   - label: Same semantics as `collection.put`'s `label`.
 //   - roles: Same semantics as `collection.put`'s `roles`.
-//   - scope: What the call is allowed to delete. Required — see `ReplaceScope`.
-func (p *Plugin) CollectionReplace(entries []CollectionPutEntry, label *string, name string, roles map[string]FieldDisplay, scope ReplaceScope) (*CollectionReplaceResponse, error) {
+func (p *Plugin) CollectionReplace(name string, scope ReplaceScope, entries []CollectionPutEntry, label *string, roles map[string]FieldDisplay) (*CollectionReplaceResponse, error) {
 	req := &CollectionReplaceRequest{
+		Name:    name,
+		Scope:   scope,
 		Entries: entries,
 		Label:   label,
-		Name:    name,
 		Roles:   roles,
-		Scope:   scope,
 	}
 	var result CollectionReplaceResponse
 	err := p.Call(MethodCollectionReplace, req, &result)
@@ -250,13 +250,13 @@ func (p *Plugin) CollectionReplace(entries []CollectionPutEntry, label *string, 
 
 // CollectionsCreateUser create a simple user list of words (name + words_text, one entry per line, optional `word = value`) and seed its entries.
 //
-//   - description: default ""
 //   - name: Collection name (lowercase, underscores).
+//   - description: default ""
 //   - wordsText: default ""
-func (p *Plugin) CollectionsCreateUser(description *string, name string, wordsText *string) (*CollectionsCreateUserResponse, error) {
+func (p *Plugin) CollectionsCreateUser(name string, description *string, wordsText *string) (*CollectionsCreateUserResponse, error) {
 	req := &CollectionsCreateUserRequest{
-		Description: description,
 		Name:        name,
+		Description: description,
 		WordsText:   wordsText,
 	}
 	var result CollectionsCreateUserResponse
@@ -612,17 +612,17 @@ func (p *Plugin) EffectsRetract(name string) (*EffectsRetractResponse, error) {
 
 // EventsAppend append an event to the structured event log.
 //
+//   - eventType: Event type discriminator (e.g. "session_start", "match", "miss").
 //   - data: Free-form event payload. Stored as a raw JSON object on the event
 //     log line.
 //     default null
-//   - eventType: Event type discriminator (e.g. "session_start", "match", "miss").
 //   - sessionID: Logical session id this event belongs to (8-char prefix used by
 //     the event-stream tooling). Defaults to "?" if absent.
 //     default "?"
-func (p *Plugin) EventsAppend(data json.RawMessage, eventType string, sessionID *string) error {
+func (p *Plugin) EventsAppend(eventType string, data json.RawMessage, sessionID *string) error {
 	req := &EventsAppendRequest{
-		Data:      data,
 		EventType: eventType,
+		Data:      data,
 		SessionID: sessionID,
 	}
 	return p.Call(MethodEventsAppend, req, nil)
@@ -630,24 +630,26 @@ func (p *Plugin) EventsAppend(data json.RawMessage, eventType string, sessionID 
 
 // EventsEmit emit a plugin event on the event bus.
 //
+//   - eventType: Convention-based event type (e.g. "clipboard.copied"). The
+//     `_platform.*` namespace is reserved for the actuator.
 //   - correlationID: Optional correlation id linking related events together for
 //     debugging. Auto-generated by the platform when omitted and the
 //     emitting plugin is processing an event that already carried one.
 //     default null · pattern ^tr_[0-9A-Za-z]{11}$
 //   - data: Free-form event payload published to subscribers.
 //     default null
-//   - eventType: Convention-based event type (e.g. "clipboard.copied"). The
-//     `_platform.*` namespace is reserved for the actuator.
-func (p *Plugin) EventsEmit(correlationID *string, data json.RawMessage, eventType string) error {
+func (p *Plugin) EventsEmit(eventType string, correlationID *string, data json.RawMessage) error {
 	req := &EventsEmitRequest{
+		EventType:     eventType,
 		CorrelationID: correlationID,
 		Data:          data,
-		EventType:     eventType,
 	}
 	return p.Call(MethodEventsEmit, req, nil)
 }
 
 // HUDCreateChannel create a new HUD broadcast channel at runtime.
+//
+//   - channel: Channel name. Must be unique across all plugins.
 //
 //   - acceptsInput: Whether the channel's window receives keyboard/mouse input.
 //     Defaults to false.
@@ -662,8 +664,6 @@ func (p *Plugin) EventsEmit(correlationID *string, data json.RawMessage, eventTy
 //     window somewhere the caller did not ask for with nothing said; it
 //     now fails the call by name. Absent still means the default.
 //     default "top-right"
-//
-//   - channel: Channel name. Must be unique across all plugins.
 //
 //   - description: Optional human-readable description shown in dev tooling.
 //     default ""
@@ -698,11 +698,11 @@ func (p *Plugin) EventsEmit(correlationID *string, data json.RawMessage, eventTy
 //
 //   - width: Window width in points. Defaults to 320.
 //     wire uint32 · default 320 · min 0
-func (p *Plugin) HUDCreateChannel(acceptsInput *bool, anchor *Anchor, channel string, description *string, draggable *bool, followsFocus *bool, minHeight *int, onPointer *OnPointer, stackOrder *int, transparent *bool, width *int) error {
+func (p *Plugin) HUDCreateChannel(channel string, acceptsInput *bool, anchor *Anchor, description *string, draggable *bool, followsFocus *bool, minHeight *int, onPointer *OnPointer, stackOrder *int, transparent *bool, width *int) error {
 	req := &HUDCreateChannelRequest{
+		Channel:      channel,
 		AcceptsInput: acceptsInput,
 		Anchor:       anchor,
-		Channel:      channel,
 		Description:  description,
 		Draggable:    draggable,
 		FollowsFocus: followsFocus,
@@ -893,18 +893,18 @@ func (p *Plugin) InputDoubleClick(x *int, y *int) error {
 
 // InputDrag atomic drag: mouse down, move, mouse up.
 //
-//   - durationMs: wire uint64 (64-bit) · default 0 · min 0
 //   - fromX: wire int32
 //   - fromY: wire int32
 //   - toX: wire int32
 //   - toY: wire int32
-func (p *Plugin) InputDrag(durationMs *int, fromX int, fromY int, toX int, toY int) error {
+//   - durationMs: wire uint64 (64-bit) · default 0 · min 0
+func (p *Plugin) InputDrag(fromX int, fromY int, toX int, toY int, durationMs *int) error {
 	req := &InputDragRequest{
-		DurationMs: durationMs,
 		FromX:      fromX,
 		FromY:      fromY,
 		ToX:        toX,
 		ToY:        toY,
+		DurationMs: durationMs,
 	}
 	return p.Call(MethodInputDrag, req, nil)
 }
@@ -923,16 +923,16 @@ func (p *Plugin) InputListInputSources() ([]InputSource, error) {
 
 // InputMouseButton press, release, or drag-latch a mouse button (for drag operations, etc.).
 //
-//   - button: Button: "left", "right", or "middle". Defaults to "left".
-//     default "left"
 //   - direction: Direction: "press", "release", or "drag". "drag" posts a
 //     zero-distance dragged event at the current cursor position — macOS
 //     only treats a window as grabbed once a dragged event follows the
 //     press, so drag-based operations need it between press and release.
-func (p *Plugin) InputMouseButton(button *string, direction string) error {
+//   - button: Button: "left", "right", or "middle". Defaults to "left".
+//     default "left"
+func (p *Plugin) InputMouseButton(direction string, button *string) error {
 	req := &InputMouseButtonRequest{
-		Button:    button,
 		Direction: direction,
+		Button:    button,
 	}
 	return p.Call(MethodInputMouseButton, req, nil)
 }
@@ -1009,16 +1009,16 @@ func (p *Plugin) InputRightClick(x *int, y *int) error {
 
 // InputScroll scroll the mouse wheel.
 //
+//   - direction: Direction: "up", "down", "left", or "right".
 //   - amount: Amount in pixels/units. Defaults to 5.
 //     wire int32 · default 5
-//   - direction: Direction: "up", "down", "left", or "right".
 //   - unit: Scroll unit: "line" (discrete, default) or "pixel" (continuous/smooth).
 //     Pixel units are needed for horizontal scroll in most browsers.
 //     default "line"
-func (p *Plugin) InputScroll(amount *int, direction string, unit *string) error {
+func (p *Plugin) InputScroll(direction string, amount *int, unit *string) error {
 	req := &InputScrollRequest{
-		Amount:    amount,
 		Direction: direction,
+		Amount:    amount,
 		Unit:      unit,
 	}
 	return p.Call(MethodInputScroll, req, nil)
@@ -1116,10 +1116,10 @@ func (p *Plugin) NativeAccessibilityEnabled() (*NativeAccessibilityEnabledRespon
 // NativeActivateApp bring an app to front by bundle ID.
 //
 //   - allWindows: default false
-func (p *Plugin) NativeActivateApp(allWindows *bool, bundleID string) error {
+func (p *Plugin) NativeActivateApp(bundleID string, allWindows *bool) error {
 	req := &NativeActivateAppRequest{
-		AllWindows: allWindows,
 		BundleID:   bundleID,
+		AllWindows: allWindows,
 	}
 	return p.Call(MethodNativeActivateApp, req, nil)
 }
@@ -1559,10 +1559,10 @@ func (p *Plugin) NativeAxElementAtPoint(pid int, x int, y int) (*NativeAxElement
 // NativeAxElementTree get the accessibility element tree rooted at an element.
 //
 //   - depth: wire uint32 · default 3 · min 0
-func (p *Plugin) NativeAxElementTree(depth *int, element AXElementRef) (*AXElementNode, error) {
+func (p *Plugin) NativeAxElementTree(element AXElementRef, depth *int) (*AXElementNode, error) {
 	req := &NativeAxElementTreeRequest{
-		Depth:   depth,
 		Element: element,
+		Depth:   depth,
 	}
 	var result AXElementNode
 	err := p.Call(MethodNativeAxElementTree, req, &result)
@@ -1574,12 +1574,12 @@ func (p *Plugin) NativeAxElementTree(depth *int, element AXElementRef) (*AXEleme
 
 // NativeAxObserve start observing AX notifications (STUB -- not yet implemented).
 //
-//   - notifications: default []
 //   - pid: wire int32
-func (p *Plugin) NativeAxObserve(notifications []string, pid int) (*NativeAxObserveResponse, error) {
+//   - notifications: default []
+func (p *Plugin) NativeAxObserve(pid int, notifications []string) (*NativeAxObserveResponse, error) {
 	req := &NativeAxObserveRequest{
-		Notifications: notifications,
 		Pid:           pid,
+		Notifications: notifications,
 	}
 	var result NativeAxObserveResponse
 	err := p.Call(MethodNativeAxObserve, req, &result)
@@ -1605,10 +1605,10 @@ func (p *Plugin) NativeAxPerformAction(action string, element AXElementRef) (boo
 // NativeAxReadAttributes read specific attributes from an accessibility element.
 //
 //   - attributes: default []
-func (p *Plugin) NativeAxReadAttributes(attributes []string, element AXElementRef) error {
+func (p *Plugin) NativeAxReadAttributes(element AXElementRef, attributes []string) error {
 	req := &NativeAxReadAttributesRequest{
-		Attributes: attributes,
 		Element:    element,
+		Attributes: attributes,
 	}
 	return p.Call(MethodNativeAxReadAttributes, req, nil)
 }
@@ -1779,19 +1779,19 @@ func (p *Plugin) NativeBleSubscribeAllThenWrite(deviceIdentifier string, subscri
 // NativeBleWrite write bytes to a GATT characteristic on a paired BLE device.
 //
 //   - characteristicUuid: GATT characteristic UUID (e.g. "FFF1").
-//   - data: Bytes to write to the characteristic.
-//     default []
 //   - deviceIdentifier: Identifier for the paired BLE device. Accepts a CoreBluetooth
 //     peripheral UUID or a device name (see ble_discover_services).
 //   - serviceUuid: GATT service UUID (e.g. "FFF0").
+//   - data: Bytes to write to the characteristic.
+//     default []
 //   - writeType: Write type: "with_response" (default, reliable) or "without_response" (fire-and-forget).
 //     default "with_response"
-func (p *Plugin) NativeBleWrite(characteristicUuid string, data []int, deviceIdentifier string, serviceUuid string, writeType *string) (*NativeBleWriteResponse, error) {
+func (p *Plugin) NativeBleWrite(characteristicUuid string, deviceIdentifier string, serviceUuid string, data []int, writeType *string) (*NativeBleWriteResponse, error) {
 	req := &NativeBleWriteRequest{
 		CharacteristicUuid: characteristicUuid,
-		Data:               data,
 		DeviceIdentifier:   deviceIdentifier,
 		ServiceUuid:        serviceUuid,
+		Data:               data,
 		WriteType:          writeType,
 	}
 	var result NativeBleWriteResponse
@@ -2014,12 +2014,12 @@ func (p *Plugin) NativeClearNotifications(bundleID string) error {
 
 // NativeClickMenuItem click a menu item by navigating the menu bar path.
 //
-//   - path: default []
 //   - pid: wire int32
-func (p *Plugin) NativeClickMenuItem(path []string, pid int) (bool, error) {
+//   - path: default []
+func (p *Plugin) NativeClickMenuItem(pid int, path []string) (bool, error) {
 	req := &NativeClickMenuItemRequest{
-		Path: path,
 		Pid:  pid,
+		Path: path,
 	}
 	var result struct {
 		Result bool `json:"result"`
@@ -2456,10 +2456,10 @@ func (p *Plugin) NativeDifferentiateWithoutColor() (*NativeDifferentiateWithoutC
 // NativeDirectoryContents list files and directories at a path.
 //
 //   - includeHidden: default false
-func (p *Plugin) NativeDirectoryContents(includeHidden *bool, path string) ([]DirectoryEntry, error) {
+func (p *Plugin) NativeDirectoryContents(path string, includeHidden *bool) ([]DirectoryEntry, error) {
 	req := &NativeDirectoryContentsRequest{
-		IncludeHidden: includeHidden,
 		Path:          path,
+		IncludeHidden: includeHidden,
 	}
 	var result struct {
 		Entries []DirectoryEntry `json:"entries"`
@@ -2890,10 +2890,10 @@ func (p *Plugin) NativeFileExtendedAttributes(path string) ([]string, error) {
 // NativeFileHash compute SHA-256 hash of a file.
 //
 //   - algorithm: default ""
-func (p *Plugin) NativeFileHash(algorithm *string, path string) (*NativeFileHashResponse, error) {
+func (p *Plugin) NativeFileHash(path string, algorithm *string) (*NativeFileHashResponse, error) {
 	req := &NativeFileHashRequest{
-		Algorithm: algorithm,
 		Path:      path,
+		Algorithm: algorithm,
 	}
 	var result NativeFileHashResponse
 	err := p.Call(MethodNativeFileHash, req, &result)
@@ -3269,10 +3269,10 @@ func (p *Plugin) NativeGetWindowInfo(windowID string) (*NativeGetWindowInfoRespo
 // NativeGlobFiles find files matching a glob pattern.
 //
 //   - maxResults: wire uint32 · default 0 · min 0
-func (p *Plugin) NativeGlobFiles(maxResults *int, pattern string) ([]string, error) {
+func (p *Plugin) NativeGlobFiles(pattern string, maxResults *int) ([]string, error) {
 	req := &NativeGlobFilesRequest{
-		MaxResults: maxResults,
 		Pattern:    pattern,
+		MaxResults: maxResults,
 	}
 	var result struct {
 		Paths []string `json:"paths"`
@@ -3405,18 +3405,18 @@ func (p *Plugin) NativeHidRelease(deviceID string) (*NativeHidReleaseResponse, e
 
 // NativeHidSendReport send an output or feature report to a connected HID device.
 //
-//   - data: Raw report bytes to send.
-//     default []
 //   - deviceID: Device ID (e.g. "0x28bd:0x0202:0x48f42695").
 //   - reportID: HID report ID.
 //     wire uint32 · min 0
 //   - reportType: Report type: "output" or "feature".
-func (p *Plugin) NativeHidSendReport(data []int, deviceID string, reportID int, reportType string) (*NativeHidSendReportResponse, error) {
+//   - data: Raw report bytes to send.
+//     default []
+func (p *Plugin) NativeHidSendReport(deviceID string, reportID int, reportType string, data []int) (*NativeHidSendReportResponse, error) {
 	req := &NativeHidSendReportRequest{
-		Data:       data,
 		DeviceID:   deviceID,
 		ReportID:   reportID,
 		ReportType: reportType,
+		Data:       data,
 	}
 	var result NativeHidSendReportResponse
 	err := p.Call(MethodNativeHidSendReport, req, &result)
@@ -4247,12 +4247,12 @@ func (p *Plugin) NativeNotificationSoundEnabled() (*NativeNotificationSoundEnabl
 //   - body: default null
 //   - sound: default null
 //   - subtitle: default null
-func (p *Plugin) NativeNotify(body *string, sound *string, subtitle *string, title string) (*NativeNotifyResponse, error) {
+func (p *Plugin) NativeNotify(title string, body *string, sound *string, subtitle *string) (*NativeNotifyResponse, error) {
 	req := &NativeNotifyRequest{
+		Title:    title,
 		Body:     body,
 		Sound:    sound,
 		Subtitle: subtitle,
-		Title:    title,
 	}
 	var result NativeNotifyResponse
 	err := p.Call(MethodNativeNotify, req, &result)
@@ -4440,10 +4440,10 @@ func (p *Plugin) NativeOptimizedCharging() (*NativeOptimizedChargingResponse, er
 // NativePdfExtractText extract text from a PDF file.
 //
 //   - page: wire uint64 (64-bit) · default 0 · min 0
-func (p *Plugin) NativePdfExtractText(page *int, path string) (string, error) {
+func (p *Plugin) NativePdfExtractText(path string, page *int) (string, error) {
 	req := &NativePdfExtractTextRequest{
-		Page: page,
 		Path: path,
+		Page: page,
 	}
 	var result string
 	err := p.Call(MethodNativePdfExtractText, req, &result)
@@ -4858,10 +4858,10 @@ func (p *Plugin) NativeReadFile(path string) (*NativeReadFileResponse, error) {
 // NativeReadFileBinary read a file as base64-encoded binary.
 //
 //   - maxBytes: wire uint64 (64-bit) · default null · min 0
-func (p *Plugin) NativeReadFileBinary(maxBytes *int, path string) (*NativeReadFileBinaryResponse, error) {
+func (p *Plugin) NativeReadFileBinary(path string, maxBytes *int) (*NativeReadFileBinaryResponse, error) {
 	req := &NativeReadFileBinaryRequest{
-		MaxBytes: maxBytes,
 		Path:     path,
+		MaxBytes: maxBytes,
 	}
 	var result NativeReadFileBinaryResponse
 	err := p.Call(MethodNativeReadFileBinary, req, &result)
@@ -5022,10 +5022,10 @@ func (p *Plugin) NativeRunJxa(script string) (*NativeRunJxaResponse, error) {
 // NativeRunShortcut run a Shortcuts.app shortcut by name.
 //
 //   - input: default null
-func (p *Plugin) NativeRunShortcut(input *string, name string) (*NativeRunShortcutResponse, error) {
+func (p *Plugin) NativeRunShortcut(name string, input *string) (*NativeRunShortcutResponse, error) {
 	req := &NativeRunShortcutRequest{
-		Input: input,
 		Name:  name,
+		Input: input,
 	}
 	var result NativeRunShortcutResponse
 	err := p.Call(MethodNativeRunShortcut, req, &result)
@@ -5818,10 +5818,10 @@ func (p *Plugin) NativeSpacesSpanDisplays() (*NativeSpacesSpanDisplaysResponse, 
 //
 //   - rate: wire double · default null
 //   - voice: default null
-func (p *Plugin) NativeSpeak(rate *float64, text string, voice *string) error {
+func (p *Plugin) NativeSpeak(text string, rate *float64, voice *string) error {
 	req := &NativeSpeakRequest{
-		Rate:  rate,
 		Text:  text,
+		Rate:  rate,
 		Voice: voice,
 	}
 	return p.Call(MethodNativeSpeak, req, nil)
@@ -5852,10 +5852,10 @@ func (p *Plugin) NativeSpeechRecognitionAvailable() (*NativeSpeechRecognitionAva
 // NativeSpeechRecognizeFile recognize speech from an audio file (returns transcript).
 //
 //   - locale: default ""
-func (p *Plugin) NativeSpeechRecognizeFile(locale *string, path string) (string, error) {
+func (p *Plugin) NativeSpeechRecognizeFile(path string, locale *string) (string, error) {
 	req := &NativeSpeechRecognizeFileRequest{
-		Locale: locale,
 		Path:   path,
+		Locale: locale,
 	}
 	var result string
 	err := p.Call(MethodNativeSpeechRecognizeFile, req, &result)
@@ -5879,10 +5879,10 @@ func (p *Plugin) NativeSpellingLanguage() (*NativeSpellingLanguageResponse, erro
 //
 //   - limit: wire uint32 · default 20 · min 0
 //   - scope: default null
-func (p *Plugin) NativeSpotlight(limit *int, query string, scope []string) ([]SpotlightResult, error) {
+func (p *Plugin) NativeSpotlight(query string, limit *int, scope []string) ([]SpotlightResult, error) {
 	req := &NativeSpotlightRequest{
-		Limit: limit,
 		Query: query,
+		Limit: limit,
 		Scope: scope,
 	}
 	var result struct {
@@ -6749,7 +6749,6 @@ func (p *Plugin) PipelinesGrammar(full *bool) (*PipelinesGrammarResponse, error)
 
 // PipelinesInject send a custom configuration event to one stage of a running pipeline.
 //
-//   - data: default null
 //   - eventType: Must be a custom event type — `ext.<vendor>.<name>`. The typed families
 //     (`audio_*`, `transcript`, `vocabulary_update`) are the platform's to
 //     send; a plugin forging one into its own pipeline was previously
@@ -6759,12 +6758,13 @@ func (p *Plugin) PipelinesGrammar(full *bool) (*PipelinesGrammarResponse, error)
 //     it — a role like `_platform.stt` or a qualified stage name. Required:
 //     before per-stage channels existed this operation could only ever reach
 //     the terminal stage, and silently did nothing for any other.
-func (p *Plugin) PipelinesInject(data json.RawMessage, eventType string, name string, stage string) (*PipelinesInjectResponse, error) {
+//   - data: default null
+func (p *Plugin) PipelinesInject(eventType string, name string, stage string, data json.RawMessage) (*PipelinesInjectResponse, error) {
 	req := &PipelinesInjectRequest{
-		Data:      data,
 		EventType: eventType,
 		Name:      name,
 		Stage:     stage,
+		Data:      data,
 	}
 	var result PipelinesInjectResponse
 	err := p.Call(MethodPipelinesInject, req, &result)
@@ -6778,10 +6778,10 @@ func (p *Plugin) PipelinesInject(data json.RawMessage, eventType string, name st
 //
 //   - ephemeral: default false
 //   - paramOverrides: default {}
-func (p *Plugin) PipelinesRun(ephemeral *bool, name string, paramOverrides map[string]json.RawMessage) (*PipelinesRunResponse, error) {
+func (p *Plugin) PipelinesRun(name string, ephemeral *bool, paramOverrides map[string]json.RawMessage) (*PipelinesRunResponse, error) {
 	req := &PipelinesRunRequest{
-		Ephemeral:      ephemeral,
 		Name:           name,
+		Ephemeral:      ephemeral,
 		ParamOverrides: paramOverrides,
 	}
 	var result PipelinesRunResponse
@@ -6809,10 +6809,10 @@ func (p *Plugin) PipelinesStatus() (*PipelinesStatusResponse, error) {
 //     detected dictation stop phrase, from the transcript's word_onsets_ms.
 //     Absent = process everything.
 //     wire uint64 (64-bit) · default null · min 0
-func (p *Plugin) PipelinesStop(audioCutoffMs *int, name string) (*PipelinesStopResponse, error) {
+func (p *Plugin) PipelinesStop(name string, audioCutoffMs *int) (*PipelinesStopResponse, error) {
 	req := &PipelinesStopRequest{
-		AudioCutoffMs: audioCutoffMs,
 		Name:          name,
+		AudioCutoffMs: audioCutoffMs,
 	}
 	var result PipelinesStopResponse
 	err := p.Call(MethodPipelinesStop, req, &result)
@@ -6843,15 +6843,15 @@ func (p *Plugin) PipelinesWarm(name string, paramOverrides map[string]json.RawMe
 
 // PluginDataExport copy one file out of the caller's own data dir into Downloads and reveal it (the one egress a plugin cannot perform itself).
 //
+//   - path: Path of the file to export, relative to the caller's data dir.
 //   - filename: Name to save it under. Defaults to the source file's name. A path
 //     separator here is refused rather than resolved — this names a file in
 //     Downloads, not a location.
 //     default null
-//   - path: Path of the file to export, relative to the caller's data dir.
-func (p *Plugin) PluginDataExport(filename *string, path string) (*PluginDataExportResponse, error) {
+func (p *Plugin) PluginDataExport(path string, filename *string) (*PluginDataExportResponse, error) {
 	req := &PluginDataExportRequest{
-		Filename: filename,
 		Path:     path,
+		Filename: filename,
 	}
 	var result PluginDataExportResponse
 	err := p.Call(MethodPluginDataExport, req, &result)
@@ -6986,16 +6986,16 @@ func (p *Plugin) PrivilegesRequest(privilege string, reason *string) (*Privilege
 
 // RecognitionBiasApply apply a calibration-measured strength to the never-standalone recognition bias (provenance: calibration); refuses over a manually-set value unless force.
 //
+//   - strength: Strength to apply (> 0; the setting is also switched on).
+//     wire double
 //   - force: Overwrite a manually-set value. Without it, `manual` provenance refuses
 //     (`applied: false`) so the caller can confirm with the user first — a
 //     calibration apply must never silently clobber a hand-set value.
 //     default false
-//   - strength: Strength to apply (> 0; the setting is also switched on).
-//     wire double
-func (p *Plugin) RecognitionBiasApply(force *bool, strength float64) (*RecognitionBiasApplyResponse, error) {
+func (p *Plugin) RecognitionBiasApply(strength float64, force *bool) (*RecognitionBiasApplyResponse, error) {
 	req := &RecognitionBiasApplyRequest{
-		Force:    force,
 		Strength: strength,
+		Force:    force,
 	}
 	var result RecognitionBiasApplyResponse
 	err := p.Call(MethodRecognitionBiasApply, req, &result)
@@ -7036,17 +7036,17 @@ func (p *Plugin) RecognitionBiasSet(enabled *bool, strength *float64) (*Recognit
 
 // RecognitionRedecode re-decode the caller's own captured audio through a registered recognizer stage against the LIVE grammar (the fragility ladder) — the actuator runs it because the grammar is platform state and plugins cannot exec.
 //
-//   - maxActive: wire uint32 · default null · min 0
 //   - model: Model dir name under app-support `models/` (single component, no
 //     traversal), e.g. `"sherpa-offline-nemo"`.
 //   - stage: Registered stage id whose binary's `probe` subcommand runs the re-decode,
 //     e.g. `"voice.sherpa_commands"`. Validated against the stage registry.
-func (p *Plugin) RecognitionRedecode(items []RedecodeItem, maxActive *int, model string, stage string) (*RecognitionRedecodeResponse, error) {
+//   - maxActive: wire uint32 · default null · min 0
+func (p *Plugin) RecognitionRedecode(items []RedecodeItem, model string, stage string, maxActive *int) (*RecognitionRedecodeResponse, error) {
 	req := &RecognitionRedecodeRequest{
 		Items:     items,
-		MaxActive: maxActive,
 		Model:     model,
 		Stage:     stage,
+		MaxActive: maxActive,
 	}
 	var result RecognitionRedecodeResponse
 	err := p.Call(MethodRecognitionRedecode, req, &result)
@@ -7220,14 +7220,14 @@ func (p *Plugin) SpeechAnnounce(text string) error {
 
 // SpeechSay speak words through the system voice (a primitive: the platform makes the sound and reports the span for echo suppression; what to say is the caller's policy).
 //
+//   - text: The words. Plain language, no markup; the system voice reads it as is.
 //   - priority: `"normal"` queues behind whatever is playing; `"high"` cuts it off
 //     and speaks now. Defaults to normal.
 //     default null
-//   - text: The words. Plain language, no markup; the system voice reads it as is.
-func (p *Plugin) SpeechSay(priority *string, text string) error {
+func (p *Plugin) SpeechSay(text string, priority *string) error {
 	req := &SpeechSayRequest{
-		Priority: priority,
 		Text:     text,
+		Priority: priority,
 	}
 	return p.Call(MethodSpeechSay, req, nil)
 }
@@ -7253,17 +7253,17 @@ func (p *Plugin) SystemLaunchApp(bundleID string, newInstance *bool) error {
 // SystemNotify show a HUD notification with title and body text.
 //
 //   - body: Notification body text (rendered inside `<div id="body-text">`).
+//   - title: Notification title (rendered as `<h1 id="title">`).
 //   - durationSecs: Auto-dismiss duration in seconds. When absent, defaults to
 //     [`DEFAULT_NOTIFY_DURATION_SECS`] (5s). Pass `0` for a sticky
 //     notification that only closes when the user clicks Dismiss.
 //     Pass any positive integer for a custom duration.
 //     wire uint32 · default null · min 0
-//   - title: Notification title (rendered as `<h1 id="title">`).
-func (p *Plugin) SystemNotify(body string, durationSecs *int, title string) error {
+func (p *Plugin) SystemNotify(body string, title string, durationSecs *int) error {
 	req := &SystemNotifyRequest{
 		Body:         body,
-		DurationSecs: durationSecs,
 		Title:        title,
+		DurationSecs: durationSecs,
 	}
 	return p.Call(MethodSystemNotify, req, nil)
 }

@@ -229,7 +229,7 @@ func (p *Plugin) Put(name, id string, payload any) error {
 	if err != nil {
 		return fmt.Errorf("marshal payload: %w", err)
 	}
-	_, err = p.CollectionPut([]CollectionPutEntry{{ID: id, Payload: raw}}, nil, nil, name, nil)
+	_, err = p.CollectionPut(name, []CollectionPutEntry{{ID: id, Payload: raw}}, nil, nil, nil)
 	return err
 }
 
@@ -282,7 +282,7 @@ func (p *Plugin) PutManyWithDisplay(
 	}
 	// `roles` rides typed: the generated parameter is map[string]FieldDisplay
 	// (fidelity layer 2), and a nil map is omitted from the wire.
-	res, err := p.CollectionPut(entries, nil, labelPtr, name, roles)
+	res, err := p.CollectionPut(name, entries, nil, labelPtr, roles)
 	if err != nil {
 		return 0, err
 	}
@@ -309,7 +309,7 @@ func (p *Plugin) Patch(name, id string, fields any) error {
 // removed, false if it was already gone. Single-record sugar over the
 // bulk wire shape.
 func (p *Plugin) Delete(name, id string) (bool, error) {
-	res, err := p.CollectionDeleteRecords([]string{id}, name)
+	res, err := p.CollectionDeleteRecords(name, []string{id})
 	if err != nil {
 		return false, err
 	}
@@ -329,7 +329,7 @@ func (p *Plugin) DeleteMany(name string, ids []string) (deleted, alreadyAbsent i
 	if len(ids) == 0 {
 		return 0, 0, nil
 	}
-	res, err := p.CollectionDeleteRecords(ids, name)
+	res, err := p.CollectionDeleteRecords(name, ids)
 	if err != nil {
 		return 0, 0, err
 	}
@@ -525,7 +525,7 @@ func (p *Plugin) Replace(
 	if o.label != "" {
 		label = &o.label
 	}
-	resp, err := p.CollectionReplace(entries, label, name, o.roles, scope)
+	resp, err := p.CollectionReplace(name, scope, entries, label, o.roles)
 	if err != nil {
 		return ReplaceResult{}, err
 	}
