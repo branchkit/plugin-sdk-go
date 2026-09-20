@@ -3395,6 +3395,12 @@ type NativeBootVolumeResponse struct {
 	Name string `json:"name"`
 }
 
+// NativeBordersRequest is the request type for native.borders.
+type NativeBordersRequest struct {
+	// default []
+	Frames []WindowFrame `json:"frames,omitempty"`
+}
+
 // NativeBordersResponse is the response type for native.borders.
 type NativeBordersResponse struct {
 	Ok bool `json:"ok"`

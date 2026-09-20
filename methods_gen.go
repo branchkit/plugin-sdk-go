@@ -1795,8 +1795,13 @@ func (p *Plugin) NativeBootVolume() (*NativeBootVolumeResponse, error) {
 }
 
 // NativeBorders draw window border overlays (forwarded to Swift shell).
-func (p *Plugin) NativeBorders() error {
-	return p.Call(MethodNativeBorders, nil, nil)
+//
+//   - frames: default []
+func (p *Plugin) NativeBorders(frames []WindowFrame) error {
+	req := &NativeBordersRequest{
+		Frames: frames,
+	}
+	return p.Call(MethodNativeBorders, req, nil)
 }
 
 // NativeBrightness get display brightness (0.0-1.0).
