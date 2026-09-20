@@ -105,12 +105,21 @@ func (wr *Writer) WriteEvent(ev *Event) error {
 		Data:          data,
 		PayloadLength: len(ev.Payload),
 	}
-	hdr, err := json.Marshal(h)
-	if err != nil {
+	// json.Marshal escapes <, > and & as \u003c / \u003e / \u0026. The Rust
+	// writer is the canonical encoding this port is held byte-identical to
+	// (stage-sdk-test's framing suite builds its expected bytes with it), and
+	// serde_json does not escape them — nor do the TS and Python ports. Go was
+	// the only one that did, and the suite was green only because no fixture
+	// carried those characters. An Encoder with SetEscapeHTML(false) is the
+	// documented way off that default; it also appends the '\n' we want.
+	// Found 2026-09-19 while porting the Python framing.
+	var buf bytes.Buffer
+	enc := json.NewEncoder(&buf)
+	enc.SetEscapeHTML(false)
+	if err := enc.Encode(h); err != nil {
 		return fmt.Errorf("wire: marshal header: %w", err)
 	}
-	hdr = append(hdr, '\n')
-	if _, err := wr.w.Write(hdr); err != nil {
+	if _, err := wr.w.Write(buf.Bytes()); err != nil {
 		return err
 	}
 	if len(ev.Payload) > 0 {
