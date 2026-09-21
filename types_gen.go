@@ -1556,8 +1556,16 @@ type RunningApp struct {
 	IsActive bool    `json:"is_active"`
 	IsHidden bool    `json:"is_hidden"`
 	Name     string  `json:"name"`
+	// The process that runs this application, when the system can say.
+	//
+	// Absent rather than zero when it cannot, because zero is itself a
+	// valid-looking process id and would read as an answer. macOS always
+	// reports one. On Linux and Windows the running list is built from
+	// the windows on screen, and a window need not carry its process id:
+	// on X11 the application sets it voluntarily, and a Wayland session
+	// may expose none at all.
 	// wire int32
-	Pid int `json:"pid"`
+	Pid *int `json:"pid,omitempty"`
 }
 
 // ScreenshotRegion is auto-generated from the OpenRPC spec.
