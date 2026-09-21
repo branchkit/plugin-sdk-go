@@ -4,7 +4,7 @@
 package branchkit
 
 // APIVersion is the BranchKit API version (from contracts/api-version.json).
-const APIVersion = "0.1.0"
+const APIVersion = "0.2.0"
 
 // RPC method names: plugin → actuator (use with plugin.Call()).
 const (

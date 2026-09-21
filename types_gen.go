@@ -4519,7 +4519,6 @@ type NativeKeyboardLayoutResponse struct {
 // NativeKeychainDeleteRequest is the request type for native.keychain_delete.
 type NativeKeychainDeleteRequest struct {
 	Account string `json:"account"`
-	Service string `json:"service"`
 }
 
 // NativeKeychainDeleteResponse is the response type for native.keychain_delete.
@@ -4530,7 +4529,6 @@ type NativeKeychainDeleteResponse struct {
 // NativeKeychainReadRequest is the request type for native.keychain_read.
 type NativeKeychainReadRequest struct {
 	Account string `json:"account"`
-	Service string `json:"service"`
 }
 
 // NativeKeychainReadResponse is the response type for native.keychain_read.
@@ -4542,7 +4540,6 @@ type NativeKeychainReadResponse struct {
 type NativeKeychainWriteRequest struct {
 	Account  string `json:"account"`
 	Password string `json:"password"`
-	Service  string `json:"service"`
 }
 
 // NativeKeychainWriteResponse is the response type for native.keychain_write.

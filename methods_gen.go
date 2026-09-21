@@ -3671,20 +3671,18 @@ func (p *Plugin) NativeKeyboardLayout() (*NativeKeyboardLayoutResponse, error) {
 	return &result, nil
 }
 
-// NativeKeychainDelete delete a keychain item by service and account.
-func (p *Plugin) NativeKeychainDelete(account string, service string) error {
+// NativeKeychainDelete delete a password from this plugin's keychain drawer.
+func (p *Plugin) NativeKeychainDelete(account string) error {
 	req := &NativeKeychainDeleteRequest{
 		Account: account,
-		Service: service,
 	}
 	return p.Call(MethodNativeKeychainDelete, req, nil)
 }
 
-// NativeKeychainRead read a password from the keychain by service and account.
-func (p *Plugin) NativeKeychainRead(account string, service string) (*NativeKeychainReadResponse, error) {
+// NativeKeychainRead read a password from this plugin's keychain drawer.
+func (p *Plugin) NativeKeychainRead(account string) (*NativeKeychainReadResponse, error) {
 	req := &NativeKeychainReadRequest{
 		Account: account,
-		Service: service,
 	}
 	var result NativeKeychainReadResponse
 	err := p.Call(MethodNativeKeychainRead, req, &result)
@@ -3694,12 +3692,11 @@ func (p *Plugin) NativeKeychainRead(account string, service string) (*NativeKeyc
 	return &result, nil
 }
 
-// NativeKeychainWrite store a password in the keychain for a service and account.
-func (p *Plugin) NativeKeychainWrite(account string, password string, service string) error {
+// NativeKeychainWrite store a password in this plugin's keychain drawer.
+func (p *Plugin) NativeKeychainWrite(account string, password string) error {
 	req := &NativeKeychainWriteRequest{
 		Account:  account,
 		Password: password,
-		Service:  service,
 	}
 	return p.Call(MethodNativeKeychainWrite, req, nil)
 }
