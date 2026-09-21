@@ -793,6 +793,7 @@ const (
 	FieldTypeEnum        FieldType = "enum"
 	FieldTypeObject      FieldType = "object"
 	FieldTypeJson        FieldType = "json"
+	FieldTypeSecretRef   FieldType = "secret_ref"
 )
 
 // Frame is auto-generated from the OpenRPC spec.
