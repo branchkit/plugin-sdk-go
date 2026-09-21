@@ -2060,7 +2060,7 @@ func (p *Plugin) NativeClickMenuItem(pid int, path []string) (bool, error) {
 	return result.Result, err
 }
 
-// NativeClipboardChangeCount get the clipboard change count.
+// NativeClipboardChangeCount a number that increases when the clipboard changes. Compare two samples to detect a change; a larger value is always later. On macOS this counts copies, so re-copying identical content advances it; elsewhere it counts observed changes, so it does not.
 func (p *Plugin) NativeClipboardChangeCount() (*NativeClipboardChangeCountResponse, error) {
 	var result NativeClipboardChangeCountResponse
 	err := p.Call(MethodNativeClipboardChangeCount, nil, &result)
