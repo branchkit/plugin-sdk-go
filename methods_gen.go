@@ -26,6 +26,38 @@ func (p *Plugin) ArtifactDelete(ref string) error {
 	return p.Call(MethodArtifactDelete, req, nil)
 }
 
+// BlobPublish announce that bytes up to `length` are complete on one of this plugin's declared blobs. Carries a length, never bytes..
+//
+//   - length: Total bytes now complete in the backing file, WITHIN the current
+//     generation. Must be `>= ` the previous publish's: the channel is
+//     append-only and a shrinking length would invalidate ranges consumers
+//     already hold. The platform refuses otherwise (D4).
+//     wire uint64 (64-bit) · min 0
+//   - name: The blob's name, as declared in this plugin's `provides.blobs`.
+//   - hash: The hash of the appended range, when the provider declared
+//     `hash: provider` and is supplying one itself. Ignored otherwise —
+//     the platform hashes by default so a published length is unfakeable.
+//   - newGeneration: Start a new generation instead of appending to the current one — the
+//     way a provider shrinks. A new generation is a NEW backing file, so
+//     offsets restart at zero and consumers reopen; `length` is then the
+//     length of the new file. Compaction is an announced event rather than
+//     a race (D4).
+//     default false
+func (p *Plugin) BlobPublish(length int, name string, hash *string, newGeneration *bool) (*BlobPublishResponse, error) {
+	req := &BlobPublishRequest{
+		Length:        length,
+		Name:          name,
+		Hash:          hash,
+		NewGeneration: newGeneration,
+	}
+	var result BlobPublishResponse
+	err := p.Call(MethodBlobPublish, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // CollectionAppend append an entry to a log-kind collection.
 //
 //   - name: Collection name. Must be a `kind: "log"` collection.

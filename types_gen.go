@@ -1838,6 +1838,57 @@ type ArtifactDeleteResponse struct {
 	Ok bool `json:"ok"`
 }
 
+// BlobPublishRequest is the request type for blob.publish.
+type BlobPublishRequest struct {
+	// The hash of the appended range, when the provider declared
+	// `hash: provider` and is supplying one itself. Ignored otherwise —
+	// the platform hashes by default so a published length is unfakeable.
+	Hash *string `json:"hash,omitempty"`
+	// Total bytes now complete in the backing file, WITHIN the current
+	// generation. Must be `>= ` the previous publish's: the channel is
+	// append-only and a shrinking length would invalidate ranges consumers
+	// already hold. The platform refuses otherwise (D4).
+	// wire uint64 (64-bit) · min 0
+	Length int `json:"length"`
+	// The blob's name, as declared in this plugin's `provides.blobs`.
+	Name string `json:"name"`
+	// Start a new generation instead of appending to the current one — the
+	// way a provider shrinks. A new generation is a NEW backing file, so
+	// offsets restart at zero and consumers reopen; `length` is then the
+	// length of the new file. Compaction is an announced event rather than
+	// a race (D4).
+	// default false
+	NewGeneration *bool `json:"new_generation,omitempty"`
+}
+
+// BlobPublishResponse is the response type for blob.publish.
+type BlobPublishResponse struct {
+	// Start of the range this publish announced — where the previous one
+	// ended, or zero when this publish opened a new generation.
+	// wire uint64 (64-bit) · min 0
+	From int `json:"from"`
+	// Which backing file these offsets are in. A consumer that sees this
+	// change must reopen and read from zero — its previous handle and every
+	// offset it holds refer to a file that is being retired.
+	// wire uint64 (64-bit) · min 0
+	Generation int `json:"generation"`
+	// Of the appended range only. `None` when the provider declared
+	// `hash: provider` and supplied none, which is the disclosed case where
+	// the version record is a claim rather than a fact.
+	Hash *string `json:"hash,omitempty"`
+	// End of it, which is the blob's length within this generation. Always
+	// equal to the requested `length`: eviction under
+	// `on_full: evict_oldest` retires whole OLD generations and never
+	// truncates the one being written, so the end of an appended range
+	// cannot move.
+	// wire uint64 (64-bit) · min 0
+	To int `json:"to"`
+	// Monotonic per blob, across generations. A consumer holding version N
+	// reads only the tail.
+	// wire uint64 (64-bit) · min 0
+	Version int `json:"version"`
+}
+
 // CollectionAppendRequest is the request type for collection.append.
 type CollectionAppendRequest struct {
 	// Collection name. Must be a `kind: "log"` collection.
@@ -7549,6 +7600,41 @@ type BleNotificationEventParams struct {
 	DeviceIdentifier string `json:"device_identifier"`
 	// GATT service UUID.
 	ServiceUuid string `json:"service_uuid"`
+}
+
+// BlobUpdatedEventParams is the payload of the _platform.blob.updated event.
+type BlobUpdatedEventParams struct {
+	// As the provider declared it. The platform stores and forwards it,
+	// never interprets it.
+	ContentType string `json:"content_type"`
+	// Start of the newly published range — where the previous publish
+	// ended, or zero when this publish opened a new generation.
+	// wire uint64 (64-bit) · min 0
+	From int `json:"from"`
+	// Which backing file these offsets are in. A consumer that sees this
+	// change must reopen and read from zero: its handle and every offset it
+	// holds refer to a file being retired (D4).
+	// wire uint64 (64-bit) · min 0
+	Generation int `json:"generation"`
+	// Of the appended range only, not of the whole blob. Absent when the
+	// provider declared `hash: provider` and supplied none — the version
+	// record is then a claim rather than a fact, which is disclosed on the
+	// plugin's card at install (`BlobHashBy`).
+	Hash *string `json:"hash,omitempty"`
+	// The blob's name within that provider. With `provider`, this is the
+	// `<provider>/<name>` a consumer names in `consumes.blobs`.
+	Name string `json:"name"`
+	// The plugin that provides the blob.
+	Provider string `json:"provider"`
+	// End of it, which is the blob's length within this generation.
+	// Eviction retires whole OLD generations and never truncates the one
+	// being written, so this cannot move backwards.
+	// wire uint64 (64-bit) · min 0
+	To int `json:"to"`
+	// Monotonic per blob, across generations. A consumer holding version N
+	// reads only the tail.
+	// wire uint64 (64-bit) · min 0
+	Version int `json:"version"`
 }
 
 // CaptureProgressEventParams is the payload of the _platform.capture.progress event.
