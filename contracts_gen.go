@@ -595,6 +595,10 @@ const (
 	MethodRecognitionBiasGet                  = "recognition.bias.get"                     // since 0.1.0
 	MethodRecognitionBiasSet                  = "recognition.bias.set"                     // since 0.1.0
 	MethodRecognitionRedecode                 = "recognition.redecode"                     // since 0.1.0
+	MethodSecretsDelete                       = "secrets.delete"                           // since 0.2.0
+	MethodSecretsIsSet                        = "secrets.is_set"                           // since 0.2.0
+	MethodSecretsList                         = "secrets.list"                             // since 0.2.0
+	MethodSecretsSet                          = "secrets.set"                              // since 0.2.0
 	MethodSelectionPick                       = "selection.pick"                           // since 0.1.0
 	MethodSelectionSet                        = "selection.set"                            // since 0.1.0
 	MethodSessionBoundary                     = "session.boundary"                         // since 0.1.0

@@ -7013,6 +7013,58 @@ type RecognitionRedecodeResponse struct {
 	ModelVersion *string `json:"model_version,omitempty"`
 }
 
+// SecretsDeleteRequest is the request type for secrets.delete.
+type SecretsDeleteRequest struct {
+	Name string `json:"name"`
+}
+
+// SecretsDeleteResponse is the response type for secrets.delete.
+type SecretsDeleteResponse struct {
+	// False when there was nothing to delete. Deleting a name that was
+	// never set is not an error — it leaves the caller in the state it
+	// asked for.
+	Deleted bool `json:"deleted"`
+}
+
+// SecretsIsSetRequest is the request type for secrets.is_set.
+type SecretsIsSetRequest struct {
+	Name string `json:"name"`
+}
+
+// SecretsIsSetResponse is the response type for secrets.is_set.
+type SecretsIsSetResponse struct {
+	// Whether a value is stored. The only question askable about a value
+	// that cannot be read.
+	IsSet bool `json:"is_set"`
+}
+
+// SecretsListResponse is the response type for secrets.list.
+type SecretsListResponse struct {
+	// The names this plugin has set, sorted. Names only — a name is what a
+	// settings row renders and what a script header refers to.
+	Names []string `json:"names"`
+	// One sentence describing how these are protected on this machine, so a
+	// surface showing secrets can show the TRUE sentence rather than the
+	// flattering one. See `os`-agnostic `KeySource::describe`.
+	Protection string `json:"protection"`
+}
+
+// SecretsSetRequest is the request type for secrets.set.
+type SecretsSetRequest struct {
+	// The secret's name within this plugin. What a manifest or a script
+	// header refers to.
+	Name string `json:"name"`
+	// The value. This is the only direction a value travels over the wire.
+	Value string `json:"value"`
+}
+
+// SecretsSetResponse is the response type for secrets.set.
+type SecretsSetResponse struct {
+	// True when the name did not exist before, so a caller can tell a first
+	// write from an overwrite without reading anything back.
+	Created bool `json:"created"`
+}
+
 // SelectionPickRequest is the request type for selection.pick.
 type SelectionPickRequest struct {
 	// Zero-based index into the previously-set selection items array.

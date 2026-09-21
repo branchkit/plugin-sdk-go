@@ -26,7 +26,7 @@ func (p *Plugin) ArtifactDelete(ref string) error {
 	return p.Call(MethodArtifactDelete, req, nil)
 }
 
-// BlobPublish announce that bytes up to `length` are complete on one of this plugin's declared blobs. Carries a length, never bytes..
+// BlobPublish announce that bytes up to `length` are complete on one of this plugin's declared blobs. Carries a length, never bytes.
 //
 //   - length: Total bytes now complete in the backing file, WITHIN the current
 //     generation. Must be `>= ` the previous publish's: the channel is
@@ -6996,6 +6996,60 @@ func (p *Plugin) RecognitionRedecode(items []RedecodeItem, model string, stage s
 	}
 	var result RecognitionRedecodeResponse
 	err := p.Call(MethodRecognitionRedecode, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// SecretsDelete remove a stored credential. Deleting a name that was never set is not an error.
+func (p *Plugin) SecretsDelete(name string) (*SecretsDeleteResponse, error) {
+	req := &SecretsDeleteRequest{
+		Name: name,
+	}
+	var result SecretsDeleteResponse
+	err := p.Call(MethodSecretsDelete, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// SecretsIsSet whether this plugin has stored a credential under this name. The only question askable about a value that cannot be read.
+func (p *Plugin) SecretsIsSet(name string) (*SecretsIsSetResponse, error) {
+	req := &SecretsIsSetRequest{
+		Name: name,
+	}
+	var result SecretsIsSetResponse
+	err := p.Call(MethodSecretsIsSet, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// SecretsList the credential names this plugin has stored, and how they are protected on this machine.
+func (p *Plugin) SecretsList() (*SecretsListResponse, error) {
+	var result SecretsListResponse
+	err := p.Call(MethodSecretsList, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// SecretsSet store a credential for this plugin. Values are encrypted and can never be read back over the wire.
+//
+//   - name: The secret's name within this plugin. What a manifest or a script
+//     header refers to.
+//   - value: The value. This is the only direction a value travels over the wire.
+func (p *Plugin) SecretsSet(name string, value string) (*SecretsSetResponse, error) {
+	req := &SecretsSetRequest{
+		Name:  name,
+		Value: value,
+	}
+	var result SecretsSetResponse
+	err := p.Call(MethodSecretsSet, req, &result)
 	if err != nil {
 		return nil, err
 	}
