@@ -151,15 +151,7 @@ const (
 	MethodNativeClearNotifications            = "native.clear_notifications"               // since 0.1.0
 	MethodNativeClickMenuItem                 = "native.click_menu_item"                   // since 0.1.0
 	MethodNativeClipboardChangeCount          = "native.clipboard_change_count"            // since 0.1.0
-	MethodNativeClipboardFileUrls             = "native.clipboard_file_urls"               // since 0.1.0
-	MethodNativeClipboardHasImage             = "native.clipboard_has_image"               // since 0.1.0
-	MethodNativeClipboardHasText              = "native.clipboard_has_text"                // since 0.1.0
-	MethodNativeClipboardHtml                 = "native.clipboard_html"                    // since 0.1.0
 	MethodNativeClipboardImageDimensions      = "native.clipboard_image_dimensions"        // since 0.1.0
-	MethodNativeClipboardRichText             = "native.clipboard_rich_text"               // since 0.1.0
-	MethodNativeClipboardSetHtml              = "native.clipboard_set_html"                // since 0.1.0
-	MethodNativeClipboardSetText              = "native.clipboard_set_text"                // since 0.1.0
-	MethodNativeClipboardTypes                = "native.clipboard_types"                   // since 0.1.0
 	MethodNativeCloseWindow                   = "native.close_window"                      // since 0.1.0
 	MethodNativeColorAtPoint                  = "native.color_at_point"                    // since 0.1.0
 	MethodNativeComputerName                  = "native.computer_name"                     // since 0.1.0

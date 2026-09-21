@@ -2070,46 +2070,6 @@ func (p *Plugin) NativeClipboardChangeCount() (*NativeClipboardChangeCountRespon
 	return &result, nil
 }
 
-// NativeClipboardFileUrls get file URLs from clipboard as JSON array.
-func (p *Plugin) NativeClipboardFileUrls() (*NativeClipboardFileUrlsResponse, error) {
-	var result NativeClipboardFileUrlsResponse
-	err := p.Call(MethodNativeClipboardFileUrls, nil, &result)
-	if err != nil {
-		return nil, err
-	}
-	return &result, nil
-}
-
-// NativeClipboardHasImage check if clipboard contains an image.
-func (p *Plugin) NativeClipboardHasImage() (*NativeClipboardHasImageResponse, error) {
-	var result NativeClipboardHasImageResponse
-	err := p.Call(MethodNativeClipboardHasImage, nil, &result)
-	if err != nil {
-		return nil, err
-	}
-	return &result, nil
-}
-
-// NativeClipboardHasText check if clipboard contains text.
-func (p *Plugin) NativeClipboardHasText() (*NativeClipboardHasTextResponse, error) {
-	var result NativeClipboardHasTextResponse
-	err := p.Call(MethodNativeClipboardHasText, nil, &result)
-	if err != nil {
-		return nil, err
-	}
-	return &result, nil
-}
-
-// NativeClipboardHTML get HTML content from clipboard.
-func (p *Plugin) NativeClipboardHTML() (*NativeClipboardHTMLResponse, error) {
-	var result NativeClipboardHTMLResponse
-	err := p.Call(MethodNativeClipboardHtml, nil, &result)
-	if err != nil {
-		return nil, err
-	}
-	return &result, nil
-}
-
 // NativeClipboardImageDimensions get dimensions of clipboard image as WxH.
 func (p *Plugin) NativeClipboardImageDimensions() (*NativeClipboardImageDimensionsResponse, error) {
 	var result NativeClipboardImageDimensionsResponse
@@ -2118,49 +2078,6 @@ func (p *Plugin) NativeClipboardImageDimensions() (*NativeClipboardImageDimensio
 		return nil, err
 	}
 	return &result, nil
-}
-
-// NativeClipboardRichText get rich text (RTF) from clipboard.
-func (p *Plugin) NativeClipboardRichText() (*NativeClipboardRichTextResponse, error) {
-	var result NativeClipboardRichTextResponse
-	err := p.Call(MethodNativeClipboardRichText, nil, &result)
-	if err != nil {
-		return nil, err
-	}
-	return &result, nil
-}
-
-// NativeClipboardSetHTML set HTML content on clipboard.
-func (p *Plugin) NativeClipboardSetHTML(html string) error {
-	req := &NativeClipboardSetHTMLRequest{
-		HTML: html,
-	}
-	return p.Call(MethodNativeClipboardSetHtml, req, nil)
-}
-
-// NativeClipboardSetText set clipboard text content.
-func (p *Plugin) NativeClipboardSetText(text string) error {
-	req := &NativeClipboardSetTextRequest{
-		Text: text,
-	}
-	return p.Call(MethodNativeClipboardSetText, req, nil)
-}
-
-// NativeClipboardTypes list available pasteboard types on the clipboard.
-//
-//   - pasteboard: default ""
-func (p *Plugin) NativeClipboardTypes(pasteboard *string) ([]string, error) {
-	req := &NativeClipboardTypesRequest{
-		Pasteboard: pasteboard,
-	}
-	var result struct {
-		Types []string `json:"types"`
-	}
-	err := p.Call(MethodNativeClipboardTypes, req, &result)
-	if err != nil {
-		return nil, err
-	}
-	return result.Types, nil
 }
 
 // NativeCloseWindow close a window by ID.

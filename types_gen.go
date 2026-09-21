@@ -3609,65 +3609,9 @@ type NativeClipboardChangeCountResponse struct {
 	Count int `json:"count"`
 }
 
-// NativeClipboardFileUrlsResponse is the response type for native.clipboard_file_urls.
-type NativeClipboardFileUrlsResponse struct {
-	Value string `json:"value"`
-}
-
-// NativeClipboardHasImageResponse is the response type for native.clipboard_has_image.
-type NativeClipboardHasImageResponse struct {
-	HasImage bool `json:"has_image"`
-}
-
-// NativeClipboardHasTextResponse is the response type for native.clipboard_has_text.
-type NativeClipboardHasTextResponse struct {
-	HasText bool `json:"has_text"`
-}
-
-// NativeClipboardHTMLResponse is the response type for native.clipboard_html.
-type NativeClipboardHTMLResponse struct {
-	Value string `json:"value"`
-}
-
 // NativeClipboardImageDimensionsResponse is the response type for native.clipboard_image_dimensions.
 type NativeClipboardImageDimensionsResponse struct {
 	Value string `json:"value"`
-}
-
-// NativeClipboardRichTextResponse is the response type for native.clipboard_rich_text.
-type NativeClipboardRichTextResponse struct {
-	Value string `json:"value"`
-}
-
-// NativeClipboardSetHTMLRequest is the request type for native.clipboard_set_html.
-type NativeClipboardSetHTMLRequest struct {
-	HTML string `json:"html"`
-}
-
-// NativeClipboardSetHTMLResponse is the response type for native.clipboard_set_html.
-type NativeClipboardSetHTMLResponse struct {
-	Ok bool `json:"ok"`
-}
-
-// NativeClipboardSetTextRequest is the request type for native.clipboard_set_text.
-type NativeClipboardSetTextRequest struct {
-	Text string `json:"text"`
-}
-
-// NativeClipboardSetTextResponse is the response type for native.clipboard_set_text.
-type NativeClipboardSetTextResponse struct {
-	Ok bool `json:"ok"`
-}
-
-// NativeClipboardTypesRequest is the request type for native.clipboard_types.
-type NativeClipboardTypesRequest struct {
-	// default ""
-	Pasteboard *string `json:"pasteboard,omitempty"`
-}
-
-// NativeClipboardTypesResponse is the response type for native.clipboard_types.
-type NativeClipboardTypesResponse struct {
-	Types []string `json:"types"`
 }
 
 // NativeCloseWindowRequest is the request type for native.close_window.
