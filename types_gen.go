@@ -1861,11 +1861,6 @@ type ArtifactDeleteRequest struct {
 	Ref string `json:"ref"`
 }
 
-// ArtifactDeleteResponse is the response type for artifact.delete.
-type ArtifactDeleteResponse struct {
-	Ok bool `json:"ok"`
-}
-
 // BlobPublishRequest is the request type for blob.publish.
 type BlobPublishRequest struct {
 	// The hash of the appended range, when the provider declared
@@ -2045,11 +2040,6 @@ type CollectionPatchRequest struct {
 	Name   string          `json:"name"`
 }
 
-// CollectionPatchResponse is the response type for collection.patch.
-type CollectionPatchResponse struct {
-	Ok bool `json:"ok"`
-}
-
 // CollectionPutRequest is the request type for collection.put.
 type CollectionPutRequest struct {
 	// Records to upsert. Always an array; single-record callers wrap one
@@ -2173,11 +2163,6 @@ type CommandsAddAliasRequest struct {
 	NewPattern     string `json:"new_pattern"`
 }
 
-// CommandsAddAliasResponse is the response type for commands.add_alias.
-type CommandsAddAliasResponse struct {
-	Ok bool `json:"ok"`
-}
-
 // CommandsConfusabilityRequest is the request type for commands.confusability.
 type CommandsConfusabilityRequest struct {
 	// The command's context (its `requires_tags`); empty = free context. Used by
@@ -2197,11 +2182,6 @@ type CommandsConfusabilityResponse struct {
 // CommandsDeleteRequest is the request type for commands.delete.
 type CommandsDeleteRequest struct {
 	Canonical string `json:"canonical"`
-}
-
-// CommandsDeleteResponse is the response type for commands.delete.
-type CommandsDeleteResponse struct {
-	Ok bool `json:"ok"`
 }
 
 // CommandsEnumerateResponse is the response type for commands.enumerate.
@@ -2289,11 +2269,6 @@ type CommandsRemoveAliasResponse struct {
 // CommandsResetRequest is the request type for commands.reset.
 type CommandsResetRequest struct {
 	Canonical string `json:"canonical"`
-}
-
-// CommandsResetResponse is the response type for commands.reset.
-type CommandsResetResponse struct {
-	Ok bool `json:"ok"`
 }
 
 // CommandsResetOverrideRequest is the request type for commands.reset_override.
@@ -2426,26 +2401,11 @@ type CommandsSetOverrideRequest struct {
 	NewPattern     string `json:"new_pattern"`
 }
 
-// CommandsSetOverrideResponse is the response type for commands.set_override.
-type CommandsSetOverrideResponse struct {
-	Ok bool `json:"ok"`
-}
-
 // ControlSignalRequest is the request type for control.signal.
 type ControlSignalRequest struct {
 	// Raw control-stream signal string (e.g. "open hud", "hide discovery").
 	// Forwarded verbatim to the Swift shell via the actuator's control stream.
 	Signal string `json:"signal"`
-}
-
-// ControlSignalResponse is the response type for control.signal.
-type ControlSignalResponse struct {
-	Ok bool `json:"ok"`
-}
-
-// DiscoveryClosedResponse is the response type for discovery.closed.
-type DiscoveryClosedResponse struct {
-	Ok bool `json:"ok"`
 }
 
 // DispatchRequest is the request type for dispatch.
@@ -2559,11 +2519,6 @@ type EventsAppendRequest struct {
 	SessionID *string `json:"session_id,omitempty"`
 }
 
-// EventsAppendResponse is the response type for events.append.
-type EventsAppendResponse struct {
-	Ok bool `json:"ok"`
-}
-
 // EventsEmitRequest is the request type for events.emit.
 type EventsEmitRequest struct {
 	// Optional correlation id linking related events together for
@@ -2577,11 +2532,6 @@ type EventsEmitRequest struct {
 	// Convention-based event type (e.g. "clipboard.copied"). The
 	// `_platform.*` namespace is reserved for the actuator.
 	EventType string `json:"event_type"`
-}
-
-// EventsEmitResponse is the response type for events.emit.
-type EventsEmitResponse struct {
-	Ok bool `json:"ok"`
 }
 
 // HUDCreateChannelRequest is the request type for hud.create_channel.
@@ -2638,21 +2588,11 @@ type HUDCreateChannelRequest struct {
 	Width *int `json:"width,omitempty"`
 }
 
-// HUDCreateChannelResponse is the response type for hud.create_channel.
-type HUDCreateChannelResponse struct {
-	Ok bool `json:"ok"`
-}
-
 // HUDHideRequest is the request type for hud.hide.
 type HUDHideRequest struct {
 	// Channel name to hide. Sends a `close <channel>` (or
 	// `hide <channel>` for built-in channels) to the Swift shell.
 	Channel string `json:"channel"`
-}
-
-// HUDHideResponse is the response type for hud.hide.
-type HUDHideResponse struct {
-	Ok bool `json:"ok"`
 }
 
 // HUDPushRequest is the request type for hud.push.
@@ -2668,11 +2608,6 @@ type HUDPushRequest struct {
 	// opaque schema described nothing the platform actually accepted.
 	// default []
 	Fragments []HudFragment `json:"fragments,omitempty"`
-}
-
-// HUDPushResponse is the response type for hud.push.
-type HUDPushResponse struct {
-	Ok bool `json:"ok"`
 }
 
 // HUDRemoveChannelRequest is the request type for hud.remove_channel.
@@ -2699,21 +2634,11 @@ type HUDSetSizeRequest struct {
 	Height int `json:"height"`
 }
 
-// HUDSetSizeResponse is the response type for hud.set_size.
-type HUDSetSizeResponse struct {
-	Ok bool `json:"ok"`
-}
-
 // HUDShowRequest is the request type for hud.show.
 type HUDShowRequest struct {
 	// Channel name to show. Sends an `open <channel>` message to the
 	// Swift shell.
 	Channel string `json:"channel"`
-}
-
-// HUDShowResponse is the response type for hud.show.
-type HUDShowResponse struct {
-	Ok bool `json:"ok"`
 }
 
 // InputClickRequest is the request type for input.click.
@@ -2723,11 +2648,6 @@ type InputClickRequest struct {
 	Button *string `json:"button,omitempty"`
 }
 
-// InputClickResponse is the response type for input.click.
-type InputClickResponse struct {
-	Ok bool `json:"ok"`
-}
-
 // InputClipboardActionRequest is the request type for input.clipboard_action.
 type InputClipboardActionRequest struct {
 	// Action: "copy", "paste", or "set".
@@ -2735,11 +2655,6 @@ type InputClipboardActionRequest struct {
 	// Text to set (only used by `action: "set"`).
 	// default null
 	Text *string `json:"text,omitempty"`
-}
-
-// InputClipboardActionResponse is the response type for input.clipboard_action.
-type InputClipboardActionResponse struct {
-	Ok bool `json:"ok"`
 }
 
 // InputClipboardHistoryResponse is the response type for input.clipboard_history.
@@ -2806,11 +2721,6 @@ type InputDoubleClickRequest struct {
 	Y *int `json:"y,omitempty"`
 }
 
-// InputDoubleClickResponse is the response type for input.double_click.
-type InputDoubleClickResponse struct {
-	Ok bool `json:"ok"`
-}
-
 // InputDragRequest is the request type for input.drag.
 type InputDragRequest struct {
 	// wire uint64 (64-bit) · default 0 · min 0
@@ -2823,11 +2733,6 @@ type InputDragRequest struct {
 	ToX int `json:"to_x"`
 	// wire int32
 	ToY int `json:"to_y"`
-}
-
-// InputDragResponse is the response type for input.drag.
-type InputDragResponse struct {
-	Ok bool `json:"ok"`
 }
 
 // InputListInputSourcesResponse is the response type for input.list_input_sources.
@@ -2845,11 +2750,6 @@ type InputMouseButtonRequest struct {
 	// only treats a window as grabbed once a dragged event follows the
 	// press, so drag-based operations need it between press and release.
 	Direction string `json:"direction"`
-}
-
-// InputMouseButtonResponse is the response type for input.mouse_button.
-type InputMouseButtonResponse struct {
-	Ok bool `json:"ok"`
 }
 
 // InputParseKeyEventRequest is the request type for input.parse_key_event.
@@ -2899,11 +2799,6 @@ type InputPressKeyRequest struct {
 	Name *string `json:"name,omitempty"`
 }
 
-// InputPressKeyResponse is the response type for input.press_key.
-type InputPressKeyResponse struct {
-	Ok bool `json:"ok"`
-}
-
 // InputRawKeyRequest is the request type for input.raw_key.
 type InputRawKeyRequest struct {
 	// Raw macOS keycode.
@@ -2913,22 +2808,12 @@ type InputRawKeyRequest struct {
 	Direction string `json:"direction"`
 }
 
-// InputRawKeyResponse is the response type for input.raw_key.
-type InputRawKeyResponse struct {
-	Ok bool `json:"ok"`
-}
-
 // InputRightClickRequest is the request type for input.right_click.
 type InputRightClickRequest struct {
 	// wire int32 · default null
 	X *int `json:"x,omitempty"`
 	// wire int32 · default null
 	Y *int `json:"y,omitempty"`
-}
-
-// InputRightClickResponse is the response type for input.right_click.
-type InputRightClickResponse struct {
-	Ok bool `json:"ok"`
 }
 
 // InputScrollRequest is the request type for input.scroll.
@@ -2942,16 +2827,6 @@ type InputScrollRequest struct {
 	// Pixel units are needed for horizontal scroll in most browsers.
 	// default "line"
 	Unit *string `json:"unit,omitempty"`
-}
-
-// InputScrollResponse is the response type for input.scroll.
-type InputScrollResponse struct {
-	Ok bool `json:"ok"`
-}
-
-// InputSelectAllResponse is the response type for input.select_all.
-type InputSelectAllResponse struct {
-	Ok bool `json:"ok"`
 }
 
 // InputSwitchInputSourceRequest is the request type for input.switch_input_source.
@@ -2972,20 +2847,10 @@ type InputTripleClickRequest struct {
 	Y *int `json:"y,omitempty"`
 }
 
-// InputTripleClickResponse is the response type for input.triple_click.
-type InputTripleClickResponse struct {
-	Ok bool `json:"ok"`
-}
-
 // InputTypeTextRequest is the request type for input.type_text.
 type InputTypeTextRequest struct {
 	// Text to type into the active application.
 	Text string `json:"text"`
-}
-
-// InputTypeTextResponse is the response type for input.type_text.
-type InputTypeTextResponse struct {
-	Ok bool `json:"ok"`
 }
 
 // KeybindsRegisterRequest is the request type for keybinds.register.
@@ -3027,11 +2892,6 @@ type NativeActivateAppRequest struct {
 	// default false
 	AllWindows *bool  `json:"all_windows,omitempty"`
 	BundleID   string `json:"bundle_id"`
-}
-
-// NativeActivateAppResponse is the response type for native.activate_app.
-type NativeActivateAppResponse struct {
-	Ok bool `json:"ok"`
 }
 
 // NativeActiveNetworkServiceResponse is the response type for native.active_network_service.
@@ -3490,11 +3350,6 @@ type NativeBordersRequest struct {
 	Frames []WindowFrame `json:"frames,omitempty"`
 }
 
-// NativeBordersResponse is the response type for native.borders.
-type NativeBordersResponse struct {
-	Ok bool `json:"ok"`
-}
-
 // NativeBrightnessRequest is the request type for native.brightness.
 type NativeBrightnessRequest struct {
 	// wire uint32 · default null · min 0
@@ -3580,11 +3435,6 @@ type NativeCascadeWindowsResponse struct {
 // NativeCenterWindowRequest is the request type for native.center_window.
 type NativeCenterWindowRequest struct {
 	WindowID string `json:"window_id"`
-}
-
-// NativeCenterWindowResponse is the response type for native.center_window.
-type NativeCenterWindowResponse struct {
-	Ok bool `json:"ok"`
 }
 
 // NativeCheckPermissionRequest is the request type for native.check_permission.
@@ -3883,11 +3733,6 @@ type NativeDiskUsageResponse struct {
 // NativeDismissNotificationRequest is the request type for native.dismiss_notification.
 type NativeDismissNotificationRequest struct {
 	ID string `json:"id"`
-}
-
-// NativeDismissNotificationResponse is the response type for native.dismiss_notification.
-type NativeDismissNotificationResponse struct {
-	Ok bool `json:"ok"`
 }
 
 // NativeDisplayColorProfilesResponse is the response type for native.display_color_profiles.
@@ -4416,11 +4261,6 @@ type NativeHideAppRequest struct {
 	BundleID string `json:"bundle_id"`
 }
 
-// NativeHideAppResponse is the response type for native.hide_app.
-type NativeHideAppResponse struct {
-	Ok bool `json:"ok"`
-}
-
 // NativeHighlightColorResponse is the response type for native.highlight_color.
 type NativeHighlightColorResponse struct {
 	Color string `json:"color"`
@@ -4544,11 +4384,6 @@ type NativeKeychainDeleteRequest struct {
 	Account string `json:"account"`
 }
 
-// NativeKeychainDeleteResponse is the response type for native.keychain_delete.
-type NativeKeychainDeleteResponse struct {
-	Ok bool `json:"ok"`
-}
-
 // NativeKeychainReadRequest is the request type for native.keychain_read.
 type NativeKeychainReadRequest struct {
 	Account string `json:"account"`
@@ -4563,11 +4398,6 @@ type NativeKeychainReadResponse struct {
 type NativeKeychainWriteRequest struct {
 	Account  string `json:"account"`
 	Password string `json:"password"`
-}
-
-// NativeKeychainWriteResponse is the response type for native.keychain_write.
-type NativeKeychainWriteResponse struct {
-	Ok bool `json:"ok"`
 }
 
 // NativeKillProcessRequest is the request type for native.kill_process.
@@ -4593,11 +4423,6 @@ type NativeLaunchAppRequest struct {
 	BundleID string `json:"bundle_id"`
 	// default false
 	NewInstance *bool `json:"new_instance,omitempty"`
-}
-
-// NativeLaunchAppResponse is the response type for native.launch_app.
-type NativeLaunchAppResponse struct {
-	Ok bool `json:"ok"`
 }
 
 // NativeLaunchdAgentsResponse is the response type for native.launchd_agents.
@@ -4655,11 +4480,6 @@ type NativeLocationEnabledResponse struct {
 	Enabled bool `json:"enabled"`
 }
 
-// NativeLogOutResponse is the response type for native.log_out.
-type NativeLogOutResponse struct {
-	Ok bool `json:"ok"`
-}
-
 // NativeLoggedInUsersResponse is the response type for native.logged_in_users.
 type NativeLoggedInUsersResponse struct {
 	Users []string `json:"users"`
@@ -4698,21 +4518,6 @@ type NativeMaximizeWindowResponse struct {
 // NativeMeasurementSystemResponse is the response type for native.measurement_system.
 type NativeMeasurementSystemResponse struct {
 	System string `json:"system"`
-}
-
-// NativeMediaNextTrackResponse is the response type for native.media_next_track.
-type NativeMediaNextTrackResponse struct {
-	Ok bool `json:"ok"`
-}
-
-// NativeMediaPlayPauseResponse is the response type for native.media_play_pause.
-type NativeMediaPlayPauseResponse struct {
-	Ok bool `json:"ok"`
-}
-
-// NativeMediaPreviousTrackResponse is the response type for native.media_previous_track.
-type NativeMediaPreviousTrackResponse struct {
-	Ok bool `json:"ok"`
 }
 
 // NativeMemoryInfoResponse is the response type for native.memory_info.
@@ -4761,11 +4566,6 @@ type NativeMinimizeWindowRequest struct {
 	WindowID string `json:"window_id"`
 }
 
-// NativeMinimizeWindowResponse is the response type for native.minimize_window.
-type NativeMinimizeWindowResponse struct {
-	Ok bool `json:"ok"`
-}
-
 // NativeModelNameResponse is the response type for native.model_name.
 type NativeModelNameResponse struct {
 	Model string `json:"model"`
@@ -4786,11 +4586,6 @@ type NativeMouseButtonClickRequest struct {
 	Y *int `json:"y,omitempty"`
 }
 
-// NativeMouseButtonClickResponse is the response type for native.mouse_button_click.
-type NativeMouseButtonClickResponse struct {
-	Ok bool `json:"ok"`
-}
-
 // NativeMoveFileRequest is the request type for native.move_file.
 type NativeMoveFileRequest struct {
 	Destination string `json:"destination"`
@@ -4809,11 +4604,6 @@ type NativeMoveWindowToDisplayRequest struct {
 	WindowID  string `json:"window_id"`
 }
 
-// NativeMoveWindowToDisplayResponse is the response type for native.move_window_to_display.
-type NativeMoveWindowToDisplayResponse struct {
-	Ok bool `json:"ok"`
-}
-
 // NativeMoveWindowToSpaceRequest is the request type for native.move_window_to_space.
 type NativeMoveWindowToSpaceRequest struct {
 	// wire uint64 (64-bit) · min 0
@@ -4829,11 +4619,6 @@ type NativeMoveWindowToSpaceResponse struct {
 // NativeMuteRequest is the request type for native.mute.
 type NativeMuteRequest struct {
 	Muted bool `json:"muted"`
-}
-
-// NativeMuteResponse is the response type for native.mute.
-type NativeMuteResponse struct {
-	Ok bool `json:"ok"`
 }
 
 // NativeNetworkBandwidthResponse is the response type for native.network_bandwidth.
@@ -4986,19 +4771,9 @@ type NativeOpenAppSettingsRequest struct {
 	BundleID string `json:"bundle_id"`
 }
 
-// NativeOpenAppSettingsResponse is the response type for native.open_app_settings.
-type NativeOpenAppSettingsResponse struct {
-	Ok bool `json:"ok"`
-}
-
 // NativeOpenFinderWindowRequest is the request type for native.open_finder_window.
 type NativeOpenFinderWindowRequest struct {
 	Path string `json:"path"`
-}
-
-// NativeOpenFinderWindowResponse is the response type for native.open_finder_window.
-type NativeOpenFinderWindowResponse struct {
-	Ok bool `json:"ok"`
 }
 
 // NativeOpenSystemSettingsRequest is the request type for native.open_system_settings.
@@ -5007,19 +4782,9 @@ type NativeOpenSystemSettingsRequest struct {
 	Pane *string `json:"pane,omitempty"`
 }
 
-// NativeOpenSystemSettingsResponse is the response type for native.open_system_settings.
-type NativeOpenSystemSettingsResponse struct {
-	Ok bool `json:"ok"`
-}
-
 // NativeOpenTargetRequest is the request type for native.open_target.
 type NativeOpenTargetRequest struct {
 	Target string `json:"target"`
-}
-
-// NativeOpenTargetResponse is the response type for native.open_target.
-type NativeOpenTargetResponse struct {
-	Ok bool `json:"ok"`
 }
 
 // NativeOpenURLRequest is the request type for native.open_url.
@@ -5027,20 +4792,10 @@ type NativeOpenURLRequest struct {
 	URL string `json:"url"`
 }
 
-// NativeOpenURLResponse is the response type for native.open_url.
-type NativeOpenURLResponse struct {
-	Ok bool `json:"ok"`
-}
-
 // NativeOpenWithAppRequest is the request type for native.open_with_app.
 type NativeOpenWithAppRequest struct {
 	BundleID string `json:"bundle_id"`
 	Target   string `json:"target"`
-}
-
-// NativeOpenWithAppResponse is the response type for native.open_with_app.
-type NativeOpenWithAppResponse struct {
-	Ok bool `json:"ok"`
 }
 
 // NativeOptimizedChargingResponse is the response type for native.optimized_charging.
@@ -5066,11 +4821,6 @@ type NativePinWindowAboveRequest struct {
 	WindowID string `json:"window_id"`
 }
 
-// NativePinWindowAboveResponse is the response type for native.pin_window_above.
-type NativePinWindowAboveResponse struct {
-	Ok bool `json:"ok"`
-}
-
 // NativePinchToZoomResponse is the response type for native.pinch_to_zoom.
 type NativePinchToZoomResponse struct {
 	Enabled bool `json:"enabled"`
@@ -5089,16 +4839,6 @@ type NativePlayFeedbackWhenVolumeChangedResponse struct {
 // NativePlaySoundRequest is the request type for native.play_sound.
 type NativePlaySoundRequest struct {
 	Name string `json:"name"`
-}
-
-// NativePlaySoundResponse is the response type for native.play_sound.
-type NativePlaySoundResponse struct {
-	Ok bool `json:"ok"`
-}
-
-// NativePollBurstResponse is the response type for native.poll_burst.
-type NativePollBurstResponse struct {
-	Ok bool `json:"ok"`
 }
 
 // NativePowerAdapterConnectedResponse is the response type for native.power_adapter_connected.
@@ -5272,11 +5012,6 @@ type NativeRaiseWindowRequest struct {
 	WindowID string `json:"window_id"`
 }
 
-// NativeRaiseWindowResponse is the response type for native.raise_window.
-type NativeRaiseWindowResponse struct {
-	Ok bool `json:"ok"`
-}
-
 // NativeRandomUuidResponse is the response type for native.random_uuid.
 type NativeRandomUuidResponse struct {
 	Uuid string `json:"uuid"`
@@ -5388,11 +5123,6 @@ type NativeRevealInFinderRequest struct {
 	Path string `json:"path"`
 }
 
-// NativeRevealInFinderResponse is the response type for native.reveal_in_finder.
-type NativeRevealInFinderResponse struct {
-	Ok bool `json:"ok"`
-}
-
 // NativeRosettaInstalledResponse is the response type for native.rosetta_installed.
 type NativeRosettaInstalledResponse struct {
 	Installed bool `json:"installed"`
@@ -5450,11 +5180,6 @@ type NativeScreenCountResponse struct {
 	Count int `json:"count"`
 }
 
-// NativeScreenLockResponse is the response type for native.screen_lock.
-type NativeScreenLockResponse struct {
-	Ok bool `json:"ok"`
-}
-
 // NativeScreenLockedResponse is the response type for native.screen_locked.
 type NativeScreenLockedResponse struct {
 	Enabled bool `json:"enabled"`
@@ -5468,11 +5193,6 @@ type NativeScreenResolutionResponse struct {
 // NativeScreenSaverAskPasswordResponse is the response type for native.screen_saver_ask_password.
 type NativeScreenSaverAskPasswordResponse struct {
 	Enabled bool `json:"enabled"`
-}
-
-// NativeScreenSaverStartResponse is the response type for native.screen_saver_start.
-type NativeScreenSaverStartResponse struct {
-	Ok bool `json:"ok"`
 }
 
 // NativeScreenSaverStatusResponse is the response type for native.screen_saver_status.
@@ -5590,21 +5310,11 @@ type NativeSetAudioDeviceRequest struct {
 	UID        string `json:"uid"`
 }
 
-// NativeSetAudioDeviceResponse is the response type for native.set_audio_device.
-type NativeSetAudioDeviceResponse struct {
-	Ok bool `json:"ok"`
-}
-
 // NativeSetAudioDeviceVolumeRequest is the request type for native.set_audio_device_volume.
 type NativeSetAudioDeviceVolumeRequest struct {
 	DeviceUID string `json:"device_uid"`
 	// wire double
 	Volume float64 `json:"volume"`
-}
-
-// NativeSetAudioDeviceVolumeResponse is the response type for native.set_audio_device_volume.
-type NativeSetAudioDeviceVolumeResponse struct {
-	Ok bool `json:"ok"`
 }
 
 // NativeSetAudioInputDeviceRequest is the request type for native.set_audio_input_device.
@@ -5655,11 +5365,6 @@ type NativeSetBrightnessRequest struct {
 	DisplayID *int `json:"display_id,omitempty"`
 }
 
-// NativeSetBrightnessResponse is the response type for native.set_brightness.
-type NativeSetBrightnessResponse struct {
-	Ok bool `json:"ok"`
-}
-
 // NativeSetComputerNameRequest is the request type for native.set_computer_name.
 type NativeSetComputerNameRequest struct {
 	Name string `json:"name"`
@@ -5675,19 +5380,9 @@ type NativeSetDarkModeRequest struct {
 	Dark bool `json:"dark"`
 }
 
-// NativeSetDarkModeResponse is the response type for native.set_dark_mode.
-type NativeSetDarkModeResponse struct {
-	Ok bool `json:"ok"`
-}
-
 // NativeSetDndRequest is the request type for native.set_dnd.
 type NativeSetDndRequest struct {
 	Enabled bool `json:"enabled"`
-}
-
-// NativeSetDndResponse is the response type for native.set_dnd.
-type NativeSetDndResponse struct {
-	Ok bool `json:"ok"`
 }
 
 // NativeSetDockAutoHideRequest is the request type for native.set_dock_auto_hide.
@@ -5885,11 +5580,6 @@ type NativeSetNightShiftRequest struct {
 	Enabled bool `json:"enabled"`
 }
 
-// NativeSetNightShiftResponse is the response type for native.set_night_shift.
-type NativeSetNightShiftResponse struct {
-	Ok bool `json:"ok"`
-}
-
 // NativeSetScreenshotFormatRequest is the request type for native.set_screenshot_format.
 type NativeSetScreenshotFormatRequest struct {
 	Format string `json:"format"`
@@ -5989,11 +5679,6 @@ type NativeSetVolumeRequest struct {
 	Volume float64 `json:"volume"`
 }
 
-// NativeSetVolumeResponse is the response type for native.set_volume.
-type NativeSetVolumeResponse struct {
-	Ok bool `json:"ok"`
-}
-
 // NativeSetWallpaperRequest is the request type for native.set_wallpaper.
 type NativeSetWallpaperRequest struct {
 	Path string `json:"path"`
@@ -6009,11 +5694,6 @@ type NativeSetWindowAlphaRequest struct {
 	// wire double
 	Alpha    float64 `json:"alpha"`
 	WindowID string  `json:"window_id"`
-}
-
-// NativeSetWindowAlphaResponse is the response type for native.set_window_alpha.
-type NativeSetWindowAlphaResponse struct {
-	Ok bool `json:"ok"`
 }
 
 // NativeSetWindowLevelRequest is the request type for native.set_window_level.
@@ -6036,20 +5716,10 @@ type NativeSetWindowPositionRequest struct {
 	Y int `json:"y"`
 }
 
-// NativeSetWindowPositionResponse is the response type for native.set_window_position.
-type NativeSetWindowPositionResponse struct {
-	Ok bool `json:"ok"`
-}
-
 // NativeSetWindowShadowRequest is the request type for native.set_window_shadow.
 type NativeSetWindowShadowRequest struct {
 	Enabled  bool   `json:"enabled"`
 	WindowID string `json:"window_id"`
-}
-
-// NativeSetWindowShadowResponse is the response type for native.set_window_shadow.
-type NativeSetWindowShadowResponse struct {
-	Ok bool `json:"ok"`
 }
 
 // NativeSetWindowSizeRequest is the request type for native.set_window_size.
@@ -6061,20 +5731,10 @@ type NativeSetWindowSizeRequest struct {
 	WindowID string `json:"window_id"`
 }
 
-// NativeSetWindowSizeResponse is the response type for native.set_window_size.
-type NativeSetWindowSizeResponse struct {
-	Ok bool `json:"ok"`
-}
-
 // NativeSetWindowStickyRequest is the request type for native.set_window_sticky.
 type NativeSetWindowStickyRequest struct {
 	Sticky   bool   `json:"sticky"`
 	WindowID string `json:"window_id"`
-}
-
-// NativeSetWindowStickyResponse is the response type for native.set_window_sticky.
-type NativeSetWindowStickyResponse struct {
-	Ok bool `json:"ok"`
 }
 
 // NativeSharingNameResponse is the response type for native.sharing_name.
@@ -6100,11 +5760,6 @@ type NativeSipStatusResponse struct {
 // NativeSiriEnabledResponse is the response type for native.siri_enabled.
 type NativeSiriEnabledResponse struct {
 	Enabled bool `json:"enabled"`
-}
-
-// NativeSleepNowResponse is the response type for native.sleep_now.
-type NativeSleepNowResponse struct {
-	Ok bool `json:"ok"`
 }
 
 // NativeSlowKeysResponse is the response type for native.slow_keys.
@@ -6139,11 +5794,6 @@ type NativeSpeakRequest struct {
 	Text string   `json:"text"`
 	// default null
 	Voice *string `json:"voice,omitempty"`
-}
-
-// NativeSpeakResponse is the response type for native.speak.
-type NativeSpeakResponse struct {
-	Ok bool `json:"ok"`
 }
 
 // NativeSpeechLocalesResponse is the response type for native.speech_locales.
@@ -6216,11 +5866,6 @@ type NativeSwipeBetweenPagesResponse struct {
 type NativeSwitchSpaceRequest struct {
 	// wire uint64 (64-bit) · min 0
 	SpaceID int `json:"space_id"`
-}
-
-// NativeSwitchSpaceResponse is the response type for native.switch_space.
-type NativeSwitchSpaceResponse struct {
-	Ok bool `json:"ok"`
 }
 
 // NativeSwitchSpaceWhenSwitchingAppResponse is the response type for native.switch_space_when_switching_app.
@@ -6358,11 +6003,6 @@ type NativeToggleFullscreenRequest struct {
 	WindowID string `json:"window_id"`
 }
 
-// NativeToggleFullscreenResponse is the response type for native.toggle_fullscreen.
-type NativeToggleFullscreenResponse struct {
-	Ok bool `json:"ok"`
-}
-
 // NativeToggleWifiRequest is the request type for native.toggle_wifi.
 type NativeToggleWifiRequest struct {
 	Enabled bool `json:"enabled"`
@@ -6413,19 +6053,9 @@ type NativeUnhideAppRequest struct {
 	BundleID string `json:"bundle_id"`
 }
 
-// NativeUnhideAppResponse is the response type for native.unhide_app.
-type NativeUnhideAppResponse struct {
-	Ok bool `json:"ok"`
-}
-
 // NativeUnminimizeWindowRequest is the request type for native.unminimize_window.
 type NativeUnminimizeWindowRequest struct {
 	WindowID string `json:"window_id"`
-}
-
-// NativeUnminimizeWindowResponse is the response type for native.unminimize_window.
-type NativeUnminimizeWindowResponse struct {
-	Ok bool `json:"ok"`
 }
 
 // NativeUnobserveWindowsRequest is the request type for native.unobserve_windows.
@@ -6502,11 +6132,6 @@ type NativeWarpCursorRequest struct {
 	X int `json:"x"`
 	// wire int32
 	Y int `json:"y"`
-}
-
-// NativeWarpCursorResponse is the response type for native.warp_cursor.
-type NativeWarpCursorResponse struct {
-	Ok bool `json:"ok"`
 }
 
 // NativeWifiResponse is the response type for native.wifi.
@@ -6864,11 +6489,6 @@ type PluginDebugRequest struct {
 	Tag *string `json:"tag,omitempty"`
 }
 
-// PluginDebugResponse is the response type for plugin.debug.
-type PluginDebugResponse struct {
-	Ok bool `json:"ok"`
-}
-
 // PluginReportHealthRequest is the request type for plugin.report_health.
 type PluginReportHealthRequest struct {
 	// `true` when the plugin is running but cannot do its job — an external
@@ -6891,11 +6511,6 @@ type PluginReportHealthRequest struct {
 	Reason *string `json:"reason,omitempty"`
 }
 
-// PluginReportHealthResponse is the response type for plugin.report_health.
-type PluginReportHealthResponse struct {
-	Ok bool `json:"ok"`
-}
-
 // PrivacyGetRecordingRequest is the request type for privacy.get_recording.
 type PrivacyGetRecordingRequest struct {
 	Name string `json:"name"`
@@ -6912,11 +6527,6 @@ type PrivacyGetRecordingResponse struct {
 type PrivacySetRecordingRequest struct {
 	Enabled bool   `json:"enabled"`
 	Name    string `json:"name"`
-}
-
-// PrivacySetRecordingResponse is the response type for privacy.set_recording.
-type PrivacySetRecordingResponse struct {
-	Ok bool `json:"ok"`
 }
 
 // PrivilegesListResponse is the response type for privileges.list.
@@ -7134,16 +6744,6 @@ type SelectionSetRequest struct {
 	Title *string `json:"title,omitempty"`
 }
 
-// SelectionSetResponse is the response type for selection.set.
-type SelectionSetResponse struct {
-	Ok bool `json:"ok"`
-}
-
-// SessionBoundaryResponse is the response type for session.boundary.
-type SessionBoundaryResponse struct {
-	Ok bool `json:"ok"`
-}
-
 // SessionEndCleanupResponse is the response type for session.end_cleanup.
 type SessionEndCleanupResponse struct {
 	// Control message to forward to the Swift host
@@ -7162,24 +6762,9 @@ type SettingsPatchSignalsRequest struct {
 	Signals string `json:"signals"`
 }
 
-// SettingsPatchSignalsResponse is the response type for settings.patch_signals.
-type SettingsPatchSignalsResponse struct {
-	Ok bool `json:"ok"`
-}
-
 // SettingsRedirectRequest is the request type for settings.redirect.
 type SettingsRedirectRequest struct {
 	Tab string `json:"tab"`
-}
-
-// SettingsRedirectResponse is the response type for settings.redirect.
-type SettingsRedirectResponse struct {
-	Ok bool `json:"ok"`
-}
-
-// SettingsRefreshResponse is the response type for settings.refresh.
-type SettingsRefreshResponse struct {
-	Ok bool `json:"ok"`
 }
 
 // SettingsRulesCreateRequest is the request type for settings.rules_create.
@@ -7265,11 +6850,6 @@ type SpeechAnnounceRequest struct {
 	Text string `json:"text"`
 }
 
-// SpeechAnnounceResponse is the response type for speech.announce.
-type SpeechAnnounceResponse struct {
-	Ok bool `json:"ok"`
-}
-
 // SpeechSayRequest is the request type for speech.say.
 type SpeechSayRequest struct {
 	// `"normal"` queues behind whatever is playing; `"high"` cuts it off
@@ -7280,16 +6860,6 @@ type SpeechSayRequest struct {
 	Text string `json:"text"`
 }
 
-// SpeechSayResponse is the response type for speech.say.
-type SpeechSayResponse struct {
-	Ok bool `json:"ok"`
-}
-
-// SpeechStopResponse is the response type for speech.stop.
-type SpeechStopResponse struct {
-	Ok bool `json:"ok"`
-}
-
 // SystemLaunchAppRequest is the request type for system.launch_app.
 type SystemLaunchAppRequest struct {
 	// Bundle ID of the application to launch (e.g. "com.apple.Safari").
@@ -7297,11 +6867,6 @@ type SystemLaunchAppRequest struct {
 	// Whether to launch a fresh instance even if the app is already running.
 	// default false
 	NewInstance *bool `json:"new_instance,omitempty"`
-}
-
-// SystemLaunchAppResponse is the response type for system.launch_app.
-type SystemLaunchAppResponse struct {
-	Ok bool `json:"ok"`
 }
 
 // SystemNotifyRequest is the request type for system.notify.
@@ -7318,20 +6883,10 @@ type SystemNotifyRequest struct {
 	Title string `json:"title"`
 }
 
-// SystemNotifyResponse is the response type for system.notify.
-type SystemNotifyResponse struct {
-	Ok bool `json:"ok"`
-}
-
 // SystemRunShellRequest is the request type for system.run_shell.
 type SystemRunShellRequest struct {
 	// Shell command to execute via `/bin/bash -c`.
 	Command string `json:"command"`
-}
-
-// SystemRunShellResponse is the response type for system.run_shell.
-type SystemRunShellResponse struct {
-	Ok bool `json:"ok"`
 }
 
 // TrialBeginResponse is the response type for trial.begin.
@@ -7398,11 +6953,6 @@ type TrialResolveSamplesResponse struct {
 	// host then falls back to its own default sample derivation (codewords
 	// for dynamic commands, the generic filler for free-text slots).
 	Prompts []string `json:"prompts"`
-}
-
-// VocabularyCommitResponse is the response type for vocabulary.commit.
-type VocabularyCommitResponse struct {
-	Ok bool `json:"ok"`
 }
 
 // WiringDescribeResponse is the response type for wiring.describe.

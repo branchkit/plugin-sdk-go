@@ -893,22 +893,30 @@ func (p *Plugin) InputClipboardReadFormat(format string) (*InputClipboardReadFor
 }
 
 // InputClipboardWrite write typed content to clipboard.
-func (p *Plugin) InputClipboardWrite(contentType string, data string) error {
+func (p *Plugin) InputClipboardWrite(contentType string, data string) (bool, error) {
 	req := &InputClipboardWriteRequest{
 		ContentType: contentType,
 		Data:        data,
 	}
-	return p.Call(MethodInputClipboardWrite, req, nil)
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodInputClipboardWrite, req, &result)
+	return result.Ok, err
 }
 
 // InputClipboardWriteItems write multiple typed items to the clipboard.
 //
 //   - items: default []
-func (p *Plugin) InputClipboardWriteItems(items []ClipboardWriteItem) error {
+func (p *Plugin) InputClipboardWriteItems(items []ClipboardWriteItem) (bool, error) {
 	req := &InputClipboardWriteItemsRequest{
 		Items: items,
 	}
-	return p.Call(MethodInputClipboardWriteItems, req, nil)
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodInputClipboardWriteItems, req, &result)
+	return result.Ok, err
 }
 
 // InputDoubleClick double-click at position.
@@ -2000,11 +2008,15 @@ func (p *Plugin) NativeCaptureWindow(windowID string) (*NativeCaptureWindowRespo
 }
 
 // NativeCascadeWindows cascade all windows for an app.
-func (p *Plugin) NativeCascadeWindows(bundleID string) error {
+func (p *Plugin) NativeCascadeWindows(bundleID string) (bool, error) {
 	req := &NativeCascadeWindowsRequest{
 		BundleID: bundleID,
 	}
-	return p.Call(MethodNativeCascadeWindows, req, nil)
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeCascadeWindows, req, &result)
+	return result.Ok, err
 }
 
 // NativeCenterWindow center a window on its current display.
@@ -2029,19 +2041,27 @@ func (p *Plugin) NativeCheckPermission(permission string) (*NativeCheckPermissio
 }
 
 // NativeClearFileQuarantine remove the quarantine extended attribute from a file.
-func (p *Plugin) NativeClearFileQuarantine(path string) error {
+func (p *Plugin) NativeClearFileQuarantine(path string) (bool, error) {
 	req := &NativeClearFileQuarantineRequest{
 		Path: path,
 	}
-	return p.Call(MethodNativeClearFileQuarantine, req, nil)
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeClearFileQuarantine, req, &result)
+	return result.Ok, err
 }
 
 // NativeClearNotifications clear all delivered notifications for an app.
-func (p *Plugin) NativeClearNotifications(bundleID string) error {
+func (p *Plugin) NativeClearNotifications(bundleID string) (bool, error) {
 	req := &NativeClearNotificationsRequest{
 		BundleID: bundleID,
 	}
-	return p.Call(MethodNativeClearNotifications, req, nil)
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeClearNotifications, req, &result)
+	return result.Ok, err
 }
 
 // NativeClickMenuItem click a menu item by navigating the menu bar path.
@@ -2081,11 +2101,15 @@ func (p *Plugin) NativeClipboardImageDimensions() (*NativeClipboardImageDimensio
 }
 
 // NativeCloseWindow close a window by ID.
-func (p *Plugin) NativeCloseWindow(windowID string) error {
+func (p *Plugin) NativeCloseWindow(windowID string) (bool, error) {
 	req := &NativeCloseWindowRequest{
 		WindowID: windowID,
 	}
-	return p.Call(MethodNativeCloseWindow, req, nil)
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeCloseWindow, req, &result)
+	return result.Ok, err
 }
 
 // NativeColorAtPoint sample pixel color at screen coordinate.
@@ -2136,12 +2160,16 @@ func (p *Plugin) NativeContactsPermission() (*NativeContactsPermissionResponse, 
 }
 
 // NativeCopyFile copy a file or directory.
-func (p *Plugin) NativeCopyFile(destination string, source string) error {
+func (p *Plugin) NativeCopyFile(destination string, source string) (bool, error) {
 	req := &NativeCopyFileRequest{
 		Destination: destination,
 		Source:      source,
 	}
-	return p.Call(MethodNativeCopyFile, req, nil)
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeCopyFile, req, &result)
+	return result.Ok, err
 }
 
 // NativeCpuInfo get CPU chip name, core count, and architecture.
@@ -2175,11 +2203,15 @@ func (p *Plugin) NativeCpuUsage() (float64, error) {
 }
 
 // NativeCreateDirectory create a directory (with intermediate directories).
-func (p *Plugin) NativeCreateDirectory(path string) error {
+func (p *Plugin) NativeCreateDirectory(path string) (bool, error) {
 	req := &NativeCreateDirectoryRequest{
 		Path: path,
 	}
-	return p.Call(MethodNativeCreateDirectory, req, nil)
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeCreateDirectory, req, &result)
+	return result.Ok, err
 }
 
 // NativeCronJobs list the current user crontab entries.
@@ -2338,11 +2370,15 @@ func (p *Plugin) NativeDefaultPrinter() (*NativeDefaultPrinterResponse, error) {
 }
 
 // NativeDeleteFile delete a file or empty directory.
-func (p *Plugin) NativeDeleteFile(path string) error {
+func (p *Plugin) NativeDeleteFile(path string) (bool, error) {
 	req := &NativeDeleteFileRequest{
 		Path: path,
 	}
-	return p.Call(MethodNativeDeleteFile, req, nil)
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeDeleteFile, req, &result)
+	return result.Ok, err
 }
 
 // NativeDesktopDirectory get the user's Desktop directory path.
@@ -2695,16 +2731,24 @@ func (p *Plugin) NativeDownloadsDirectory() (*NativeDownloadsDirectoryResponse, 
 }
 
 // NativeEjectDisk eject a mounted volume by path.
-func (p *Plugin) NativeEjectDisk(mountPoint string) error {
+func (p *Plugin) NativeEjectDisk(mountPoint string) (bool, error) {
 	req := &NativeEjectDiskRequest{
 		MountPoint: mountPoint,
 	}
-	return p.Call(MethodNativeEjectDisk, req, nil)
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeEjectDisk, req, &result)
+	return result.Ok, err
 }
 
 // NativeEmptyTrash empty the Trash.
-func (p *Plugin) NativeEmptyTrash() error {
-	return p.Call(MethodNativeEmptyTrash, nil, nil)
+func (p *Plugin) NativeEmptyTrash() (bool, error) {
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeEmptyTrash, nil, &result)
+	return result.Ok, err
 }
 
 // NativeEnvVar read an environment variable.
@@ -3077,8 +3121,12 @@ func (p *Plugin) NativeFirstDayOfWeek() (int, error) {
 }
 
 // NativeFlushDns flush DNS cache.
-func (p *Plugin) NativeFlushDns() error {
-	return p.Call(MethodNativeFlushDns, nil, nil)
+func (p *Plugin) NativeFlushDns() (bool, error) {
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeFlushDns, nil, &result)
+	return result.Ok, err
 }
 
 // NativeFnKeyFunction get function key default behavior.
@@ -3194,12 +3242,16 @@ func (p *Plugin) NativeGatewayAddress() (*NativeGatewayAddressResponse, error) {
 }
 
 // NativeGeneratePdf generate a PDF from HTML content.
-func (p *Plugin) NativeGeneratePdf(html string, outputPath string) error {
+func (p *Plugin) NativeGeneratePdf(html string, outputPath string) (bool, error) {
 	req := &NativeGeneratePdfRequest{
 		HTML:       html,
 		OutputPath: outputPath,
 	}
-	return p.Call(MethodNativeGeneratePdf, req, nil)
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeGeneratePdf, req, &result)
+	return result.Ok, err
 }
 
 // NativeGetWindowInfo get detailed info for a single window.
@@ -3654,12 +3706,16 @@ func (p *Plugin) NativeKeychainWrite(account string, password string) error {
 //
 //   - pid: wire int32
 //   - signal: wire int32 · default 0
-func (p *Plugin) NativeKillProcess(pid int, signal *int) error {
+func (p *Plugin) NativeKillProcess(pid int, signal *int) (bool, error) {
 	req := &NativeKillProcessRequest{
 		Pid:    pid,
 		Signal: signal,
 	}
-	return p.Call(MethodNativeKillProcess, req, nil)
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeKillProcess, req, &result)
+	return result.Ok, err
 }
 
 // NativeLastReboot get the last reboot date/time.
@@ -3869,11 +3925,15 @@ func (p *Plugin) NativeMacAddress() (*NativeMacAddressResponse, error) {
 }
 
 // NativeMaximizeWindow maximize window to fill screen.
-func (p *Plugin) NativeMaximizeWindow(windowID string) error {
+func (p *Plugin) NativeMaximizeWindow(windowID string) (bool, error) {
 	req := &NativeMaximizeWindowRequest{
 		WindowID: windowID,
 	}
-	return p.Call(MethodNativeMaximizeWindow, req, nil)
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeMaximizeWindow, req, &result)
+	return result.Ok, err
 }
 
 // NativeMeasurementSystem get the measurement system. Returns one of: metric, us.
@@ -4033,12 +4093,16 @@ func (p *Plugin) NativeMouseSpeed() (float64, error) {
 }
 
 // NativeMoveFile move or rename a file or directory.
-func (p *Plugin) NativeMoveFile(destination string, source string) error {
+func (p *Plugin) NativeMoveFile(destination string, source string) (bool, error) {
 	req := &NativeMoveFileRequest{
 		Destination: destination,
 		Source:      source,
 	}
-	return p.Call(MethodNativeMoveFile, req, nil)
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeMoveFile, req, &result)
+	return result.Ok, err
 }
 
 // NativeMoveWindowToDisplay move a window to a different display.
@@ -4161,11 +4225,15 @@ func (p *Plugin) NativeNetworkSsid() (*NativeNetworkSsidResponse, error) {
 }
 
 // NativeNewAppWindow open a new window of an app on the current Space, without switching to an existing window on another Space.
-func (p *Plugin) NativeNewAppWindow(bundleID string) error {
+func (p *Plugin) NativeNewAppWindow(bundleID string) (bool, error) {
 	req := &NativeNewAppWindowRequest{
 		BundleID: bundleID,
 	}
-	return p.Call(MethodNativeNewAppWindow, req, nil)
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeNewAppWindow, req, &result)
+	return result.Ok, err
 }
 
 // NativeNightShift check if Night Shift is currently enabled.
@@ -4719,8 +4787,12 @@ func (p *Plugin) NativePublicIP() (*NativePublicIPResponse, error) {
 }
 
 // NativePurgeMemory purge inactive memory.
-func (p *Plugin) NativePurgeMemory() error {
-	return p.Call(MethodNativePurgeMemory, nil, nil)
+func (p *Plugin) NativePurgeMemory() (bool, error) {
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativePurgeMemory, nil, &result)
+	return result.Ok, err
 }
 
 // NativePurgeableSpace get purgeable disk space in bytes.
@@ -4883,12 +4955,16 @@ func (p *Plugin) NativeRemoteLoginEnabled() (*NativeRemoteLoginEnabledResponse, 
 }
 
 // NativeRenameFile rename a file or directory (same parent, new name).
-func (p *Plugin) NativeRenameFile(newName string, path string) error {
+func (p *Plugin) NativeRenameFile(newName string, path string) (bool, error) {
 	req := &NativeRenameFileRequest{
 		NewName: newName,
 		Path:    path,
 	}
-	return p.Call(MethodNativeRenameFile, req, nil)
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeRenameFile, req, &result)
+	return result.Ok, err
 }
 
 // NativeRequestScreenCapture request screen capture permission (shows system dialog).
@@ -4912,11 +4988,15 @@ func (p *Plugin) NativeResourceUsage() (*NativeResourceUsageResponse, error) {
 }
 
 // NativeRestartApp quit and relaunch an app by bundle ID.
-func (p *Plugin) NativeRestartApp(bundleID string) error {
+func (p *Plugin) NativeRestartApp(bundleID string) (bool, error) {
 	req := &NativeRestartAppRequest{
 		BundleID: bundleID,
 	}
-	return p.Call(MethodNativeRestartApp, req, nil)
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeRestartApp, req, &result)
+	return result.Ok, err
 }
 
 // NativeRevealInFinder reveal file in Finder.
@@ -5219,20 +5299,28 @@ func (p *Plugin) NativeSerialNumber() (*NativeSerialNumberResponse, error) {
 }
 
 // NativeSetAirportPower turn Wi-Fi (AirPort) on or off.
-func (p *Plugin) NativeSetAirportPower(on bool) error {
+func (p *Plugin) NativeSetAirportPower(on bool) (bool, error) {
 	req := &NativeSetAirportPowerRequest{
 		On: on,
 	}
-	return p.Call(MethodNativeSetAirportPower, req, nil)
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeSetAirportPower, req, &result)
+	return result.Ok, err
 }
 
 // NativeSetAppHidden hide or unhide an app.
-func (p *Plugin) NativeSetAppHidden(bundleID string, hidden bool) error {
+func (p *Plugin) NativeSetAppHidden(bundleID string, hidden bool) (bool, error) {
 	req := &NativeSetAppHiddenRequest{
 		BundleID: bundleID,
 		Hidden:   hidden,
 	}
-	return p.Call(MethodNativeSetAppHidden, req, nil)
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeSetAppHidden, req, &result)
+	return result.Ok, err
 }
 
 // NativeSetAudioDevice set the default audio input or output device.
@@ -5258,35 +5346,51 @@ func (p *Plugin) NativeSetAudioDeviceVolume(deviceUID string, volume float64) er
 }
 
 // NativeSetAudioInputDevice set active audio input device by name.
-func (p *Plugin) NativeSetAudioInputDevice(name string) error {
+func (p *Plugin) NativeSetAudioInputDevice(name string) (bool, error) {
 	req := &NativeSetAudioInputDeviceRequest{
 		Name: name,
 	}
-	return p.Call(MethodNativeSetAudioInputDevice, req, nil)
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeSetAudioInputDevice, req, &result)
+	return result.Ok, err
 }
 
 // NativeSetAudioOutputDevice set active audio output device by name.
-func (p *Plugin) NativeSetAudioOutputDevice(name string) error {
+func (p *Plugin) NativeSetAudioOutputDevice(name string) (bool, error) {
 	req := &NativeSetAudioOutputDeviceRequest{
 		Name: name,
 	}
-	return p.Call(MethodNativeSetAudioOutputDevice, req, nil)
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeSetAudioOutputDevice, req, &result)
+	return result.Ok, err
 }
 
 // NativeSetAutoRearrangeSpaces enable or disable auto-rearrange Spaces.
-func (p *Plugin) NativeSetAutoRearrangeSpaces(enabled bool) error {
+func (p *Plugin) NativeSetAutoRearrangeSpaces(enabled bool) (bool, error) {
 	req := &NativeSetAutoRearrangeSpacesRequest{
 		Enabled: enabled,
 	}
-	return p.Call(MethodNativeSetAutoRearrangeSpaces, req, nil)
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeSetAutoRearrangeSpaces, req, &result)
+	return result.Ok, err
 }
 
 // NativeSetBluetoothPower turn Bluetooth on or off.
-func (p *Plugin) NativeSetBluetoothPower(on bool) error {
+func (p *Plugin) NativeSetBluetoothPower(on bool) (bool, error) {
 	req := &NativeSetBluetoothPowerRequest{
 		On: on,
 	}
-	return p.Call(MethodNativeSetBluetoothPower, req, nil)
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeSetBluetoothPower, req, &result)
+	return result.Ok, err
 }
 
 // NativeSetBrightness set display brightness (0.0-1.0).
@@ -5302,11 +5406,15 @@ func (p *Plugin) NativeSetBrightness(brightness float64, displayID *int) error {
 }
 
 // NativeSetComputerName set the computer name.
-func (p *Plugin) NativeSetComputerName(name string) error {
+func (p *Plugin) NativeSetComputerName(name string) (bool, error) {
 	req := &NativeSetComputerNameRequest{
 		Name: name,
 	}
-	return p.Call(MethodNativeSetComputerName, req, nil)
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeSetComputerName, req, &result)
+	return result.Ok, err
 }
 
 // NativeSetDarkMode set dark or light mode.
@@ -5326,162 +5434,234 @@ func (p *Plugin) NativeSetDnd(enabled bool) error {
 }
 
 // NativeSetDockAutoHide enable or disable Dock auto-hide.
-func (p *Plugin) NativeSetDockAutoHide(enabled bool) error {
+func (p *Plugin) NativeSetDockAutoHide(enabled bool) (bool, error) {
 	req := &NativeSetDockAutoHideRequest{
 		Enabled: enabled,
 	}
-	return p.Call(MethodNativeSetDockAutoHide, req, nil)
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeSetDockAutoHide, req, &result)
+	return result.Ok, err
 }
 
 // NativeSetDockMagnification enable or disable Dock magnification.
-func (p *Plugin) NativeSetDockMagnification(enabled bool) error {
+func (p *Plugin) NativeSetDockMagnification(enabled bool) (bool, error) {
 	req := &NativeSetDockMagnificationRequest{
 		Enabled: enabled,
 	}
-	return p.Call(MethodNativeSetDockMagnification, req, nil)
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeSetDockMagnification, req, &result)
+	return result.Ok, err
 }
 
 // NativeSetDockMinimizeEffect set Dock minimize animation (genie/scale).
-func (p *Plugin) NativeSetDockMinimizeEffect(effect string) error {
+func (p *Plugin) NativeSetDockMinimizeEffect(effect string) (bool, error) {
 	req := &NativeSetDockMinimizeEffectRequest{
 		Effect: effect,
 	}
-	return p.Call(MethodNativeSetDockMinimizeEffect, req, nil)
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeSetDockMinimizeEffect, req, &result)
+	return result.Ok, err
 }
 
 // NativeSetDockPosition set the Dock position (left, bottom, right).
-func (p *Plugin) NativeSetDockPosition(position string) error {
+func (p *Plugin) NativeSetDockPosition(position string) (bool, error) {
 	req := &NativeSetDockPositionRequest{
 		Position: position,
 	}
-	return p.Call(MethodNativeSetDockPosition, req, nil)
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeSetDockPosition, req, &result)
+	return result.Ok, err
 }
 
 // NativeSetDockShowRecents show or hide recent apps in Dock.
-func (p *Plugin) NativeSetDockShowRecents(enabled bool) error {
+func (p *Plugin) NativeSetDockShowRecents(enabled bool) (bool, error) {
 	req := &NativeSetDockShowRecentsRequest{
 		Enabled: enabled,
 	}
-	return p.Call(MethodNativeSetDockShowRecents, req, nil)
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeSetDockShowRecents, req, &result)
+	return result.Ok, err
 }
 
 // NativeSetDockSize set Dock tile size.
 //
 //   - size: wire double
-func (p *Plugin) NativeSetDockSize(size float64) error {
+func (p *Plugin) NativeSetDockSize(size float64) (bool, error) {
 	req := &NativeSetDockSizeRequest{
 		Size: size,
 	}
-	return p.Call(MethodNativeSetDockSize, req, nil)
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeSetDockSize, req, &result)
+	return result.Ok, err
 }
 
 // NativeSetExtendedAttribute set an extended attribute on a file.
-func (p *Plugin) NativeSetExtendedAttribute(name string, path string, value string) error {
+func (p *Plugin) NativeSetExtendedAttribute(name string, path string, value string) (bool, error) {
 	req := &NativeSetExtendedAttributeRequest{
 		Name:  name,
 		Path:  path,
 		Value: value,
 	}
-	return p.Call(MethodNativeSetExtendedAttribute, req, nil)
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeSetExtendedAttribute, req, &result)
+	return result.Ok, err
 }
 
 // NativeSetFileHidden set file hidden flag.
-func (p *Plugin) NativeSetFileHidden(hidden bool, path string) error {
+func (p *Plugin) NativeSetFileHidden(hidden bool, path string) (bool, error) {
 	req := &NativeSetFileHiddenRequest{
 		Hidden: hidden,
 		Path:   path,
 	}
-	return p.Call(MethodNativeSetFileHidden, req, nil)
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeSetFileHidden, req, &result)
+	return result.Ok, err
 }
 
 // NativeSetFilePermissions set file permissions (chmod octal mode).
-func (p *Plugin) NativeSetFilePermissions(mode string, path string) error {
+func (p *Plugin) NativeSetFilePermissions(mode string, path string) (bool, error) {
 	req := &NativeSetFilePermissionsRequest{
 		Mode: mode,
 		Path: path,
 	}
-	return p.Call(MethodNativeSetFilePermissions, req, nil)
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeSetFilePermissions, req, &result)
+	return result.Ok, err
 }
 
 // NativeSetFinderShowExtensions show or hide file extensions in Finder.
-func (p *Plugin) NativeSetFinderShowExtensions(enabled bool) error {
+func (p *Plugin) NativeSetFinderShowExtensions(enabled bool) (bool, error) {
 	req := &NativeSetFinderShowExtensionsRequest{
 		Enabled: enabled,
 	}
-	return p.Call(MethodNativeSetFinderShowExtensions, req, nil)
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeSetFinderShowExtensions, req, &result)
+	return result.Ok, err
 }
 
 // NativeSetFinderShowHidden show or hide hidden files in Finder.
-func (p *Plugin) NativeSetFinderShowHidden(enabled bool) error {
+func (p *Plugin) NativeSetFinderShowHidden(enabled bool) (bool, error) {
 	req := &NativeSetFinderShowHiddenRequest{
 		Enabled: enabled,
 	}
-	return p.Call(MethodNativeSetFinderShowHidden, req, nil)
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeSetFinderShowHidden, req, &result)
+	return result.Ok, err
 }
 
 // NativeSetHighlightColor set system highlight/accent color.
-func (p *Plugin) NativeSetHighlightColor(color string) error {
+func (p *Plugin) NativeSetHighlightColor(color string) (bool, error) {
 	req := &NativeSetHighlightColorRequest{
 		Color: color,
 	}
-	return p.Call(MethodNativeSetHighlightColor, req, nil)
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeSetHighlightColor, req, &result)
+	return result.Ok, err
 }
 
 // NativeSetHotCorner set a hot corner action.
 //
 //   - action: wire uint32 · min 0
-func (p *Plugin) NativeSetHotCorner(action int, corner string) error {
+func (p *Plugin) NativeSetHotCorner(action int, corner string) (bool, error) {
 	req := &NativeSetHotCornerRequest{
 		Action: action,
 		Corner: corner,
 	}
-	return p.Call(MethodNativeSetHotCorner, req, nil)
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeSetHotCorner, req, &result)
+	return result.Ok, err
 }
 
 // NativeSetInputSource switch to a keyboard input source by ID.
-func (p *Plugin) NativeSetInputSource(sourceID string) error {
+func (p *Plugin) NativeSetInputSource(sourceID string) (bool, error) {
 	req := &NativeSetInputSourceRequest{
 		SourceID: sourceID,
 	}
-	return p.Call(MethodNativeSetInputSource, req, nil)
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeSetInputSource, req, &result)
+	return result.Ok, err
 }
 
 // NativeSetKeyRepeatDelay set initial key repeat delay.
 //
 //   - delay: wire double
-func (p *Plugin) NativeSetKeyRepeatDelay(delay float64) error {
+func (p *Plugin) NativeSetKeyRepeatDelay(delay float64) (bool, error) {
 	req := &NativeSetKeyRepeatDelayRequest{
 		Delay: delay,
 	}
-	return p.Call(MethodNativeSetKeyRepeatDelay, req, nil)
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeSetKeyRepeatDelay, req, &result)
+	return result.Ok, err
 }
 
 // NativeSetKeyRepeatRate set key repeat rate.
 //
 //   - rate: wire double
-func (p *Plugin) NativeSetKeyRepeatRate(rate float64) error {
+func (p *Plugin) NativeSetKeyRepeatRate(rate float64) (bool, error) {
 	req := &NativeSetKeyRepeatRateRequest{
 		Rate: rate,
 	}
-	return p.Call(MethodNativeSetKeyRepeatRate, req, nil)
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeSetKeyRepeatRate, req, &result)
+	return result.Ok, err
 }
 
 // NativeSetMenuBarAutoHide enable or disable menu bar auto-hide.
-func (p *Plugin) NativeSetMenuBarAutoHide(enabled bool) error {
+func (p *Plugin) NativeSetMenuBarAutoHide(enabled bool) (bool, error) {
 	req := &NativeSetMenuBarAutoHideRequest{
 		Enabled: enabled,
 	}
-	return p.Call(MethodNativeSetMenuBarAutoHide, req, nil)
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeSetMenuBarAutoHide, req, &result)
+	return result.Ok, err
 }
 
 // NativeSetMouseSpeed set mouse tracking speed.
 //
 //   - speed: wire double
-func (p *Plugin) NativeSetMouseSpeed(speed float64) error {
+func (p *Plugin) NativeSetMouseSpeed(speed float64) (bool, error) {
 	req := &NativeSetMouseSpeedRequest{
 		Speed: speed,
 	}
-	return p.Call(MethodNativeSetMouseSpeed, req, nil)
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeSetMouseSpeed, req, &result)
+	return result.Ok, err
 }
 
 // NativeSetNightShift enable or disable Night Shift.
@@ -5493,80 +5673,116 @@ func (p *Plugin) NativeSetNightShift(enabled bool) error {
 }
 
 // NativeSetScreenshotFormat set screenshot file format (png/jpg/pdf/tiff).
-func (p *Plugin) NativeSetScreenshotFormat(format string) error {
+func (p *Plugin) NativeSetScreenshotFormat(format string) (bool, error) {
 	req := &NativeSetScreenshotFormatRequest{
 		Format: format,
 	}
-	return p.Call(MethodNativeSetScreenshotFormat, req, nil)
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeSetScreenshotFormat, req, &result)
+	return result.Ok, err
 }
 
 // NativeSetScreenshotIncludeShadow enable or disable window shadow in screenshots.
-func (p *Plugin) NativeSetScreenshotIncludeShadow(enabled bool) error {
+func (p *Plugin) NativeSetScreenshotIncludeShadow(enabled bool) (bool, error) {
 	req := &NativeSetScreenshotIncludeShadowRequest{
 		Enabled: enabled,
 	}
-	return p.Call(MethodNativeSetScreenshotIncludeShadow, req, nil)
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeSetScreenshotIncludeShadow, req, &result)
+	return result.Ok, err
 }
 
 // NativeSetScreenshotLocation set the screenshot save location.
-func (p *Plugin) NativeSetScreenshotLocation(path string) error {
+func (p *Plugin) NativeSetScreenshotLocation(path string) (bool, error) {
 	req := &NativeSetScreenshotLocationRequest{
 		Path: path,
 	}
-	return p.Call(MethodNativeSetScreenshotLocation, req, nil)
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeSetScreenshotLocation, req, &result)
+	return result.Ok, err
 }
 
 // NativeSetScrollDirectionNatural set natural scroll direction.
-func (p *Plugin) NativeSetScrollDirectionNatural(enabled bool) error {
+func (p *Plugin) NativeSetScrollDirectionNatural(enabled bool) (bool, error) {
 	req := &NativeSetScrollDirectionNaturalRequest{
 		Enabled: enabled,
 	}
-	return p.Call(MethodNativeSetScrollDirectionNatural, req, nil)
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeSetScrollDirectionNatural, req, &result)
+	return result.Ok, err
 }
 
 // NativeSetSidebarIconSize set sidebar icon size (1=small,2=medium,3=large).
 //
 //   - size: wire uint32 · min 0
-func (p *Plugin) NativeSetSidebarIconSize(size int) error {
+func (p *Plugin) NativeSetSidebarIconSize(size int) (bool, error) {
 	req := &NativeSetSidebarIconSizeRequest{
 		Size: size,
 	}
-	return p.Call(MethodNativeSetSidebarIconSize, req, nil)
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeSetSidebarIconSize, req, &result)
+	return result.Ok, err
 }
 
 // NativeSetStageManager enable or disable Stage Manager.
-func (p *Plugin) NativeSetStageManager(enabled bool) error {
+func (p *Plugin) NativeSetStageManager(enabled bool) (bool, error) {
 	req := &NativeSetStageManagerRequest{
 		Enabled: enabled,
 	}
-	return p.Call(MethodNativeSetStageManager, req, nil)
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeSetStageManager, req, &result)
+	return result.Ok, err
 }
 
 // NativeSetTapToClick enable or disable tap-to-click.
-func (p *Plugin) NativeSetTapToClick(enabled bool) error {
+func (p *Plugin) NativeSetTapToClick(enabled bool) (bool, error) {
 	req := &NativeSetTapToClickRequest{
 		Enabled: enabled,
 	}
-	return p.Call(MethodNativeSetTapToClick, req, nil)
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeSetTapToClick, req, &result)
+	return result.Ok, err
 }
 
 // NativeSetTrackpadSpeed set trackpad tracking speed.
 //
 //   - speed: wire double
-func (p *Plugin) NativeSetTrackpadSpeed(speed float64) error {
+func (p *Plugin) NativeSetTrackpadSpeed(speed float64) (bool, error) {
 	req := &NativeSetTrackpadSpeedRequest{
 		Speed: speed,
 	}
-	return p.Call(MethodNativeSetTrackpadSpeed, req, nil)
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeSetTrackpadSpeed, req, &result)
+	return result.Ok, err
 }
 
 // NativeSetURLSchemeHandler register an application as the handler for a URL scheme.
-func (p *Plugin) NativeSetURLSchemeHandler(bundleID string, scheme string) error {
+func (p *Plugin) NativeSetURLSchemeHandler(bundleID string, scheme string) (bool, error) {
 	req := &NativeSetURLSchemeHandlerRequest{
 		BundleID: bundleID,
 		Scheme:   scheme,
 	}
-	return p.Call(MethodNativeSetUrlSchemeHandler, req, nil)
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeSetUrlSchemeHandler, req, &result)
+	return result.Ok, err
 }
 
 // NativeSetVolume set system volume (0.0–1.0).
@@ -5580,11 +5796,15 @@ func (p *Plugin) NativeSetVolume(volume float64) error {
 }
 
 // NativeSetWallpaper set the desktop wallpaper to an image file.
-func (p *Plugin) NativeSetWallpaper(path string) error {
+func (p *Plugin) NativeSetWallpaper(path string) (bool, error) {
 	req := &NativeSetWallpaperRequest{
 		Path: path,
 	}
-	return p.Call(MethodNativeSetWallpaper, req, nil)
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeSetWallpaper, req, &result)
+	return result.Ok, err
 }
 
 // NativeSetWindowAlpha set window transparency.
@@ -5922,12 +6142,16 @@ func (p *Plugin) NativeSwitchSpaceWhenSwitchingApp() (*NativeSwitchSpaceWhenSwit
 }
 
 // NativeSymlink create a symbolic link.
-func (p *Plugin) NativeSymlink(link string, source string) error {
+func (p *Plugin) NativeSymlink(link string, source string) (bool, error) {
 	req := &NativeSymlinkRequest{
 		Link:   link,
 		Source: source,
 	}
-	return p.Call(MethodNativeSymlink, req, nil)
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeSymlink, req, &result)
+	return result.Ok, err
 }
 
 // NativeSystemAppearance get system appearance info (accent color, highlight color, reduce motion, reduce transparency).
@@ -6133,11 +6357,15 @@ func (p *Plugin) NativeTimezone() (*NativeTimezoneResponse, error) {
 }
 
 // NativeToggleBluetooth toggle Bluetooth on/off.
-func (p *Plugin) NativeToggleBluetooth(enabled bool) error {
+func (p *Plugin) NativeToggleBluetooth(enabled bool) (bool, error) {
 	req := &NativeToggleBluetoothRequest{
 		Enabled: enabled,
 	}
-	return p.Call(MethodNativeToggleBluetooth, req, nil)
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeToggleBluetooth, req, &result)
+	return result.Ok, err
 }
 
 // NativeToggleFullscreen toggle native fullscreen for a window.
@@ -6149,11 +6377,15 @@ func (p *Plugin) NativeToggleFullscreen(windowID string) error {
 }
 
 // NativeToggleWifi toggle Wi-Fi on/off.
-func (p *Plugin) NativeToggleWifi(enabled bool) error {
+func (p *Plugin) NativeToggleWifi(enabled bool) (bool, error) {
 	req := &NativeToggleWifiRequest{
 		Enabled: enabled,
 	}
-	return p.Call(MethodNativeToggleWifi, req, nil)
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeToggleWifi, req, &result)
+	return result.Ok, err
 }
 
 // NativeTouchIDAvailable check if Touch ID / biometric auth hardware is available.
@@ -6262,12 +6494,16 @@ func (p *Plugin) NativeUnobserveWindows(subscriptionID string) (bool, error) {
 }
 
 // NativeUnzip extract a zip archive to a directory.
-func (p *Plugin) NativeUnzip(destination string, source string) error {
+func (p *Plugin) NativeUnzip(destination string, source string) (bool, error) {
 	req := &NativeUnzipRequest{
 		Destination: destination,
 		Source:      source,
 	}
-	return p.Call(MethodNativeUnzip, req, nil)
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeUnzip, req, &result)
+	return result.Ok, err
 }
 
 // NativeURLSchemeHandler get the bundle ID registered as the handler for a URL scheme.
@@ -6525,22 +6761,30 @@ func (p *Plugin) NativeWorldModel(onScreen *bool) (*WorldModel, error) {
 }
 
 // NativeWriteAppPreference write a preference value for an app domain.
-func (p *Plugin) NativeWriteAppPreference(domain string, key string, value json.RawMessage) error {
+func (p *Plugin) NativeWriteAppPreference(domain string, key string, value json.RawMessage) (bool, error) {
 	req := &NativeWriteAppPreferenceRequest{
 		Domain: domain,
 		Key:    key,
 		Value:  value,
 	}
-	return p.Call(MethodNativeWriteAppPreference, req, nil)
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeWriteAppPreference, req, &result)
+	return result.Ok, err
 }
 
 // NativeWriteFile write string contents to a file.
-func (p *Plugin) NativeWriteFile(contents string, path string) error {
+func (p *Plugin) NativeWriteFile(contents string, path string) (bool, error) {
 	req := &NativeWriteFileRequest{
 		Contents: contents,
 		Path:     path,
 	}
-	return p.Call(MethodNativeWriteFile, req, nil)
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeWriteFile, req, &result)
+	return result.Ok, err
 }
 
 // NativeXcodePath get the active Xcode developer directory path.
@@ -6564,12 +6808,16 @@ func (p *Plugin) NativeXcodeVersion() (*NativeXcodeVersionResponse, error) {
 }
 
 // NativeZip create a zip archive from files or a directory.
-func (p *Plugin) NativeZip(destination string, source string) error {
+func (p *Plugin) NativeZip(destination string, source string) (bool, error) {
 	req := &NativeZipRequest{
 		Destination: destination,
 		Source:      source,
 	}
-	return p.Call(MethodNativeZip, req, nil)
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeZip, req, &result)
+	return result.Ok, err
 }
 
 // NativeZoomEnabled check if Zoom accessibility is enabled.
