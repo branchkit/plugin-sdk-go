@@ -3623,7 +3623,29 @@ type NativeDarkModeResponse struct {
 
 // NativeDateFormatResponse is the response type for native.date_format.
 type NativeDateFormatResponse struct {
-	Value string `json:"value"`
+	// The vocabulary `source` is written in: `posix_strftime` or
+	// `unicode_cldr`. Without this, `source` is an uninterpretable string.
+	Dialect string `json:"dialect"`
+	// The locale asked for an era — the Lao Buddhist calendar, Japanese
+	// imperial eras (POSIX `%E`). Same reasoning as `native_digits`.
+	Era bool `json:"era"`
+	// The locale asked for its OWN digits rather than 0-9 — Lao, Myanmar,
+	// Odia, Eastern Arabic numerals (POSIX `%O`).
+	//
+	// A separate field because it cannot be part of a pattern: CLDR carries
+	// the numbering system in the locale identifier, which is why
+	// `resolvedOptions()` reports `numberingSystem` at the top level.
+	NativeDigits bool `json:"native_digits"`
+	// Exactly what the operating system returned, unmodified.
+	Source string `json:"source"`
+	// The format as a Unicode CLDR pattern (UTS #35) — the portable
+	// answer, identical in vocabulary on every platform.
+	//
+	// `None` when the platform's own format cannot be expressed in CLDR.
+	// That is not a failure: `source` is still here, and a caller that
+	// understands `dialect` can use it. Half-converting instead would
+	// produce a pattern that parses and is wrong.
+	Value *string `json:"value,omitempty"`
 }
 
 // NativeDefaultAppForUtiRequest is the request type for native.default_app_for_uti.
@@ -5970,7 +5992,29 @@ type NativeThunderboltDevicesResponse struct {
 
 // NativeTimeFormatResponse is the response type for native.time_format.
 type NativeTimeFormatResponse struct {
-	Value string `json:"value"`
+	// The vocabulary `source` is written in: `posix_strftime` or
+	// `unicode_cldr`. Without this, `source` is an uninterpretable string.
+	Dialect string `json:"dialect"`
+	// The locale asked for an era — the Lao Buddhist calendar, Japanese
+	// imperial eras (POSIX `%E`). Same reasoning as `native_digits`.
+	Era bool `json:"era"`
+	// The locale asked for its OWN digits rather than 0-9 — Lao, Myanmar,
+	// Odia, Eastern Arabic numerals (POSIX `%O`).
+	//
+	// A separate field because it cannot be part of a pattern: CLDR carries
+	// the numbering system in the locale identifier, which is why
+	// `resolvedOptions()` reports `numberingSystem` at the top level.
+	NativeDigits bool `json:"native_digits"`
+	// Exactly what the operating system returned, unmodified.
+	Source string `json:"source"`
+	// The format as a Unicode CLDR pattern (UTS #35) — the portable
+	// answer, identical in vocabulary on every platform.
+	//
+	// `None` when the platform's own format cannot be expressed in CLDR.
+	// That is not a failure: `source` is still here, and a caller that
+	// understands `dialect` can use it. Half-converting instead would
+	// produce a pattern that parses and is wrong.
+	Value *string `json:"value,omitempty"`
 }
 
 // NativeTimeMachineLastBackupResponse is the response type for native.time_machine_last_backup.
