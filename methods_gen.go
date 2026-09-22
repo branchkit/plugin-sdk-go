@@ -6429,29 +6429,29 @@ func (p *Plugin) NativeWindowDisplayID(windowID string) (int, error) {
 }
 
 // NativeWindowIsFullscreen check if window is fullscreen.
-func (p *Plugin) NativeWindowIsFullscreen(windowID string) (*NativeWindowIsFullscreenResponse, error) {
+func (p *Plugin) NativeWindowIsFullscreen(windowID string) (bool, error) {
 	req := &NativeWindowIsFullscreenRequest{
 		WindowID: windowID,
 	}
-	var result NativeWindowIsFullscreenResponse
+	var result bool
 	err := p.Call(MethodNativeWindowIsFullscreen, req, &result)
 	if err != nil {
-		return nil, err
+		return false, err
 	}
-	return &result, nil
+	return result, nil
 }
 
 // NativeWindowIsMinimized check if window is minimized.
-func (p *Plugin) NativeWindowIsMinimized(windowID string) (*NativeWindowIsMinimizedResponse, error) {
+func (p *Plugin) NativeWindowIsMinimized(windowID string) (bool, error) {
 	req := &NativeWindowIsMinimizedRequest{
 		WindowID: windowID,
 	}
-	var result NativeWindowIsMinimizedResponse
+	var result bool
 	err := p.Call(MethodNativeWindowIsMinimized, req, &result)
 	if err != nil {
-		return nil, err
+		return false, err
 	}
-	return &result, nil
+	return result, nil
 }
 
 // NativeWindowLayer get window layer level.

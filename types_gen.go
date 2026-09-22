@@ -1765,6 +1765,18 @@ type WindowInfo struct {
 	H int `json:"h"`
 	// default ""
 	ID string `json:"id"`
+	// Whether the window occupies its display exclusively, where the
+	// platform can say. `None` carries the same meaning as above.
+	IsFullscreen *bool `json:"is_fullscreen,omitempty"`
+	// Whether the window is minimized (iconified, hidden to a dock or
+	// taskbar), where the platform can say.
+	//
+	// `Option` and not `bool` for the same reason as `pid`: a platform that
+	// cannot tell has to be able to say so. `false` would assert that every
+	// window on a session with no minimize concept is on screen, which is a
+	// claim rather than an absence — and it is the claim that kept
+	// `native.window_is_minimized` refused rather than answered wrongly.
+	IsMinimized *bool `json:"is_minimized,omitempty"`
 	// The process that owns this window, where the platform can say.
 	//
 	// Advisory and often absent: on X11 it comes from `_NET_WM_PID`, which
@@ -6549,19 +6561,9 @@ type NativeWindowIsFullscreenRequest struct {
 	WindowID string `json:"window_id"`
 }
 
-// NativeWindowIsFullscreenResponse is the response type for native.window_is_fullscreen.
-type NativeWindowIsFullscreenResponse struct {
-	Enabled bool `json:"enabled"`
-}
-
 // NativeWindowIsMinimizedRequest is the request type for native.window_is_minimized.
 type NativeWindowIsMinimizedRequest struct {
 	WindowID string `json:"window_id"`
-}
-
-// NativeWindowIsMinimizedResponse is the response type for native.window_is_minimized.
-type NativeWindowIsMinimizedResponse struct {
-	Enabled bool `json:"enabled"`
 }
 
 // NativeWindowLayerRequest is the request type for native.window_layer.
