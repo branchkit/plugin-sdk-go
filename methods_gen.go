@@ -3636,7 +3636,7 @@ func (p *Plugin) NativeIsFileHidden(path string) (*NativeIsFileHiddenResponse, e
 	return &result, nil
 }
 
-// NativeKernelVersion get the Darwin kernel version string.
+// NativeKernelVersion get the running kernel version as a bare version string.
 func (p *Plugin) NativeKernelVersion() (*NativeKernelVersionResponse, error) {
 	var result NativeKernelVersionResponse
 	err := p.Call(MethodNativeKernelVersion, nil, &result)
