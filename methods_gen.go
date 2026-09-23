@@ -3050,7 +3050,7 @@ func (p *Plugin) NativeFinderSelection() ([]string, error) {
 	return result.Paths, nil
 }
 
-// NativeFinderShowExtensions check if Finder shows file extensions.
+// NativeFinderShowExtensions whether the file manager shows file extensions.
 func (p *Plugin) NativeFinderShowExtensions() (*NativeFinderShowExtensionsResponse, error) {
 	var result NativeFinderShowExtensionsResponse
 	err := p.Call(MethodNativeFinderShowExtensions, nil, &result)
@@ -3060,7 +3060,7 @@ func (p *Plugin) NativeFinderShowExtensions() (*NativeFinderShowExtensionsRespon
 	return &result, nil
 }
 
-// NativeFinderShowHidden check if Finder shows hidden files.
+// NativeFinderShowHidden whether the file manager shows hidden files.
 func (p *Plugin) NativeFinderShowHidden() (*NativeFinderShowHiddenResponse, error) {
 	var result NativeFinderShowHiddenResponse
 	err := p.Call(MethodNativeFinderShowHidden, nil, &result)
@@ -3080,7 +3080,7 @@ func (p *Plugin) NativeFinderShowPathBar() (*NativeFinderShowPathBarResponse, er
 	return &result, nil
 }
 
-// NativeFinderShowStatusBar check if Finder shows status bar.
+// NativeFinderShowStatusBar whether the file manager shows a status bar.
 func (p *Plugin) NativeFinderShowStatusBar() (*NativeFinderShowStatusBarResponse, error) {
 	var result NativeFinderShowStatusBarResponse
 	err := p.Call(MethodNativeFinderShowStatusBar, nil, &result)
@@ -4032,7 +4032,7 @@ func (p *Plugin) NativeMenuBarBatteryPercent() (*NativeMenuBarBatteryPercentResp
 	return &result, nil
 }
 
-// NativeMenuBarClockFormat get menu bar clock format string.
+// NativeMenuBarClockFormat whether the clock is 12-hour or 24-hour, as 12h or 24h.
 func (p *Plugin) NativeMenuBarClockFormat() (*NativeMenuBarClockFormatResponse, error) {
 	var result NativeMenuBarClockFormatResponse
 	err := p.Call(MethodNativeMenuBarClockFormat, nil, &result)
