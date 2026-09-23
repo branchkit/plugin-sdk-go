@@ -250,6 +250,7 @@ const (
 	MethodNativeFocusedWindowId               = "native.focused_window_id"                 // since 0.1.0
 	MethodNativeFontSmoothing                 = "native.font_smoothing"                    // since 0.1.0
 	MethodNativeForceQuitApp                  = "native.force_quit_app"                    // since 0.1.0
+	MethodNativeFormatDate                    = "native.format_date"                       // since 0.1.0
 	MethodNativeFrontmostApp                  = "native.frontmost_app"                     // since 0.1.0
 	MethodNativeFullDiskAccess                = "native.full_disk_access"                  // since 0.1.0
 	MethodNativeFunctionKeysStandard          = "native.function_keys_standard"            // since 0.1.0

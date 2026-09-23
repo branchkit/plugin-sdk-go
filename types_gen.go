@@ -4123,6 +4123,17 @@ type NativeForceQuitAppResponse struct {
 	Result bool `json:"result"`
 }
 
+// NativeFormatDateRequest is the request type for native.format_date.
+type NativeFormatDateRequest struct {
+	Style string `json:"style"`
+	When  string `json:"when"`
+}
+
+// NativeFormatDateResponse is the response type for native.format_date.
+type NativeFormatDateResponse struct {
+	Value string `json:"value"`
+}
+
 // NativeFrontmostAppResponse is the response type for native.frontmost_app.
 type NativeFrontmostAppResponse struct {
 	App *RunningApp `json:"app,omitempty"`

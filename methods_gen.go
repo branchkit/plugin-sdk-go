@@ -3191,6 +3191,20 @@ func (p *Plugin) NativeForceQuitApp(bundleID string) (bool, error) {
 	return result.Result, err
 }
 
+// NativeFormatDate format an instant for the user, ON THE PLATFORM. `when` is an RFC 3339 instant; `style` is one of date, time, date_time. Rendered in the USER'S LOCAL ZONE and their locale's own conventions - including calendars and digits no format pattern can express: a Lao user correctly sees the Buddhist year 2569 where a caller formatting with a CLDR pattern would render 2026, and an Odia user sees Odia digits. Prefer this over native.date_format whenever you are DISPLAYING a date rather than inspecting the locale's format. Output is NOT byte-identical across operating systems and is not meant to be - each renders its own platform's conventions for that locale. See DESIGN_TIME_AND_DATES.md..
+func (p *Plugin) NativeFormatDate(style string, when string) (*NativeFormatDateResponse, error) {
+	req := &NativeFormatDateRequest{
+		Style: style,
+		When:  when,
+	}
+	var result NativeFormatDateResponse
+	err := p.Call(MethodNativeFormatDate, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // NativeFrontmostApp get the currently active (frontmost) application.
 func (p *Plugin) NativeFrontmostApp() (*NativeFrontmostAppResponse, error) {
 	var result NativeFrontmostAppResponse
