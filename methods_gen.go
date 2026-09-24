@@ -58,6 +58,24 @@ func (p *Plugin) BlobPublish(length int, name string, hash *string, newGeneratio
 	return &result, nil
 }
 
+// BlobState where a blob stands: its current generation, published length and version. For a restarted provider (which generation to write) and a starting consumer (what to open).
+//
+//   - name: The blob's name, as its provider declared it in `provides.blobs`.
+//   - provider: The providing plugin. Omitted: the caller's own blob. Another
+//     plugin's blob is answerable only to a consumer granted to read it.
+func (p *Plugin) BlobState(name string, provider *string) (*BlobStateResponse, error) {
+	req := &BlobStateRequest{
+		Name:     name,
+		Provider: provider,
+	}
+	var result BlobStateResponse
+	err := p.Call(MethodBlobState, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // CollectionAppend append an entry to a log-kind collection.
 //
 //   - name: Collection name. Must be a `kind: "log"` collection.

@@ -1924,6 +1924,30 @@ type BlobPublishResponse struct {
 	Version int `json:"version"`
 }
 
+// BlobStateRequest is the request type for blob.state.
+type BlobStateRequest struct {
+	// The blob's name, as its provider declared it in `provides.blobs`.
+	Name string `json:"name"`
+	// The providing plugin. Omitted: the caller's own blob. Another
+	// plugin's blob is answerable only to a consumer granted to read it.
+	Provider *string `json:"provider,omitempty"`
+}
+
+// BlobStateResponse is the response type for blob.state.
+type BlobStateResponse struct {
+	// The generation file currently being appended to — the one a
+	// restarted provider writes next, and the one a consumer opens.
+	// wire uint64 (64-bit) · min 0
+	Generation int `json:"generation"`
+	// Bytes published within that generation.
+	// wire uint64 (64-bit) · min 0
+	Length int `json:"length"`
+	// The latest version; it rises across generations AND across actuator
+	// restarts, so a consumer can tell new from already-seen.
+	// wire uint64 (64-bit) · min 0
+	Version int `json:"version"`
+}
+
 // CollectionAppendRequest is the request type for collection.append.
 type CollectionAppendRequest struct {
 	// Collection name. Must be a `kind: "log"` collection.
