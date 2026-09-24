@@ -867,6 +867,28 @@ type HidElementEntry struct {
 	UsagePage int `json:"usage_page"`
 }
 
+// HttpHeader is auto-generated from the OpenRPC spec.
+// One request header. Either a literal `value`, or a `secret` the platform
+// substitutes — `prefix` + the stored value, e.g. `prefix: "Bearer "`.
+type HttpHeader struct {
+	Name string `json:"name"`
+	// Text placed before the substituted secret (`"Bearer "`, `"token "`).
+	Prefix *string `json:"prefix,omitempty"`
+	// The name of one of THIS plugin's stored secrets. It is substituted
+	// only if the secret is bound to the request's host; an unbound secret
+	// is never sent.
+	Secret *string `json:"secret,omitempty"`
+	// A literal value. Exactly one of `value` / `secret`.
+	Value *string `json:"value,omitempty"`
+}
+
+// HttpResponseHeader is auto-generated from the OpenRPC spec.
+// One response header as received.
+type HttpResponseHeader struct {
+	Name  string `json:"name"`
+	Value string `json:"value"`
+}
+
 // HudFragment is auto-generated from the OpenRPC spec.
 // An HTML fragment pushed to a HUD channel. The `target_id` is the DOM element
 // ID to patch (e.g. "content", "title"); `html` is the innerHTML replacement.
@@ -2574,6 +2596,35 @@ type EventsEmitRequest struct {
 	// Convention-based event type (e.g. "clipboard.copied"). The
 	// `_platform.*` namespace is reserved for the actuator.
 	EventType string `json:"event_type"`
+}
+
+// HttpRequestRequest is the request type for http.request.
+type HttpRequestRequest struct {
+	// A UTF-8 body. Exactly one of `body` / `body_base64`, or neither.
+	Body *string `json:"body,omitempty"`
+	// A binary body, base64.
+	BodyBase64 *string `json:"body_base64,omitempty"`
+	// default []
+	Headers []HttpHeader `json:"headers,omitempty"`
+	// `GET` when omitted.
+	Method *string `json:"method,omitempty"`
+	// Overall deadline; default 30000, at most 120000.
+	// wire uint64 (64-bit) · min 0
+	TimeoutMs *int `json:"timeout_ms,omitempty"`
+	// `https://` only, to a host this plugin declares in `requires.network`
+	// and the user has allowed.
+	URL string `json:"url"`
+}
+
+// HttpRequestResponse is the response type for http.request.
+type HttpRequestResponse struct {
+	// The body as text when it is valid UTF-8.
+	Body *string `json:"body,omitempty"`
+	// The body, base64. Always present.
+	BodyBase64 string               `json:"body_base64"`
+	Headers    []HttpResponseHeader `json:"headers"`
+	// wire uint16 · min 0 · max 65535
+	Status int `json:"status"`
 }
 
 // HUDCreateChannelRequest is the request type for hud.create_channel.

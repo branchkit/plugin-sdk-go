@@ -697,6 +697,33 @@ func (p *Plugin) EventsEmit(eventType string, correlationID *string, data json.R
 	return p.Call(MethodEventsEmit, req, nil)
 }
 
+// HttpRequest perform an HTTPS request to one of this plugin's allowed hosts, substituting the plugin's stored secrets into named headers. The plugin never sees the secret; redirects are returned, not followed.
+//
+//   - url: `https://` only, to a host this plugin declares in `requires.network`
+//     and the user has allowed.
+//   - body: A UTF-8 body. Exactly one of `body` / `body_base64`, or neither.
+//   - bodyBase64: A binary body, base64.
+//   - headers: default []
+//   - method: `GET` when omitted.
+//   - timeoutMs: Overall deadline; default 30000, at most 120000.
+//     wire uint64 (64-bit) · min 0
+func (p *Plugin) HttpRequest(url string, body *string, bodyBase64 *string, headers []HttpHeader, method *string, timeoutMs *int) (*HttpRequestResponse, error) {
+	req := &HttpRequestRequest{
+		URL:        url,
+		Body:       body,
+		BodyBase64: bodyBase64,
+		Headers:    headers,
+		Method:     method,
+		TimeoutMs:  timeoutMs,
+	}
+	var result HttpRequestResponse
+	err := p.Call(MethodHttpRequest, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // HUDCreateChannel create a new HUD broadcast channel at runtime.
 //
 //   - channel: Channel name. Must be unique across all plugins.
