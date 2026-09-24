@@ -3,6 +3,52 @@
 Versions before this file predate it; their contents are in the repo's
 git history.
 
+## 0.11.0 — 2026-09-24
+
+### Spend a stored credential without holding it
+
+- `HttpRequest` (`http.request`): hand the platform a whole HTTPS request.
+  A header may be an `HttpHeader{Name, Secret, Prefix}` naming one of your
+  plugin's stored secrets; the platform substitutes it only if that secret
+  is bound to the request's host, performs the request in a sandboxed
+  helper through your plugin's proxy, returns redirects unfollowed, and
+  redacts any echo of the secret. Your plugin never receives the value.
+- `NetworkRequestHost` (`network.request_host`): for a manifest declaring
+  `requires.network: {hosts, requestable: true}`, ask for one more exact
+  host at runtime. It appears on your plugin's page, off until the user
+  allows it.
+- `SecretsRequestSlot` (`secrets.request_slot`): ask for a credential row on
+  your plugin's page, bound to a host you can reach. The user pastes the
+  value there; it goes straight into the store.
+- Secret-field manifest entries may declare `for_host`.
+
+### Also new
+
+- `BlobState` (`blob.state`): a blob's current generation, length and
+  version, for a restarted provider or a starting consumer.
+- `ErrUnsupported` and `UnsupportedReasonOf`: a platform refusal is its own
+  error kind (`unsupported`, -32007) with a closed reason —
+  `platform_no_analogue`, `platform_unported`, `session_unsupported` — no
+  longer `not_permitted` with the reason in the detail text.
+- `native.format_date` and richer, per-platform date/time format answers.
+
+### Behaviour changes
+
+- An explicitly EMPTY list in a request is now sent as `[]`, not dropped.
+  Nullable collection fields on request structs lost `omitempty`: `nil`
+  still means "absent", `[]string{}` now means "empty". This matters for
+  `CommandsResolve`'s `ActiveTags` (absent = the live session's tags,
+  empty = no tags) and `NativeFileTags`'s `Tags` (empty = clear the tags,
+  which previously read the tags instead).
+- The listener relay dials a Windows named-pipe rendezvous (`npipe://`);
+  it had kept dialling TCP, so a Go plugin's listener was unreachable on
+  Windows.
+
+0.9.0 and 0.10.0 shipped without entries here; their changes (wrapper
+parameters reordered to required-first, 61 wrappers gaining return values,
+computed `ok` results becoming `(bool, error)`) are in the repo history
+around those tags.
+
 ## 0.8.0 — 2026-09-19
 
 ### The platform's `Action` is a type
