@@ -121,6 +121,12 @@ type ActionFieldSchema struct {
 	// Nested field list for `field_type: "object"` (recursive). Ignored
 	// for other field types.
 	Fields []ActionFieldSchema `json:"fields"`
+	// `secret_ref` only: the ONE host the stored credential may be sent
+	// to. A credential saved from Settings is bound to this, and the binding
+	// comes from here — from the manifest the user consented to — never
+	// from the request that stores the value. Must be an exact host (no
+	// wildcard) that the plugin's own `requires.network` hosts allow.
+	ForHost *string `json:"for_host,omitempty"`
 	// JSON key name (e.g. "selector", "direction").
 	Key string `json:"key"`
 	// Human-readable label for UI rendering.
