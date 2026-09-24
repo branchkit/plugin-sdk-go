@@ -2092,7 +2092,7 @@ type CollectionPutRequest struct {
 	//
 	// Wire-lenient: an entry whose role string this host doesn't know
 	// binds nothing but does NOT fail the put — see `DisplayRoles`.
-	Roles map[string]FieldDisplay `json:"roles,omitempty"`
+	Roles map[string]FieldDisplay `json:"roles"`
 }
 
 // CollectionPutResponse is the response type for collection.put.
@@ -2112,7 +2112,7 @@ type CollectionReplaceRequest struct {
 	Label *string `json:"label,omitempty"`
 	Name  string  `json:"name"`
 	// Same semantics as `collection.put`'s `roles`.
-	Roles map[string]FieldDisplay `json:"roles,omitempty"`
+	Roles map[string]FieldDisplay `json:"roles"`
 	// What the call is allowed to delete. Required — see `ReplaceScope`.
 	Scope ReplaceScope `json:"scope"`
 }
@@ -2236,7 +2236,7 @@ type CommandsPushRequest struct {
 	// three SDKs hand-wrote a typed push beside it (Go's
 	// `PushCommandSpecs`).
 	// default null
-	Commands []CommandSpec `json:"commands,omitempty"`
+	Commands []CommandSpec `json:"commands"`
 	// Optional named group this push owns. Absent replaces the plugin's
 	// ENTIRE command set (the original semantics, unchanged); present
 	// replaces only the records in that group and leaves the plugin's other
@@ -2300,11 +2300,11 @@ type CommandsResetOverrideResponse struct {
 type CommandsResolveRequest struct {
 	// Active tags for tag-based scoping. If None, uses the state's active_tags.
 	// default null
-	ActiveTags []string `json:"active_tags,omitempty"`
+	ActiveTags []string `json:"active_tags"`
 	// Narrow completions to commands contributed by these collections'
 	// contributors. None or empty = all.
 	// default null
-	Collections []string `json:"collections,omitempty"`
+	Collections []string `json:"collections"`
 	// Tiebreak hint for a genuine tie. When resolution reduces to 2+ equally-
 	// eligible commands the matcher cannot separate, and exactly one of them
 	// is owned by this plugin, that candidate is dispatched as a normal single
@@ -4027,7 +4027,7 @@ type NativeFileSizeRequest struct {
 type NativeFileTagsRequest struct {
 	Path string `json:"path"`
 	// default null
-	Tags []string `json:"tags,omitempty"`
+	Tags []string `json:"tags"`
 }
 
 // NativeFileTypeRequest is the request type for native.file_type.
@@ -5869,7 +5869,7 @@ type NativeSpotlightRequest struct {
 	Limit *int   `json:"limit,omitempty"`
 	Query string `json:"query"`
 	// default null
-	Scope []string `json:"scope,omitempty"`
+	Scope []string `json:"scope"`
 }
 
 // NativeSpotlightResponse is the response type for native.spotlight.

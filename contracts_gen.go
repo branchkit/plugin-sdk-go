@@ -10,7 +10,7 @@ const APIVersion = "0.2.0"
 const (
 	MethodActionsList                         = "actions.list"                             // since 0.1.0
 	MethodArtifactDelete                      = "artifact.delete"                          // since 0.1.0
-	MethodBlobPublish                         = "blob.publish"                             // stable, since 0.2.0
+	MethodBlobPublish                         = "blob.publish"                             // since 0.2.0
 	MethodCollectionAppend                    = "collection.append"                        // stable, since 0.1.0
 	MethodCollectionAppendKeyed               = "collection.append_keyed"                  // since 0.1.0
 	MethodCollectionCount                     = "collection.count"                         // stable, since 0.1.0
