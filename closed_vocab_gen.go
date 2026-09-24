@@ -63,6 +63,7 @@ const (
 	ErrorKindStorage           ErrorKind = "storage"
 	ErrorKindMethodNotFound    ErrorKind = "method_not_found"
 	ErrorKindInvalidParams     ErrorKind = "invalid_params"
+	ErrorKindUnsupported       ErrorKind = "unsupported"
 	ErrorKindInternal          ErrorKind = "internal"
 )
 
@@ -78,6 +79,7 @@ var ErrorCodeFor = map[ErrorKind]int{
 	ErrorKindStorage:           -32005,
 	ErrorKindMethodNotFound:    -32601,
 	ErrorKindInvalidParams:     -32602,
+	ErrorKindUnsupported:       -32007,
 	ErrorKindInternal:          -32603,
 }
 
@@ -91,6 +93,7 @@ var KnownErrorKinds = []ErrorKind{
 	ErrorKindStorage,
 	ErrorKindMethodNotFound,
 	ErrorKindInvalidParams,
+	ErrorKindUnsupported,
 	ErrorKindInternal,
 }
 
@@ -105,6 +108,25 @@ type FaultData struct {
 	ID         string    `json:"id,omitempty"`
 	Op         string    `json:"op,omitempty"`
 	Privilege  string    `json:"privilege,omitempty"`
+	Reason     string    `json:"reason,omitempty"`
+}
+
+// UnsupportedReason* are the closed-vocabulary `data.reason` values
+// of an ErrorKindUnsupported error: why this platform or session
+// cannot run the op. Read one with UnsupportedReasonOf. Untyped so
+// they compare straight against FaultData.Reason. Source of truth:
+// `actuator/src/fault.rs::UnsupportedReason`.
+const (
+	UnsupportedReasonPlatformNoAnalogue = "platform_no_analogue"
+	UnsupportedReasonPlatformUnported   = "platform_unported"
+	UnsupportedReasonSessionUnsupported = "session_unsupported"
+)
+
+// KnownUnsupportedReasons lists the full closed-vocabulary set.
+var KnownUnsupportedReasons = []string{
+	"platform_no_analogue",
+	"platform_unported",
+	"session_unsupported",
 }
 
 // OutputKind* are the closed-vocabulary `kind` values of a semantic

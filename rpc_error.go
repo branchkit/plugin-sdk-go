@@ -86,6 +86,13 @@ var (
 	// ErrForbidden reports that this caller is not authorized for the op.
 	// Contrast ErrNotPermitted, which is about the collection's shape.
 	ErrForbidden error = &sentinelError{kind: ErrorKindForbidden}
+	// ErrUnsupported reports that this platform or desktop session cannot
+	// run the op at all — a well-formed call to a capability that is absent
+	// here. Read why with UnsupportedReasonOf: UnsupportedReasonPlatformNoAnalogue
+	// (not planned on this OS — design around it), UnsupportedReasonPlatformUnported
+	// (not written for this OS yet), UnsupportedReasonSessionUnsupported (this
+	// session cannot; Data.Detail says why).
+	ErrUnsupported error = &sentinelError{kind: ErrorKindUnsupported}
 )
 
 // ErrorKindOf returns the kind carried by err, if any. The bool is false when
@@ -96,6 +103,24 @@ func ErrorKindOf(err error) (ErrorKind, bool) {
 		return "", false
 	}
 	return rpcErr.Kind, true
+}
+
+// UnsupportedReasonOf returns the reason carried by an ErrUnsupported error
+// (one of the UnsupportedReason* constants, or a newer value this SDK has no
+// constant for). The bool is false when err is not an unsupported error or
+// the actuator sent no reason.
+//
+//	if reason, ok := branchkit.UnsupportedReasonOf(err); ok &&
+//	    reason == branchkit.UnsupportedReasonPlatformNoAnalogue {
+//	    // permanent on this OS: hide the feature rather than retry
+//	}
+func UnsupportedReasonOf(err error) (string, bool) {
+	var rpcErr *RPCError
+	if !errors.As(err, &rpcErr) || rpcErr.Kind != ErrorKindUnsupported ||
+		rpcErr.Data == nil || rpcErr.Data.Reason == "" {
+		return "", false
+	}
+	return rpcErr.Data.Reason, true
 }
 
 // toRPCError converts a wire error into the exported type.

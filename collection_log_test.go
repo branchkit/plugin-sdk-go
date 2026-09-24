@@ -195,6 +195,54 @@ func TestAppendSurfacesRecordingDisabledFromKind(t *testing.T) {
 	)
 }
 
+// An op the platform cannot run surfaces as ErrUnsupported, and its reason is
+// read from `data.reason` — never from the message or `detail`.
+func TestUnsupportedSurfacesSentinelAndReason(t *testing.T) {
+	runPluginCallWireErr(t,
+		&rpcError{
+			Code:    -32007,
+			Message: "native.dock_position is not implemented on linux yet",
+			Data: json.RawMessage(
+				`{"kind":"unsupported","op":"native.dock_position","reason":"platform_unported"}`),
+		},
+		func(p *Plugin) {
+			_, err := p.Append("x", map[string]any{})
+			if !errors.Is(err, ErrUnsupported) {
+				t.Fatalf("expected ErrUnsupported, got: %v", err)
+			}
+			reason, ok := UnsupportedReasonOf(err)
+			if !ok || reason != UnsupportedReasonPlatformUnported {
+				t.Errorf("reason = %q (ok=%v), want %q", reason, ok, UnsupportedReasonPlatformUnported)
+			}
+			var rpcErr *RPCError
+			if !errors.As(err, &rpcErr) || rpcErr.Data == nil || rpcErr.Data.Op != "native.dock_position" {
+				t.Errorf("op not surfaced: %+v", rpcErr)
+			}
+			for _, sentinel := range []error{ErrNotPermitted, ErrRecordingDisabled, ErrNotFound, ErrForbidden} {
+				if errors.Is(err, sentinel) {
+					t.Errorf("unsupported must not match sentinel %v", sentinel)
+				}
+			}
+		},
+	)
+}
+
+// UnsupportedReasonOf reports absent for any other kind, even one carrying a
+// reason-shaped field.
+func TestUnsupportedReasonOfIgnoresOtherKinds(t *testing.T) {
+	err := (&rpcError{
+		Code:    -32002,
+		Message: "no",
+		Data:    json.RawMessage(`{"kind":"not_permitted","reason":"platform_unported"}`),
+	}).toRPCError()
+	if _, ok := UnsupportedReasonOf(err); ok {
+		t.Errorf("UnsupportedReasonOf must report absent for a not_permitted error")
+	}
+	if _, ok := UnsupportedReasonOf(errors.New("plain")); ok {
+		t.Errorf("UnsupportedReasonOf must report absent for a non-RPC error")
+	}
+}
+
 // An actuator predating structured errors sends no `data`. The call must still
 // produce a usable error rather than failing to parse — but it cannot be
 // classified, so kind-based matching correctly does not fire.
@@ -240,7 +288,7 @@ func TestUnrecognizedKindDegradesToGenericError(t *testing.T) {
 			if !ok || kind != ErrorKind("teleportation_failed") {
 				t.Errorf("kind = %q (ok=%v), want the unrecognized value passed through", kind, ok)
 			}
-			for _, sentinel := range []error{ErrRecordingDisabled, ErrNotFound, ErrNotPermitted, ErrForbidden} {
+			for _, sentinel := range []error{ErrRecordingDisabled, ErrNotFound, ErrNotPermitted, ErrForbidden, ErrUnsupported} {
 				if errors.Is(err, sentinel) {
 					t.Errorf("unrecognized kind must not match sentinel %v", sentinel)
 				}
