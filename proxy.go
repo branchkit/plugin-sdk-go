@@ -10,8 +10,9 @@ import (
 	"strings"
 )
 
-// Transparent outbound proxy (the actuator's per-host network enforcement —
-// DESIGN_SANDBOX_HOST_PROXY.md).
+// Transparent outbound proxy (the actuator's per-host network enforcement:
+// the sandbox denies all other egress and the actuator's per-plugin filtering
+// proxy enforces the declared hosts).
 //
 // When a plugin declares `"network": {"hosts": [...]}`, platforms without an
 // in-kernel per-host primitive (all three: Linux, macOS, Windows) run the plugin in a
@@ -86,7 +87,8 @@ func proxyDialContext(proxyURL string) (func(ctx context.Context, network, addr 
 	case strings.HasPrefix(proxyURL, "npipe://"):
 		// Windows: the actuator ACLs the pipe to this plugin's container
 		// SID, so the AppContainer reaches it with no loopback exemption
-		// (DESIGN_WINDOWS_LOOPBACK_EXEMPTION.md).
+		// (the exemption is all-or-nothing: it would open every loopback
+		// port on the machine).
 		pnet, paddr = "npipe", strings.TrimPrefix(proxyURL, "npipe://")
 	default:
 		return nil, fmt.Errorf("unsupported proxy url %q (want unix://, http:// or npipe://)", proxyURL)

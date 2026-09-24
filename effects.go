@@ -47,9 +47,9 @@ type EffectAssertOutcome struct {
 // — undeclared effects return an error.
 //
 // Check Enforced on the result: Granted means ownership bookkeeping,
-// not necessarily OS-level delivery.
-//
-// See docs/design/DESIGN_CAPABILITY_MECHANISM.md for the mechanism design.
+// not necessarily OS-level delivery. Conflicts resolve per effect by an
+// ownership stack: the last assert wins, and a retract restores the previous
+// owner.
 func (p *Plugin) AssertEffect(name string) (EffectAssertOutcome, error) {
 	res, err := p.EffectsAssert(name)
 	if err != nil {
@@ -113,7 +113,8 @@ func (p *Plugin) IsEffectActive(name string) (active bool, currentOwner string, 
 // state) should subscribe directly via
 // `On(EventEffectDisplaced, ...)`.
 //
-// See `docs/design/DESIGN_CAPABILITY_MECHANISM.md` section 10.2.
+// There is deliberately no "re-owned" counterpart: a plugin that needs to
+// know it is back on top queries ownership with IsEffectActive.
 //
 // Multiple callbacks can be registered; each fires for every event.
 func (p *Plugin) OnEffectDisplaced(handler func(evt EffectDisplacedEventParams)) {

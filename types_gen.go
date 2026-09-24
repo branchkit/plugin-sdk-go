@@ -110,8 +110,7 @@ type ActionFieldSchema struct {
 	// radius. The typo-catching strictness lives at publish time
 	// (branchkit-gen validates against the schema's closed enum) and in
 	// the load-time validator, which walks the raw JSON and emits a loud
-	// warning for every unknown role it degraded. See
-	// docs/design/DESIGN_COLLECTION_FIELD_ROLES.md, Decision 5.
+	// warning for every unknown role it degraded.
 	Display *FieldDisplay `json:"display,omitempty"`
 	// Allowed string values for `field_type: "enum"`. Ignored otherwise.
 	EnumValues []string `json:"enum_values"`
@@ -150,6 +149,10 @@ type ActionTypeSchema struct {
 	Label string `json:"label"`
 	// Supported interaction modes: "tap" (single press), "hold" (start/stop via phase),
 	// and/or "toggle" (start/stop cycle). Defaults to ["tap"] if omitted.
+	// Modes are declared, not inferred (modelled on QMK keycode types and
+	// Stream Deck action manifests): a "hold" action handles press/release
+	// itself via `phase`, so a peripheral UI should not ask the user to pick
+	// a separate release action for it.
 	Modes []string `json:"modes"`
 }
 
@@ -340,7 +343,8 @@ type CollectionRecord struct {
 	// complement by `writer` alone; two scripts hosted by one plugin share
 	// one owner, because the platform grants and enforces at the plugin.
 	// Making this a scoping key would turn an observability label into a
-	// sub-principal, which `docs/design/DESIGN_HOST_PLUGINS.md` forbids. Per-
+	// sub-principal: the platform cannot tell hosted things apart inside one
+	// process, so per-hosted-thing enforcement would be theatre. Per-
 	// hosted-thing separation is the host's job — one host-owned
 	// collection namespaced by script, not a platform ownership rule.
 	OnBehalfOf *string         `json:"on_behalf_of,omitempty"`
@@ -376,7 +380,9 @@ type CollectionRecord struct {
 	// another plugin's records (and the user's) are invisible to the diff.
 	// `ListOpts.writer` is the read-side twin: ask for your own records.
 	//
-	// See docs/design/DESIGN_RECORD_OWNERSHIP.md.
+	// A later write never transfers ownership, and a keyed-log fold keeps the
+	// introducing entry's writer, so annotating someone else's record never
+	// inherits it.
 	// default ""
 	Writer string `json:"writer"`
 }
@@ -429,7 +435,8 @@ type CollectionsListSection struct {
 //
 // A stale override (default renamed/removed upstream) simply stops matching
 // and the new default applies — single source + derived delta, no dual-sync.
-// See `docs/design/DESIGN_COMMAND_PHRASE_OVERRIDES.md`.
+// Keyed by identity, not by phrase: a phrase key changes the moment it is
+// overridden, so it could never be reset or re-targeted.
 type CommandOverride struct {
 	Action         string `json:"action"`
 	DefaultPattern string `json:"default_pattern"`
@@ -451,8 +458,8 @@ type CommandRowData struct {
 	// right thing for an editor, which decomposes and round-trips what the
 	// author wrote, but it is a superset of the `Action` wire shape and one
 	// generated type would lie about it. Same verdict, same reason, as
-	// `CommandSpec.action`. See the ledger in
-	// docs/design/DESIGN_SDK_GENERATION_FIDELITY.md.
+	// `CommandSpec.action`: this field's verdict follows the function that
+	// builds it (`action_to_json`), not the type it is built from.
 	ActionJson json.RawMessage `json:"action_json,omitempty"`
 	Canonical  string          `json:"canonical"`
 	Category   string          `json:"category"`
@@ -505,9 +512,8 @@ type CommandSpec struct {
 	// `templateify_commands` later turns into `Action::Template`.
 	//
 	// One generated type would have to lie about at least two of those, so
-	// this stays `Value` and is defended in the ledger in
-	// docs/design/DESIGN_SDK_GENERATION_FIDELITY.md rather than counted as
-	// a gap. `branchkit-gen` types the params per plugin from the plugin's
+	// this stays `Value`, deliberately open rather than counted as a gap to
+	// close. `branchkit-gen` types the params per plugin from the plugin's
 	// own `action_types`, which is where an author actually gets checked.
 	Action json.RawMessage `json:"action"`
 	// When true, this gated command is allowed to win during a
@@ -515,8 +521,7 @@ type CommandSpec struct {
 	// commands (`show_hints`, `dismiss`-style) are suppressed while
 	// the user is mid-codeword. Set true on explicit cancel words
 	// (`dismiss`, `cancel`, `exit`) that should be able to abort an
-	// in-progress bridge. See
-	// `docs/design/DESIGN_MULTI_CANDIDATE_BRIDGE.md`.
+	// in-progress bridge.
 	CancelsBridge *bool `json:"cancels_bridge,omitempty"`
 	// Category shown in Settings UI command lists.
 	Category *string `json:"category,omitempty"`
@@ -532,15 +537,14 @@ type CommandSpec struct {
 	// context) or `"exclusive"` (entering the prefix flips an auto-minted
 	// mode so the words only decode while it holds — for large/dynamic sets).
 	// Only valid when the pattern is literal word(s) followed by a single
-	// tail capture; other shapes are rejected at load. See
-	// `docs/design/DESIGN_DISCOVERABLE_PREFIX.md`.
+	// tail capture; other shapes are rejected at load so an author learns
+	// where they wrote it.
 	Discovery *string `json:"discovery,omitempty"`
 	// Discovery-HUD display override per capture binding name: when the
 	// HUD renders a capture slot of this command, enumerate the named
 	// collection instead of the matching one. Matching is untouched — a
 	// sealed/static matching collection can pair with a live display menu.
-	// Unknown capture names are inert. See
-	// `docs/design/DESIGN_CAPTURE_DISPLAY_FORMS.md`.
+	// Unknown capture names are inert.
 	DisplaySources map[string]string `json:"display_sources,omitempty"`
 	// Spoken pattern, e.g. `["switch", "<apps>"]`. Tokens are either
 	// literal strings or capture references like `<name:collection>`.
@@ -550,7 +554,8 @@ type CommandSpec struct {
 	RequiresTags []string `json:"requires_tags,omitempty"`
 	// Tags this command sets when it Partial-matches (mid-capture
 	// mode tag). Bound to the bridge's lifecycle; cleared on
-	// completion. See `docs/design/DESIGN_SETS_ON_PARTIAL.md`.
+	// completion; the tag is the authoritative in-progress state, so the
+	// scope filter silences off-vocabulary words mid-capture.
 	SetsOnPartial []string `json:"sets_on_partial,omitempty"`
 	// Tags this command sets in active_gates on match.
 	SetsTags []string `json:"sets_tags,omitempty"`
@@ -763,8 +768,9 @@ type ExternalDisk struct {
 // collection declares at most one role; surfaces (discovery HUD,
 // settings UI, etc.) interpret roles on their own terms.
 //
-// See `docs/design/DESIGN_COLLECTION_FIELD_ROLES.md` for the full vocabulary
-// rationale. Roles `primary`, `secondary`, `group`, `description`,
+// Roles are a closed vocabulary so every surface renders a named role the
+// same way; publish rejects an unknown role, load degrades it to no-role
+// with a warning. Roles `primary`, `secondary`, `group`, `description`,
 // `payload` are consumed by
 // `services::matching_service::expand_collections_to_items`
 // for discovery items; `summary` is consumed by the settings UI's
@@ -964,15 +970,16 @@ type ListCommandSection struct {
 // RPC caller gets: `StateService::list` substitutes
 // `StateService::DEFAULT_LIST_LIMIT` when the caller passed no `limit`, so
 // "every record" is the backend contract and never the plugin-visible one.
-// See docs/design/DESIGN_PLATFORM_LOAD_SAFEGUARDS.md.
+// Bytes are bounded at ingress (64 KB per record, 8 MB per writer per
+// collection), so this default only has to bound record count;
+// `ListAll`/`ListAllCompacted` are the exhaustive opt-out.
 // CLOSED vocabulary (verb-surface consolidation, 2026-06-11): every
 // added opt must be shape-generic or explicitly shape-scoped and
-// documented in DESIGN_PLATFORM_STATE.md section 3.2 — an undisciplined
+// documented here — an undisciplined
 // opts bag becomes a hidden taxonomy that defeats the eight-verb thesis.
 type ListOpts struct {
 	// Shape-scoped to `by_field` log collections (the compacted-changelog
-	// projection — see `docs/design/DESIGN_LOG_ANNOTATION_PROJECTION.md`, and
-	// DESIGN_PLATFORM_STATE.md §3.2). When true, a keyed log's raw appends
+	// projection; shape-scoped under the closed-ListOpts rule above). When true, a keyed log's raw appends
 	// are folded by their key field per the collection's `merge` and one
 	// record per key is returned (the record's current state) instead of the
 	// raw append history. Ignored by non-log backends; a validation error on
@@ -997,8 +1004,8 @@ type ListOpts struct {
 	// Shape-generic equality filter on `Record::writer` — return only records
 	// owned by this writer. Absent = every record, whoever owns it.
 	//
-	// This is the ONE in-verb extension DESIGN_PLATFORM_STATE.md section 3.2
-	// reserved ("the only in-verb extension we would entertain is equality
+	// This is the ONE in-verb extension the eight-verb design reserved
+	// ("the only in-verb extension we would entertain is equality
 	// filters on list opts"), spent here rather than on a general predicate
 	// language: it is exact equality on one structural envelope field, so it
 	// cannot compose into a query engine every backend must reimplement.
@@ -1006,7 +1013,7 @@ type ListOpts struct {
 	// It exists so a caller can ask for its OWN records — the read half of
 	// scoped writes. `collection.replace` computes its complement from this,
 	// which is what lets a replace be safe on a multi-writer collection
-	// without the introducer restriction. See docs/design/DESIGN_RECORD_OWNERSHIP.md.
+	// without the introducer restriction.
 	//
 	// Filtering happens BEFORE `limit`, so a limited+filtered read returns up
 	// to `limit` MATCHING records rather than the matches within the first
@@ -1236,8 +1243,10 @@ type OutputItem struct {
 	// the subtitle may mark it as a way in when it appears here; a speech
 	// renderer may accept any of them. Promoted into core 2026-09-19 from
 	// voice's `extra.voice.speakable_subtitles` — the first extension the
-	// platform's own renderer needed, which is the promotion rule in
-	// `DESIGN_SEMANTIC_OUTPUT_CHANNEL.md` ("The shape") working as written.
+	// platform's own renderer needed, which is the promotion rule working as
+	// written: an extension a renderer depends on is promoted into core
+	// deliberately, as a versioned addition, rather than read quietly from
+	// `extra`.
 	AltPhrases []string `json:"alt_phrases,omitempty"`
 	// Open extension, namespaced by plugin id — see [`OutputState::extra`].
 	Extra map[string]json.RawMessage `json:"extra,omitempty"`
@@ -1526,8 +1535,7 @@ type ReminderItem struct {
 //
 // Still explicit and required, never inferred: "everything I own here" and
 // "the subset under this key space" are different intentions, and guessing
-// between them is how a refresh silently becomes a wipe. See
-// docs/design/DESIGN_RECORD_OWNERSHIP.md and docs/design/DESIGN_COLLECTION_REPLACE.md.
+// between them is how a refresh silently becomes a wipe.
 //
 // Exactly one variant applies, selected by Kind; the other variants' fields are ignored.
 type ReplaceScope struct {
@@ -2109,8 +2117,9 @@ type CollectionPutRequest struct {
 	// Records to upsert. Always an array; single-record callers wrap one
 	// entry. The wire format is uniform across single and bulk callers;
 	// the SDK helpers (`Put` vs `PutMany`) hide the wrapping for the
-	// single-record case. See docs/design/DESIGN_BROWSER_HINT_SILENT_EVICTION.md
-	// for the rationale.
+	// single-record case. Per-key upserts replaced whole-collection REPLACE
+	// pushes, which silently dropped codewords when a caller pushed an
+	// intermediate snapshot.
 	// default []
 	Entries []CollectionPutEntry `json:"entries,omitempty"`
 	// Writer-chosen group label stamped on EVERY entry in this call — which
@@ -2127,8 +2136,7 @@ type CollectionPutRequest struct {
 	// to a manifest-declared collection's `schema.label`; a plugin creating a
 	// collection at runtime declares its label here. Same persistence
 	// semantics as `roles`: last-write-wins, and a put omitting `label`
-	// leaves the prior setting in place. See
-	// `docs/design/DESIGN_COLLECTION_FIELD_ROLES.md`.
+	// leaves the prior setting in place.
 	Label *string `json:"label,omitempty"`
 	Name  string  `json:"name"`
 	// Optional per-payload-field display roles. Used by the Settings
@@ -2302,9 +2310,9 @@ type CommandsPushRequest struct {
 	// rebuilding the union from every builder on each call. With groups each
 	// source owns its own, and dropping a source drops its group.
 	//
-	// See docs/design/PRINCIPLE_PLUGIN_HELD_STATE.md — this is the same
-	// "can two of these coexist?" failure that `collection.replace`'s scope
-	// fixes for records.
+	// This is the same "can two of these coexist?" failure that
+	// `collection.replace`'s scope fixes for records: a primitive that assumes
+	// one source breaks as soon as there are two.
 	Group *string `json:"group,omitempty"`
 }
 
@@ -6499,8 +6507,8 @@ type OverridesApplyRequest struct {
 	// overlay; a host caller targets `"_user"`. A plugin transporting a user
 	// gesture from its settings tab says `"_user"` explicitly; it may never
 	// target another plugin's overlay. Plugin overlays carry per-field
-	// patches only (`patch`/`restore`/`reset`) — annotation, not authorship
-	// (docs/design/DESIGN_WRITER_SCOPED_OVERLAY.md).
+	// patches only (`patch`/`restore`/`reset`) — annotation, not authorship;
+	// a plugin's patch never changes who owns the record.
 	// default null
 	Tenant *string `json:"tenant,omitempty"`
 }
@@ -6990,7 +6998,8 @@ type SettingsRulesCreateResponse struct {
 	// unreachable itself). **Advisory only** — the actuator does NOT block the
 	// save; the caller decides what to do. Null when there's no conflict. With
 	// `check_only: true` in the request, the candidate is checked and reported
-	// but NOT saved. See docs/design/DESIGN_COMMAND_FINALIZATION_RULE.md.
+	// but NOT saved. The actuator only reports; blocking a user-authored save
+	// is the calling plugin's decision.
 	Conflict *string `json:"conflict,omitempty"`
 	Ok       bool    `json:"ok"`
 }
@@ -7629,7 +7638,7 @@ type PipelineTranscriptEventParams struct {
 	// `prose` (writing — punctuation is intended). Declared by a gate
 	// collection, carried verbatim; the platform never interprets it. Absent
 	// means no active mode declared one, and the engine owner's default
-	// (prose) stands. See `docs/design/DESIGN_DICTATION_PROFILES.md`.
+	// (prose) stands.
 	DictationProfile *string `json:"dictation_profile,omitempty"`
 	IsFinal          bool    `json:"is_final"`
 	Pipeline         string  `json:"pipeline"`

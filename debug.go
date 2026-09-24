@@ -16,7 +16,7 @@ func (p *Plugin) Trace(tag string, data any) { p.logAtLevel("trace", tag, data) 
 // threshold of `info`, plain Debug calls are dropped unless the plugin's
 // threshold is lowered to `debug` or `trace`. Use Info for per-operation
 // diagnostics you want visible by default; use Debug for verbose-only
-// chatter. See docs/design/DESIGN_PLUGIN_LOG_LEVELS.md.
+// chatter. Levels exist so Debug keeps meaning verbose-only.
 //
 // Use branchkit.Logf instead for lines that describe coordination with the
 // actuator or other plugins — those benefit from interleaving with the

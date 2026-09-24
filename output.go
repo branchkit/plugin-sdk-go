@@ -12,7 +12,9 @@ import "encoding/json"
 // of exactly two shapes — say these words, or dispatch this action type —
 // and these build them so a producer never writes `&words` by hand.
 //
-// Design: docs/design/DESIGN_SEMANTIC_OUTPUT_CHANNEL.md.
+// Producers state what is true (a kind, human-language phrases, an urgency)
+// and never choose how or whether it is shown or spoken; every renderer reads
+// the same document.
 
 // SayAction is the action that injects `words` as if the person had spoken
 // them — routed through the same matcher their voice reaches, so confirming

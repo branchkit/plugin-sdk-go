@@ -1,7 +1,6 @@
 package branchkit
 
-// Typed settings access for `preset: settings` collections
-// (DESIGN_PLUGIN_SETTINGS_STORAGE.md). The platform materializes the
+// Typed settings access for `preset: settings` collections. The platform materializes the
 // composed view — every manifest-declared field at its shipped default,
 // with the user's sparse changes applied last — so the plugin never loads,
 // caches, or defaults anything itself. This helper replaces the hand-rolled

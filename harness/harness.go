@@ -149,8 +149,9 @@ type SimulateResult struct {
 	// Populated when the matcher declined to act because 2+ equally-eligible
 	// commands tied on the phrase (Matched stays false; in production the
 	// voice plugin opens the disambiguation HUD). Overlapping patterns like a
-	// literal and a same-length capture from the same plugin tie too — see
-	// DESIGN_MATCHER_COLLISION_RESOLUTION section 8.
+	// literal and a same-length capture from the same plugin tie too: a tie
+	// is any 2+ distinct commands completing in the same gating/scope bucket
+	// at the winning length.
 	TiedCandidates []TiedCandidate `json:"tied_candidates,omitempty"`
 }
 

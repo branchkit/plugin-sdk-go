@@ -101,8 +101,9 @@ func Command(slots ...PatternSlot) *CommandBuilder {
 //	.Action("browser.refresh")
 //	.Action("key", map[string]any{"code": 36})
 func (b *CommandBuilder) Action(actionType string, params ...map[string]any) *CommandBuilder {
-	// One params dialect (DESIGN_ONE_PARAMS_DIALECT.md): the payload lives
-	// under "params"; the action object's envelope is closed.
+	// One params dialect: the payload lives under "params"; the action
+	// object's envelope is closed, so a typo'd key is refused at load instead
+	// of silently becoming a bogus param.
 	action := map[string]any{"type": actionType}
 	if len(params) > 0 && len(params[0]) > 0 {
 		action["params"] = params[0]
@@ -136,7 +137,7 @@ func (b *CommandBuilder) ClearsTags(tags ...string) *CommandBuilder {
 // DisplaySource sets the Discovery-HUD display override for one capture:
 // the HUD enumerates `collection` instead of the capture's matching
 // collection. Matching is untouched — pair a sealed/static matching
-// collection with a live menu. (docs/design/DESIGN_CAPTURE_DISPLAY_FORMS.md.)
+// collection with a live menu.
 func (b *CommandBuilder) DisplaySource(capture, collection string) *CommandBuilder {
 	if b.spec.DisplaySources == nil {
 		b.spec.DisplaySources = map[string]string{}
@@ -159,8 +160,8 @@ func (b *CommandBuilder) CancelsBridge() *CommandBuilder {
 }
 
 // DiscoveryMode declares that a `literal-prefix + tail-capture` command's bare
-// prefix opens the Discovery HUD when spoken alone, instead of firing. See
-// docs/design/DESIGN_DISCOVERABLE_PREFIX.md. String-typed to match the wire field.
+// prefix opens the Discovery HUD when spoken alone, instead of firing.
+// String-typed to match the wire field.
 type DiscoveryMode = string
 
 const (
@@ -175,7 +176,8 @@ const (
 	// via platform-assigned alphabet codewords instead of spoken by name —
 	// item names never enter the grammar (promotion is the per-record
 	// opt-out). For churning sets whose names can't be pre-vetted acoustically
-	// (snippets, prompts, files). See DESIGN_SELECTION_PRIMITIVE.md.
+	// (snippets, prompts, files): arbitrary names would each need acoustic
+	// vetting, and one missing from the model lexicon is silently undecodable.
 	DiscoverySelect DiscoveryMode = "select"
 )
 

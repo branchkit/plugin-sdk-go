@@ -44,8 +44,8 @@ type Listener struct {
 // listener is used instead of self-binding. This is not an optimization:
 // inside the Linux sandbox the plugin runs in an empty network namespace,
 // where a self-bound "127.0.0.1" is a private dead loopback — the
-// inherited host-loopback listener is the only reachable surface. See the
-// actuator's docs/design/DESIGN_SANDBOX_LOOPBACK_FDPASS.md.
+// inherited host-loopback listener is the only reachable surface (a socket
+// keeps the network namespace it was created in).
 //
 // The caller must register handlers with HandleFunc before calling Serve.
 func ListenLocal(plugin *Plugin) (*Listener, error) {

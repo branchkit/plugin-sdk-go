@@ -67,8 +67,8 @@ type callResult struct {
 // --- Ordered notification delivery ---
 
 // notifyQueue is an unbounded FIFO of inbound notifications drained by a single
-// worker goroutine, so a plugin's listeners observe notifications in wire order
-// (docs/design/DESIGN_SDK_EVENT_ORDERING.md). Unbounded + non-blocking push is
+// worker goroutine, so a plugin's listeners observe notifications in wire
+// order. Unbounded + non-blocking push is
 // load-bearing: the read loop must never block enqueuing, or a listener that is
 // mid-`plugin.Call()` would deadlock waiting for a response the read loop can no
 // longer read. Responses are matched inline in the read loop, not through this
@@ -192,7 +192,8 @@ type Plugin struct {
 	readyOnce sync.Once
 
 	// notifyQ serializes inbound notifications through one worker goroutine so
-	// listeners observe them in wire order. See docs/design/DESIGN_SDK_EVENT_ORDERING.md.
+	// listeners observe them in wire order, one at a time (a slow listener
+	// delays later events by design).
 	notifyQ *notifyQueue
 
 	// Lazily initialized when HandleAction is first called. See actions.go.
@@ -308,7 +309,8 @@ func NewPlugin() *Plugin {
 // notifyWorker drains the notification queue one at a time, so listeners run in
 // wire order. A listener may block on an outbound plugin.Call(); the read loop
 // keeps running and delivers the response, then this worker proceeds to the
-// next notification. See docs/design/DESIGN_SDK_EVENT_ORDERING.md.
+// next notification. Responses are matched inline in the read loop, so
+// serializing here cannot deadlock.
 func (p *Plugin) notifyWorker() {
 	// Hold delivery until Run() signals that listeners are registered — the
 	// same gate handleRequest applies to inbound requests. The actuator's
@@ -685,7 +687,7 @@ func (p *Plugin) dispatch(msg rpcMessage) {
 
 	// Notification from actuator — has method, no id.
 	// Enqueue for the single notification worker so listeners run in wire
-	// order (docs/design/DESIGN_SDK_EVENT_ORDERING.md). push never blocks, so the
+	// order. push never blocks, so the
 	// read loop stays free to deliver responses to a listener mid-Call().
 	if msg.ID == nil && msg.Method != "" {
 		p.notifyQ.push(msg)

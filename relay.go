@@ -11,7 +11,8 @@ import (
 	"time"
 )
 
-// The actuator's listener relay (its docs/design/DESIGN_WINDOWS_LISTENER_RELAY.md).
+// The actuator's listener relay. Hand-over of a pre-bound socket was ruled
+// out because Go's net.FileListener does not support sockets on Windows.
 //
 // On Windows a plugin runs in an AppContainer whose loopback exemption is
 // outbound-only: a listener the plugin binds itself is unreachable from
@@ -44,8 +45,8 @@ func relayEnv() (rendezvous, token string, ok bool) {
 
 // relayEndpoint splits BRANCHKIT_LISTEN_RELAY into a dial network and
 // address: npipe://\\.\pipe\… on Windows (the rendezvous moved off loopback
-// TCP onto a named pipe ACL'd to the plugin's container,
-// DESIGN_WINDOWS_LOOPBACK_EXEMPTION.md), else a loopback host:port. The TS
+// TCP onto a named pipe ACL'd to the plugin's container, so no all-or-nothing
+// loopback exemption is needed), else a loopback host:port. The TS
 // and Python SDKs made that move; this one kept dialling TCP, so every park
 // failed and retried forever and a Go plugin's listener was unreachable on
 // Windows.

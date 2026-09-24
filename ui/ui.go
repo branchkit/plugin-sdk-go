@@ -1,7 +1,7 @@
 // Package ui emits the settings-tab interaction idioms a plugin would
 // otherwise hand-write as strings — the layer where every silent dead
-// button so far was born (see docs/design/DESIGN_SETTINGS_UI_ROBUSTNESS.md,
-// leg 2). Each helper encodes a contract the platform cannot check at
+// button so far was born: these idioms were hand-written strings that no
+// compiler, validator or test checked. Each helper encodes a contract the platform cannot check at
 // runtime:
 //
 //   - the element in an expression is `el`, never `$el` ($ reads a signal)

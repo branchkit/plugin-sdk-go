@@ -95,8 +95,8 @@ func PluginDataDir() string {
 //
 // The artifacts a plugin declares are a flat namespace it owns, so a declared
 // artifact named `m` lives at `<ArtifactsDir()>/m` and its platform-wide ref is
-// `<plugin id>/m`. Was `ModelsDir` (kept as a deprecated alias for one
-// release); see DESIGN_ARTIFACTS_RENAME.md.
+// `<plugin id>/m`. Was `ModelsDir` (renamed before the SDK release; kept as a
+// deprecated alias for one release).
 func ArtifactsDir() string {
 	if d := os.Getenv("BRANCHKIT_ARTIFACTS_DIR"); d != "" {
 		return d
@@ -104,6 +104,6 @@ func ArtifactsDir() string {
 	return os.Getenv("BRANCHKIT_MODELS_DIR")
 }
 
-// Deprecated: use [ArtifactsDir]. `models` was renamed to `artifacts`
-// (DESIGN_ARTIFACTS_RENAME.md); this alias is removed one release later.
+// Deprecated: use [ArtifactsDir]. `models` was renamed to `artifacts`;
+// this alias is removed one release later.
 func ModelsDir() string { return ArtifactsDir() }

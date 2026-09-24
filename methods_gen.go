@@ -225,8 +225,9 @@ func (p *Plugin) CollectionPatch(fields json.RawMessage, id string, name string)
 //   - entries: Records to upsert. Always an array; single-record callers wrap one
 //     entry. The wire format is uniform across single and bulk callers;
 //     the SDK helpers (`Put` vs `PutMany`) hide the wrapping for the
-//     single-record case. See docs/design/DESIGN_BROWSER_HINT_SILENT_EVICTION.md
-//     for the rationale.
+//     single-record case. Per-key upserts replaced whole-collection REPLACE
+//     pushes, which silently dropped codewords when a caller pushed an
+//     intermediate snapshot.
 //     default []
 //
 //   - group: Writer-chosen group label stamped on EVERY entry in this call — which
@@ -243,8 +244,7 @@ func (p *Plugin) CollectionPatch(fields json.RawMessage, id string, name string)
 //     to a manifest-declared collection's `schema.label`; a plugin creating a
 //     collection at runtime declares its label here. Same persistence
 //     semantics as `roles`: last-write-wins, and a put omitting `label`
-//     leaves the prior setting in place. See
-//     `docs/design/DESIGN_COLLECTION_FIELD_ROLES.md`.
+//     leaves the prior setting in place.
 //
 //   - roles: Optional per-payload-field display roles. Used by the Settings
 //     UI / discovery HUD to know which payload field is the primary
@@ -465,9 +465,9 @@ func (p *Plugin) CommandsListOverrides() ([]CommandOverride, error) {
 //     rebuilding the union from every builder on each call. With groups each
 //     source owns its own, and dropping a source drops its group.
 //
-//     See docs/design/PRINCIPLE_PLUGIN_HELD_STATE.md — this is the same
-//     "can two of these coexist?" failure that `collection.replace`'s scope
-//     fixes for records.
+//     This is the same "can two of these coexist?" failure that
+//     `collection.replace`'s scope fixes for records: a primitive that assumes
+//     one source breaks as soon as there are two.
 func (p *Plugin) CommandsPush(commands []CommandSpec, group *string) (*CommandsPushResponse, error) {
 	req := &CommandsPushRequest{
 		Commands: commands,
@@ -2281,7 +2281,7 @@ func (p *Plugin) NativeCurrencyCode() (*NativeCurrencyCodeResponse, error) {
 	return &result, nil
 }
 
-// NativeCurrentDatetime get the user's current local date and time as an RFC 3339 ZONED timestamp (offset populated, e.g. 2026-09-22T17:32:29-04:00). Deliberately zoned, not UTC: this answers 'what time is it for the user', and the offset is lossless - UTC is derivable from it, while local time is NOT derivable from a UTC instant without separately knowing the zone. Pair with native.timezone for the IANA identifier when you need DST-correct arithmetic rather than the current wall clock. See DESIGN_TIME_AND_DATES.md..
+// NativeCurrentDatetime get the user's current local date and time as an RFC 3339 ZONED timestamp (offset populated, e.g. 2026-09-22T17:32:29-04:00). Deliberately zoned, not UTC: this answers 'what time is it for the user', and the offset is lossless - UTC is derivable from it, while local time is NOT derivable from a UTC instant without separately knowing the zone. Pair with native.timezone for the IANA identifier when you need DST-correct arithmetic rather than the current wall clock..
 func (p *Plugin) NativeCurrentDatetime() (*NativeCurrentDatetimeResponse, error) {
 	var result NativeCurrentDatetimeResponse
 	err := p.Call(MethodNativeCurrentDatetime, nil, &result)
@@ -3236,7 +3236,7 @@ func (p *Plugin) NativeForceQuitApp(bundleID string) (bool, error) {
 	return result.Result, err
 }
 
-// NativeFormatDate format an instant for the user, ON THE PLATFORM. `when` is an RFC 3339 instant; `style` is one of date, time, date_time. Rendered in the USER'S LOCAL ZONE and their locale's own conventions - including calendars and digits no format pattern can express: a Lao user correctly sees the Buddhist year 2569 where a caller formatting with a CLDR pattern would render 2026, and an Odia user sees Odia digits. Prefer this over native.date_format whenever you are DISPLAYING a date rather than inspecting the locale's format. Output is NOT byte-identical across operating systems and is not meant to be - each renders its own platform's conventions for that locale. See DESIGN_TIME_AND_DATES.md..
+// NativeFormatDate format an instant for the user, ON THE PLATFORM. `when` is an RFC 3339 instant; `style` is one of date, time, date_time. Rendered in the USER'S LOCAL ZONE and their locale's own conventions - including calendars and digits no format pattern can express: a Lao user correctly sees the Buddhist year 2569 where a caller formatting with a CLDR pattern would render 2026, and an Odia user sees Odia digits. Prefer this over native.date_format whenever you are DISPLAYING a date rather than inspecting the locale's format. Output is NOT byte-identical across operating systems and is not meant to be - each renders its own platform's conventions for that locale..
 func (p *Plugin) NativeFormatDate(style string, when string) (*NativeFormatDateResponse, error) {
 	req := &NativeFormatDateRequest{
 		Style: style,
@@ -6965,8 +6965,8 @@ func (p *Plugin) OutputState(state OutputState) (*OutputStateResponse, error) {
 //     overlay; a host caller targets `"_user"`. A plugin transporting a user
 //     gesture from its settings tab says `"_user"` explicitly; it may never
 //     target another plugin's overlay. Plugin overlays carry per-field
-//     patches only (`patch`/`restore`/`reset`) — annotation, not authorship
-//     (docs/design/DESIGN_WRITER_SCOPED_OVERLAY.md).
+//     patches only (`patch`/`restore`/`reset`) — annotation, not authorship;
+//     a plugin's patch never changes who owns the record.
 //     default null
 func (p *Plugin) OverridesApply(action string, collection string, field *string, fields json.RawMessage, id *string, newID *string, tenant *string) (*OverridesApplyResponse, error) {
 	req := &OverridesApplyRequest{

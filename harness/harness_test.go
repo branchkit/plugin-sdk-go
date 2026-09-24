@@ -29,7 +29,7 @@ func TestSimulateCommandTie(t *testing.T) {
 	// ["hello","branchkit"] literal and the ["hello","<apps>"] capture).
 	// Equally-eligible same-length candidates are a genuine tie: the
 	// matcher declines to act and surfaces the tied set for
-	// disambiguation (DESIGN_MATCHER_COLLISION_RESOLUTION step 2).
+	// disambiguation rather than guessing.
 	h.LoadManifest("testdata/apps-provider")
 	h.WriteCollection("apps", map[string]any{
 		"spoken": "branchkit", "bundle_id": "com.test.branchkit",

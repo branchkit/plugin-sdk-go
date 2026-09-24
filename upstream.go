@@ -18,7 +18,8 @@ import (
 //	resp, err := client.Do(ctx, "GET", "/api/fields", nil)
 //
 // TLS certificates are ALWAYS verified. The platform's CONNECT proxy
-// blind-tunnels TLS and never terminates it (DESIGN_SANDBOX_HOST_PROXY.md), so
+// blind-tunnels TLS and never terminates it (it checks only the CONNECT
+// hostname), so
 // client-side verification is the only thing authenticating the remote server —
 // the host allowlist gates which name you may dial, not who answers. A plugin
 // that genuinely needs a self-signed upstream must build its own *http.Client
