@@ -6889,6 +6889,24 @@ func (p *Plugin) NativeZoomEnabled() (*NativeZoomEnabledResponse, error) {
 	return &result, nil
 }
 
+// NetworkRequestHost ask for one more network host at runtime (a plugin declaring requestable hosts). It appears on the plugin's page, off until the user allows it.
+//
+//   - host: One exact host (no wildcard, no port, no path).
+//   - reason: Shown to the user beside the switch — why the plugin wants it.
+//     default ""
+func (p *Plugin) NetworkRequestHost(host string, reason *string) (*NetworkRequestHostResponse, error) {
+	req := &NetworkRequestHostRequest{
+		Host:   host,
+		Reason: reason,
+	}
+	var result NetworkRequestHostResponse
+	err := p.Call(MethodNetworkRequestHost, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // OutputClear nothing is true on one of your HUD channels now: clears its semantic state so every renderer stops conveying it; visibility stays yours (hud.hide).
 //
 //   - channel: The channel on which nothing is true now. Must be owned by the
@@ -7339,6 +7357,28 @@ func (p *Plugin) SecretsIsSet(name string) (*SecretsIsSetResponse, error) {
 func (p *Plugin) SecretsList() (*SecretsListResponse, error) {
 	var result SecretsListResponse
 	err := p.Call(MethodSecretsList, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// SecretsRequestSlot ask for a credential row on this plugin's Settings page: the user pastes the value straight into the store, bound to one host this plugin can reach. The plugin never sees the value.
+//
+//   - host: The ONE host the value may be sent to — one this plugin may already
+//     reach (declared, or requested with `network.request_host`).
+//   - name: The secret's name in this plugin's drawer (ASCII letters, digits,
+//     `_`, `-`, `.`).
+//   - label: What the user sees on the row, e.g. "Weather script — API key".
+//     default ""
+func (p *Plugin) SecretsRequestSlot(host string, name string, label *string) (*SecretsRequestSlotResponse, error) {
+	req := &SecretsRequestSlotRequest{
+		Host:  host,
+		Name:  name,
+		Label: label,
+	}
+	var result SecretsRequestSlotResponse
+	err := p.Call(MethodSecretsRequestSlot, req, &result)
 	if err != nil {
 		return nil, err
 	}

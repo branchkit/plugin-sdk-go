@@ -576,6 +576,7 @@ const (
 	MethodNativeXcodeVersion                  = "native.xcode_version"                     // since 0.1.0
 	MethodNativeZip                           = "native.zip"                               // since 0.1.0
 	MethodNativeZoomEnabled                   = "native.zoom_enabled"                      // since 0.1.0
+	MethodNetworkRequestHost                  = "network.request_host"                     // since 0.2.0
 	MethodOutputClear                         = "output.clear"                             // since 0.1.0
 	MethodOutputState                         = "output.state"                             // since 0.1.0
 	MethodOverridesApply                      = "overrides.apply"                          // stable, since 0.1.0
@@ -601,6 +602,7 @@ const (
 	MethodSecretsDelete                       = "secrets.delete"                           // since 0.2.0
 	MethodSecretsIsSet                        = "secrets.is_set"                           // since 0.2.0
 	MethodSecretsList                         = "secrets.list"                             // since 0.2.0
+	MethodSecretsRequestSlot                  = "secrets.request_slot"                     // since 0.2.0
 	MethodSecretsSet                          = "secrets.set"                              // since 0.2.0
 	MethodSelectionPick                       = "selection.pick"                           // since 0.1.0
 	MethodSelectionSet                        = "selection.set"                            // since 0.1.0

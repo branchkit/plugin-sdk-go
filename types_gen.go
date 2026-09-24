@@ -6416,6 +6416,22 @@ type NativeZoomEnabledResponse struct {
 	Enabled bool `json:"enabled"`
 }
 
+// NetworkRequestHostRequest is the request type for network.request_host.
+type NetworkRequestHostRequest struct {
+	// One exact host (no wildcard, no port, no path).
+	Host string `json:"host"`
+	// Shown to the user beside the switch — why the plugin wants it.
+	// default ""
+	Reason *string `json:"reason,omitempty"`
+}
+
+// NetworkRequestHostResponse is the response type for network.request_host.
+type NetworkRequestHostResponse struct {
+	// `"allowed"` — the user has it switched on; `"pending"` — it now
+	// appears on the plugin's page, off, until the user allows it.
+	Status string `json:"status"`
+}
+
 // OutputClearRequest is the request type for output.clear.
 type OutputClearRequest struct {
 	// The channel on which nothing is true now. Must be owned by the
@@ -6823,6 +6839,25 @@ type SecretsListResponse struct {
 	// surface showing secrets can show the TRUE sentence rather than the
 	// flattering one. See `os`-agnostic `KeySource::describe`.
 	Protection string `json:"protection"`
+}
+
+// SecretsRequestSlotRequest is the request type for secrets.request_slot.
+type SecretsRequestSlotRequest struct {
+	// The ONE host the value may be sent to — one this plugin may already
+	// reach (declared, or requested with `network.request_host`).
+	Host string `json:"host"`
+	// What the user sees on the row, e.g. "Weather script — API key".
+	// default ""
+	Label *string `json:"label,omitempty"`
+	// The secret's name in this plugin's drawer (ASCII letters, digits,
+	// `_`, `-`, `.`).
+	Name string `json:"name"`
+}
+
+// SecretsRequestSlotResponse is the response type for secrets.request_slot.
+type SecretsRequestSlotResponse struct {
+	// Whether a value is already stored under this name.
+	IsSet bool `json:"is_set"`
 }
 
 // SecretsSetRequest is the request type for secrets.set.
