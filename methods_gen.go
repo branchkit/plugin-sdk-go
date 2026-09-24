@@ -7631,7 +7631,7 @@ func (p *Plugin) SystemNotify(body string, title string, durationSecs *int) erro
 	return p.Call(MethodSystemNotify, req, nil)
 }
 
-// SystemRunShell run a shell command via /bin/bash -c (security-sensitive).
+// SystemRunShell start a shell command via /bin/bash -c, run by the actuator outside any plugin sandbox (security-sensitive; not on Windows).
 //
 //   - command: Shell command to execute via `/bin/bash -c`.
 func (p *Plugin) SystemRunShell(command string) error {
