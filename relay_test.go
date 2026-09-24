@@ -153,3 +153,19 @@ func TestGrantedListenersTakeTheRelayWhenNoFdWasPassed(t *testing.T) {
 		t.Fatalf("with no fd and no relay, GrantedListeners = %v, %v; want none", none, err)
 	}
 }
+
+// On Windows the rendezvous is a named pipe, not host:port. The Go SDK used
+// to dial it as TCP regardless, so every park failed and a Go plugin's
+// listener was unreachable there while TS and Python worked.
+func TestRelayEndpointHonoursTheNamedPipeScheme(t *testing.T) {
+	cases := []struct{ in, net, addr string }{
+		{`npipe://\\.\pipe\branchkit-relay-abc`, "npipe", `\\.\pipe\branchkit-relay-abc`},
+		{"127.0.0.1:41234", "tcp", "127.0.0.1:41234"},
+	}
+	for _, c := range cases {
+		n, a := relayEndpoint(c.in)
+		if n != c.net || a != c.addr {
+			t.Errorf("relayEndpoint(%q) = (%q, %q), want (%q, %q)", c.in, n, a, c.net, c.addr)
+		}
+	}
+}

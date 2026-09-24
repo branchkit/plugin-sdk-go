@@ -1,6 +1,7 @@
 package branchkit
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"os"
@@ -39,6 +40,27 @@ func relayEnv() (rendezvous, token string, ok bool) {
 	rendezvous = os.Getenv("BRANCHKIT_LISTEN_RELAY")
 	token = os.Getenv("BRANCHKIT_LISTEN_RELAY_TOKEN")
 	return rendezvous, token, rendezvous != "" && token != ""
+}
+
+// relayEndpoint splits BRANCHKIT_LISTEN_RELAY into a dial network and
+// address: npipe://\\.\pipe\… on Windows (the rendezvous moved off loopback
+// TCP onto a named pipe ACL'd to the plugin's container,
+// DESIGN_WINDOWS_LOOPBACK_EXEMPTION.md), else a loopback host:port. The TS
+// and Python SDKs made that move; this one kept dialling TCP, so every park
+// failed and retried forever and a Go plugin's listener was unreachable on
+// Windows.
+func relayEndpoint(rendezvous string) (pnet, paddr string) {
+	if p, ok := strings.CutPrefix(rendezvous, "npipe://"); ok {
+		return "npipe", p
+	}
+	return "tcp", rendezvous
+}
+
+func dialRendezvous(rendezvous string) (net.Conn, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	pnet, paddr := relayEndpoint(rendezvous)
+	return dialProxyEndpoint(ctx, pnet, paddr)
 }
 
 // grantedPorts parses BRANCHKIT_LISTEN_PORTS ("id=port,…") in declaration order.
@@ -118,7 +140,7 @@ func (l *relayListener) park() {
 			return
 		default:
 		}
-		conn, err := net.DialTimeout("tcp", l.rendezvous, 5*time.Second)
+		conn, err := dialRendezvous(l.rendezvous)
 		if err != nil {
 			select {
 			case <-l.done:
