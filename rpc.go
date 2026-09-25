@@ -36,7 +36,14 @@ type rpcMessage struct {
 	// acting for. Envelope-level for the same reason CorrelationID is —
 	// methods and notifies carry it uniformly. Observability only; the
 	// platform records it and never gates on it. See actor.go.
+	//
+	// On an inbound EVENT notification it is the emitter's label instead,
+	// carried from the event beside Source. See origin.go.
 	OnBehalfOf string `json:"on_behalf_of,omitempty"`
+	// Source is the sender of an inbound event notification, as the
+	// platform authenticated it. The actuator sets it on the notifications
+	// it delivers from the event bus; nothing the plugin sends carries it.
+	Source string `json:"source,omitempty"`
 }
 
 type rpcError struct {
@@ -759,6 +766,10 @@ func (p *Plugin) handleRequest(msg rpcMessage) {
 func (p *Plugin) handleNotification(msg rpcMessage) {
 	setAmbientCorrelation(msg.CorrelationID)
 	defer clearAmbientCorrelation()
+	if origin := (EventOrigin{Source: msg.Source, OnBehalfOf: msg.OnBehalfOf}); origin != (EventOrigin{}) {
+		setAmbientOrigin(origin)
+		defer clearAmbientOrigin()
+	}
 
 	// Snapshot the slice under the lock: On() may append concurrently (a
 	// listener is free to register another), and append can reallocate the

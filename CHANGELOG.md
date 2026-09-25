@@ -3,6 +3,21 @@
 Versions before this file predate it; their contents are in the repo's
 git history.
 
+## Unreleased
+
+### Who sent this event
+
+- `Plugin.CurrentEventOrigin()` returns an `EventOrigin{Source, OnBehalfOf}`
+  for the event notification an `On` or `OnPattern` listener is handling.
+  The platform delivers every event a subscription matches, whoever emitted
+  it, and until now a listener could not tell two senders of one event type
+  apart. `Source` is the emitter the platform authenticated (a plugin id,
+  `_platform`, or a stage's name) and can be trusted; `OnBehalfOf` is that
+  emitter's own actor label, a claim by `Source`. Same ambient shape as
+  `CurrentCorrelation()`; empty in a request handler and in a goroutine the
+  listener spawns, so read it first and pass the value. An actuator that
+  does not send the sender leaves it empty.
+
 ## 0.11.0 — 2026-09-24
 
 ### Spend a stored credential without holding it
