@@ -477,8 +477,10 @@ type patternListener struct {
 }
 
 // OnPattern registers a listener for every notification whose method matches
-// `pattern`, where `*` stands for exactly one dot-separated segment —
-// the same language `consumes.events` uses in the manifest.
+// `pattern`, where `*` stands for exactly one dot-separated segment and `**`
+// for zero or more — the same language `consumes.events` uses in the
+// manifest. `ext.acme.**` hears every depth under the vendor, including the
+// bare `ext.acme`; `**` alone hears everything the manifest admits.
 //
 // Needed whenever a plugin subscribes to a namespace instead of a name:
 // `On` keys listeners by exact method, so a manifest subscription like
@@ -492,27 +494,6 @@ func (p *Plugin) OnPattern(pattern string, fn PatternListenerFunc) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	p.patternListeners = append(p.patternListeners, patternListener{pattern: pattern, fn: fn})
-}
-
-// matchesTopic reports whether `eventType` matches `pattern`, where `*` is
-// exactly one dot-separated segment. Mirrors the actuator's
-// `event_bus::matches_topic`, which is what actually gates delivery — the two
-// must agree or a plugin's own routing disagrees with what it receives.
-func matchesTopic(pattern, eventType string) bool {
-	if pattern == eventType {
-		return true
-	}
-	pat := strings.Split(pattern, ".")
-	evt := strings.Split(eventType, ".")
-	if len(pat) != len(evt) {
-		return false
-	}
-	for i := range pat {
-		if pat[i] != "*" && pat[i] != evt[i] {
-			return false
-		}
-	}
-	return true
 }
 
 // OnReady registers a callback that fires when all plugins are ready.

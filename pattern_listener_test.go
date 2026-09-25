@@ -2,6 +2,7 @@ package branchkit
 
 import (
 	"encoding/json"
+	"strings"
 	"testing"
 )
 
@@ -19,6 +20,13 @@ func TestMatchesTopic(t *testing.T) {
 		{"scripts.*", "scripts.headphones.charged", false},
 		{"scripts.*.*", "scripts.headphones", false},
 		{"scripts.*.*", "browser.tab.opened", false},
+		// `**` is zero or more whole segments.
+		{"scripts.**", "scripts.headphones.charged", true},
+		{"scripts.**", "scripts", true},
+		{"**.charged", "scripts.headphones.charged", true},
+		{"scripts.**.charged", "scripts.charged", true},
+		{"scripts.**", "scriptsx.headphones", false},
+		{"scripts.**b", "scripts.b", false},
 	}
 	for _, c := range cases {
 		if got := matchesTopic(c.pattern, c.event); got != c.want {
@@ -52,6 +60,25 @@ func TestOnPatternDeliversWithTheConcreteEventType(t *testing.T) {
 		if seen[i] != want[i] {
 			t.Fatalf("got %v, want %v", seen, want)
 		}
+	}
+}
+
+// A `**` listener hears every depth under its prefix, and the prefix itself.
+func TestOnPatternGlobstarDeliversAtAnyDepth(t *testing.T) {
+	p := &Plugin{
+		handlers:  map[string]HandlerFunc{},
+		listeners: map[string][]ListenerFunc{},
+	}
+	var seen []string
+	p.OnPattern("ext.acme.**", func(eventType string, _ json.RawMessage) {
+		seen = append(seen, eventType)
+	})
+	for _, m := range []string{"ext.acme", "ext.acme.gaze", "ext.acme.gaze.left_eye", "ext.acmeister.x", "ext.other.gaze"} {
+		p.handleNotification(rpcMessage{Method: m})
+	}
+	want := []string{"ext.acme", "ext.acme.gaze", "ext.acme.gaze.left_eye"}
+	if strings.Join(seen, ",") != strings.Join(want, ",") {
+		t.Fatalf("got %v, want %v", seen, want)
 	}
 }
 
