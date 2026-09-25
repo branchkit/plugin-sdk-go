@@ -44,7 +44,17 @@ type rpcMessage struct {
 	// platform authenticated it. The actuator sets it on the notifications
 	// it delivers from the event bus; nothing the plugin sends carries it.
 	Source string `json:"source,omitempty"`
+	// Delivery is "latest" on an inbound event notification from a STATE
+	// stream: a stage stream declared `latest`, where each event carries the
+	// whole current value and supersedes the one before it (a gaze position,
+	// a pointer). Such a notification still waiting in notifyQueue is
+	// replaced by the next one from the same stream rather than queued
+	// behind. Absent on every other message.
+	Delivery string `json:"delivery,omitempty"`
 }
+
+// deliveryLatest is the Delivery value that marks a state-stream event.
+const deliveryLatest = "latest"
 
 type rpcError struct {
 	Code    int             `json:"code"`
@@ -80,23 +90,49 @@ type callResult struct {
 // mid-`plugin.Call()` would deadlock waiting for a response the read loop can no
 // longer read. Responses are matched inline in the read loop, not through this
 // queue, so serializing notifications cannot reintroduce that deadlock.
+//
+// A state stream (Delivery "latest") holds at most ONE place in the queue.
+// The read loop drains stdin eagerly, so a listener slower than a 250 Hz
+// position stream would otherwise build a backlog here that only grows —
+// every position stale by the time it is handled. Instead the stream's
+// place keeps the newest value: the listener gets the newest position each
+// time it is ready, and memory stays bounded. Values of one stream stay in
+// order; the newest may be delivered ahead of notifications queued after
+// its stream's place was taken.
 type notifyQueue struct {
-	mu     sync.Mutex
-	cond   *sync.Cond
-	items  []rpcMessage
+	mu    sync.Mutex
+	cond  *sync.Cond
+	items []rpcMessage
+	// latest is the newest value of each state stream that holds a place in
+	// items; a key is present exactly while its place is queued.
+	latest map[latestKey]rpcMessage
 	closed bool
 }
 
+// latestKey identifies one state stream: its sender and event type.
+type latestKey struct{ source, method string }
+
 func newNotifyQueue() *notifyQueue {
-	q := &notifyQueue{}
+	q := &notifyQueue{latest: make(map[latestKey]rpcMessage)}
 	q.cond = sync.NewCond(&q.mu)
 	return q
 }
 
-// push appends a notification. Never blocks (the backing slice grows as needed).
+// push appends a notification — or, for a state stream that already holds a
+// place, replaces the value waiting there. Never blocks (the backing slice
+// grows as needed).
 func (q *notifyQueue) push(m rpcMessage) {
 	q.mu.Lock()
 	if !q.closed {
+		if m.Delivery == deliveryLatest {
+			k := latestKey{m.Source, m.Method}
+			_, placed := q.latest[k]
+			q.latest[k] = m
+			if placed {
+				q.mu.Unlock()
+				return
+			}
+		}
 		q.items = append(q.items, m)
 	}
 	q.mu.Unlock()
@@ -119,6 +155,14 @@ func (q *notifyQueue) pop() (rpcMessage, bool) {
 	q.items = q.items[1:]
 	if len(q.items) == 0 {
 		q.items = nil // release the backing array once drained
+	}
+	if m.Delivery == deliveryLatest {
+		// The stream's place: deliver its newest value, taken now.
+		k := latestKey{m.Source, m.Method}
+		if newest, ok := q.latest[k]; ok {
+			m = newest
+			delete(q.latest, k)
+		}
 	}
 	return m, true
 }

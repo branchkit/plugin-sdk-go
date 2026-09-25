@@ -125,7 +125,48 @@ type Capability struct {
 	LifecycleModes []string       `json:"lifecycle_modes"`
 	StageName      string         `json:"stage_name"`
 	StageType      string         `json:"stage_type"`
+	// The steady `ext.*` streams this stage emits onto the bus: for each,
+	// the most events per second it will send and how subscribers receive
+	// it (see `StreamDecl`).
+	//
+	// Declare a stream when it runs at a rate — a sensor sampling, a
+	// position reporting. Occasional events need no declaration.
+	//
+	// The platform checks this list when the stage starts and refuses to
+	// run a stage whose declarations it cannot carry — naming the stream and
+	// the limit — rather than dropping its events later. Each stream must be
+	// an exact type that `emits` covers, appear once, declare at least 1
+	// event per second, and the declared rates of one stage add up to at
+	// most 1000 per second (the Rust SDK's `Capability::check_streams` is
+	// the rule, and the conformance harness runs it).
+	//
+	// Empty = no declarations, which is every pre-existing stage: its events
+	// are delivered one by one under the shared limit, exactly as before.
+	// The field is optional on the wire in both directions — a platform that
+	// predates it ignores it and delivers every event.
+	Streams []StreamDecl `json:"streams,omitempty"`
 }
+
+// How the platform delivers one declared stream to its subscribers.
+type Delivery string
+
+const (
+	// Every event reaches every subscriber, in order: a log of things that
+	// happened (a blink, a key press, a recognized gesture). The default,
+	// and how every undeclared event is delivered.
+	DeliveryEvery Delivery = "every"
+	// State: each event carries the whole current value (a gaze position, a
+	// pointer, a pedal's travel) in its `data`, and supersedes the one
+	// before it. Each subscriber receives the newest value at the pace it
+	// can take: a fast subscriber sees every sample, a slow one fewer and
+	// newer — it skips to the newest rather than working through a backlog
+	// of stale positions. Values of one stream arrive in order, never an
+	// older after a newer; they are not ordered against other events, and a
+	// newest value may arrive ahead of events emitted before it. A
+	// subscriber is not replayed the value from before it subscribed; it
+	// receives the next one.
+	DeliveryLatest Delivery = "latest"
+)
 
 type ErrorEvent struct {
 	Code      string  `json:"code"`
@@ -137,6 +178,19 @@ type ErrorEvent struct {
 type FlowCredit struct {
 	Frames    uint32 `json:"frames"`
 	SessionId string `json:"session_id"`
+}
+
+// One steady `ext.*` stream a stage declares in Capability.streams: its exact type, the most events per second it will emit, and how subscribers receive it.
+type StreamDecl struct {
+	// How subscribers receive it. Absent = `every`.
+	Delivery *Delivery `json:"delivery,omitempty"`
+	// The exact custom event type, `ext.<vendor>.<name>` — not a glob. It
+	// must also be covered by the stage's `emits`.
+	EventType string `json:"event_type"`
+	// The most events per second the stage will emit on this stream; at
+	// least 1. Declare the sensor's real ceiling (a 250 Hz tracker declares
+	// 250): the platform warns when a stream runs well past its declaration.
+	RateHz uint32 `json:"rate_hz"`
 }
 
 // The serialized header line — one JSON object per event, newline-terminated,
