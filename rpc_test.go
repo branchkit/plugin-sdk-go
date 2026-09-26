@@ -487,6 +487,19 @@ func TestCallTimeout(t *testing.T) {
 	if !strings.Contains(err.Error(), "timed out") {
 		t.Fatalf("expected timeout error, got: %v", err)
 	}
+	// Typed, so a caller can tell "no answer" (the call may have happened)
+	// from a definite refusal without reading the message.
+	var timeout *CallTimeoutError
+	if !errors.As(err, &timeout) {
+		t.Fatalf("a timeout must be a *CallTimeoutError, got %T", err)
+	}
+	if timeout.Method != "collection.get" || timeout.After != 100*time.Millisecond {
+		t.Fatalf("timeout carries the call: %+v", timeout)
+	}
+	var rpcErr *RPCError
+	if errors.As(err, &rpcErr) {
+		t.Fatal("a timeout is not an RPCError: nothing refused the call")
+	}
 
 	actuatorW.(io.Closer).Close()
 }

@@ -536,6 +536,21 @@ func (p *Plugin) Call(method string, params any, result any) error {
 	return p.CallWithTimeout(method, params, result, 10*time.Second)
 }
 
+// CallTimeoutError is what Call and CallWithTimeout return when no answer
+// arrives in time. It is not a failure: the actuator may have carried the
+// call out and only the answer is missing, so a write that timed out may
+// have been committed. Tell it apart from a definite refusal (*RPCError)
+// with errors.As, and for a write, re-read or re-assert rather than assume
+// either outcome.
+type CallTimeoutError struct {
+	Method string
+	After  time.Duration
+}
+
+func (e *CallTimeoutError) Error() string {
+	return fmt.Sprintf("rpc call %q timed out after %v", e.Method, e.After)
+}
+
 // CallWithTimeout sends a request with a custom timeout.
 func (p *Plugin) CallWithTimeout(method string, params any, result any, timeout time.Duration) error {
 	if p.detached {
@@ -599,7 +614,7 @@ func (p *Plugin) CallWithTimeout(method string, params any, result any, timeout 
 		p.mu.Lock()
 		delete(p.pending, id)
 		p.mu.Unlock()
-		return fmt.Errorf("rpc call %q timed out after %v", method, timeout)
+		return &CallTimeoutError{Method: method, After: timeout}
 	case <-p.closed:
 		p.mu.Lock()
 		delete(p.pending, id)
