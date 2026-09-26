@@ -133,6 +133,58 @@ func TestMirrorEmptyReadAfterPopulationCommitsAndNotifies(t *testing.T) {
 	)
 }
 
+// A refetch that returns the bytes already held is not a change: OnChange
+// stays quiet, whether the snapshot is populated or already emptied. Only
+// real differences reach the callbacks.
+func TestMirrorIdenticalRefetchDoesNotFireOnChange(t *testing.T) {
+	var mu sync.Mutex
+	codeword := "arch"
+	empty := false
+	runPluginCall(t,
+		func(method string, _ json.RawMessage) (any, string) {
+			mu.Lock()
+			defer mu.Unlock()
+			if empty {
+				return map[string]any{"name": "alphabet", "introducer": "voice", "merge": "authoritative", "data": []any{}}, ""
+			}
+			return map[string]any{
+				"name": "alphabet", "introducer": "voice", "merge": "authoritative",
+				"data": []map[string]string{{"letter": "a", "codeword": codeword}},
+			}, ""
+		},
+		func(p *Plugin) {
+			m := &CollectionMirror{p: p, name: "alphabet"}
+			changes := 0
+			m.OnChange(func() { changes++ })
+			refresh := func() {
+				if err := m.Refresh(); err != nil {
+					t.Fatalf("refresh: %v", err)
+				}
+			}
+			refresh()
+			refresh()
+			if changes != 1 {
+				t.Fatalf("an identical refetch fired OnChange: %d changes, want 1", changes)
+			}
+			mu.Lock()
+			codeword = "alpha"
+			mu.Unlock()
+			refresh()
+			if changes != 2 {
+				t.Fatalf("a real change must fire OnChange: %d, want 2", changes)
+			}
+			mu.Lock()
+			empty = true
+			mu.Unlock()
+			refresh()
+			refresh()
+			if changes != 3 {
+				t.Fatalf("emptying fires once, not per refetch: %d, want 3", changes)
+			}
+		},
+	)
+}
+
 func TestMirrorUnpopulatedSentinelIsNotReadyNotError(t *testing.T) {
 	// The boot race: collection.get before the owner's first Put
 	// returns the empty-array sentinel. That's a silent no-op, not an

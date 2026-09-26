@@ -15,8 +15,14 @@ import (
 //   - fetches once at on_ready — the documented earliest safe point to
 //     read other plugins' collections
 //   - refetches whenever `_platform.collection.updated` fires for this
-//     collection (the plugin manifest must subscribe to that event
-//     pattern in `consumes.events` or the event never arrives)
+//     collection. The platform delivers that notice for every collection
+//     the manifest declares, in `provides.collections` or
+//     `consumes.collections`, with no `consumes.events` line needed, and a
+//     plugin that falls behind still receives the newest notice for each
+//     changed collection rather than losing it. Mirroring a collection the
+//     manifest does not declare needs the subscription.
+//   - fires OnChange only when the refetched bytes differ from the
+//     snapshot: a refetch that finds nothing new is not a change
 //   - an unpopulated collection (owner hasn't Put yet — the boot race)
 //     is NOT an error: the mirror stays not-Ready and the update event
 //     completes it
@@ -137,6 +143,10 @@ func (m *CollectionMirror) Refresh() error {
 			m.mu.Unlock()
 			return nil
 		}
+		if unpopulated(m.data) {
+			m.mu.Unlock()
+			return nil
+		}
 		m.data = json.RawMessage("[]")
 		callbacks := append([]func(){}, m.onChange...)
 		m.mu.Unlock()
@@ -147,6 +157,11 @@ func (m *CollectionMirror) Refresh() error {
 	}
 
 	m.mu.Lock()
+	if m.ready && bytes.Equal(m.data, data) {
+		// Nothing new: the same bytes are not a change.
+		m.mu.Unlock()
+		return nil
+	}
 	m.data = data
 	m.ready = true
 	callbacks := append([]func(){}, m.onChange...)
