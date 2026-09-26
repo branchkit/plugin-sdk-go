@@ -1730,6 +1730,19 @@ type TtsVoice struct {
 	Quality    string `json:"quality"`
 }
 
+// UnavailableOperation is auto-generated from the OpenRPC spec.
+type UnavailableOperation struct {
+	// Prose, for a session refusal: the session's own explanation.
+	Detail *string `json:"detail,omitempty"`
+	// The operation's method name.
+	Op string `json:"op"`
+	// Why, as a refusal's `data.reason` says it: `platform_no_analogue`,
+	// `platform_unported` or `session_unsupported` (each SDK's
+	// `UNSUPPORTED_REASON_*` constants). A string, as on a refusal, so an
+	// SDK older than a new reason still reads the profile.
+	Reason string `json:"reason"`
+}
+
 // UsbDevice is auto-generated from the OpenRPC spec.
 type UsbDevice struct {
 	Manufacturer *string `json:"manufacturer,omitempty"`
@@ -6619,6 +6632,23 @@ type PipelinesWarmRequest struct {
 // PipelinesWarmResponse is the response type for pipelines.warm.
 type PipelinesWarmResponse struct {
 	Warmed bool `json:"warmed"`
+}
+
+// PlatformProfileResponse is the response type for platform.profile.
+type PlatformProfileResponse struct {
+	// The host process serving host-dependent operations and events.
+	Host string `json:"host"`
+	// `macos`, `linux` or `windows`.
+	OS string `json:"os"`
+	// On Linux, the desktop session the window tools drive: `x11`, `sway`,
+	// `gnome` or `other_wayland`. Absent on other systems.
+	Session *string `json:"session,omitempty"`
+	// Every operation a plugin can call that would be refused here, with
+	// the reason and detail the refusal itself carries. An operation not
+	// listed runs here.
+	Unavailable []UnavailableOperation `json:"unavailable"`
+	// Host events (`_platform.*`) that are never delivered here.
+	UnobservableEvents []string `json:"unobservable_events"`
 }
 
 // PluginDataExportRequest is the request type for plugin.data.export.

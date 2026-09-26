@@ -587,6 +587,7 @@ const (
 	MethodPipelinesStatus                     = "pipelines.status"                         // since 0.1.0
 	MethodPipelinesStop                       = "pipelines.stop"                           // since 0.1.0
 	MethodPipelinesWarm                       = "pipelines.warm"                           // since 0.1.0
+	MethodPlatformProfile                     = "platform.profile"                         // since 0.2.0
 	MethodPluginDataExport                    = "plugin.data.export"                       // since 0.1.0
 	MethodPluginDebug                         = "plugin.debug"                             // since 0.1.0
 	MethodPluginReportHealth                  = "plugin.report_health"                     // since 0.1.0

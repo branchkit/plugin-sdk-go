@@ -7112,6 +7112,16 @@ func (p *Plugin) PipelinesWarm(name string, paramOverrides map[string]json.RawMe
 	return &result, nil
 }
 
+// PlatformProfile which operations and host events this machine cannot provide, and why — ask before calling instead of handling a refusal.
+func (p *Plugin) PlatformProfile() (*PlatformProfileResponse, error) {
+	var result PlatformProfileResponse
+	err := p.Call(MethodPlatformProfile, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // PluginDataExport copy one file out of the caller's own data dir into Downloads and reveal it (the one egress a plugin cannot perform itself).
 //
 //   - path: Path of the file to export, relative to the caller's data dir.
