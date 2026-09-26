@@ -62,6 +62,7 @@ const (
 	DataDirEnv   = "BRANCHKIT_STAGE_DATA"
 )
 
+// What a stage declares about itself in its handshake: what it is, how it runs, and the events it emits, consumes and accepts as configuration.
 type Capability struct {
 	// Custom event types this stage accepts as CONFIGURATION from the plugin
 	// that ships it — exact `ext.<vendor>.<name>` types, or `ext.<vendor>.*`
