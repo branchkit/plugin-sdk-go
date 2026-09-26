@@ -467,12 +467,27 @@ func (h *Harness) LoadPlugin(dirOrName string) {
 
 // InjectEvent fires an event on the event bus. For plugin events, use any
 // event_type name. For platform events, use a valid _platform.* event type.
+// The sender is the harness itself; use InjectEventFrom to name one.
 func (h *Harness) InjectEvent(eventType string, data any) {
 	h.t.Helper()
-	h.call("test.inject_event", map[string]any{
+	h.InjectEventFrom("", eventType, data)
+}
+
+// InjectEventFrom fires an event as if the plugin `source` had emitted it, so
+// a listener that checks its sender (CurrentEventOrigin, or a subscription
+// that names a source) can be tested. An empty source is the harness's own.
+// A source naming no loaded plugin gets a stand-in emitter and the grants a
+// user would have given, as InjectEvent's sender does.
+func (h *Harness) InjectEventFrom(source, eventType string, data any) {
+	h.t.Helper()
+	params := map[string]any{
 		"event_type": eventType,
 		"data":       data,
-	}, nil)
+	}
+	if source != "" {
+		params["source"] = source
+	}
+	h.call("test.inject_event", params, nil)
 }
 
 // HUDResult holds the content of a single HUD channel.
