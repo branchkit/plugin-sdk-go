@@ -7419,9 +7419,10 @@ type CaptureProgressEventParams struct {
 	// Collection name resolved by substituting bound captures into
 	// the dependent capture's template (e.g. `"browser_hints_arch"`).
 	NextCollection string `json:"next_collection"`
-	// The plugin that owns the command being partially matched.
-	// Subscribers filter on this to receive only events for their
-	// own commands.
+	// The plugin that owns the command being partially matched. The
+	// event is ADDRESSED to it: the platform delivers it to this plugin
+	// and no other, so a subscriber only ever sees progress on its own
+	// commands.
 	OwnerPlugin string `json:"owner_plugin"`
 }
 
