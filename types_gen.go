@@ -154,6 +154,15 @@ type ActionTypeSchema struct {
 	// itself via `phase`, so a peripheral UI should not ask the user to pick
 	// a separate release action for it.
 	Modes []string `json:"modes"`
+	// Platform operations this action cannot work without (e.g.
+	// `["native.toggle_fullscreen"]`). Where the machine refuses any of
+	// them — the OS, the desktop session or the host cannot provide it —
+	// every command running this action is gated off: it never matches and
+	// the Discovery HUD does not offer it, while its words stay in the
+	// grammar so the utterance cannot land on a different command. List
+	// only what the action has no way around; an operation it merely
+	// prefers belongs in the handler's own `Supports` check.
+	Uses []string `json:"uses"`
 }
 
 // ActiveSpace is auto-generated from the OpenRPC spec.
