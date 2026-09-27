@@ -249,6 +249,11 @@ type Plugin struct {
 
 	// Lazily initialized when HandleAction is first called. See actions.go.
 	actionRegistry *actionRegistry
+
+	// platform is what this machine can do, from on_ready's params or the
+	// first Supports call (platform.go). Guarded by platformMu.
+	platform   *PlatformProfileResponse
+	platformMu sync.Mutex
 }
 
 // ID returns this plugin's own id, as the actuator assigned it
@@ -313,6 +318,10 @@ func NewPlugin() *Plugin {
 		ready:     make(chan struct{}),
 		notifyQ:   newNotifyQueue(),
 	}
+
+	// Keep the platform profile on_ready carries. Registered before any
+	// plugin listener, so a plugin's own OnReady already sees Platform().
+	p.On("on_ready", p.takePlatform)
 
 	// Handle SIGTERM gracefully
 	sigCh := make(chan os.Signal, 1)
