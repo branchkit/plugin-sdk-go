@@ -3749,8 +3749,10 @@ type NativeDarkModeResponse struct {
 
 // NativeDateFormatResponse is the response type for native.date_format.
 type NativeDateFormatResponse struct {
-	// The vocabulary `source` is written in: `posix_strftime` or
-	// `unicode_cldr`. Without this, `source` is an uninterpretable string.
+	// The vocabulary `source` is written in: `posix_strftime`,
+	// `unicode_cldr`, or `windows_picture` (Windows' format pictures, where
+	// `dddd` is the weekday's name and `tt` the AM/PM marker). Without
+	// this, `source` is an uninterpretable string.
 	Dialect string `json:"dialect"`
 	// The locale asked for an era — the Lao Buddhist calendar, Japanese
 	// imperial eras (POSIX `%E`). Same reasoning as `native_digits`.
@@ -6129,8 +6131,10 @@ type NativeThunderboltDevicesResponse struct {
 
 // NativeTimeFormatResponse is the response type for native.time_format.
 type NativeTimeFormatResponse struct {
-	// The vocabulary `source` is written in: `posix_strftime` or
-	// `unicode_cldr`. Without this, `source` is an uninterpretable string.
+	// The vocabulary `source` is written in: `posix_strftime`,
+	// `unicode_cldr`, or `windows_picture` (Windows' format pictures, where
+	// `dddd` is the weekday's name and `tt` the AM/PM marker). Without
+	// this, `source` is an uninterpretable string.
 	Dialect string `json:"dialect"`
 	// The locale asked for an era — the Lao Buddhist calendar, Japanese
 	// imperial eras (POSIX `%E`). Same reasoning as `native_digits`.
