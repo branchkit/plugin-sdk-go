@@ -3691,7 +3691,7 @@ func (p *Plugin) NativeKernelVersion() (*NativeKernelVersionResponse, error) {
 	return &result, nil
 }
 
-// NativeKeyRepeatDelay get initial key repeat delay.
+// NativeKeyRepeatDelay get initial key repeat delay (seconds).
 func (p *Plugin) NativeKeyRepeatDelay() (float64, error) {
 	var result float64
 	err := p.Call(MethodNativeKeyRepeatDelay, nil, &result)
@@ -5669,7 +5669,7 @@ func (p *Plugin) NativeSetInputSource(sourceID string) (bool, error) {
 	return result.Ok, err
 }
 
-// NativeSetKeyRepeatDelay set initial key repeat delay.
+// NativeSetKeyRepeatDelay set initial key repeat delay (seconds).
 //
 //   - delay: wire double
 func (p *Plugin) NativeSetKeyRepeatDelay(delay float64) (bool, error) {
@@ -5683,7 +5683,7 @@ func (p *Plugin) NativeSetKeyRepeatDelay(delay float64) (bool, error) {
 	return result.Ok, err
 }
 
-// NativeSetKeyRepeatRate set key repeat rate.
+// NativeSetKeyRepeatRate set key repeat rate (keys per second).
 //
 //   - rate: wire double
 func (p *Plugin) NativeSetKeyRepeatRate(rate float64) (bool, error) {
