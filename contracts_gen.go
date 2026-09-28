@@ -177,6 +177,7 @@ const (
 	MethodNativeCursorShakeToLocate           = "native.cursor_shake_to_locate"            // since 0.1.0
 	MethodNativeDarkMode                      = "native.dark_mode"                         // since 0.1.0
 	MethodNativeDateFormat                    = "native.date_format"                       // since 0.1.0
+	MethodNativeDbusCall                      = "native.dbus_call"                         // since 0.2.0
 	MethodNativeDefaultAppForUti              = "native.default_app_for_uti"               // since 0.1.0
 	MethodNativeDefaultBrowser                = "native.default_browser"                   // since 0.1.0
 	MethodNativeDefaultEmailClient            = "native.default_email_client"              // since 0.1.0

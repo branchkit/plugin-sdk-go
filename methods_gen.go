@@ -1587,6 +1587,40 @@ func (p *Plugin) NativeDateFormat() (*NativeDateFormatResponse, error) {
 	return &result, nil
 }
 
+// NativeDbusCall call one D-Bus method the plugin declared and the user switched on. Exists only on Linux; elsewhere it is refused with platform_no_analogue.
+//
+//   - path: The object path (`/org/mpris/MediaPlayer2`).
+//   - service: The well-known service name (`org.mpris.MediaPlayer2.spotify`).
+//   - args: Opaque by design: D-Bus values are typed by `signature` at run time,
+//     so no static type can describe them. One JSON value per argument,
+//     in the form its type takes: integers,
+//     numbers, booleans and strings as themselves; an array for `a…` and
+//     `(…)`; an object for `a{…}`; a variant as
+//     `{"signature": "d", "value": 0.5}` or a plain string, boolean or
+//     number.
+//     default []
+//   - bus: `session` (the default) or `system` (Properties.Get / GetAll only).
+//     default null
+//   - signature: The arguments' D-Bus signature (`su`); empty or absent for none.
+//     default null
+func (p *Plugin) NativeDbusCall(interface_ string, method string, path string, service string, args []json.RawMessage, bus *string, signature *string) (*NativeDbusCallResponse, error) {
+	req := &NativeDbusCallRequest{
+		Interface: interface_,
+		Method:    method,
+		Path:      path,
+		Service:   service,
+		Args:      args,
+		Bus:       bus,
+		Signature: signature,
+	}
+	var result NativeDbusCallResponse
+	err := p.Call(MethodNativeDbusCall, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // NativeDefaultAppForUti get the default application for a UTI.
 func (p *Plugin) NativeDefaultAppForUti(req NativeDefaultAppForUtiRequest) (*NativeDefaultAppForUtiResponse, error) {
 	var result NativeDefaultAppForUtiResponse

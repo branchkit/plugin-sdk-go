@@ -3846,6 +3846,40 @@ type NativeDateFormatResponse struct {
 	Value *string `json:"value,omitempty"`
 }
 
+// NativeDbusCallRequest is the request type for native.dbus_call.
+type NativeDbusCallRequest struct {
+	// Opaque by design: D-Bus values are typed by `signature` at run time,
+	// so no static type can describe them. One JSON value per argument,
+	// in the form its type takes: integers,
+	// numbers, booleans and strings as themselves; an array for `a…` and
+	// `(…)`; an object for `a{…}`; a variant as
+	// `{"signature": "d", "value": 0.5}` or a plain string, boolean or
+	// number.
+	// default []
+	Args []json.RawMessage `json:"args,omitempty"`
+	// `session` (the default) or `system` (Properties.Get / GetAll only).
+	// default null
+	Bus       *string `json:"bus,omitempty"`
+	Interface string  `json:"interface"`
+	Method    string  `json:"method"`
+	// The object path (`/org/mpris/MediaPlayer2`).
+	Path string `json:"path"`
+	// The well-known service name (`org.mpris.MediaPlayer2.spotify`).
+	Service string `json:"service"`
+	// The arguments' D-Bus signature (`su`); empty or absent for none.
+	// default null
+	Signature *string `json:"signature,omitempty"`
+}
+
+// NativeDbusCallResponse is the response type for native.dbus_call.
+type NativeDbusCallResponse struct {
+	// The reply's D-Bus signature; empty when it carries nothing.
+	Signature string `json:"signature"`
+	// Opaque by design, typed by `signature` at run time: one JSON value
+	// per reply value, a variant unwrapped to its value.
+	Values []json.RawMessage `json:"values"`
+}
+
 // NativeDefaultAppForUtiRequest is the request type for native.default_app_for_uti.
 type NativeDefaultAppForUtiRequest struct {
 	Uti string `json:"uti"`
