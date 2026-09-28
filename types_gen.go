@@ -5092,6 +5092,11 @@ type NativePowerAdapterConnectedResponse struct {
 	Enabled bool `json:"enabled"`
 }
 
+// NativePowerModeResponse is the response type for native.power_mode.
+type NativePowerModeResponse struct {
+	Mode string `json:"mode"`
+}
+
 // NativePowerSourceResponse is the response type for native.power_source.
 type NativePowerSourceResponse struct {
 	Source string `json:"source"`
@@ -5894,6 +5899,16 @@ type NativeSetOnScreenKeyboardEnabledResponse struct {
 	Ok bool `json:"ok"`
 }
 
+// NativeSetPowerModeRequest is the request type for native.set_power_mode.
+type NativeSetPowerModeRequest struct {
+	Mode string `json:"mode"`
+}
+
+// NativeSetPowerModeResponse is the response type for native.set_power_mode.
+type NativeSetPowerModeResponse struct {
+	Ok bool `json:"ok"`
+}
+
 // NativeSetScreenReaderEnabledRequest is the request type for native.set_screen_reader_enabled.
 type NativeSetScreenReaderEnabledRequest struct {
 	Enabled bool `json:"enabled"`
@@ -6025,6 +6040,16 @@ type NativeSetURLSchemeHandlerRequest struct {
 
 // NativeSetURLSchemeHandlerResponse is the response type for native.set_url_scheme_handler.
 type NativeSetURLSchemeHandlerResponse struct {
+	Ok bool `json:"ok"`
+}
+
+// NativeSetVisualAlertsEnabledRequest is the request type for native.set_visual_alerts_enabled.
+type NativeSetVisualAlertsEnabledRequest struct {
+	Enabled bool `json:"enabled"`
+}
+
+// NativeSetVisualAlertsEnabledResponse is the response type for native.set_visual_alerts_enabled.
+type NativeSetVisualAlertsEnabledResponse struct {
 	Ok bool `json:"ok"`
 }
 
@@ -6486,6 +6511,11 @@ type NativeUserNameResponse struct {
 // NativeUserShellResponse is the response type for native.user_shell.
 type NativeUserShellResponse struct {
 	Shell string `json:"shell"`
+}
+
+// NativeVisualAlertsEnabledResponse is the response type for native.visual_alerts_enabled.
+type NativeVisualAlertsEnabledResponse struct {
+	Enabled bool `json:"enabled"`
 }
 
 // NativeVolumeResponse is the response type for native.volume.

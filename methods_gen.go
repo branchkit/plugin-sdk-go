@@ -4675,6 +4675,16 @@ func (p *Plugin) NativePowerAdapterConnected() (*NativePowerAdapterConnectedResp
 	return &result, nil
 }
 
+// NativePowerMode get the power mode: saving energy, balanced, or favouring performance. Returns one of: power-saver, balanced, performance.
+func (p *Plugin) NativePowerMode() (*NativePowerModeResponse, error) {
+	var result NativePowerModeResponse
+	err := p.Call(MethodNativePowerMode, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // NativePowerSource get current power source type. Returns one of: AC, Battery, UPS, Unknown.
 func (p *Plugin) NativePowerSource() (*NativePowerSourceResponse, error) {
 	var result NativePowerSourceResponse
@@ -5898,6 +5908,18 @@ func (p *Plugin) NativeSetOnScreenKeyboardEnabled(enabled bool) (bool, error) {
 	return result.Ok, err
 }
 
+// NativeSetPowerMode set the power mode (power-saver, balanced or performance); false when refused or not offered.
+func (p *Plugin) NativeSetPowerMode(mode string) (bool, error) {
+	req := &NativeSetPowerModeRequest{
+		Mode: mode,
+	}
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeSetPowerMode, req, &result)
+	return result.Ok, err
+}
+
 // NativeSetScreenReaderEnabled turn the screen reader on or off (VoiceOver, Orca, Narrator); false when it did not change.
 func (p *Plugin) NativeSetScreenReaderEnabled(enabled bool) (bool, error) {
 	req := &NativeSetScreenReaderEnabledRequest{
@@ -6058,6 +6080,18 @@ func (p *Plugin) NativeSetURLSchemeHandler(bundleID string, scheme string) (bool
 		Ok bool `json:"ok"`
 	}
 	err := p.Call(MethodNativeSetUrlSchemeHandler, req, &result)
+	return result.Ok, err
+}
+
+// NativeSetVisualAlertsEnabled turn screen flashing on alert sounds on or off; false when it did not change.
+func (p *Plugin) NativeSetVisualAlertsEnabled(enabled bool) (bool, error) {
+	req := &NativeSetVisualAlertsEnabledRequest{
+		Enabled: enabled,
+	}
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeSetVisualAlertsEnabled, req, &result)
 	return result.Ok, err
 }
 
@@ -6841,6 +6875,16 @@ func (p *Plugin) NativeUserName() (*NativeUserNameResponse, error) {
 func (p *Plugin) NativeUserShell() (*NativeUserShellResponse, error) {
 	var result NativeUserShellResponse
 	err := p.Call(MethodNativeUserShell, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeVisualAlertsEnabled check if the screen flashes when an alert sound plays.
+func (p *Plugin) NativeVisualAlertsEnabled() (*NativeVisualAlertsEnabledResponse, error) {
+	var result NativeVisualAlertsEnabledResponse
+	err := p.Call(MethodNativeVisualAlertsEnabled, nil, &result)
 	if err != nil {
 		return nil, err
 	}

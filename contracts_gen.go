@@ -380,6 +380,7 @@ const (
 	MethodNativePlaySound                     = "native.play_sound"                        // since 0.1.0
 	MethodNativePollBurst                     = "native.poll_burst"                        // since 0.1.0
 	MethodNativePowerAdapterConnected         = "native.power_adapter_connected"           // since 0.1.0
+	MethodNativePowerMode                     = "native.power_mode"                        // since 0.2.0
 	MethodNativePowerSource                   = "native.power_source"                      // since 0.1.0
 	MethodNativePressAndHoldEnabled           = "native.press_and_hold_enabled"            // since 0.1.0
 	MethodNativePreventSleep                  = "native.prevent_sleep"                     // since 0.1.0
@@ -484,6 +485,7 @@ const (
 	MethodNativeSetMouseSpeed                 = "native.set_mouse_speed"                   // since 0.1.0
 	MethodNativeSetNightShift                 = "native.set_night_shift"                   // since 0.1.0
 	MethodNativeSetOnScreenKeyboardEnabled    = "native.set_on_screen_keyboard_enabled"    // since 0.2.0
+	MethodNativeSetPowerMode                  = "native.set_power_mode"                    // since 0.2.0
 	MethodNativeSetScreenReaderEnabled        = "native.set_screen_reader_enabled"         // since 0.2.0
 	MethodNativeSetScreenshotFormat           = "native.set_screenshot_format"             // since 0.1.0
 	MethodNativeSetScreenshotIncludeShadow    = "native.set_screenshot_include_shadow"     // since 0.1.0
@@ -497,6 +499,7 @@ const (
 	MethodNativeSetTextScale                  = "native.set_text_scale"                    // since 0.2.0
 	MethodNativeSetTrackpadSpeed              = "native.set_trackpad_speed"                // since 0.1.0
 	MethodNativeSetUrlSchemeHandler           = "native.set_url_scheme_handler"            // since 0.1.0
+	MethodNativeSetVisualAlertsEnabled        = "native.set_visual_alerts_enabled"         // since 0.2.0
 	MethodNativeSetVolume                     = "native.set_volume"                        // since 0.1.0
 	MethodNativeSetWallpaper                  = "native.set_wallpaper"                     // since 0.1.0
 	MethodNativeSetWindowAlpha                = "native.set_window_alpha"                  // since 0.1.0
@@ -571,6 +574,7 @@ const (
 	MethodNativeUserAvatar                    = "native.user_avatar"                       // since 0.1.0
 	MethodNativeUserName                      = "native.user_name"                         // since 0.1.0
 	MethodNativeUserShell                     = "native.user_shell"                        // since 0.1.0
+	MethodNativeVisualAlertsEnabled           = "native.visual_alerts_enabled"             // since 0.2.0
 	MethodNativeVolume                        = "native.volume"                            // since 0.1.0
 	MethodNativeVpnStatus                     = "native.vpn_status"                        // since 0.1.0
 	MethodNativeWarpCursor                    = "native.warp_cursor"                       // since 0.1.0
