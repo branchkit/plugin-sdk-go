@@ -50,6 +50,7 @@ const (
 	LogEventPluginSandboxApplied     = "plugin.sandbox_applied"
 	LogEventPluginSpawned            = "plugin.spawned"
 	LogEventPluginStderrLine         = "plugin.stderr_line"
+	LogEventPluginWmiQuery           = "plugin.wmi_query"
 	LogEventRpcCallCompleted         = "rpc.call_completed"
 	LogEventRpcCallReceived          = "rpc.call_received"
 	LogEventRpcNotifyReceived        = "rpc.notify_received"
@@ -125,6 +126,7 @@ var LogEventRegistry = map[string]LogEventMeta{
 	"plugin.sandbox_applied":      {Name: "plugin.sandbox_applied", Summary: "Sandbox profile applied (or skipped) for a managed plugin spawn.", Since: "0.1.0", Source: "plugins", Severity: "debug", Redaction: "none"},
 	"plugin.spawned":              {Name: "plugin.spawned", Summary: "A managed plugin process was spawned.", Since: "0.1.0", Source: "plugins", Severity: "info", Redaction: "none"},
 	"plugin.stderr_line":          {Name: "plugin.stderr_line", Summary: "A managed plugin emitted a stdout/stderr line.", Since: "0.1.0", Source: "plugins", Severity: "info", Redaction: "full"},
+	"plugin.wmi_query":            {Name: "plugin.wmi_query", Summary: "A plugin read (or was refused) a WMI class through native.wmi_query: allowed, failed, denied (not declared), off (switched off by the user) or forbidden (no grant can reach it). The namespace and class only. Audit-eligible.", Since: "0.2.0", Source: "plugins", Severity: "info", Redaction: "full"},
 	"rpc.call_completed":          {Name: "rpc.call_completed", Summary: "A plugin-to-actuator RPC call completed.", Since: "0.1.0", Source: "plugins", Severity: "debug", Redaction: "none"},
 	"rpc.call_received":           {Name: "rpc.call_received", Summary: "A plugin-to-actuator RPC call was received.", Since: "0.1.0", Source: "plugins", Severity: "debug", Redaction: "none"},
 	"rpc.notify_received":         {Name: "rpc.notify_received", Summary: "A plugin-to-actuator RPC notification (fire-and-forget) was received.", Since: "0.1.0", Source: "plugins", Severity: "debug", Redaction: "none"},

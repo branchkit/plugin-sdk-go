@@ -5518,6 +5518,16 @@ func (p *Plugin) NativeWindowTitle(req NativeWindowTitleRequest) (string, error)
 	return result, nil
 }
 
+// NativeWmiQuery read the instances of one WMI class the plugin declared and the user switched on. Exists only on Windows; elsewhere it is refused with platform_no_analogue.
+func (p *Plugin) NativeWmiQuery(req NativeWmiQueryRequest) (*NativeWmiQueryResponse, error) {
+	var result NativeWmiQueryResponse
+	err := p.Call(MethodNativeWmiQuery, &req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // NativeWorldModel get a snapshot of all windows and displays (with managed HUD windows).
 func (p *Plugin) NativeWorldModel(req NativeWorldModelRequest) (*WorldModel, error) {
 	var result WorldModel

@@ -590,6 +590,7 @@ const (
 	MethodNativeWindowScreenshot              = "native.window_screenshot"                 // since 0.1.0
 	MethodNativeWindowSubrole                 = "native.window_subrole"                    // since 0.1.0
 	MethodNativeWindowTitle                   = "native.window_title"                      // since 0.1.0
+	MethodNativeWmiQuery                      = "native.wmi_query"                         // since 0.2.0
 	MethodNativeWorldModel                    = "native.world_model"                       // since 0.1.0
 	MethodNativeWriteAppPreference            = "native.write_app_preference"              // since 0.1.0
 	MethodNativeWriteFile                     = "native.write_file"                        // since 0.1.0

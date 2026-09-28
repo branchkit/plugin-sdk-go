@@ -6650,6 +6650,44 @@ type NativeWindowTitleRequest struct {
 	WindowID string `json:"window_id"`
 }
 
+// NativeWmiQueryRequest is the request type for native.wmi_query.
+type NativeWmiQueryRequest struct {
+	// The class (`Win32_Battery`).
+	Class string `json:"class"`
+	// Instances to return at most, 1 to 1000 (default 200); more sets
+	// `truncated`.
+	// wire uint32 · default null · min 0
+	Limit *int `json:"limit,omitempty"`
+	// The namespace, `root/cimv2` when absent (`root/WMI`,
+	// `root/StandardCimv2`); `/` or `\` between its parts.
+	// default null
+	Namespace *string `json:"namespace,omitempty"`
+	// The properties to read; all of them when empty.
+	// default []
+	Properties []string `json:"properties,omitempty"`
+	// A condition on the class's own properties (`Name = 'x' AND
+	// ProcessId > 4`), in WQL's syntax: comparisons with a string, number,
+	// `TRUE` or `FALSE`; `LIKE` with `%`, `_` and `[…]`; `IS [NOT] NULL`;
+	// `AND` / `OR` / `NOT` and parentheses. BranchKit evaluates it on the
+	// listed instances; it is never sent to WMI. Strings compare without
+	// regard to case, and a null or missing property matches no
+	// comparison.
+	// default null
+	Where *string `json:"where,omitempty"`
+}
+
+// NativeWmiQueryResponse is the response type for native.wmi_query.
+type NativeWmiQueryResponse struct {
+	// Opaque by design: each instance's properties are typed by its class
+	// at run time, so no static type can describe them. One object per
+	// instance, its properties by name (64-bit integers as numbers,
+	// dates as WMI's `yyyymmddHHMMSS.mmmmmmsUUU` strings, embedded
+	// objects as objects), and its class as `__CLASS`.
+	Instances []json.RawMessage `json:"instances"`
+	// More instances matched than `limit`.
+	Truncated bool `json:"truncated"`
+}
+
 // NativeWorldModelRequest is the request type for native.world_model.
 type NativeWorldModelRequest struct {
 	// If true, only return windows visible on screen.
