@@ -1624,14 +1624,15 @@ func (p *Plugin) NativeAutomationPermission(bundleID string) (*NativeAutomationP
 
 // NativeAxElementAtPoint get the accessibility element at a screen point.
 //
-//   - pid: wire int32
 //   - x: wire int32
 //   - y: wire int32
-func (p *Plugin) NativeAxElementAtPoint(pid int, x int, y int) (*NativeAxElementAtPointResponse, error) {
+//   - pid: Only this application's element; any application's when absent.
+//     wire int32 · default null
+func (p *Plugin) NativeAxElementAtPoint(x int, y int, pid *int) (*NativeAxElementAtPointResponse, error) {
 	req := &NativeAxElementAtPointRequest{
-		Pid: pid,
 		X:   x,
 		Y:   y,
+		Pid: pid,
 	}
 	var result NativeAxElementAtPointResponse
 	err := p.Call(MethodNativeAxElementAtPoint, req, &result)
@@ -1644,12 +1645,12 @@ func (p *Plugin) NativeAxElementAtPoint(pid int, x int, y int) (*NativeAxElement
 // NativeAxElementTree get the accessibility element tree rooted at an element.
 //
 //   - depth: wire uint32 · default 3 · min 0
-func (p *Plugin) NativeAxElementTree(element AXElementRef, depth *int) (*AXElementNode, error) {
+func (p *Plugin) NativeAxElementTree(element AccessibleRef, depth *int) (*AccessibleNode, error) {
 	req := &NativeAxElementTreeRequest{
 		Element: element,
 		Depth:   depth,
 	}
-	var result AXElementNode
+	var result AccessibleNode
 	err := p.Call(MethodNativeAxElementTree, req, &result)
 	if err != nil {
 		return nil, err
@@ -1675,7 +1676,7 @@ func (p *Plugin) NativeAxObserve(pid int, notifications []string) (*NativeAxObse
 }
 
 // NativeAxPerformAction perform an action on an accessibility element.
-func (p *Plugin) NativeAxPerformAction(action string, element AXElementRef) (bool, error) {
+func (p *Plugin) NativeAxPerformAction(action string, element AccessibleRef) (bool, error) {
 	req := &NativeAxPerformActionRequest{
 		Action:  action,
 		Element: element,
@@ -1690,16 +1691,21 @@ func (p *Plugin) NativeAxPerformAction(action string, element AXElementRef) (boo
 // NativeAxReadAttributes read specific attributes from an accessibility element.
 //
 //   - attributes: default []
-func (p *Plugin) NativeAxReadAttributes(element AXElementRef, attributes []string) error {
+func (p *Plugin) NativeAxReadAttributes(element AccessibleRef, attributes []string) (map[string]json.RawMessage, error) {
 	req := &NativeAxReadAttributesRequest{
 		Element:    element,
 		Attributes: attributes,
 	}
-	return p.Call(MethodNativeAxReadAttributes, req, nil)
+	var result map[string]json.RawMessage
+	err := p.Call(MethodNativeAxReadAttributes, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
 }
 
 // NativeAxSetAttribute set an attribute on an accessibility element.
-func (p *Plugin) NativeAxSetAttribute(attribute string, element AXElementRef, value json.RawMessage) (bool, error) {
+func (p *Plugin) NativeAxSetAttribute(attribute string, element AccessibleRef, value json.RawMessage) (bool, error) {
 	req := &NativeAxSetAttributeRequest{
 		Attribute: attribute,
 		Element:   element,
@@ -2820,11 +2826,16 @@ func (p *Plugin) NativeEpochTime() (*NativeEpochTimeResponse, error) {
 }
 
 // NativeExtendedAttributes read extended attributes (xattrs) from a file.
-func (p *Plugin) NativeExtendedAttributes(path string) error {
+func (p *Plugin) NativeExtendedAttributes(path string) (json.RawMessage, error) {
 	req := &NativeExtendedAttributesRequest{
 		Path: path,
 	}
-	return p.Call(MethodNativeExtendedAttributes, req, nil)
+	var result json.RawMessage
+	err := p.Call(MethodNativeExtendedAttributes, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
 }
 
 // NativeExternalDisks list mounted external/removable disks.
@@ -3019,12 +3030,17 @@ func (p *Plugin) NativeFileSize(path string) (int, error) {
 // NativeFileTags read or write Finder tags on a file.
 //
 //   - tags: default null
-func (p *Plugin) NativeFileTags(path string, tags []string) error {
+func (p *Plugin) NativeFileTags(path string, tags []string) (json.RawMessage, error) {
 	req := &NativeFileTagsRequest{
 		Path: path,
 		Tags: tags,
 	}
-	return p.Call(MethodNativeFileTags, req, nil)
+	var result json.RawMessage
+	err := p.Call(MethodNativeFileTags, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
 }
 
 // NativeFileType get the UTI type of a file.
@@ -4911,12 +4927,17 @@ func (p *Plugin) NativeRandomUuid() (*NativeRandomUuidResponse, error) {
 }
 
 // NativeReadAppPreference read a preference value for an app domain.
-func (p *Plugin) NativeReadAppPreference(domain string, key string) error {
+func (p *Plugin) NativeReadAppPreference(domain string, key string) (json.RawMessage, error) {
 	req := &NativeReadAppPreferenceRequest{
 		Domain: domain,
 		Key:    key,
 	}
-	return p.Call(MethodNativeReadAppPreference, req, nil)
+	var result json.RawMessage
+	err := p.Call(MethodNativeReadAppPreference, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
 }
 
 // NativeReadFile read file contents as UTF-8 string.
@@ -4949,11 +4970,16 @@ func (p *Plugin) NativeReadFileBinary(path string, maxBytes *int) (*NativeReadFi
 }
 
 // NativeReadPlist read a property list file as JSON.
-func (p *Plugin) NativeReadPlist(path string) error {
+func (p *Plugin) NativeReadPlist(path string) (json.RawMessage, error) {
 	req := &NativeReadPlistRequest{
 		Path: path,
 	}
-	return p.Call(MethodNativeReadPlist, req, nil)
+	var result json.RawMessage
+	err := p.Call(MethodNativeReadPlist, req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
 }
 
 // NativeRecentDocuments get recent documents for an app (by bundle ID).

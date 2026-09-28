@@ -10,51 +10,71 @@ var _ json.RawMessage
 
 // ===== Shared types (from components/schemas) =====
 
-// AXElementInfo is auto-generated from the OpenRPC spec.
-// Detailed info about an accessibility element.
-type AXElementInfo struct {
-	Actions    []string `json:"actions"`
-	Attributes []string `json:"attributes"`
+// AccessibleBounds is auto-generated from the OpenRPC spec.
+// An element's frame.
+type AccessibleBounds struct {
+	// wire int32
+	Height int `json:"height"`
+	// wire int32
+	Width int `json:"width"`
+	// wire int32
+	X int `json:"x"`
+	// wire int32
+	Y int `json:"y"`
+}
+
+// AccessibleElement is auto-generated from the OpenRPC spec.
+// An element of an application's accessibility tree.
+type AccessibleElement struct {
+	// The portable actions it offers: "press", "focus", "toggle",
+	// "expand", "collapse", "increment", "decrement", "set_value",
+	// "scroll_into_view", "show_menu".
+	Actions []string `json:"actions"`
+	// Where it is on screen, in the same coordinates as the window list.
+	Bounds *AccessibleBounds `json:"bounds,omitempty"`
+	// How many children it has.
 	// wire uint32 · min 0
-	ChildrenCount int             `json:"children_count"`
-	Description   *string         `json:"description,omitempty"`
-	Enabled       bool            `json:"enabled"`
-	Focused       bool            `json:"focused"`
-	Path          []AXPathSegment `json:"path"`
-	Position      *[2]int         `json:"position,omitempty"`
-	Role          string          `json:"role"`
-	Size          *[2]int         `json:"size,omitempty"`
-	Subrole       *string         `json:"subrole,omitempty"`
-	Title         *string         `json:"title,omitempty"`
-	Value         json.RawMessage `json:"value,omitempty"`
-}
-
-// AXElementNode is auto-generated from the OpenRPC spec.
-// A tree node of accessibility elements (recursive).
-//
-// schemars handles the self-reference automatically via a `$defs`
-// entry — no `#[schema(no_recursion)]` annotation needed (that was
-// utoipa-specific and was dropped in Phase 2j-utoipa-removal).
-type AXElementNode struct {
-	Children []AXElementNode `json:"children"`
-	Element  AXElementInfo   `json:"element"`
-}
-
-// AXElementRef is auto-generated from the OpenRPC spec.
-// A reference to an accessibility element by PID + path from the application root.
-type AXElementRef struct {
-	// default []
-	Path []AXPathSegment `json:"path,omitempty"`
+	ChildrenCount int `json:"children_count"`
+	// Longer help or description text.
+	Description *string `json:"description,omitempty"`
+	// Opaque handle to pass back to read this element, valid while it
+	// lives. Its form differs per OS; treat it as a token.
+	ID string `json:"id"`
+	// What assistive technology reads as the element's name ("Send").
+	Name *string `json:"name,omitempty"`
+	// The OS's own role: "AXButton" (with its subrole, "AXButton/
+	// AXCloseButton"), "push button", "Button".
+	NativeRole string `json:"native_role"`
+	// The process the element belongs to.
 	// wire int32
 	Pid int `json:"pid"`
+	// The ARIA role ("button", "checkbox", "textbox", "menuitem", …), or
+	// "generic" where none fits. Also "window" and "text" (static text),
+	// which ARIA leaves to the host.
+	Role string `json:"role"`
+	// ARIA states that hold: "focused", "focusable", "disabled",
+	// "checked", "mixed", "pressed", "expanded", "collapsed", "selected",
+	// "readonly", "multiline", "protected" (a password field).
+	States []string `json:"states"`
+	// Its value as text: a field's contents, a slider's position.
+	Value *string `json:"value,omitempty"`
 }
 
-// AXPathSegment is auto-generated from the OpenRPC spec.
-// A segment of an accessibility element path (role + index among siblings with that role).
-type AXPathSegment struct {
-	// wire uint32 · min 0
-	Index int    `json:"index"`
-	Role  string `json:"role"`
+// AccessibleNode is auto-generated from the OpenRPC spec.
+// An element and its descendants, to the depth asked for.
+type AccessibleNode struct {
+	Children []AccessibleNode  `json:"children"`
+	Element  AccessibleElement `json:"element"`
+}
+
+// AccessibleRef is auto-generated from the OpenRPC spec.
+// Which element: one a previous answer handed out (`id`), or an
+// application's root (`pid`).
+type AccessibleRef struct {
+	// default null
+	ID *string `json:"id,omitempty"`
+	// wire int32 · default null
+	Pid *int `json:"pid,omitempty"`
 }
 
 // Action is auto-generated from the OpenRPC spec.
@@ -3250,8 +3270,9 @@ type NativeAutomationPermissionResponse struct {
 
 // NativeAxElementAtPointRequest is the request type for native.ax_element_at_point.
 type NativeAxElementAtPointRequest struct {
-	// wire int32
-	Pid int `json:"pid"`
+	// Only this application's element; any application's when absent.
+	// wire int32 · default null
+	Pid *int `json:"pid,omitempty"`
 	// wire int32
 	X int `json:"x"`
 	// wire int32
@@ -3260,27 +3281,45 @@ type NativeAxElementAtPointRequest struct {
 
 // NativeAxElementAtPointResponse is the response type for native.ax_element_at_point.
 type NativeAxElementAtPointResponse struct {
-	Actions    []string `json:"actions"`
-	Attributes []string `json:"attributes"`
+	// The portable actions it offers: "press", "focus", "toggle",
+	// "expand", "collapse", "increment", "decrement", "set_value",
+	// "scroll_into_view", "show_menu".
+	Actions []string `json:"actions"`
+	// Where it is on screen, in the same coordinates as the window list.
+	Bounds *AccessibleBounds `json:"bounds,omitempty"`
+	// How many children it has.
 	// wire uint32 · min 0
-	ChildrenCount int             `json:"children_count"`
-	Description   *string         `json:"description,omitempty"`
-	Enabled       bool            `json:"enabled"`
-	Focused       bool            `json:"focused"`
-	Path          []AXPathSegment `json:"path"`
-	Position      *[2]int         `json:"position,omitempty"`
-	Role          string          `json:"role"`
-	Size          *[2]int         `json:"size,omitempty"`
-	Subrole       *string         `json:"subrole,omitempty"`
-	Title         *string         `json:"title,omitempty"`
-	Value         json.RawMessage `json:"value,omitempty"`
+	ChildrenCount int `json:"children_count"`
+	// Longer help or description text.
+	Description *string `json:"description,omitempty"`
+	// Opaque handle to pass back to read this element, valid while it
+	// lives. Its form differs per OS; treat it as a token.
+	ID string `json:"id"`
+	// What assistive technology reads as the element's name ("Send").
+	Name *string `json:"name,omitempty"`
+	// The OS's own role: "AXButton" (with its subrole, "AXButton/
+	// AXCloseButton"), "push button", "Button".
+	NativeRole string `json:"native_role"`
+	// The process the element belongs to.
+	// wire int32
+	Pid int `json:"pid"`
+	// The ARIA role ("button", "checkbox", "textbox", "menuitem", …), or
+	// "generic" where none fits. Also "window" and "text" (static text),
+	// which ARIA leaves to the host.
+	Role string `json:"role"`
+	// ARIA states that hold: "focused", "focusable", "disabled",
+	// "checked", "mixed", "pressed", "expanded", "collapsed", "selected",
+	// "readonly", "multiline", "protected" (a password field).
+	States []string `json:"states"`
+	// Its value as text: a field's contents, a slider's position.
+	Value *string `json:"value,omitempty"`
 }
 
 // NativeAxElementTreeRequest is the request type for native.ax_element_tree.
 type NativeAxElementTreeRequest struct {
 	// wire uint32 · default 3 · min 0
-	Depth   *int         `json:"depth,omitempty"`
-	Element AXElementRef `json:"element"`
+	Depth   *int          `json:"depth,omitempty"`
+	Element AccessibleRef `json:"element"`
 }
 
 // NativeAxObserveRequest is the request type for native.ax_observe.
@@ -3298,8 +3337,8 @@ type NativeAxObserveResponse struct {
 
 // NativeAxPerformActionRequest is the request type for native.ax_perform_action.
 type NativeAxPerformActionRequest struct {
-	Action  string       `json:"action"`
-	Element AXElementRef `json:"element"`
+	Action  string        `json:"action"`
+	Element AccessibleRef `json:"element"`
 }
 
 // NativeAxPerformActionResponse is the response type for native.ax_perform_action.
@@ -3310,14 +3349,14 @@ type NativeAxPerformActionResponse struct {
 // NativeAxReadAttributesRequest is the request type for native.ax_read_attributes.
 type NativeAxReadAttributesRequest struct {
 	// default []
-	Attributes []string     `json:"attributes,omitempty"`
-	Element    AXElementRef `json:"element"`
+	Attributes []string      `json:"attributes,omitempty"`
+	Element    AccessibleRef `json:"element"`
 }
 
 // NativeAxSetAttributeRequest is the request type for native.ax_set_attribute.
 type NativeAxSetAttributeRequest struct {
 	Attribute string          `json:"attribute"`
-	Element   AXElementRef    `json:"element"`
+	Element   AccessibleRef   `json:"element"`
 	Value     json.RawMessage `json:"value"`
 }
 
@@ -4228,7 +4267,7 @@ type NativeFocusModesResponse struct {
 
 // NativeFocusedElementResponse is the response type for native.focused_element.
 type NativeFocusedElementResponse struct {
-	Element *AXElementInfo `json:"element,omitempty"`
+	Element *AccessibleElement `json:"element,omitempty"`
 }
 
 // NativeFocusedWindowIDResponse is the response type for native.focused_window_id.
