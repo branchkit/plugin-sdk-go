@@ -24,13 +24,19 @@ func main() {
     plugin := branchkit.NewPlugin()
 
     plugin.HandleAction("myplugin.greet", func(req *branchkit.OnActionRequest) (any, error) {
-        plugin.Call("input.type_text", map[string]any{"text": "Hello!"}, nil)
-        return nil, nil
+        err := plugin.InputTypeText(branchkit.InputTypeTextRequest{Text: "Hello!"})
+        return nil, err
     })
 
     plugin.Run()
 }
 ```
+
+Every platform method has a generated wrapper like `InputTypeText` that
+takes the method's request struct. Name each field; optional fields are
+pointers, left out when absent and set with `branchkit.Ptr(v)`. Use the
+wrapper over the raw `plugin.Call(method, params, &out)`: a wrong method or
+field name fails the build instead of the call.
 
 Pair with a `plugin.json` manifest declaring the action — see the
 tutorial. `branchkit-gen` generates typed param structs from your

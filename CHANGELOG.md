@@ -5,6 +5,22 @@ git history.
 
 ## Unreleased
 
+### Breaking: generated methods take a request struct
+
+- Every generated method that takes parameters now takes its request struct
+  instead of positional arguments:
+  `p.CollectionFetch(branchkit.CollectionFetchRequest{ID: id, Name: name})`,
+  not `p.CollectionFetch(id, name)`. Positional order came from the schema,
+  which is alphabetical, so it said nothing a caller could guess, and 62
+  methods had two or more parameters of the same type that compiled just as
+  well swapped. Named fields make every argument say what it is, and a new
+  optional field can be added later without breaking any caller. Methods
+  with no parameters are unchanged.
+- `branchkit.Ptr(v)` returns `&v`, for the optional (pointer) fields:
+  `AcceptsInput: branchkit.Ptr(true)`.
+- Migrating: each call's arguments become the request's fields, named as
+  in the old signature, and a `nil` argument is simply left out.
+
 ### `**` in pattern listeners
 
 - `OnPattern` now takes `**`, zero or more whole segments, matching the

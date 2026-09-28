@@ -12,12 +12,12 @@ package branchkit
 // from its content — pushing with an empty target and raw replacement
 // leaves the window 1px tall (a real shipped bug).
 func (p *Plugin) HUDPushFragment(channel, targetID, html string) error {
-	return p.HUDPush(channel, []HudFragment{{TargetID: targetID, HTML: html}})
+	return p.HUDPush(HUDPushRequest{Channel: channel, Fragments: []HudFragment{{TargetID: targetID, HTML: html}}})
 }
 
 // HUDPushRaw replaces the HUD window's entire content with `html`
 // (`raw: true`) — for windows whose markup carries its own container.
 func (p *Plugin) HUDPushRaw(channel, html string) error {
 	raw := true
-	return p.HUDPush(channel, []HudFragment{{TargetID: "", HTML: html, Raw: &raw}})
+	return p.HUDPush(HUDPushRequest{Channel: channel, Fragments: []HudFragment{{TargetID: "", HTML: html, Raw: &raw}}})
 }

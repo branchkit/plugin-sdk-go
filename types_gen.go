@@ -7220,6 +7220,9 @@ type SettingsRedirectRequest struct {
 
 // SettingsRulesCreateRequest is the request type for settings.rules_create.
 type SettingsRulesCreateRequest struct {
+	// Check the candidate and report any conflict without saving it.
+	// default null
+	CheckOnly *bool `json:"check_only,omitempty"`
 	// Raw JSON action body, used when `newruleactiontype = "json"`.
 	// default null
 	Newruleactionjson *string `json:"newruleactionjson,omitempty"`
@@ -7269,6 +7272,10 @@ type SettingsRulesUpdateRequest struct {
 	// Existing canonical command id (the previous canonical phrase) of
 	// the rule being updated. Required.
 	Canonical string `json:"canonical"`
+	// Check the candidate and report any conflict without saving it or
+	// removing the command it would replace.
+	// default null
+	CheckOnly *bool `json:"check_only,omitempty"`
 	// default null
 	Newruleactionjson *string `json:"newruleactionjson,omitempty"`
 	// default null

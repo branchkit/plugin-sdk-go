@@ -18,7 +18,7 @@ import (
 // as nil; this wrapper exists for the (name, id) argument order and the
 // (nil, nil) contract, not to decode anything.
 func (p *Plugin) Get(name, id string) (*CollectionRecord, error) {
-	res, err := p.CollectionFetch(id, name)
+	res, err := p.CollectionFetch(CollectionFetchRequest{ID: id, Name: name})
 	if err != nil {
 		return nil, err
 	}
@@ -40,7 +40,7 @@ func (p *Plugin) Get(name, id string) (*CollectionRecord, error) {
 // the introducing record WITHOUT later annotations). Use Get for the raw entry,
 // GetCompacted for current state.
 func (p *Plugin) GetCompacted(name, key string) (*CollectionRecord, error) {
-	res, err := p.CollectionFetchCompacted(key, name)
+	res, err := p.CollectionFetchCompacted(CollectionFetchCompactedRequest{ID: key, Name: name})
 	if err != nil {
 		return nil, err
 	}
@@ -65,7 +65,7 @@ func (p *Plugin) GetCompacted(name, key string) (*CollectionRecord, error) {
 // Reaching for this one because it has the shortest name is how a read
 // that assumed completeness silently stops being complete.
 func (p *Plugin) List(name string, opts *ListOpts) ([]CollectionRecord, error) {
-	res, err := p.CollectionList(name, opts)
+	res, err := p.CollectionList(CollectionListRequest{Name: name, Opts: opts})
 	if err != nil {
 		return nil, err
 	}
@@ -192,7 +192,7 @@ func (p *Plugin) listExhaustive(name string, compacted bool) ([]CollectionRecord
 // the read was capped, either by your own `Limit` or by the platform's
 // default.
 func (p *Plugin) ListPage(name string, opts *ListOpts) (records []CollectionRecord, total int, err error) {
-	res, err := p.CollectionList(name, opts)
+	res, err := p.CollectionList(CollectionListRequest{Name: name, Opts: opts})
 	if err != nil {
 		return nil, 0, err
 	}
@@ -204,7 +204,7 @@ func (p *Plugin) ListPage(name string, opts *ListOpts) (records []CollectionReco
 
 // Count returns the total record count for a collection.
 func (p *Plugin) Count(name string) (int, error) {
-	res, err := p.CollectionCount(name)
+	res, err := p.CollectionCount(CollectionCountRequest{Name: name})
 	if err != nil {
 		return 0, err
 	}
@@ -231,7 +231,7 @@ func (p *Plugin) Put(name, id string, payload any) error {
 	if err != nil {
 		return fmt.Errorf("marshal payload: %w", err)
 	}
-	_, err = p.CollectionPut(name, []CollectionPutEntry{{ID: id, Payload: raw}}, nil, nil, nil)
+	_, err = p.CollectionPut(CollectionPutRequest{Name: name, Entries: []CollectionPutEntry{{ID: id, Payload: raw}}})
 	return err
 }
 
@@ -284,7 +284,7 @@ func (p *Plugin) PutManyWithDisplay(
 	}
 	// `roles` rides typed: the generated parameter is map[string]FieldDisplay
 	// (fidelity layer 2), and a nil map is omitted from the wire.
-	res, err := p.CollectionPut(name, entries, nil, labelPtr, roles)
+	res, err := p.CollectionPut(CollectionPutRequest{Name: name, Entries: entries, Label: labelPtr, Roles: roles})
 	if err != nil {
 		return 0, err
 	}
@@ -304,14 +304,14 @@ func (p *Plugin) Patch(name, id string, fields any) error {
 	if err != nil {
 		return fmt.Errorf("marshal fields: %w", err)
 	}
-	return p.CollectionPatch(raw, id, name)
+	return p.CollectionPatch(CollectionPatchRequest{Fields: raw, ID: id, Name: name})
 }
 
 // Delete removes one record by id. Returns true if it existed and was
 // removed, false if it was already gone. Single-record sugar over the
 // bulk wire shape.
 func (p *Plugin) Delete(name, id string) (bool, error) {
-	res, err := p.CollectionDeleteRecords(name, []string{id})
+	res, err := p.CollectionDeleteRecords(CollectionDeleteRecordsRequest{Name: name, Ids: []string{id}})
 	if err != nil {
 		return false, err
 	}
@@ -331,7 +331,7 @@ func (p *Plugin) DeleteMany(name string, ids []string) (deleted, alreadyAbsent i
 	if len(ids) == 0 {
 		return 0, 0, nil
 	}
-	res, err := p.CollectionDeleteRecords(name, ids)
+	res, err := p.CollectionDeleteRecords(CollectionDeleteRecordsRequest{Name: name, Ids: ids})
 	if err != nil {
 		return 0, 0, err
 	}
@@ -529,7 +529,7 @@ func (p *Plugin) Replace(
 	if o.label != "" {
 		label = &o.label
 	}
-	resp, err := p.CollectionReplace(name, scope, entries, label, o.roles)
+	resp, err := p.CollectionReplace(CollectionReplaceRequest{Name: name, Scope: scope, Entries: entries, Label: label, Roles: o.roles})
 	if err != nil {
 		return ReplaceResult{}, err
 	}

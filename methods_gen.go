@@ -19,39 +19,14 @@ func (p *Plugin) ActionsList() (*ActionsListResponse, error) {
 }
 
 // ArtifactDelete delete an installed model from the caller's own model namespace (ref: <plugin>/<model>).
-func (p *Plugin) ArtifactDelete(ref string) error {
-	req := &ArtifactDeleteRequest{
-		Ref: ref,
-	}
-	return p.Call(MethodArtifactDelete, req, nil)
+func (p *Plugin) ArtifactDelete(req ArtifactDeleteRequest) error {
+	return p.Call(MethodArtifactDelete, &req, nil)
 }
 
 // BlobPublish announce that bytes up to `length` are complete on one of this plugin's declared blobs. Carries a length, never bytes.
-//
-//   - length: Total bytes now complete in the backing file, WITHIN the current
-//     generation. Must be `>= ` the previous publish's: the channel is
-//     append-only and a shrinking length would invalidate ranges consumers
-//     already hold. The platform refuses otherwise (D4).
-//     wire uint64 (64-bit) · min 0
-//   - name: The blob's name, as declared in this plugin's `provides.blobs`.
-//   - hash: The hash of the appended range, when the provider declared
-//     `hash: provider` and is supplying one itself. Ignored otherwise —
-//     the platform hashes by default so a published length is unfakeable.
-//   - newGeneration: Start a new generation instead of appending to the current one — the
-//     way a provider shrinks. A new generation is a NEW backing file, so
-//     offsets restart at zero and consumers reopen; `length` is then the
-//     length of the new file. Compaction is an announced event rather than
-//     a race (D4).
-//     default false
-func (p *Plugin) BlobPublish(length int, name string, hash *string, newGeneration *bool) (*BlobPublishResponse, error) {
-	req := &BlobPublishRequest{
-		Length:        length,
-		Name:          name,
-		Hash:          hash,
-		NewGeneration: newGeneration,
-	}
+func (p *Plugin) BlobPublish(req BlobPublishRequest) (*BlobPublishResponse, error) {
 	var result BlobPublishResponse
-	err := p.Call(MethodBlobPublish, req, &result)
+	err := p.Call(MethodBlobPublish, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -59,17 +34,9 @@ func (p *Plugin) BlobPublish(length int, name string, hash *string, newGeneratio
 }
 
 // BlobState where a blob stands: its current generation, published length and version. For a restarted provider (which generation to write) and a starting consumer (what to open).
-//
-//   - name: The blob's name, as its provider declared it in `provides.blobs`.
-//   - provider: The providing plugin. Omitted: the caller's own blob. Another
-//     plugin's blob is answerable only to a consumer granted to read it.
-func (p *Plugin) BlobState(name string, provider *string) (*BlobStateResponse, error) {
-	req := &BlobStateRequest{
-		Name:     name,
-		Provider: provider,
-	}
+func (p *Plugin) BlobState(req BlobStateRequest) (*BlobStateResponse, error) {
 	var result BlobStateResponse
-	err := p.Call(MethodBlobState, req, &result)
+	err := p.Call(MethodBlobState, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -77,18 +44,11 @@ func (p *Plugin) BlobState(name string, provider *string) (*BlobStateResponse, e
 }
 
 // CollectionAppend append an entry to a log-kind collection.
-//
-//   - name: Collection name. Must be a `kind: "log"` collection.
-//   - payload: Entry payload — validated against the collection's `fields` schema.
-func (p *Plugin) CollectionAppend(name string, payload json.RawMessage) (*LogEntry, error) {
-	req := &CollectionAppendRequest{
-		Name:    name,
-		Payload: payload,
-	}
+func (p *Plugin) CollectionAppend(req CollectionAppendRequest) (*LogEntry, error) {
 	var result struct {
 		Entry *LogEntry `json:"entry,omitempty"`
 	}
-	err := p.Call(MethodCollectionAppend, req, &result)
+	err := p.Call(MethodCollectionAppend, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -96,24 +56,11 @@ func (p *Plugin) CollectionAppend(name string, payload json.RawMessage) (*LogEnt
 }
 
 // CollectionAppendKeyed append a keyed annotation to a keyed log (compacted-changelog shape).
-//
-//   - key: The fold key — stamped into the payload's key field. Appending another
-//     record with the same key annotates the first (compacted-changelog
-//     shape); a compacted read folds them into one record.
-//   - name: Collection name. Must be a keyed (`id_strategy: by_field`) `log`
-//     collection.
-//   - payload: Entry payload — validated against the collection's `fields` schema (the
-//     key field is supplied via `key`, not here).
-func (p *Plugin) CollectionAppendKeyed(key string, name string, payload json.RawMessage) (*LogEntry, error) {
-	req := &CollectionAppendKeyedRequest{
-		Key:     key,
-		Name:    name,
-		Payload: payload,
-	}
+func (p *Plugin) CollectionAppendKeyed(req CollectionAppendKeyedRequest) (*LogEntry, error) {
 	var result struct {
 		Entry *LogEntry `json:"entry,omitempty"`
 	}
-	err := p.Call(MethodCollectionAppendKeyed, req, &result)
+	err := p.Call(MethodCollectionAppendKeyed, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -121,12 +68,9 @@ func (p *Plugin) CollectionAppendKeyed(key string, name string, payload json.Raw
 }
 
 // CollectionCount total record count for a collection.
-func (p *Plugin) CollectionCount(name string) (*CollectionCountResponse, error) {
-	req := &CollectionCountRequest{
-		Name: name,
-	}
+func (p *Plugin) CollectionCount(req CollectionCountRequest) (*CollectionCountResponse, error) {
 	var result CollectionCountResponse
-	err := p.Call(MethodCollectionCount, req, &result)
+	err := p.Call(MethodCollectionCount, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -134,17 +78,9 @@ func (p *Plugin) CollectionCount(name string) (*CollectionCountResponse, error) 
 }
 
 // CollectionDeleteRecords delete records from a collection by id (bulk)..
-//
-//   - ids: Record ids to remove. Always an array; single-record callers wrap
-//     one id. SDK helpers (`Delete` vs `DeleteMany`) hide the wrapping.
-//     default []
-func (p *Plugin) CollectionDeleteRecords(name string, ids []string) (*CollectionDeleteRecordsResponse, error) {
-	req := &CollectionDeleteRecordsRequest{
-		Name: name,
-		Ids:  ids,
-	}
+func (p *Plugin) CollectionDeleteRecords(req CollectionDeleteRecordsRequest) (*CollectionDeleteRecordsResponse, error) {
 	var result CollectionDeleteRecordsResponse
-	err := p.Call(MethodCollectionDeleteRecords, req, &result)
+	err := p.Call(MethodCollectionDeleteRecords, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -152,13 +88,9 @@ func (p *Plugin) CollectionDeleteRecords(name string, ids []string) (*Collection
 }
 
 // CollectionFetch fetch a single record from a collection by id.
-func (p *Plugin) CollectionFetch(id string, name string) (*CollectionFetchResponse, error) {
-	req := &CollectionFetchRequest{
-		ID:   id,
-		Name: name,
-	}
+func (p *Plugin) CollectionFetch(req CollectionFetchRequest) (*CollectionFetchResponse, error) {
 	var result CollectionFetchResponse
-	err := p.Call(MethodCollectionFetch, req, &result)
+	err := p.Call(MethodCollectionFetch, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -166,13 +98,9 @@ func (p *Plugin) CollectionFetch(id string, name string) (*CollectionFetchRespon
 }
 
 // CollectionFetchCompacted fetch a keyed log's folded current state for one key (compacted point-read).
-func (p *Plugin) CollectionFetchCompacted(id string, name string) (*CollectionFetchCompactedResponse, error) {
-	req := &CollectionFetchCompactedRequest{
-		ID:   id,
-		Name: name,
-	}
+func (p *Plugin) CollectionFetchCompacted(req CollectionFetchCompactedRequest) (*CollectionFetchCompactedResponse, error) {
 	var result CollectionFetchCompactedResponse
-	err := p.Call(MethodCollectionFetchCompacted, req, &result)
+	err := p.Call(MethodCollectionFetchCompacted, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -180,12 +108,9 @@ func (p *Plugin) CollectionFetchCompacted(id string, name string) (*CollectionFe
 }
 
 // CollectionGet read collection data with optional merge metadata.
-func (p *Plugin) CollectionGet(name string) (*CollectionGetResponse, error) {
-	req := &CollectionGetRequest{
-		Name: name,
-	}
+func (p *Plugin) CollectionGet(req CollectionGetRequest) (*CollectionGetResponse, error) {
 	var result CollectionGetResponse
-	err := p.Call(MethodCollectionGet, req, &result)
+	err := p.Call(MethodCollectionGet, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -193,15 +118,9 @@ func (p *Plugin) CollectionGet(name string) (*CollectionGetResponse, error) {
 }
 
 // CollectionList list records in a collection (paginated).
-//
-//   - opts: default {}
-func (p *Plugin) CollectionList(name string, opts *ListOpts) (*CollectionListResponse, error) {
-	req := &CollectionListRequest{
-		Name: name,
-		Opts: opts,
-	}
+func (p *Plugin) CollectionList(req CollectionListRequest) (*CollectionListResponse, error) {
 	var result CollectionListResponse
-	err := p.Call(MethodCollectionList, req, &result)
+	err := p.Call(MethodCollectionList, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -209,66 +128,14 @@ func (p *Plugin) CollectionList(name string, opts *ListOpts) (*CollectionListRes
 }
 
 // CollectionPatch partial update of an existing record.
-//
-//   - fields: Object of fields to merge over the existing record.
-func (p *Plugin) CollectionPatch(fields json.RawMessage, id string, name string) error {
-	req := &CollectionPatchRequest{
-		Fields: fields,
-		ID:     id,
-		Name:   name,
-	}
-	return p.Call(MethodCollectionPatch, req, nil)
+func (p *Plugin) CollectionPatch(req CollectionPatchRequest) error {
+	return p.Call(MethodCollectionPatch, &req, nil)
 }
 
 // CollectionPut upsert records by id (bulk). Auto-registers the target as a record-keyed dynamic collection on first plugin call to an unknown name..
-//
-//   - entries: Records to upsert. Always an array; single-record callers wrap one
-//     entry. The wire format is uniform across single and bulk callers;
-//     the SDK helpers (`Put` vs `PutMany`) hide the wrapping for the
-//     single-record case. Per-key upserts replaced whole-collection REPLACE
-//     pushes, which silently dropped codewords when a caller pushed an
-//     intermediate snapshot.
-//     default []
-//
-//   - group: Writer-chosen group label stamped on EVERY entry in this call — which
-//     of the caller's named replace-sets these records belong to. See the
-//     record envelope's `group`: last-write placement, meaningful only
-//     within a writer. Absent = ungrouped, the common case. Call-level
-//     rather than per-entry because a put that mixes groups is a caller
-//     composing two writes, not one write with two meanings.
-//
-//   - label: Optional human-readable label for the collection as a whole — the
-//     friendly category name shown on the Discovery HUD's tag badge and in
-//     the Settings UI, in place of the raw collection id (`Badge` instead of
-//     `browser_hints_arch_strict`). This is the dynamic-collection counterpart
-//     to a manifest-declared collection's `schema.label`; a plugin creating a
-//     collection at runtime declares its label here. Same persistence
-//     semantics as `roles`: last-write-wins, and a put omitting `label`
-//     leaves the prior setting in place.
-//
-//   - roles: Optional per-payload-field display roles. Used by the Settings
-//     UI / discovery HUD to know which payload field is the primary
-//     label, which is the subtitle, etc. Equivalent to the `roles`
-//     argument on `collection.push`. Mostly meaningful for
-//     auto-registered dynamic collections — manifest-declared
-//     collections get their roles from the schema. On the first
-//     `collection.put` to a not-yet-registered name, the roles are
-//     stored alongside the auto-registered schema. Subsequent puts
-//     with `roles` overwrite the prior setting; puts omitting
-//     `roles` leave roles unchanged.
-//
-//     Wire-lenient: an entry whose role string this host doesn't know
-//     binds nothing but does NOT fail the put — see `DisplayRoles`.
-func (p *Plugin) CollectionPut(name string, entries []CollectionPutEntry, group *string, label *string, roles map[string]FieldDisplay) (*CollectionPutResponse, error) {
-	req := &CollectionPutRequest{
-		Name:    name,
-		Entries: entries,
-		Group:   group,
-		Label:   label,
-		Roles:   roles,
-	}
+func (p *Plugin) CollectionPut(req CollectionPutRequest) (*CollectionPutResponse, error) {
 	var result CollectionPutResponse
-	err := p.Call(MethodCollectionPut, req, &result)
+	err := p.Call(MethodCollectionPut, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -276,22 +143,9 @@ func (p *Plugin) CollectionPut(name string, entries []CollectionPutEntry, group 
 }
 
 // CollectionReplace make the records in scope exactly the given set: upsert changed, delete absent, skip byte-identical. Scope is required and bounds what may be deleted..
-//
-//   - scope: What the call is allowed to delete. Required — see `ReplaceScope`.
-//   - entries: The desired set. After the call, the records in scope are exactly these.
-//     default []
-//   - label: Same semantics as `collection.put`'s `label`.
-//   - roles: Same semantics as `collection.put`'s `roles`.
-func (p *Plugin) CollectionReplace(name string, scope ReplaceScope, entries []CollectionPutEntry, label *string, roles map[string]FieldDisplay) (*CollectionReplaceResponse, error) {
-	req := &CollectionReplaceRequest{
-		Name:    name,
-		Scope:   scope,
-		Entries: entries,
-		Label:   label,
-		Roles:   roles,
-	}
+func (p *Plugin) CollectionReplace(req CollectionReplaceRequest) (*CollectionReplaceResponse, error) {
 	var result CollectionReplaceResponse
-	err := p.Call(MethodCollectionReplace, req, &result)
+	err := p.Call(MethodCollectionReplace, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -299,18 +153,9 @@ func (p *Plugin) CollectionReplace(name string, scope ReplaceScope, entries []Co
 }
 
 // CollectionsCreateUser create a simple user list of words (name + words_text, one entry per line, optional `word = value`) and seed its entries.
-//
-//   - name: Collection name (lowercase, underscores).
-//   - description: default ""
-//   - wordsText: default ""
-func (p *Plugin) CollectionsCreateUser(name string, description *string, wordsText *string) (*CollectionsCreateUserResponse, error) {
-	req := &CollectionsCreateUserRequest{
-		Name:        name,
-		Description: description,
-		WordsText:   wordsText,
-	}
+func (p *Plugin) CollectionsCreateUser(req CollectionsCreateUserRequest) (*CollectionsCreateUserResponse, error) {
 	var result CollectionsCreateUserResponse
-	err := p.Call(MethodCollectionsCreateUser, req, &result)
+	err := p.Call(MethodCollectionsCreateUser, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -318,17 +163,11 @@ func (p *Plugin) CollectionsCreateUser(name string, description *string, wordsTe
 }
 
 // CollectionsList list collections with entries for display, optionally filtered by kind.
-//
-//   - kind: Filter by collection kind: "entity", "data", "commands", "log". If omitted, returns all.
-//     default null
-func (p *Plugin) CollectionsList(kind *string) ([]CollectionsListSection, error) {
-	req := &CollectionsListRequest{
-		Kind: kind,
-	}
+func (p *Plugin) CollectionsList(req CollectionsListRequest) ([]CollectionsListSection, error) {
 	var result struct {
 		Sections []CollectionsListSection `json:"sections"`
 	}
-	err := p.Call(MethodCollectionsList, req, &result)
+	err := p.Call(MethodCollectionsList, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -348,31 +187,16 @@ func (p *Plugin) CollectionsOwned() ([]OwnedCollection, error) {
 }
 
 // CommandsAddAlias add an extra spoken form (alias) for an existing command.
-func (p *Plugin) CommandsAddAlias(action string, defaultPattern string, newPattern string) error {
-	req := &CommandsAddAliasRequest{
-		Action:         action,
-		DefaultPattern: defaultPattern,
-		NewPattern:     newPattern,
-	}
-	return p.Call(MethodCommandsAddAlias, req, nil)
+func (p *Plugin) CommandsAddAlias(req CommandsAddAliasRequest) error {
+	return p.Call(MethodCommandsAddAlias, &req, nil)
 }
 
 // CommandsConfusability author-time acoustic confusability for a phrase: existing command words it may be misheard as that are co-eligible in its context.
-//
-//   - requiresTags: The command's context (its `requires_tags`); empty = free context. Used by
-//     tier-2 so a warning only fires when the confuser is co-eligible here.
-//     default []
-//   - words: The literal spoken words of the phrase being authored.
-//     default []
-func (p *Plugin) CommandsConfusability(requiresTags []string, words []string) ([]ConfusabilityFinding, error) {
-	req := &CommandsConfusabilityRequest{
-		RequiresTags: requiresTags,
-		Words:        words,
-	}
+func (p *Plugin) CommandsConfusability(req CommandsConfusabilityRequest) ([]ConfusabilityFinding, error) {
 	var result struct {
 		Findings []ConfusabilityFinding `json:"findings"`
 	}
-	err := p.Call(MethodCommandsConfusability, req, &result)
+	err := p.Call(MethodCommandsConfusability, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -380,11 +204,8 @@ func (p *Plugin) CommandsConfusability(requiresTags []string, words []string) ([
 }
 
 // CommandsDelete delete a user command by canonical name.
-func (p *Plugin) CommandsDelete(canonical string) error {
-	req := &CommandsDeleteRequest{
-		Canonical: canonical,
-	}
-	return p.Call(MethodCommandsDelete, req, nil)
+func (p *Plugin) CommandsDelete(req CommandsDeleteRequest) error {
+	return p.Call(MethodCommandsDelete, &req, nil)
 }
 
 // CommandsEnumerate flat enumeration of every registered command with dynamic/static classification — calibration host source of truth.
@@ -434,47 +255,9 @@ func (p *Plugin) CommandsListOverrides() ([]CommandOverride, error) {
 }
 
 // CommandsPush register commands with the matching engine to the matching engine.
-//
-//   - commands: The commands to push. Replaces the commands contributed by the
-//     calling plugin (the whole set, or one `group`).
-//
-//     The RUNTIME type stays `serde_json::Value` deliberately: each entry
-//     is parsed individually into `commands::PartialCommand` further in,
-//     so one malformed command is reported as one malformed command
-//     rather than failing the caller's whole push. The SCHEMA says what
-//     the entries are (2026-09-19 census) — this is the one place
-//     `#[schemars(with = ...)]` earns its keep, making the schema MORE
-//     precise than the declaration rather than less, which is the exact
-//     opposite of every other use of it this census deleted.
-//
-//     Until now the generated wrapper took raw JSON, which is why all
-//     three SDKs hand-wrote a typed push beside it (Go's
-//     `PushCommandSpecs`).
-//     default null
-//
-//   - group: Optional named group this push owns. Absent replaces the plugin's
-//     ENTIRE command set (the original semantics, unchanged); present
-//     replaces only the records in that group and leaves the plugin's other
-//     groups intact.
-//
-//     Exists because the single implicit slot is a race whenever a plugin has
-//     more than one command source. Browser has five (scroll, find,
-//     references, hint skeleton, palette) and each used to push
-//     independently — whichever landed last was the only set the matcher saw,
-//     and the hint skeleton routinely lost. Its workaround is a mutex plus
-//     rebuilding the union from every builder on each call. With groups each
-//     source owns its own, and dropping a source drops its group.
-//
-//     This is the same "can two of these coexist?" failure that
-//     `collection.replace`'s scope fixes for records: a primitive that assumes
-//     one source breaks as soon as there are two.
-func (p *Plugin) CommandsPush(commands []CommandSpec, group *string) (*CommandsPushResponse, error) {
-	req := &CommandsPushRequest{
-		Commands: commands,
-		Group:    group,
-	}
+func (p *Plugin) CommandsPush(req CommandsPushRequest) (*CommandsPushResponse, error) {
 	var result CommandsPushResponse
-	err := p.Call(MethodCommandsPush, req, &result)
+	err := p.Call(MethodCommandsPush, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -482,14 +265,9 @@ func (p *Plugin) CommandsPush(commands []CommandSpec, group *string) (*CommandsP
 }
 
 // CommandsRemoveAlias remove an added spoken form (alias) from a command.
-func (p *Plugin) CommandsRemoveAlias(action string, defaultPattern string, newPattern string) (*CommandsRemoveAliasResponse, error) {
-	req := &CommandsRemoveAliasRequest{
-		Action:         action,
-		DefaultPattern: defaultPattern,
-		NewPattern:     newPattern,
-	}
+func (p *Plugin) CommandsRemoveAlias(req CommandsRemoveAliasRequest) (*CommandsRemoveAliasResponse, error) {
 	var result CommandsRemoveAliasResponse
-	err := p.Call(MethodCommandsRemoveAlias, req, &result)
+	err := p.Call(MethodCommandsRemoveAlias, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -497,21 +275,14 @@ func (p *Plugin) CommandsRemoveAlias(action string, defaultPattern string, newPa
 }
 
 // CommandsReset reset a command override to the plugin default.
-func (p *Plugin) CommandsReset(canonical string) error {
-	req := &CommandsResetRequest{
-		Canonical: canonical,
-	}
-	return p.Call(MethodCommandsReset, req, nil)
+func (p *Plugin) CommandsReset(req CommandsResetRequest) error {
+	return p.Call(MethodCommandsReset, &req, nil)
 }
 
 // CommandsResetOverride remove a user command-phrase override (revert to the plugin default).
-func (p *Plugin) CommandsResetOverride(action string, defaultPattern string) (*CommandsResetOverrideResponse, error) {
-	req := &CommandsResetOverrideRequest{
-		Action:         action,
-		DefaultPattern: defaultPattern,
-	}
+func (p *Plugin) CommandsResetOverride(req CommandsResetOverrideRequest) (*CommandsResetOverrideResponse, error) {
 	var result CommandsResetOverrideResponse
-	err := p.Call(MethodCommandsResetOverride, req, &result)
+	err := p.Call(MethodCommandsResetOverride, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -519,51 +290,9 @@ func (p *Plugin) CommandsResetOverride(action string, defaultPattern string) (*C
 }
 
 // CommandsResolve resolve words against the command registry — returns dispatch decision, partial-match feedback, and tiebreaker telemetry in one envelope.
-//
-//   - activeTags: Active tags for tag-based scoping. If None, uses the state's active_tags.
-//     default null
-//   - collections: Narrow completions to commands contributed by these collections'
-//     contributors. None or empty = all.
-//     default null
-//   - preferOwner: Tiebreak hint for a genuine tie. When resolution reduces to 2+ equally-
-//     eligible commands the matcher cannot separate, and exactly one of them
-//     is owned by this plugin, that candidate is dispatched as a normal single
-//     winner instead of the tie being surfaced. It selects *only* among the
-//     already-tied candidates — it never overrides normal precedence
-//     (longest-match, gated-over-ungated, scope) and has no effect when there
-//     is no tie or when zero/multiple tied candidates match. Transient and
-//     per-resolve; the caller supplies it for one call, it is not a stored
-//     preference.
-//   - preview: Dry-run / verify-don't-execute mode. When true, the matcher computes
-//     the full decision (winner, completions, telemetry) but commits
-//     nothing: no tag writes are applied, no `sets_on_partial` bridge is
-//     seeded, and no `command_matched`/`command_no_match` telemetry is
-//     emitted. The action is never dispatched by `resolve` in either mode —
-//     `preview` additionally suppresses the *side effects* of resolution so
-//     a consumer (e.g. calibration command-practice) can score "would this
-//     fire the right command?" without mutating live state or polluting the
-//     no-match dashboards. Default false: normal resolve commits as before.
-//     default false
-//   - requireTag: Restrict completions to commands requiring this tag.
-//     default null
-//   - sessionID: Audio session ID from the Swift shell. Informational — links audio
-//     lifecycle events to command matches.
-//   - source: Input source: "command_hold", "continuous", "selection", "api".
-//   - words: Words to match against the command registry.
-//     default []
-func (p *Plugin) CommandsResolve(activeTags []string, collections []string, preferOwner *string, preview *bool, requireTag *string, sessionID *string, source *string, words []string) (*CommandsResolveResponse, error) {
-	req := &CommandsResolveRequest{
-		ActiveTags:  activeTags,
-		Collections: collections,
-		PreferOwner: preferOwner,
-		Preview:     preview,
-		RequireTag:  requireTag,
-		SessionID:   sessionID,
-		Source:      source,
-		Words:       words,
-	}
+func (p *Plugin) CommandsResolve(req CommandsResolveRequest) (*CommandsResolveResponse, error) {
 	var result CommandsResolveResponse
-	err := p.Call(MethodCommandsResolve, req, &result)
+	err := p.Call(MethodCommandsResolve, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -571,24 +300,13 @@ func (p *Plugin) CommandsResolve(activeTags []string, collections []string, pref
 }
 
 // CommandsSetOverride set a user command-phrase override (replace a command's spoken form).
-func (p *Plugin) CommandsSetOverride(action string, defaultPattern string, newPattern string) error {
-	req := &CommandsSetOverrideRequest{
-		Action:         action,
-		DefaultPattern: defaultPattern,
-		NewPattern:     newPattern,
-	}
-	return p.Call(MethodCommandsSetOverride, req, nil)
+func (p *Plugin) CommandsSetOverride(req CommandsSetOverrideRequest) error {
+	return p.Call(MethodCommandsSetOverride, &req, nil)
 }
 
 // ControlSignal send a control signal to the Swift shell via the control stream.
-//
-//   - signal: Raw control-stream signal string (e.g. "open hud", "hide discovery").
-//     Forwarded verbatim to the Swift shell via the actuator's control stream.
-func (p *Plugin) ControlSignal(signal string) error {
-	req := &ControlSignalRequest{
-		Signal: signal,
-	}
-	return p.Call(MethodControlSignal, req, nil)
+func (p *Plugin) ControlSignal(req ControlSignalRequest) error {
+	return p.Call(MethodControlSignal, &req, nil)
 }
 
 // DiscoveryClosed notify that the discovery HUD closed; emits _platform.discovery.closed.
@@ -597,14 +315,9 @@ func (p *Plugin) DiscoveryClosed() error {
 }
 
 // Dispatch dispatch a typed Action to a plugin or platform builtin.
-//
-//   - action: The action to dispatch.
-func (p *Plugin) Dispatch(action Action) (*DispatchResponse, error) {
-	req := &DispatchRequest{
-		Action: action,
-	}
+func (p *Plugin) Dispatch(req DispatchRequest) (*DispatchResponse, error) {
 	var result DispatchResponse
-	err := p.Call(MethodDispatch, req, &result)
+	err := p.Call(MethodDispatch, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -612,16 +325,9 @@ func (p *Plugin) Dispatch(action Action) (*DispatchResponse, error) {
 }
 
 // EffectsAssert assert an exclusivity-shape platform effect on behalf of this plugin.
-//
-//   - name: Registered effect name (e.g. `suppress_notifications`). Must be
-//     declared in the plugin's manifest `consumes.effects.asserts` and
-//     match an entry in the closed `effects::REGISTERED_EFFECTS` registry.
-func (p *Plugin) EffectsAssert(name string) (*EffectsAssertResponse, error) {
-	req := &EffectsAssertRequest{
-		Name: name,
-	}
+func (p *Plugin) EffectsAssert(req EffectsAssertRequest) (*EffectsAssertResponse, error) {
 	var result EffectsAssertResponse
-	err := p.Call(MethodEffectsAssert, req, &result)
+	err := p.Call(MethodEffectsAssert, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -629,14 +335,9 @@ func (p *Plugin) EffectsAssert(name string) (*EffectsAssertResponse, error) {
 }
 
 // EffectsIsActive query whether this plugin holds top-of-stack for the named effect.
-//
-//   - name: Registered effect name to query.
-func (p *Plugin) EffectsIsActive(name string) (*EffectsIsActiveResponse, error) {
-	req := &EffectsIsActiveRequest{
-		Name: name,
-	}
+func (p *Plugin) EffectsIsActive(req EffectsIsActiveRequest) (*EffectsIsActiveResponse, error) {
 	var result EffectsIsActiveResponse
-	err := p.Call(MethodEffectsIsActive, req, &result)
+	err := p.Call(MethodEffectsIsActive, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -644,16 +345,9 @@ func (p *Plugin) EffectsIsActive(name string) (*EffectsIsActiveResponse, error) 
 }
 
 // EffectsRetract retract this plugin's assertion of an exclusivity-shape platform effect.
-//
-//   - name: Registered effect name to retract. The plugin's frame is removed
-//     from this effect's ownership stack. If no frame exists, the call
-//     is a no-op (`retracted=false`, no error).
-func (p *Plugin) EffectsRetract(name string) (*EffectsRetractResponse, error) {
-	req := &EffectsRetractRequest{
-		Name: name,
-	}
+func (p *Plugin) EffectsRetract(req EffectsRetractRequest) (*EffectsRetractResponse, error) {
 	var result EffectsRetractResponse
-	err := p.Call(MethodEffectsRetract, req, &result)
+	err := p.Call(MethodEffectsRetract, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -661,63 +355,19 @@ func (p *Plugin) EffectsRetract(name string) (*EffectsRetractResponse, error) {
 }
 
 // EventsAppend append an event to the structured event log.
-//
-//   - eventType: Event type discriminator (e.g. "session_start", "match", "miss").
-//   - data: Free-form event payload. Stored as a raw JSON object on the event
-//     log line.
-//     default null
-//   - sessionID: Logical session id this event belongs to (8-char prefix used by
-//     the event-stream tooling). Defaults to "?" if absent.
-//     default "?"
-func (p *Plugin) EventsAppend(eventType string, data json.RawMessage, sessionID *string) error {
-	req := &EventsAppendRequest{
-		EventType: eventType,
-		Data:      data,
-		SessionID: sessionID,
-	}
-	return p.Call(MethodEventsAppend, req, nil)
+func (p *Plugin) EventsAppend(req EventsAppendRequest) error {
+	return p.Call(MethodEventsAppend, &req, nil)
 }
 
 // EventsEmit emit a plugin event on the event bus.
-//
-//   - eventType: Convention-based event type (e.g. "clipboard.copied"). The
-//     `_platform.*` namespace is reserved for the actuator.
-//   - correlationID: Optional correlation id linking related events together for
-//     debugging. Auto-generated by the platform when omitted and the
-//     emitting plugin is processing an event that already carried one.
-//     default null · pattern ^tr_[0-9A-Za-z]{11}$
-//   - data: Free-form event payload published to subscribers.
-//     default null
-func (p *Plugin) EventsEmit(eventType string, correlationID *string, data json.RawMessage) error {
-	req := &EventsEmitRequest{
-		EventType:     eventType,
-		CorrelationID: correlationID,
-		Data:          data,
-	}
-	return p.Call(MethodEventsEmit, req, nil)
+func (p *Plugin) EventsEmit(req EventsEmitRequest) error {
+	return p.Call(MethodEventsEmit, &req, nil)
 }
 
 // HttpRequest perform an HTTPS request to one of this plugin's allowed hosts, substituting the plugin's stored secrets into named headers. The plugin never sees the secret; redirects are returned, not followed.
-//
-//   - url: `https://` only, to a host this plugin declares in `requires.network`
-//     and the user has allowed.
-//   - body: A UTF-8 body. Exactly one of `body` / `body_base64`, or neither.
-//   - bodyBase64: A binary body, base64.
-//   - headers: default []
-//   - method: `GET` when omitted.
-//   - timeoutMs: Overall deadline; default 30000, at most 120000.
-//     wire uint64 (64-bit) · min 0
-func (p *Plugin) HttpRequest(url string, body *string, bodyBase64 *string, headers []HttpHeader, method *string, timeoutMs *int) (*HttpRequestResponse, error) {
-	req := &HttpRequestRequest{
-		URL:        url,
-		Body:       body,
-		BodyBase64: bodyBase64,
-		Headers:    headers,
-		Method:     method,
-		TimeoutMs:  timeoutMs,
-	}
+func (p *Plugin) HttpRequest(req HttpRequestRequest) (*HttpRequestResponse, error) {
 	var result HttpRequestResponse
-	err := p.Call(MethodHttpRequest, req, &result)
+	err := p.Call(MethodHttpRequest, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -725,113 +375,24 @@ func (p *Plugin) HttpRequest(url string, body *string, bodyBase64 *string, heade
 }
 
 // HUDCreateChannel create a new HUD broadcast channel at runtime.
-//
-//   - channel: Channel name. Must be unique across all plugins.
-//
-//   - acceptsInput: Whether the channel's window receives keyboard/mouse input.
-//     Defaults to false.
-//     default false
-//
-//   - anchor: Anchor position on screen. Defaults to `"top-right"`.
-//
-//     Declared 2026-09-19 (census) — the enum has existed all along and
-//     the doc comment was spelling out its variants by hand. Note the
-//     behaviour change that comes with it: an unrecognised anchor used to
-//     fall back to the default SILENTLY (`unwrap_or_else`), putting the
-//     window somewhere the caller did not ask for with nothing said; it
-//     now fails the call by name. Absent still means the default.
-//     default "top-right"
-//
-//   - description: Optional human-readable description shown in dev tooling.
-//     default ""
-//
-//   - draggable: Whether the shell lets the user drag this window and remembers its
-//     position. Draggable windows should also set `follows_focus: false`.
-//     Defaults to false.
-//     default false
-//
-//   - followsFocus: Whether this channel follows the active display on focus changes.
-//     Defaults to true. Set to false for user-initiated HUDs that should
-//     stay pinned to the display where they were opened.
-//     default true
-//
-//   - minHeight: Minimum window height in points. Defaults to 100.
-//     wire uint32 · default 100 · min 0
-//
-//   - onPointer: Pointer-dodge behavior: "none" (default) or "fade" (dodge the mouse —
-//     fade to near-transparent while the pointer is inside the frame).
-//     default "none"
-//
-//   - stackOrder: Stack position among windows sharing this anchor: offsets ascend from the
-//     anchor edge, so the lowest pins at the corner (a persistent status window)
-//     and higher values stack away (transient toasts). Ties broken by channel
-//     name. Defaults to 0.
-//     wire int32 · default 0
-//
-//   - transparent: Fully transparent window — the shell skips its frosted vibrancy panel
-//     and window shadow, so only the plugin's own markup paints. Defaults
-//     to false (frosted).
-//     default false
-//
-//   - width: Window width in points. Defaults to 320.
-//     wire uint32 · default 320 · min 0
-func (p *Plugin) HUDCreateChannel(channel string, acceptsInput *bool, anchor *Anchor, description *string, draggable *bool, followsFocus *bool, minHeight *int, onPointer *OnPointer, stackOrder *int, transparent *bool, width *int) error {
-	req := &HUDCreateChannelRequest{
-		Channel:      channel,
-		AcceptsInput: acceptsInput,
-		Anchor:       anchor,
-		Description:  description,
-		Draggable:    draggable,
-		FollowsFocus: followsFocus,
-		MinHeight:    minHeight,
-		OnPointer:    onPointer,
-		StackOrder:   stackOrder,
-		Transparent:  transparent,
-		Width:        width,
-	}
-	return p.Call(MethodHudCreateChannel, req, nil)
+func (p *Plugin) HUDCreateChannel(req HUDCreateChannelRequest) error {
+	return p.Call(MethodHudCreateChannel, &req, nil)
 }
 
 // HUDHide hide a HUD channel's window.
-//
-//   - channel: Channel name to hide. Sends a `close <channel>` (or
-//     `hide <channel>` for built-in channels) to the Swift shell.
-func (p *Plugin) HUDHide(channel string) error {
-	req := &HUDHideRequest{
-		Channel: channel,
-	}
-	return p.Call(MethodHudHide, req, nil)
+func (p *Plugin) HUDHide(req HUDHideRequest) error {
+	return p.Call(MethodHudHide, &req, nil)
 }
 
 // HUDPush push HTML fragments to a named HUD channel.
-//
-//   - channel: Name of the HUD channel to push fragments into. Must be owned by
-//     the calling plugin (verified via
-//     `HudChannelRegistry::verify_owner`).
-//
-//   - fragments: The fragments to patch into the channel, in order.
-//
-//     Declared 2026-09-19 (census). The handler already deserialized
-//     exactly `Vec<HudFragment>` and failed the call otherwise, so the
-//     opaque schema described nothing the platform actually accepted.
-//     default []
-func (p *Plugin) HUDPush(channel string, fragments []HudFragment) error {
-	req := &HUDPushRequest{
-		Channel:   channel,
-		Fragments: fragments,
-	}
-	return p.Call(MethodHudPush, req, nil)
+func (p *Plugin) HUDPush(req HUDPushRequest) error {
+	return p.Call(MethodHudPush, &req, nil)
 }
 
 // HUDRemoveChannel remove a HUD broadcast channel.
-//
-//   - channel: Channel name to remove. Must be owned by the calling plugin.
-func (p *Plugin) HUDRemoveChannel(channel string) (*HUDRemoveChannelResponse, error) {
-	req := &HUDRemoveChannelRequest{
-		Channel: channel,
-	}
+func (p *Plugin) HUDRemoveChannel(req HUDRemoveChannelRequest) (*HUDRemoveChannelResponse, error) {
 	var result HUDRemoveChannelResponse
-	err := p.Call(MethodHudRemoveChannel, req, &result)
+	err := p.Call(MethodHudRemoveChannel, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -839,52 +400,23 @@ func (p *Plugin) HUDRemoveChannel(channel string) (*HUDRemoveChannelResponse, er
 }
 
 // HUDSetSize report actual rendered size for a HUD channel window.
-//
-//   - channel: Channel name whose actual rendered size is being reported.
-//   - height: Actual rendered height in points (used by world-model entries
-//     instead of `min_height` when known).
-//     wire uint32 · min 0
-func (p *Plugin) HUDSetSize(channel string, height int) error {
-	req := &HUDSetSizeRequest{
-		Channel: channel,
-		Height:  height,
-	}
-	return p.Call(MethodHudSetSize, req, nil)
+func (p *Plugin) HUDSetSize(req HUDSetSizeRequest) error {
+	return p.Call(MethodHudSetSize, &req, nil)
 }
 
 // HUDShow show a HUD channel's window.
-//
-//   - channel: Channel name to show. Sends an `open <channel>` message to the
-//     Swift shell.
-func (p *Plugin) HUDShow(channel string) error {
-	req := &HUDShowRequest{
-		Channel: channel,
-	}
-	return p.Call(MethodHudShow, req, nil)
+func (p *Plugin) HUDShow(req HUDShowRequest) error {
+	return p.Call(MethodHudShow, &req, nil)
 }
 
 // InputClick click a mouse button.
-//
-//   - button: Mouse button: "left", "right", or "middle". Defaults to "left".
-//     default "left"
-func (p *Plugin) InputClick(button *string) error {
-	req := &InputClickRequest{
-		Button: button,
-	}
-	return p.Call(MethodInputClick, req, nil)
+func (p *Plugin) InputClick(req InputClickRequest) error {
+	return p.Call(MethodInputClick, &req, nil)
 }
 
 // InputClipboardAction perform a clipboard action (copy, paste, or set text).
-//
-//   - action: Action: "copy", "paste", or "set".
-//   - text: Text to set (only used by `action: "set"`).
-//     default null
-func (p *Plugin) InputClipboardAction(action string, text *string) error {
-	req := &InputClipboardActionRequest{
-		Action: action,
-		Text:   text,
-	}
-	return p.Call(MethodInputClipboardAction, req, nil)
+func (p *Plugin) InputClipboardAction(req InputClipboardActionRequest) error {
+	return p.Call(MethodInputClipboardAction, &req, nil)
 }
 
 // InputClipboardHistory get recent clipboard entries (if available).
@@ -900,12 +432,9 @@ func (p *Plugin) InputClipboardHistory() ([]string, error) {
 }
 
 // InputClipboardRead read clipboard contents by type.
-func (p *Plugin) InputClipboardRead(contentType string) (*InputClipboardReadResponse, error) {
-	req := &InputClipboardReadRequest{
-		ContentType: contentType,
-	}
+func (p *Plugin) InputClipboardRead(req InputClipboardReadRequest) (*InputClipboardReadResponse, error) {
 	var result InputClipboardReadResponse
-	err := p.Call(MethodInputClipboardRead, req, &result)
+	err := p.Call(MethodInputClipboardRead, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -925,12 +454,9 @@ func (p *Plugin) InputClipboardReadAll() ([]ClipboardContents, error) {
 }
 
 // InputClipboardReadFormat read clipboard contents in a specific pasteboard type (UTI).
-func (p *Plugin) InputClipboardReadFormat(format string) (*InputClipboardReadFormatResponse, error) {
-	req := &InputClipboardReadFormatRequest{
-		Format: format,
-	}
+func (p *Plugin) InputClipboardReadFormat(req InputClipboardReadFormatRequest) (*InputClipboardReadFormatResponse, error) {
 	var result InputClipboardReadFormatResponse
-	err := p.Call(MethodInputClipboardReadFormat, req, &result)
+	err := p.Call(MethodInputClipboardReadFormat, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -938,60 +464,31 @@ func (p *Plugin) InputClipboardReadFormat(format string) (*InputClipboardReadFor
 }
 
 // InputClipboardWrite write typed content to clipboard.
-func (p *Plugin) InputClipboardWrite(contentType string, data string) (bool, error) {
-	req := &InputClipboardWriteRequest{
-		ContentType: contentType,
-		Data:        data,
-	}
+func (p *Plugin) InputClipboardWrite(req InputClipboardWriteRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodInputClipboardWrite, req, &result)
+	err := p.Call(MethodInputClipboardWrite, &req, &result)
 	return result.Ok, err
 }
 
 // InputClipboardWriteItems write multiple typed items to the clipboard.
-//
-//   - items: default []
-func (p *Plugin) InputClipboardWriteItems(items []ClipboardWriteItem) (bool, error) {
-	req := &InputClipboardWriteItemsRequest{
-		Items: items,
-	}
+func (p *Plugin) InputClipboardWriteItems(req InputClipboardWriteItemsRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodInputClipboardWriteItems, req, &result)
+	err := p.Call(MethodInputClipboardWriteItems, &req, &result)
 	return result.Ok, err
 }
 
 // InputDoubleClick double-click at position.
-//
-//   - x: wire int32 · default null
-//   - y: wire int32 · default null
-func (p *Plugin) InputDoubleClick(x *int, y *int) error {
-	req := &InputDoubleClickRequest{
-		X: x,
-		Y: y,
-	}
-	return p.Call(MethodInputDoubleClick, req, nil)
+func (p *Plugin) InputDoubleClick(req InputDoubleClickRequest) error {
+	return p.Call(MethodInputDoubleClick, &req, nil)
 }
 
 // InputDrag atomic drag: mouse down, move, mouse up.
-//
-//   - fromX: wire int32
-//   - fromY: wire int32
-//   - toX: wire int32
-//   - toY: wire int32
-//   - durationMs: wire uint64 (64-bit) · default 0 · min 0
-func (p *Plugin) InputDrag(fromX int, fromY int, toX int, toY int, durationMs *int) error {
-	req := &InputDragRequest{
-		FromX:      fromX,
-		FromY:      fromY,
-		ToX:        toX,
-		ToY:        toY,
-		DurationMs: durationMs,
-	}
-	return p.Call(MethodInputDrag, req, nil)
+func (p *Plugin) InputDrag(req InputDragRequest) error {
+	return p.Call(MethodInputDrag, &req, nil)
 }
 
 // InputListInputSources list available keyboard input sources.
@@ -1007,42 +504,14 @@ func (p *Plugin) InputListInputSources() ([]InputSource, error) {
 }
 
 // InputMouseButton press, release, or drag-latch a mouse button (for drag operations, etc.).
-//
-//   - direction: Direction: "press", "release", or "drag". "drag" posts a
-//     zero-distance dragged event at the current cursor position — macOS
-//     only treats a window as grabbed once a dragged event follows the
-//     press, so drag-based operations need it between press and release.
-//   - button: Button: "left", "right", or "middle". Defaults to "left".
-//     default "left"
-func (p *Plugin) InputMouseButton(direction string, button *string) error {
-	req := &InputMouseButtonRequest{
-		Direction: direction,
-		Button:    button,
-	}
-	return p.Call(MethodInputMouseButton, req, nil)
+func (p *Plugin) InputMouseButton(req InputMouseButtonRequest) error {
+	return p.Call(MethodInputMouseButton, &req, nil)
 }
 
 // InputParseKeyEvent parse a browser key event into a BranchKit combo string.
-//
-//   - alt: default false
-//   - code: `KeyboardEvent.code` — the physical key, layout-independent.
-//     default ""
-//   - ctrl: default false
-//   - key: `KeyboardEvent.key` — used only to spot a bare modifier press.
-//     default ""
-//   - meta: default false
-//   - shift: default false
-func (p *Plugin) InputParseKeyEvent(alt *bool, code *string, ctrl *bool, key *string, meta *bool, shift *bool) (*InputParseKeyEventResponse, error) {
-	req := &InputParseKeyEventRequest{
-		Alt:   alt,
-		Code:  code,
-		Ctrl:  ctrl,
-		Key:   key,
-		Meta:  meta,
-		Shift: shift,
-	}
+func (p *Plugin) InputParseKeyEvent(req InputParseKeyEventRequest) (*InputParseKeyEventResponse, error) {
 	var result InputParseKeyEventResponse
-	err := p.Call(MethodInputParseKeyEvent, req, &result)
+	err := p.Call(MethodInputParseKeyEvent, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1050,63 +519,23 @@ func (p *Plugin) InputParseKeyEvent(alt *bool, code *string, ctrl *bool, key *st
 }
 
 // InputPressKey press a key by raw keycode or name, with optional modifiers.
-//
-//   - code: Raw keycode (takes priority over `name` if both are present).
-//     wire uint16 · default null · min 0 · max 65535
-//   - modifiers: Modifier keys to hold during the tap (e.g. "command", "shift").
-//     default []
-//   - name: Named key (e.g. "return", "tab"). Resolved via `resolve_key_name`.
-//     Required if `code` is absent.
-//     default null
-func (p *Plugin) InputPressKey(code *int, modifiers []string, name *string) error {
-	req := &InputPressKeyRequest{
-		Code:      code,
-		Modifiers: modifiers,
-		Name:      name,
-	}
-	return p.Call(MethodInputPressKey, req, nil)
+func (p *Plugin) InputPressKey(req InputPressKeyRequest) error {
+	return p.Call(MethodInputPressKey, &req, nil)
 }
 
 // InputRawKey send a raw key event (press, release, or click) without modifier lifting.
-//
-//   - code: Raw macOS keycode.
-//     wire uint16 · min 0 · max 65535
-//   - direction: One of "press", "release", or "click".
-func (p *Plugin) InputRawKey(code int, direction string) error {
-	req := &InputRawKeyRequest{
-		Code:      code,
-		Direction: direction,
-	}
-	return p.Call(MethodInputRawKey, req, nil)
+func (p *Plugin) InputRawKey(req InputRawKeyRequest) error {
+	return p.Call(MethodInputRawKey, &req, nil)
 }
 
 // InputRightClick right-click at position.
-//
-//   - x: wire int32 · default null
-//   - y: wire int32 · default null
-func (p *Plugin) InputRightClick(x *int, y *int) error {
-	req := &InputRightClickRequest{
-		X: x,
-		Y: y,
-	}
-	return p.Call(MethodInputRightClick, req, nil)
+func (p *Plugin) InputRightClick(req InputRightClickRequest) error {
+	return p.Call(MethodInputRightClick, &req, nil)
 }
 
 // InputScroll scroll the mouse wheel.
-//
-//   - direction: Direction: "up", "down", "left", or "right".
-//   - amount: Amount in pixels/units. Defaults to 5.
-//     wire int32 · default 5
-//   - unit: Scroll unit: "line" (discrete, default) or "pixel" (continuous/smooth).
-//     Pixel units are needed for horizontal scroll in most browsers.
-//     default "line"
-func (p *Plugin) InputScroll(direction string, amount *int, unit *string) error {
-	req := &InputScrollRequest{
-		Direction: direction,
-		Amount:    amount,
-		Unit:      unit,
-	}
-	return p.Call(MethodInputScroll, req, nil)
+func (p *Plugin) InputScroll(req InputScrollRequest) error {
+	return p.Call(MethodInputScroll, &req, nil)
 }
 
 // InputSelectAll select all content (Cmd+A).
@@ -1115,53 +544,28 @@ func (p *Plugin) InputSelectAll() error {
 }
 
 // InputSwitchInputSource switch keyboard input source.
-func (p *Plugin) InputSwitchInputSource(sourceID string) (bool, error) {
-	req := &InputSwitchInputSourceRequest{
-		SourceID: sourceID,
-	}
+func (p *Plugin) InputSwitchInputSource(req InputSwitchInputSourceRequest) (bool, error) {
 	var result struct {
 		Result bool `json:"result"`
 	}
-	err := p.Call(MethodInputSwitchInputSource, req, &result)
+	err := p.Call(MethodInputSwitchInputSource, &req, &result)
 	return result.Result, err
 }
 
 // InputTripleClick triple-click at position (select paragraph/line).
-//
-//   - x: wire int32 · default null
-//   - y: wire int32 · default null
-func (p *Plugin) InputTripleClick(x *int, y *int) error {
-	req := &InputTripleClickRequest{
-		X: x,
-		Y: y,
-	}
-	return p.Call(MethodInputTripleClick, req, nil)
+func (p *Plugin) InputTripleClick(req InputTripleClickRequest) error {
+	return p.Call(MethodInputTripleClick, &req, nil)
 }
 
 // InputTypeText type text into the active application via clipboard paste.
-//
-//   - text: Text to type into the active application.
-func (p *Plugin) InputTypeText(text string) error {
-	req := &InputTypeTextRequest{
-		Text: text,
-	}
-	return p.Call(MethodInputTypeText, req, nil)
+func (p *Plugin) InputTypeText(req InputTypeTextRequest) error {
+	return p.Call(MethodInputTypeText, &req, nil)
 }
 
 // KeybindsRegister register keybind snapshot with the platform (caches and sends to Swift shell).
-//
-//   - snapshot: The full keybind registry to install, replacing what is there.
-//
-//     Declared 2026-09-19 (census). The handler already deserialized
-//     exactly `RegistrySnapshot` and refused anything else; the doc
-//     comment was transcribing the shape by hand, and had gone stale —
-//     an entry is `{ combo, action, source, params? }`.
-func (p *Plugin) KeybindsRegister(snapshot RegistrySnapshot) (*KeybindsRegisterResponse, error) {
-	req := &KeybindsRegisterRequest{
-		Snapshot: snapshot,
-	}
+func (p *Plugin) KeybindsRegister(req KeybindsRegisterRequest) (*KeybindsRegisterResponse, error) {
 	var result KeybindsRegisterResponse
-	err := p.Call(MethodKeybindsRegister, req, &result)
+	err := p.Call(MethodKeybindsRegister, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1199,14 +603,8 @@ func (p *Plugin) NativeAccessibilityEnabled() (*NativeAccessibilityEnabledRespon
 }
 
 // NativeActivateApp bring an app to front by bundle ID.
-//
-//   - allWindows: default false
-func (p *Plugin) NativeActivateApp(bundleID string, allWindows *bool) error {
-	req := &NativeActivateAppRequest{
-		BundleID:   bundleID,
-		AllWindows: allWindows,
-	}
-	return p.Call(MethodNativeActivateApp, req, nil)
+func (p *Plugin) NativeActivateApp(req NativeActivateAppRequest) error {
+	return p.Call(MethodNativeActivateApp, &req, nil)
 }
 
 // NativeActiveNetworkService get the primary active network service name.
@@ -1306,12 +704,9 @@ func (p *Plugin) NativeApfsSnapshots() (*NativeApfsSnapshotsResponse, error) {
 }
 
 // NativeAppBundlePath get the filesystem path to an app bundle by bundle ID.
-func (p *Plugin) NativeAppBundlePath(bundleID string) (*NativeAppBundlePathResponse, error) {
-	req := &NativeAppBundlePathRequest{
-		BundleID: bundleID,
-	}
+func (p *Plugin) NativeAppBundlePath(req NativeAppBundlePathRequest) (*NativeAppBundlePathResponse, error) {
 	var result NativeAppBundlePathResponse
-	err := p.Call(MethodNativeAppBundlePath, req, &result)
+	err := p.Call(MethodNativeAppBundlePath, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1319,12 +714,9 @@ func (p *Plugin) NativeAppBundlePath(bundleID string) (*NativeAppBundlePathRespo
 }
 
 // NativeAppFocusedWindowID get focused window ID for app by bundle ID.
-func (p *Plugin) NativeAppFocusedWindowID(bundleID string) (string, error) {
-	req := &NativeAppFocusedWindowIDRequest{
-		BundleID: bundleID,
-	}
+func (p *Plugin) NativeAppFocusedWindowID(req NativeAppFocusedWindowIDRequest) (string, error) {
 	var result string
-	err := p.Call(MethodNativeAppFocusedWindowId, req, &result)
+	err := p.Call(MethodNativeAppFocusedWindowId, &req, &result)
 	if err != nil {
 		return "", err
 	}
@@ -1332,15 +724,9 @@ func (p *Plugin) NativeAppFocusedWindowID(bundleID string) (string, error) {
 }
 
 // NativeAppIcon get app icon as PNG (base64).
-//
-//   - size: wire uint32 · default 64 · min 0
-func (p *Plugin) NativeAppIcon(bundleID string, size *int) (*NativeAppIconResponse, error) {
-	req := &NativeAppIconRequest{
-		BundleID: bundleID,
-		Size:     size,
-	}
+func (p *Plugin) NativeAppIcon(req NativeAppIconRequest) (*NativeAppIconResponse, error) {
 	var result NativeAppIconResponse
-	err := p.Call(MethodNativeAppIcon, req, &result)
+	err := p.Call(MethodNativeAppIcon, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1348,12 +734,9 @@ func (p *Plugin) NativeAppIcon(bundleID string, size *int) (*NativeAppIconRespon
 }
 
 // NativeAppIconPath get path to app icon.
-func (p *Plugin) NativeAppIconPath(bundleID string) (string, error) {
-	req := &NativeAppIconPathRequest{
-		BundleID: bundleID,
-	}
+func (p *Plugin) NativeAppIconPath(req NativeAppIconPathRequest) (string, error) {
 	var result string
-	err := p.Call(MethodNativeAppIconPath, req, &result)
+	err := p.Call(MethodNativeAppIconPath, &req, &result)
 	if err != nil {
 		return "", err
 	}
@@ -1361,12 +744,9 @@ func (p *Plugin) NativeAppIconPath(bundleID string) (string, error) {
 }
 
 // NativeAppIsAgent check if app is an LSUIElement (agent/background). Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeAppIsAgent(bundleID string) (*NativeAppIsAgentResponse, error) {
-	req := &NativeAppIsAgentRequest{
-		BundleID: bundleID,
-	}
+func (p *Plugin) NativeAppIsAgent(req NativeAppIsAgentRequest) (*NativeAppIsAgentResponse, error) {
 	var result NativeAppIsAgentResponse
-	err := p.Call(MethodNativeAppIsAgent, req, &result)
+	err := p.Call(MethodNativeAppIsAgent, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1374,12 +754,9 @@ func (p *Plugin) NativeAppIsAgent(bundleID string) (*NativeAppIsAgentResponse, e
 }
 
 // NativeAppIsRunning check if an app is running by bundle ID.
-func (p *Plugin) NativeAppIsRunning(bundleID string) (*NativeAppIsRunningResponse, error) {
-	req := &NativeAppIsRunningRequest{
-		BundleID: bundleID,
-	}
+func (p *Plugin) NativeAppIsRunning(req NativeAppIsRunningRequest) (*NativeAppIsRunningResponse, error) {
 	var result NativeAppIsRunningResponse
-	err := p.Call(MethodNativeAppIsRunning, req, &result)
+	err := p.Call(MethodNativeAppIsRunning, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1387,12 +764,9 @@ func (p *Plugin) NativeAppIsRunning(bundleID string) (*NativeAppIsRunningRespons
 }
 
 // NativeAppLaunchAtLogin check if app is in login items.
-func (p *Plugin) NativeAppLaunchAtLogin(bundleID string) (*NativeAppLaunchAtLoginResponse, error) {
-	req := &NativeAppLaunchAtLoginRequest{
-		BundleID: bundleID,
-	}
+func (p *Plugin) NativeAppLaunchAtLogin(req NativeAppLaunchAtLoginRequest) (*NativeAppLaunchAtLoginResponse, error) {
 	var result NativeAppLaunchAtLoginResponse
-	err := p.Call(MethodNativeAppLaunchAtLogin, req, &result)
+	err := p.Call(MethodNativeAppLaunchAtLogin, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1400,12 +774,9 @@ func (p *Plugin) NativeAppLaunchAtLogin(bundleID string) (*NativeAppLaunchAtLogi
 }
 
 // NativeAppMetadata get bundle metadata for an application.
-func (p *Plugin) NativeAppMetadata(bundleID string) (*NativeAppMetadataResponse, error) {
-	req := &NativeAppMetadataRequest{
-		BundleID: bundleID,
-	}
+func (p *Plugin) NativeAppMetadata(req NativeAppMetadataRequest) (*NativeAppMetadataResponse, error) {
 	var result NativeAppMetadataResponse
-	err := p.Call(MethodNativeAppMetadata, req, &result)
+	err := p.Call(MethodNativeAppMetadata, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1413,12 +784,9 @@ func (p *Plugin) NativeAppMetadata(bundleID string) (*NativeAppMetadataResponse,
 }
 
 // NativeAppPath get an app path by bundle ID.
-func (p *Plugin) NativeAppPath(bundleID string) (string, error) {
-	req := &NativeAppPathRequest{
-		BundleID: bundleID,
-	}
+func (p *Plugin) NativeAppPath(req NativeAppPathRequest) (string, error) {
 	var result string
-	err := p.Call(MethodNativeAppPath, req, &result)
+	err := p.Call(MethodNativeAppPath, &req, &result)
 	if err != nil {
 		return "", err
 	}
@@ -1426,12 +794,9 @@ func (p *Plugin) NativeAppPath(bundleID string) (string, error) {
 }
 
 // NativeAppPid get PID of running app by bundle ID.
-func (p *Plugin) NativeAppPid(bundleID string) (int, error) {
-	req := &NativeAppPidRequest{
-		BundleID: bundleID,
-	}
+func (p *Plugin) NativeAppPid(req NativeAppPidRequest) (int, error) {
 	var result int
-	err := p.Call(MethodNativeAppPid, req, &result)
+	err := p.Call(MethodNativeAppPid, &req, &result)
 	if err != nil {
 		return 0, err
 	}
@@ -1449,12 +814,9 @@ func (p *Plugin) NativeAppSupportDirectory() (*NativeAppSupportDirectoryResponse
 }
 
 // NativeAppVersion get an app version by bundle ID.
-func (p *Plugin) NativeAppVersion(bundleID string) (string, error) {
-	req := &NativeAppVersionRequest{
-		BundleID: bundleID,
-	}
+func (p *Plugin) NativeAppVersion(req NativeAppVersionRequest) (string, error) {
 	var result string
-	err := p.Call(MethodNativeAppVersion, req, &result)
+	err := p.Call(MethodNativeAppVersion, &req, &result)
 	if err != nil {
 		return "", err
 	}
@@ -1474,14 +836,11 @@ func (p *Plugin) NativeAppVolumes() ([]AppVolume, error) {
 }
 
 // NativeAppWindows list all windows belonging to a specific app by bundle ID.
-func (p *Plugin) NativeAppWindows(bundleID string) ([]WindowDetail, error) {
-	req := &NativeAppWindowsRequest{
-		BundleID: bundleID,
-	}
+func (p *Plugin) NativeAppWindows(req NativeAppWindowsRequest) ([]WindowDetail, error) {
 	var result struct {
 		Windows []WindowDetail `json:"windows"`
 	}
-	err := p.Call(MethodNativeAppWindows, req, &result)
+	err := p.Call(MethodNativeAppWindows, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1489,12 +848,9 @@ func (p *Plugin) NativeAppWindows(bundleID string) ([]WindowDetail, error) {
 }
 
 // NativeAppWindowsCount count windows for an app by bundle ID.
-func (p *Plugin) NativeAppWindowsCount(bundleID string) (int, error) {
-	req := &NativeAppWindowsCountRequest{
-		BundleID: bundleID,
-	}
+func (p *Plugin) NativeAppWindowsCount(req NativeAppWindowsCountRequest) (int, error) {
 	var result int
-	err := p.Call(MethodNativeAppWindowsCount, req, &result)
+	err := p.Call(MethodNativeAppWindowsCount, &req, &result)
 	if err != nil {
 		return 0, err
 	}
@@ -1502,14 +858,11 @@ func (p *Plugin) NativeAppWindowsCount(bundleID string) (int, error) {
 }
 
 // NativeAppsForPath applications the OS registers as able to open a given file (Launch Services).
-func (p *Plugin) NativeAppsForPath(path string) ([]InstalledApp, error) {
-	req := &NativeAppsForPathRequest{
-		Path: path,
-	}
+func (p *Plugin) NativeAppsForPath(req NativeAppsForPathRequest) ([]InstalledApp, error) {
 	var result struct {
 		Apps []InstalledApp `json:"apps"`
 	}
-	err := p.Call(MethodNativeAppsForPath, req, &result)
+	err := p.Call(MethodNativeAppsForPath, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1517,12 +870,9 @@ func (p *Plugin) NativeAppsForPath(path string) ([]InstalledApp, error) {
 }
 
 // NativeAudioDeviceVolume get volume state for a specific audio device by UID.
-func (p *Plugin) NativeAudioDeviceVolume(deviceUID string) (*NativeAudioDeviceVolumeResponse, error) {
-	req := &NativeAudioDeviceVolumeRequest{
-		DeviceUID: deviceUID,
-	}
+func (p *Plugin) NativeAudioDeviceVolume(req NativeAudioDeviceVolumeRequest) (*NativeAudioDeviceVolumeResponse, error) {
 	var result NativeAudioDeviceVolumeResponse
-	err := p.Call(MethodNativeAudioDeviceVolume, req, &result)
+	err := p.Call(MethodNativeAudioDeviceVolume, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1622,12 +972,9 @@ func (p *Plugin) NativeAutomaticLoginUser() (*NativeAutomaticLoginUserResponse, 
 }
 
 // NativeAutomationPermission check if automation permission is granted for target app. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeAutomationPermission(bundleID string) (*NativeAutomationPermissionResponse, error) {
-	req := &NativeAutomationPermissionRequest{
-		BundleID: bundleID,
-	}
+func (p *Plugin) NativeAutomationPermission(req NativeAutomationPermissionRequest) (*NativeAutomationPermissionResponse, error) {
 	var result NativeAutomationPermissionResponse
-	err := p.Call(MethodNativeAutomationPermission, req, &result)
+	err := p.Call(MethodNativeAutomationPermission, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1635,19 +982,9 @@ func (p *Plugin) NativeAutomationPermission(bundleID string) (*NativeAutomationP
 }
 
 // NativeAxElementAtPoint get the accessibility element at a screen point.
-//
-//   - x: wire int32
-//   - y: wire int32
-//   - pid: Only this application's element; any application's when absent.
-//     wire int32 · default null
-func (p *Plugin) NativeAxElementAtPoint(x int, y int, pid *int) (*NativeAxElementAtPointResponse, error) {
-	req := &NativeAxElementAtPointRequest{
-		X:   x,
-		Y:   y,
-		Pid: pid,
-	}
+func (p *Plugin) NativeAxElementAtPoint(req NativeAxElementAtPointRequest) (*NativeAxElementAtPointResponse, error) {
 	var result NativeAxElementAtPointResponse
-	err := p.Call(MethodNativeAxElementAtPoint, req, &result)
+	err := p.Call(MethodNativeAxElementAtPoint, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1655,15 +992,9 @@ func (p *Plugin) NativeAxElementAtPoint(x int, y int, pid *int) (*NativeAxElemen
 }
 
 // NativeAxElementTree get the accessibility element tree rooted at an element.
-//
-//   - depth: wire uint32 · default 3 · min 0
-func (p *Plugin) NativeAxElementTree(element AccessibleRef, depth *int) (*AccessibleNode, error) {
-	req := &NativeAxElementTreeRequest{
-		Element: element,
-		Depth:   depth,
-	}
+func (p *Plugin) NativeAxElementTree(req NativeAxElementTreeRequest) (*AccessibleNode, error) {
 	var result AccessibleNode
-	err := p.Call(MethodNativeAxElementTree, req, &result)
+	err := p.Call(MethodNativeAxElementTree, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1671,19 +1002,9 @@ func (p *Plugin) NativeAxElementTree(element AccessibleRef, depth *int) (*Access
 }
 
 // NativeAxObserve observe an application's accessibility changes. Notifications arrive as _platform.ax.notification, addressed to the calling plugin alone: focus_changed, value_changed, name_changed, state_changed, children_changed, selection_changed, window_opened (none named means all).
-//
-//   - pid: The application to observe.
-//     wire int32
-//   - notifications: The notifications wanted, from the portable vocabulary; none means
-//     all of them. An unknown name is refused.
-//     default []
-func (p *Plugin) NativeAxObserve(pid int, notifications []string) (*NativeAxObserveResponse, error) {
-	req := &NativeAxObserveRequest{
-		Pid:           pid,
-		Notifications: notifications,
-	}
+func (p *Plugin) NativeAxObserve(req NativeAxObserveRequest) (*NativeAxObserveResponse, error) {
 	var result NativeAxObserveResponse
-	err := p.Call(MethodNativeAxObserve, req, &result)
+	err := p.Call(MethodNativeAxObserve, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1691,28 +1012,18 @@ func (p *Plugin) NativeAxObserve(pid int, notifications []string) (*NativeAxObse
 }
 
 // NativeAxPerformAction perform an action on an accessibility element: press (its default action, what a click does), toggle, focus, expand, collapse, increment, decrement, scroll_into_view, show_menu, or one of the element's own actions by its OS name. The element's actions list says which it offers.
-func (p *Plugin) NativeAxPerformAction(action string, element AccessibleRef) (bool, error) {
-	req := &NativeAxPerformActionRequest{
-		Action:  action,
-		Element: element,
-	}
+func (p *Plugin) NativeAxPerformAction(req NativeAxPerformActionRequest) (bool, error) {
 	var result struct {
 		Result bool `json:"result"`
 	}
-	err := p.Call(MethodNativeAxPerformAction, req, &result)
+	err := p.Call(MethodNativeAxPerformAction, &req, &result)
 	return result.Result, err
 }
 
 // NativeAxReadAttributes read specific attributes from an accessibility element.
-//
-//   - attributes: default []
-func (p *Plugin) NativeAxReadAttributes(element AccessibleRef, attributes []string) (map[string]json.RawMessage, error) {
-	req := &NativeAxReadAttributesRequest{
-		Element:    element,
-		Attributes: attributes,
-	}
+func (p *Plugin) NativeAxReadAttributes(req NativeAxReadAttributesRequest) (map[string]json.RawMessage, error) {
 	var result map[string]json.RawMessage
-	err := p.Call(MethodNativeAxReadAttributes, req, &result)
+	err := p.Call(MethodNativeAxReadAttributes, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1720,42 +1031,29 @@ func (p *Plugin) NativeAxReadAttributes(element AccessibleRef, attributes []stri
 }
 
 // NativeAxSetAttribute set an accessibility element's value (text, or a number for a slider or spin button) or focus it (focused: true). Returns whether it took.
-func (p *Plugin) NativeAxSetAttribute(attribute string, element AccessibleRef, value json.RawMessage) (bool, error) {
-	req := &NativeAxSetAttributeRequest{
-		Attribute: attribute,
-		Element:   element,
-		Value:     value,
-	}
+func (p *Plugin) NativeAxSetAttribute(req NativeAxSetAttributeRequest) (bool, error) {
 	var result struct {
 		Result bool `json:"result"`
 	}
-	err := p.Call(MethodNativeAxSetAttribute, req, &result)
+	err := p.Call(MethodNativeAxSetAttribute, &req, &result)
 	return result.Result, err
 }
 
 // NativeAxUnobserve stop observing accessibility changes. A plugin can end only its own subscriptions.
-func (p *Plugin) NativeAxUnobserve(subscriptionID string) (bool, error) {
-	req := &NativeAxUnobserveRequest{
-		SubscriptionID: subscriptionID,
-	}
+func (p *Plugin) NativeAxUnobserve(req NativeAxUnobserveRequest) (bool, error) {
 	var result struct {
 		Result bool `json:"result"`
 	}
-	err := p.Call(MethodNativeAxUnobserve, req, &result)
+	err := p.Call(MethodNativeAxUnobserve, &req, &result)
 	return result.Result, err
 }
 
 // NativeBatchIsTileable check which windows can be tiled.
-//
-//   - windowIds: default []
-func (p *Plugin) NativeBatchIsTileable(windowIds []string) ([]TileableEntry, error) {
-	req := &NativeBatchIsTileableRequest{
-		WindowIds: windowIds,
-	}
+func (p *Plugin) NativeBatchIsTileable(req NativeBatchIsTileableRequest) ([]TileableEntry, error) {
 	var result struct {
 		Results []TileableEntry `json:"results"`
 	}
-	err := p.Call(MethodNativeBatchIsTileable, req, &result)
+	err := p.Call(MethodNativeBatchIsTileable, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1763,20 +1061,11 @@ func (p *Plugin) NativeBatchIsTileable(windowIds []string) ([]TileableEntry, err
 }
 
 // NativeBatchSetFrames set positions/sizes for multiple windows.
-//
-//   - frames: default []
-//   - readback: If true, sleep 10ms after applying frames and read back the actual
-//     positions (defaults to true). Set false to skip the readback round-trip.
-//     default true
-func (p *Plugin) NativeBatchSetFrames(frames []WindowFrame, readback *bool) ([]WindowFrame, error) {
-	req := &NativeBatchSetFramesRequest{
-		Frames:   frames,
-		Readback: readback,
-	}
+func (p *Plugin) NativeBatchSetFrames(req NativeBatchSetFramesRequest) ([]WindowFrame, error) {
 	var result struct {
 		Results []WindowFrame `json:"results"`
 	}
-	err := p.Call(MethodNativeBatchSetFrames, req, &result)
+	err := p.Call(MethodNativeBatchSetFrames, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1824,18 +1113,11 @@ func (p *Plugin) NativeBatteryMaxCapacity() (float64, error) {
 }
 
 // NativeBleDiscoverServices discover GATT services and characteristics on a paired BLE device.
-//
-//   - deviceIdentifier: Identifier for the paired BLE device. Accepts a CoreBluetooth
-//     peripheral UUID (e.g. "12345678-...") or a device name to match
-//     among connected BLE HID peripherals (e.g. "Shortcut Remote").
-func (p *Plugin) NativeBleDiscoverServices(deviceIdentifier string) ([]BleService, error) {
-	req := &NativeBleDiscoverServicesRequest{
-		DeviceIdentifier: deviceIdentifier,
-	}
+func (p *Plugin) NativeBleDiscoverServices(req NativeBleDiscoverServicesRequest) ([]BleService, error) {
 	var result struct {
 		Services []BleService `json:"services"`
 	}
-	err := p.Call(MethodNativeBleDiscoverServices, req, &result)
+	err := p.Call(MethodNativeBleDiscoverServices, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1843,18 +1125,9 @@ func (p *Plugin) NativeBleDiscoverServices(deviceIdentifier string) ([]BleServic
 }
 
 // NativeBleSubscribe subscribe to GATT notifications on a BLE characteristic.
-//
-//   - characteristicUuid: GATT characteristic UUID to subscribe to (must support notify).
-//   - deviceIdentifier: CoreBluetooth peripheral UUID or device name.
-//   - serviceUuid: GATT service UUID containing the characteristic.
-func (p *Plugin) NativeBleSubscribe(characteristicUuid string, deviceIdentifier string, serviceUuid string) (*NativeBleSubscribeResponse, error) {
-	req := &NativeBleSubscribeRequest{
-		CharacteristicUuid: characteristicUuid,
-		DeviceIdentifier:   deviceIdentifier,
-		ServiceUuid:        serviceUuid,
-	}
+func (p *Plugin) NativeBleSubscribe(req NativeBleSubscribeRequest) (*NativeBleSubscribeResponse, error) {
 	var result NativeBleSubscribeResponse
-	err := p.Call(MethodNativeBleSubscribe, req, &result)
+	err := p.Call(MethodNativeBleSubscribe, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1862,20 +1135,9 @@ func (p *Plugin) NativeBleSubscribe(characteristicUuid string, deviceIdentifier 
 }
 
 // NativeBleSubscribeAllThenWrite subscribe to all notify characteristics on listed services, then write — single GATT cycle.
-//
-//   - deviceIdentifier: CoreBluetooth peripheral UUID or device name.
-//   - subscribeServices: GATT service UUIDs to subscribe to all notify characteristics on.
-//     default []
-//   - writes: Writes to perform after subscribing. The last `with_response` write
-//     determines when the operation completes.
-func (p *Plugin) NativeBleSubscribeAllThenWrite(deviceIdentifier string, subscribeServices []string, writes []BleWriteEntry) (*NativeBleSubscribeAllThenWriteResponse, error) {
-	req := &NativeBleSubscribeAllThenWriteRequest{
-		DeviceIdentifier:  deviceIdentifier,
-		SubscribeServices: subscribeServices,
-		Writes:            writes,
-	}
+func (p *Plugin) NativeBleSubscribeAllThenWrite(req NativeBleSubscribeAllThenWriteRequest) (*NativeBleSubscribeAllThenWriteResponse, error) {
 	var result NativeBleSubscribeAllThenWriteResponse
-	err := p.Call(MethodNativeBleSubscribeAllThenWrite, req, &result)
+	err := p.Call(MethodNativeBleSubscribeAllThenWrite, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1883,25 +1145,9 @@ func (p *Plugin) NativeBleSubscribeAllThenWrite(deviceIdentifier string, subscri
 }
 
 // NativeBleWrite write bytes to a GATT characteristic on a paired BLE device.
-//
-//   - characteristicUuid: GATT characteristic UUID (e.g. "FFF1").
-//   - deviceIdentifier: Identifier for the paired BLE device. Accepts a CoreBluetooth
-//     peripheral UUID or a device name (see ble_discover_services).
-//   - serviceUuid: GATT service UUID (e.g. "FFF0").
-//   - data: Bytes to write to the characteristic.
-//     default []
-//   - writeType: Write type: "with_response" (default, reliable) or "without_response" (fire-and-forget).
-//     default "with_response"
-func (p *Plugin) NativeBleWrite(characteristicUuid string, deviceIdentifier string, serviceUuid string, data []int, writeType *string) (*NativeBleWriteResponse, error) {
-	req := &NativeBleWriteRequest{
-		CharacteristicUuid: characteristicUuid,
-		DeviceIdentifier:   deviceIdentifier,
-		ServiceUuid:        serviceUuid,
-		Data:               data,
-		WriteType:          writeType,
-	}
+func (p *Plugin) NativeBleWrite(req NativeBleWriteRequest) (*NativeBleWriteResponse, error) {
 	var result NativeBleWriteResponse
-	err := p.Call(MethodNativeBleWrite, req, &result)
+	err := p.Call(MethodNativeBleWrite, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1951,13 +1197,8 @@ func (p *Plugin) NativeBootVolume() (*NativeBootVolumeResponse, error) {
 }
 
 // NativeBorders draw window border overlays (forwarded to Swift shell).
-//
-//   - frames: default []
-func (p *Plugin) NativeBorders(frames []WindowFrame) error {
-	req := &NativeBordersRequest{
-		Frames: frames,
-	}
-	return p.Call(MethodNativeBorders, req, nil)
+func (p *Plugin) NativeBorders(req NativeBordersRequest) error {
+	return p.Call(MethodNativeBorders, &req, nil)
 }
 
 // NativeBounceKeys check if Bounce Keys is on (repeated presses of one key are ignored).
@@ -1971,14 +1212,9 @@ func (p *Plugin) NativeBounceKeys() (*NativeBounceKeysResponse, error) {
 }
 
 // NativeBrightness get display brightness (0.0-1.0).
-//
-//   - displayID: wire uint32 · default null · min 0
-func (p *Plugin) NativeBrightness(displayID *int) (*NativeBrightnessResponse, error) {
-	req := &NativeBrightnessRequest{
-		DisplayID: displayID,
-	}
+func (p *Plugin) NativeBrightness(req NativeBrightnessRequest) (*NativeBrightnessResponse, error) {
 	var result NativeBrightnessResponse
-	err := p.Call(MethodNativeBrightness, req, &result)
+	err := p.Call(MethodNativeBrightness, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1986,14 +1222,9 @@ func (p *Plugin) NativeBrightness(displayID *int) (*NativeBrightnessResponse, er
 }
 
 // NativeBundleForRemotePort resolve a loopback TCP connection's remote port to the owning process's app bundle ID.
-//
-//   - remotePort: wire int32
-func (p *Plugin) NativeBundleForRemotePort(remotePort int) (*NativeBundleForRemotePortResponse, error) {
-	req := &NativeBundleForRemotePortRequest{
-		RemotePort: remotePort,
-	}
+func (p *Plugin) NativeBundleForRemotePort(req NativeBundleForRemotePortRequest) (*NativeBundleForRemotePortResponse, error) {
 	var result NativeBundleForRemotePortResponse
-	err := p.Call(MethodNativeBundleForRemotePort, req, &result)
+	err := p.Call(MethodNativeBundleForRemotePort, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2001,15 +1232,11 @@ func (p *Plugin) NativeBundleForRemotePort(remotePort int) (*NativeBundleForRemo
 }
 
 // NativeCalendarEventsRange get calendar events in a date range (ISO 8601).
-func (p *Plugin) NativeCalendarEventsRange(end string, start string) ([]CalendarEvent, error) {
-	req := &NativeCalendarEventsRangeRequest{
-		End:   end,
-		Start: start,
-	}
+func (p *Plugin) NativeCalendarEventsRange(req NativeCalendarEventsRangeRequest) ([]CalendarEvent, error) {
 	var result struct {
 		Events []CalendarEvent `json:"events"`
 	}
-	err := p.Call(MethodNativeCalendarEventsRange, req, &result)
+	err := p.Call(MethodNativeCalendarEventsRange, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2071,12 +1298,9 @@ func (p *Plugin) NativeCapsLockState() (*NativeCapsLockStateResponse, error) {
 }
 
 // NativeCaptureWindow capture a single window as PNG (base64).
-func (p *Plugin) NativeCaptureWindow(windowID string) (*NativeCaptureWindowResponse, error) {
-	req := &NativeCaptureWindowRequest{
-		WindowID: windowID,
-	}
+func (p *Plugin) NativeCaptureWindow(req NativeCaptureWindowRequest) (*NativeCaptureWindowResponse, error) {
 	var result NativeCaptureWindowResponse
-	err := p.Call(MethodNativeCaptureWindow, req, &result)
+	err := p.Call(MethodNativeCaptureWindow, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2084,32 +1308,23 @@ func (p *Plugin) NativeCaptureWindow(windowID string) (*NativeCaptureWindowRespo
 }
 
 // NativeCascadeWindows cascade all windows for an app.
-func (p *Plugin) NativeCascadeWindows(bundleID string) (bool, error) {
-	req := &NativeCascadeWindowsRequest{
-		BundleID: bundleID,
-	}
+func (p *Plugin) NativeCascadeWindows(req NativeCascadeWindowsRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeCascadeWindows, req, &result)
+	err := p.Call(MethodNativeCascadeWindows, &req, &result)
 	return result.Ok, err
 }
 
 // NativeCenterWindow center a window on its current display.
-func (p *Plugin) NativeCenterWindow(windowID string) error {
-	req := &NativeCenterWindowRequest{
-		WindowID: windowID,
-	}
-	return p.Call(MethodNativeCenterWindow, req, nil)
+func (p *Plugin) NativeCenterWindow(req NativeCenterWindowRequest) error {
+	return p.Call(MethodNativeCenterWindow, &req, nil)
 }
 
 // NativeCheckPermission check a permission status (screen_recording, camera, etc.).
-func (p *Plugin) NativeCheckPermission(permission string) (*NativeCheckPermissionResponse, error) {
-	req := &NativeCheckPermissionRequest{
-		Permission: permission,
-	}
+func (p *Plugin) NativeCheckPermission(req NativeCheckPermissionRequest) (*NativeCheckPermissionResponse, error) {
 	var result NativeCheckPermissionResponse
-	err := p.Call(MethodNativeCheckPermission, req, &result)
+	err := p.Call(MethodNativeCheckPermission, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2117,42 +1332,29 @@ func (p *Plugin) NativeCheckPermission(permission string) (*NativeCheckPermissio
 }
 
 // NativeClearFileQuarantine remove the quarantine extended attribute from a file.
-func (p *Plugin) NativeClearFileQuarantine(path string) (bool, error) {
-	req := &NativeClearFileQuarantineRequest{
-		Path: path,
-	}
+func (p *Plugin) NativeClearFileQuarantine(req NativeClearFileQuarantineRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeClearFileQuarantine, req, &result)
+	err := p.Call(MethodNativeClearFileQuarantine, &req, &result)
 	return result.Ok, err
 }
 
 // NativeClearNotifications clear all delivered notifications for an app.
-func (p *Plugin) NativeClearNotifications(bundleID string) (bool, error) {
-	req := &NativeClearNotificationsRequest{
-		BundleID: bundleID,
-	}
+func (p *Plugin) NativeClearNotifications(req NativeClearNotificationsRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeClearNotifications, req, &result)
+	err := p.Call(MethodNativeClearNotifications, &req, &result)
 	return result.Ok, err
 }
 
 // NativeClickMenuItem click a menu item by navigating the menu bar path.
-//
-//   - pid: wire int32
-//   - path: default []
-func (p *Plugin) NativeClickMenuItem(pid int, path []string) (bool, error) {
-	req := &NativeClickMenuItemRequest{
-		Pid:  pid,
-		Path: path,
-	}
+func (p *Plugin) NativeClickMenuItem(req NativeClickMenuItemRequest) (bool, error) {
 	var result struct {
 		Result bool `json:"result"`
 	}
-	err := p.Call(MethodNativeClickMenuItem, req, &result)
+	err := p.Call(MethodNativeClickMenuItem, &req, &result)
 	return result.Result, err
 }
 
@@ -2177,28 +1379,18 @@ func (p *Plugin) NativeClipboardImageDimensions() (*NativeClipboardImageDimensio
 }
 
 // NativeCloseWindow close a window by ID.
-func (p *Plugin) NativeCloseWindow(windowID string) (bool, error) {
-	req := &NativeCloseWindowRequest{
-		WindowID: windowID,
-	}
+func (p *Plugin) NativeCloseWindow(req NativeCloseWindowRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeCloseWindow, req, &result)
+	err := p.Call(MethodNativeCloseWindow, &req, &result)
 	return result.Ok, err
 }
 
 // NativeColorAtPoint sample pixel color at screen coordinate.
-//
-//   - x: wire int32
-//   - y: wire int32
-func (p *Plugin) NativeColorAtPoint(x int, y int) (*NativeColorAtPointResponse, error) {
-	req := &NativeColorAtPointRequest{
-		X: x,
-		Y: y,
-	}
+func (p *Plugin) NativeColorAtPoint(req NativeColorAtPointRequest) (*NativeColorAtPointResponse, error) {
 	var result NativeColorAtPointResponse
-	err := p.Call(MethodNativeColorAtPoint, req, &result)
+	err := p.Call(MethodNativeColorAtPoint, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2236,15 +1428,11 @@ func (p *Plugin) NativeContactsPermission() (*NativeContactsPermissionResponse, 
 }
 
 // NativeCopyFile copy a file or directory.
-func (p *Plugin) NativeCopyFile(destination string, source string) (bool, error) {
-	req := &NativeCopyFileRequest{
-		Destination: destination,
-		Source:      source,
-	}
+func (p *Plugin) NativeCopyFile(req NativeCopyFileRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeCopyFile, req, &result)
+	err := p.Call(MethodNativeCopyFile, &req, &result)
 	return result.Ok, err
 }
 
@@ -2279,14 +1467,11 @@ func (p *Plugin) NativeCpuUsage() (float64, error) {
 }
 
 // NativeCreateDirectory create a directory (with intermediate directories).
-func (p *Plugin) NativeCreateDirectory(path string) (bool, error) {
-	req := &NativeCreateDirectoryRequest{
-		Path: path,
-	}
+func (p *Plugin) NativeCreateDirectory(req NativeCreateDirectoryRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeCreateDirectory, req, &result)
+	err := p.Call(MethodNativeCreateDirectory, &req, &result)
 	return result.Ok, err
 }
 
@@ -2403,12 +1588,9 @@ func (p *Plugin) NativeDateFormat() (*NativeDateFormatResponse, error) {
 }
 
 // NativeDefaultAppForUti get the default application for a UTI.
-func (p *Plugin) NativeDefaultAppForUti(uti string) (*NativeDefaultAppForUtiResponse, error) {
-	req := &NativeDefaultAppForUtiRequest{
-		Uti: uti,
-	}
+func (p *Plugin) NativeDefaultAppForUti(req NativeDefaultAppForUtiRequest) (*NativeDefaultAppForUtiResponse, error) {
 	var result NativeDefaultAppForUtiResponse
-	err := p.Call(MethodNativeDefaultAppForUti, req, &result)
+	err := p.Call(MethodNativeDefaultAppForUti, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2446,14 +1628,11 @@ func (p *Plugin) NativeDefaultPrinter() (*NativeDefaultPrinterResponse, error) {
 }
 
 // NativeDeleteFile delete a file or empty directory.
-func (p *Plugin) NativeDeleteFile(path string) (bool, error) {
-	req := &NativeDeleteFileRequest{
-		Path: path,
-	}
+func (p *Plugin) NativeDeleteFile(req NativeDeleteFileRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeDeleteFile, req, &result)
+	err := p.Call(MethodNativeDeleteFile, &req, &result)
 	return result.Ok, err
 }
 
@@ -2480,14 +1659,11 @@ func (p *Plugin) NativeDetectBarcodes() ([]BarcodeResult, error) {
 }
 
 // NativeDetectBarcodesFile detect barcodes and QR codes from an image file.
-func (p *Plugin) NativeDetectBarcodesFile(path string) ([]BarcodeResult, error) {
-	req := &NativeDetectBarcodesFileRequest{
-		Path: path,
-	}
+func (p *Plugin) NativeDetectBarcodesFile(req NativeDetectBarcodesFileRequest) ([]BarcodeResult, error) {
 	var result struct {
 		Barcodes []BarcodeResult `json:"barcodes"`
 	}
-	err := p.Call(MethodNativeDetectBarcodesFile, req, &result)
+	err := p.Call(MethodNativeDetectBarcodesFile, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2515,17 +1691,11 @@ func (p *Plugin) NativeDifferentiateWithoutColor() (*NativeDifferentiateWithoutC
 }
 
 // NativeDirectoryContents list files and directories at a path.
-//
-//   - includeHidden: default false
-func (p *Plugin) NativeDirectoryContents(path string, includeHidden *bool) ([]DirectoryEntry, error) {
-	req := &NativeDirectoryContentsRequest{
-		Path:          path,
-		IncludeHidden: includeHidden,
-	}
+func (p *Plugin) NativeDirectoryContents(req NativeDirectoryContentsRequest) ([]DirectoryEntry, error) {
 	var result struct {
 		Entries []DirectoryEntry `json:"entries"`
 	}
-	err := p.Call(MethodNativeDirectoryContents, req, &result)
+	err := p.Call(MethodNativeDirectoryContents, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2533,14 +1703,9 @@ func (p *Plugin) NativeDirectoryContents(path string, includeHidden *bool) ([]Di
 }
 
 // NativeDiskSpace get disk space for a volume (default: /).
-//
-//   - path: default ""
-func (p *Plugin) NativeDiskSpace(path *string) (*NativeDiskSpaceResponse, error) {
-	req := &NativeDiskSpaceRequest{
-		Path: path,
-	}
+func (p *Plugin) NativeDiskSpace(req NativeDiskSpaceRequest) (*NativeDiskSpaceResponse, error) {
 	var result NativeDiskSpaceResponse
-	err := p.Call(MethodNativeDiskSpace, req, &result)
+	err := p.Call(MethodNativeDiskSpace, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2548,12 +1713,9 @@ func (p *Plugin) NativeDiskSpace(path *string) (*NativeDiskSpaceResponse, error)
 }
 
 // NativeDiskUsage get disk usage for a path (like du -sh).
-func (p *Plugin) NativeDiskUsage(path string) (*NativeDiskUsageResponse, error) {
-	req := &NativeDiskUsageRequest{
-		Path: path,
-	}
+func (p *Plugin) NativeDiskUsage(req NativeDiskUsageRequest) (*NativeDiskUsageResponse, error) {
 	var result NativeDiskUsageResponse
-	err := p.Call(MethodNativeDiskUsage, req, &result)
+	err := p.Call(MethodNativeDiskUsage, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2561,11 +1723,8 @@ func (p *Plugin) NativeDiskUsage(path string) (*NativeDiskUsageResponse, error) 
 }
 
 // NativeDismissNotification dismiss a delivered notification (partial — no-op).
-func (p *Plugin) NativeDismissNotification(id string) error {
-	req := &NativeDismissNotificationRequest{
-		ID: id,
-	}
-	return p.Call(MethodNativeDismissNotification, req, nil)
+func (p *Plugin) NativeDismissNotification(req NativeDismissNotificationRequest) error {
+	return p.Call(MethodNativeDismissNotification, &req, nil)
 }
 
 // NativeDisplayBrightness get current display brightness (0.0-1.0).
@@ -2611,14 +1770,9 @@ func (p *Plugin) NativeDisplayMirroring() (*NativeDisplayMirroringResponse, erro
 }
 
 // NativeDisplayRefreshRate get display refresh rate in Hz.
-//
-//   - displayID: wire uint32 · min 0
-func (p *Plugin) NativeDisplayRefreshRate(displayID int) (float64, error) {
-	req := &NativeDisplayRefreshRateRequest{
-		DisplayID: displayID,
-	}
+func (p *Plugin) NativeDisplayRefreshRate(req NativeDisplayRefreshRateRequest) (float64, error) {
 	var result float64
-	err := p.Call(MethodNativeDisplayRefreshRate, req, &result)
+	err := p.Call(MethodNativeDisplayRefreshRate, &req, &result)
 	if err != nil {
 		return 0, err
 	}
@@ -2638,14 +1792,9 @@ func (p *Plugin) NativeDisplayRotation() ([]DisplayRotation, error) {
 }
 
 // NativeDisplayScaleFactor get display scale factor.
-//
-//   - displayID: wire uint32 · min 0
-func (p *Plugin) NativeDisplayScaleFactor(displayID int) (float64, error) {
-	req := &NativeDisplayScaleFactorRequest{
-		DisplayID: displayID,
-	}
+func (p *Plugin) NativeDisplayScaleFactor(req NativeDisplayScaleFactorRequest) (float64, error) {
 	var result float64
-	err := p.Call(MethodNativeDisplayScaleFactor, req, &result)
+	err := p.Call(MethodNativeDisplayScaleFactor, &req, &result)
 	if err != nil {
 		return 0, err
 	}
@@ -2807,14 +1956,11 @@ func (p *Plugin) NativeDownloadsDirectory() (*NativeDownloadsDirectoryResponse, 
 }
 
 // NativeEjectDisk eject a mounted volume by path.
-func (p *Plugin) NativeEjectDisk(mountPoint string) (bool, error) {
-	req := &NativeEjectDiskRequest{
-		MountPoint: mountPoint,
-	}
+func (p *Plugin) NativeEjectDisk(req NativeEjectDiskRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeEjectDisk, req, &result)
+	err := p.Call(MethodNativeEjectDisk, &req, &result)
 	return result.Ok, err
 }
 
@@ -2828,12 +1974,9 @@ func (p *Plugin) NativeEmptyTrash() (bool, error) {
 }
 
 // NativeEnvVar read an environment variable.
-func (p *Plugin) NativeEnvVar(name string) (*NativeEnvVarResponse, error) {
-	req := &NativeEnvVarRequest{
-		Name: name,
-	}
+func (p *Plugin) NativeEnvVar(req NativeEnvVarRequest) (*NativeEnvVarResponse, error) {
 	var result NativeEnvVarResponse
-	err := p.Call(MethodNativeEnvVar, req, &result)
+	err := p.Call(MethodNativeEnvVar, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2851,12 +1994,9 @@ func (p *Plugin) NativeEpochTime() (*NativeEpochTimeResponse, error) {
 }
 
 // NativeExtendedAttributes read extended attributes (xattrs) from a file.
-func (p *Plugin) NativeExtendedAttributes(path string) (json.RawMessage, error) {
-	req := &NativeExtendedAttributesRequest{
-		Path: path,
-	}
+func (p *Plugin) NativeExtendedAttributes(req NativeExtendedAttributesRequest) (json.RawMessage, error) {
 	var result json.RawMessage
-	err := p.Call(MethodNativeExtendedAttributes, req, &result)
+	err := p.Call(MethodNativeExtendedAttributes, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2908,12 +2048,9 @@ func (p *Plugin) NativeFastUserSwitching() (*NativeFastUserSwitchingResponse, er
 }
 
 // NativeFileAcl get file ACL as string.
-func (p *Plugin) NativeFileAcl(path string) (string, error) {
-	req := &NativeFileAclRequest{
-		Path: path,
-	}
+func (p *Plugin) NativeFileAcl(req NativeFileAclRequest) (string, error) {
 	var result string
-	err := p.Call(MethodNativeFileAcl, req, &result)
+	err := p.Call(MethodNativeFileAcl, &req, &result)
 	if err != nil {
 		return "", err
 	}
@@ -2921,12 +2058,9 @@ func (p *Plugin) NativeFileAcl(path string) (string, error) {
 }
 
 // NativeFileCreationDate get file creation date as ISO string.
-func (p *Plugin) NativeFileCreationDate(path string) (string, error) {
-	req := &NativeFileCreationDateRequest{
-		Path: path,
-	}
+func (p *Plugin) NativeFileCreationDate(req NativeFileCreationDateRequest) (string, error) {
 	var result string
-	err := p.Call(MethodNativeFileCreationDate, req, &result)
+	err := p.Call(MethodNativeFileCreationDate, &req, &result)
 	if err != nil {
 		return "", err
 	}
@@ -2934,12 +2068,9 @@ func (p *Plugin) NativeFileCreationDate(path string) (string, error) {
 }
 
 // NativeFileExists check if a file or directory exists.
-func (p *Plugin) NativeFileExists(path string) (*NativeFileExistsResponse, error) {
-	req := &NativeFileExistsRequest{
-		Path: path,
-	}
+func (p *Plugin) NativeFileExists(req NativeFileExistsRequest) (*NativeFileExistsResponse, error) {
 	var result NativeFileExistsResponse
-	err := p.Call(MethodNativeFileExists, req, &result)
+	err := p.Call(MethodNativeFileExists, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2947,14 +2078,11 @@ func (p *Plugin) NativeFileExists(path string) (*NativeFileExistsResponse, error
 }
 
 // NativeFileExtendedAttributes list extended attributes on a file.
-func (p *Plugin) NativeFileExtendedAttributes(path string) ([]string, error) {
-	req := &NativeFileExtendedAttributesRequest{
-		Path: path,
-	}
+func (p *Plugin) NativeFileExtendedAttributes(req NativeFileExtendedAttributesRequest) ([]string, error) {
 	var result struct {
 		Attributes []string `json:"attributes"`
 	}
-	err := p.Call(MethodNativeFileExtendedAttributes, req, &result)
+	err := p.Call(MethodNativeFileExtendedAttributes, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2962,15 +2090,9 @@ func (p *Plugin) NativeFileExtendedAttributes(path string) ([]string, error) {
 }
 
 // NativeFileHash compute SHA-256 hash of a file.
-//
-//   - algorithm: default ""
-func (p *Plugin) NativeFileHash(path string, algorithm *string) (*NativeFileHashResponse, error) {
-	req := &NativeFileHashRequest{
-		Path:      path,
-		Algorithm: algorithm,
-	}
+func (p *Plugin) NativeFileHash(req NativeFileHashRequest) (*NativeFileHashResponse, error) {
 	var result NativeFileHashResponse
-	err := p.Call(MethodNativeFileHash, req, &result)
+	err := p.Call(MethodNativeFileHash, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2978,12 +2100,9 @@ func (p *Plugin) NativeFileHash(path string, algorithm *string) (*NativeFileHash
 }
 
 // NativeFileMetadata get metadata for a file or directory (size, dates, permissions).
-func (p *Plugin) NativeFileMetadata(path string) (*NativeFileMetadataResponse, error) {
-	req := &NativeFileMetadataRequest{
-		Path: path,
-	}
+func (p *Plugin) NativeFileMetadata(req NativeFileMetadataRequest) (*NativeFileMetadataResponse, error) {
 	var result NativeFileMetadataResponse
-	err := p.Call(MethodNativeFileMetadata, req, &result)
+	err := p.Call(MethodNativeFileMetadata, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2991,12 +2110,9 @@ func (p *Plugin) NativeFileMetadata(path string) (*NativeFileMetadataResponse, e
 }
 
 // NativeFileModificationDate get file modification date as ISO string.
-func (p *Plugin) NativeFileModificationDate(path string) (string, error) {
-	req := &NativeFileModificationDateRequest{
-		Path: path,
-	}
+func (p *Plugin) NativeFileModificationDate(req NativeFileModificationDateRequest) (string, error) {
 	var result string
-	err := p.Call(MethodNativeFileModificationDate, req, &result)
+	err := p.Call(MethodNativeFileModificationDate, &req, &result)
 	if err != nil {
 		return "", err
 	}
@@ -3004,12 +2120,9 @@ func (p *Plugin) NativeFileModificationDate(path string) (string, error) {
 }
 
 // NativeFileOwner get the owner user and group of a file.
-func (p *Plugin) NativeFileOwner(path string) (*NativeFileOwnerResponse, error) {
-	req := &NativeFileOwnerRequest{
-		Path: path,
-	}
+func (p *Plugin) NativeFileOwner(req NativeFileOwnerRequest) (*NativeFileOwnerResponse, error) {
 	var result NativeFileOwnerResponse
-	err := p.Call(MethodNativeFileOwner, req, &result)
+	err := p.Call(MethodNativeFileOwner, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3017,12 +2130,9 @@ func (p *Plugin) NativeFileOwner(path string) (*NativeFileOwnerResponse, error) 
 }
 
 // NativeFileQuarantine check if a file has a quarantine flag.
-func (p *Plugin) NativeFileQuarantine(path string) (*NativeFileQuarantineResponse, error) {
-	req := &NativeFileQuarantineRequest{
-		Path: path,
-	}
+func (p *Plugin) NativeFileQuarantine(req NativeFileQuarantineRequest) (*NativeFileQuarantineResponse, error) {
 	var result NativeFileQuarantineResponse
-	err := p.Call(MethodNativeFileQuarantine, req, &result)
+	err := p.Call(MethodNativeFileQuarantine, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3040,12 +2150,9 @@ func (p *Plugin) NativeFileSharingEnabled() (*NativeFileSharingEnabledResponse, 
 }
 
 // NativeFileSize get file size in bytes.
-func (p *Plugin) NativeFileSize(path string) (int, error) {
-	req := &NativeFileSizeRequest{
-		Path: path,
-	}
+func (p *Plugin) NativeFileSize(req NativeFileSizeRequest) (int, error) {
 	var result int
-	err := p.Call(MethodNativeFileSize, req, &result)
+	err := p.Call(MethodNativeFileSize, &req, &result)
 	if err != nil {
 		return 0, err
 	}
@@ -3053,15 +2160,9 @@ func (p *Plugin) NativeFileSize(path string) (int, error) {
 }
 
 // NativeFileTags read or write Finder tags on a file.
-//
-//   - tags: default null
-func (p *Plugin) NativeFileTags(path string, tags []string) (json.RawMessage, error) {
-	req := &NativeFileTagsRequest{
-		Path: path,
-		Tags: tags,
-	}
+func (p *Plugin) NativeFileTags(req NativeFileTagsRequest) (json.RawMessage, error) {
 	var result json.RawMessage
-	err := p.Call(MethodNativeFileTags, req, &result)
+	err := p.Call(MethodNativeFileTags, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3069,12 +2170,9 @@ func (p *Plugin) NativeFileTags(path string, tags []string) (json.RawMessage, er
 }
 
 // NativeFileType get the UTI type of a file.
-func (p *Plugin) NativeFileType(path string) (*NativeFileTypeResponse, error) {
-	req := &NativeFileTypeRequest{
-		Path: path,
-	}
+func (p *Plugin) NativeFileType(req NativeFileTypeRequest) (*NativeFileTypeResponse, error) {
 	var result NativeFileTypeResponse
-	err := p.Call(MethodNativeFileType, req, &result)
+	err := p.Call(MethodNativeFileType, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3082,12 +2180,9 @@ func (p *Plugin) NativeFileType(path string) (*NativeFileTypeResponse, error) {
 }
 
 // NativeFileUti get the UTI (Uniform Type Identifier) for a file.
-func (p *Plugin) NativeFileUti(path string) (string, error) {
-	req := &NativeFileUtiRequest{
-		Path: path,
-	}
+func (p *Plugin) NativeFileUti(req NativeFileUtiRequest) (string, error) {
 	var result string
-	err := p.Call(MethodNativeFileUti, req, &result)
+	err := p.Call(MethodNativeFileUti, &req, &result)
 	if err != nil {
 		return "", err
 	}
@@ -3266,25 +2361,18 @@ func (p *Plugin) NativeFontSmoothing() (*NativeFontSmoothingResponse, error) {
 }
 
 // NativeForceQuitApp force-quit an app by bundle ID.
-func (p *Plugin) NativeForceQuitApp(bundleID string) (bool, error) {
-	req := &NativeForceQuitAppRequest{
-		BundleID: bundleID,
-	}
+func (p *Plugin) NativeForceQuitApp(req NativeForceQuitAppRequest) (bool, error) {
 	var result struct {
 		Result bool `json:"result"`
 	}
-	err := p.Call(MethodNativeForceQuitApp, req, &result)
+	err := p.Call(MethodNativeForceQuitApp, &req, &result)
 	return result.Result, err
 }
 
 // NativeFormatDate format an instant for the user, ON THE PLATFORM. `when` is an RFC 3339 instant; `style` is one of date, time, date_time. Rendered in the USER'S LOCAL ZONE and their locale's own conventions - including calendars and digits no format pattern can express: a Lao user correctly sees the Buddhist year 2569 where a caller formatting with a CLDR pattern would render 2026, and an Odia user sees Odia digits. Prefer this over native.date_format whenever you are DISPLAYING a date rather than inspecting the locale's format. Output is NOT byte-identical across operating systems and is not meant to be - each renders its own platform's conventions for that locale..
-func (p *Plugin) NativeFormatDate(style string, when string) (*NativeFormatDateResponse, error) {
-	req := &NativeFormatDateRequest{
-		Style: style,
-		When:  when,
-	}
+func (p *Plugin) NativeFormatDate(req NativeFormatDateRequest) (*NativeFormatDateResponse, error) {
 	var result NativeFormatDateResponse
-	err := p.Call(MethodNativeFormatDate, req, &result)
+	err := p.Call(MethodNativeFormatDate, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3342,25 +2430,18 @@ func (p *Plugin) NativeGatewayAddress() (*NativeGatewayAddressResponse, error) {
 }
 
 // NativeGeneratePdf generate a PDF from HTML content.
-func (p *Plugin) NativeGeneratePdf(html string, outputPath string) (bool, error) {
-	req := &NativeGeneratePdfRequest{
-		HTML:       html,
-		OutputPath: outputPath,
-	}
+func (p *Plugin) NativeGeneratePdf(req NativeGeneratePdfRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeGeneratePdf, req, &result)
+	err := p.Call(MethodNativeGeneratePdf, &req, &result)
 	return result.Ok, err
 }
 
 // NativeGetWindowInfo get detailed info for a single window.
-func (p *Plugin) NativeGetWindowInfo(windowID string) (*NativeGetWindowInfoResponse, error) {
-	req := &NativeGetWindowInfoRequest{
-		WindowID: windowID,
-	}
+func (p *Plugin) NativeGetWindowInfo(req NativeGetWindowInfoRequest) (*NativeGetWindowInfoResponse, error) {
 	var result NativeGetWindowInfoResponse
-	err := p.Call(MethodNativeGetWindowInfo, req, &result)
+	err := p.Call(MethodNativeGetWindowInfo, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3368,17 +2449,11 @@ func (p *Plugin) NativeGetWindowInfo(windowID string) (*NativeGetWindowInfoRespo
 }
 
 // NativeGlobFiles find files matching a glob pattern.
-//
-//   - maxResults: wire uint32 · default 0 · min 0
-func (p *Plugin) NativeGlobFiles(pattern string, maxResults *int) ([]string, error) {
-	req := &NativeGlobFilesRequest{
-		Pattern:    pattern,
-		MaxResults: maxResults,
-	}
+func (p *Plugin) NativeGlobFiles(req NativeGlobFilesRequest) ([]string, error) {
 	var result struct {
 		Paths []string `json:"paths"`
 	}
-	err := p.Call(MethodNativeGlobFiles, req, &result)
+	err := p.Call(MethodNativeGlobFiles, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3446,14 +2521,9 @@ func (p *Plugin) NativeHardwareUuid() (*NativeHardwareUuidResponse, error) {
 }
 
 // NativeHidClaim seize exclusive access to a HID device, suppressing native macOS events.
-//
-//   - deviceID: Device ID (e.g. "0x28bd:0x0202:0x48f42695").
-func (p *Plugin) NativeHidClaim(deviceID string) (*NativeHidClaimResponse, error) {
-	req := &NativeHidClaimRequest{
-		DeviceID: deviceID,
-	}
+func (p *Plugin) NativeHidClaim(req NativeHidClaimRequest) (*NativeHidClaimResponse, error) {
 	var result NativeHidClaimResponse
-	err := p.Call(MethodNativeHidClaim, req, &result)
+	err := p.Call(MethodNativeHidClaim, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3473,16 +2543,11 @@ func (p *Plugin) NativeHidDevices() ([]HidDeviceEntry, error) {
 }
 
 // NativeHidElements return the parsed HID element tree (buttons, axes, dials) for a connected device.
-//
-//   - deviceID: Device ID (e.g. "0x28bd:0x0202:0x48f42695").
-func (p *Plugin) NativeHidElements(deviceID string) ([]HidElementEntry, error) {
-	req := &NativeHidElementsRequest{
-		DeviceID: deviceID,
-	}
+func (p *Plugin) NativeHidElements(req NativeHidElementsRequest) ([]HidElementEntry, error) {
 	var result struct {
 		Elements []HidElementEntry `json:"elements"`
 	}
-	err := p.Call(MethodNativeHidElements, req, &result)
+	err := p.Call(MethodNativeHidElements, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3490,14 +2555,9 @@ func (p *Plugin) NativeHidElements(deviceID string) ([]HidElementEntry, error) {
 }
 
 // NativeHidRelease release exclusive access to a HID device, restoring native macOS behavior.
-//
-//   - deviceID: Device ID (e.g. "0x28bd:0x0202:0x48f42695").
-func (p *Plugin) NativeHidRelease(deviceID string) (*NativeHidReleaseResponse, error) {
-	req := &NativeHidReleaseRequest{
-		DeviceID: deviceID,
-	}
+func (p *Plugin) NativeHidRelease(req NativeHidReleaseRequest) (*NativeHidReleaseResponse, error) {
 	var result NativeHidReleaseResponse
-	err := p.Call(MethodNativeHidRelease, req, &result)
+	err := p.Call(MethodNativeHidRelease, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3505,22 +2565,9 @@ func (p *Plugin) NativeHidRelease(deviceID string) (*NativeHidReleaseResponse, e
 }
 
 // NativeHidSendReport send an output or feature report to a connected HID device.
-//
-//   - deviceID: Device ID (e.g. "0x28bd:0x0202:0x48f42695").
-//   - reportID: HID report ID.
-//     wire uint32 · min 0
-//   - reportType: Report type: "output" or "feature".
-//   - data: Raw report bytes to send.
-//     default []
-func (p *Plugin) NativeHidSendReport(deviceID string, reportID int, reportType string, data []int) (*NativeHidSendReportResponse, error) {
-	req := &NativeHidSendReportRequest{
-		DeviceID:   deviceID,
-		ReportID:   reportID,
-		ReportType: reportType,
-		Data:       data,
-	}
+func (p *Plugin) NativeHidSendReport(req NativeHidSendReportRequest) (*NativeHidSendReportResponse, error) {
 	var result NativeHidSendReportResponse
-	err := p.Call(MethodNativeHidSendReport, req, &result)
+	err := p.Call(MethodNativeHidSendReport, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3528,11 +2575,8 @@ func (p *Plugin) NativeHidSendReport(deviceID string, reportID int, reportType s
 }
 
 // NativeHideApp hide an app by bundle ID.
-func (p *Plugin) NativeHideApp(bundleID string) error {
-	req := &NativeHideAppRequest{
-		BundleID: bundleID,
-	}
-	return p.Call(MethodNativeHideApp, req, nil)
+func (p *Plugin) NativeHideApp(req NativeHideAppRequest) error {
+	return p.Call(MethodNativeHideApp, &req, nil)
 }
 
 // NativeHighlightColor get the system highlight/selection color.
@@ -3576,14 +2620,11 @@ func (p *Plugin) NativeHostname() (*NativeHostnameResponse, error) {
 }
 
 // NativeHostnameResolve resolve a hostname to IP addresses.
-func (p *Plugin) NativeHostnameResolve(hostname string) ([]string, error) {
-	req := &NativeHostnameResolveRequest{
-		Hostname: hostname,
-	}
+func (p *Plugin) NativeHostnameResolve(req NativeHostnameResolveRequest) ([]string, error) {
 	var result struct {
 		Addresses []string `json:"addresses"`
 	}
-	err := p.Call(MethodNativeHostnameResolve, req, &result)
+	err := p.Call(MethodNativeHostnameResolve, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3685,24 +2726,18 @@ func (p *Plugin) NativeIpv6Address() (*NativeIpv6AddressResponse, error) {
 }
 
 // NativeIsAppHidden check if an application is hidden.
-func (p *Plugin) NativeIsAppHidden(bundleID string) (bool, error) {
-	req := &NativeIsAppHiddenRequest{
-		BundleID: bundleID,
-	}
+func (p *Plugin) NativeIsAppHidden(req NativeIsAppHiddenRequest) (bool, error) {
 	var result struct {
 		Result bool `json:"result"`
 	}
-	err := p.Call(MethodNativeIsAppHidden, req, &result)
+	err := p.Call(MethodNativeIsAppHidden, &req, &result)
 	return result.Result, err
 }
 
 // NativeIsDirectory check if a path is a directory.
-func (p *Plugin) NativeIsDirectory(path string) (*NativeIsDirectoryResponse, error) {
-	req := &NativeIsDirectoryRequest{
-		Path: path,
-	}
+func (p *Plugin) NativeIsDirectory(req NativeIsDirectoryRequest) (*NativeIsDirectoryResponse, error) {
 	var result NativeIsDirectoryResponse
-	err := p.Call(MethodNativeIsDirectory, req, &result)
+	err := p.Call(MethodNativeIsDirectory, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3710,12 +2745,9 @@ func (p *Plugin) NativeIsDirectory(path string) (*NativeIsDirectoryResponse, err
 }
 
 // NativeIsFileHidden check if file has hidden flag.
-func (p *Plugin) NativeIsFileHidden(path string) (*NativeIsFileHiddenResponse, error) {
-	req := &NativeIsFileHiddenRequest{
-		Path: path,
-	}
+func (p *Plugin) NativeIsFileHidden(req NativeIsFileHiddenRequest) (*NativeIsFileHiddenResponse, error) {
 	var result NativeIsFileHiddenResponse
-	err := p.Call(MethodNativeIsFileHidden, req, &result)
+	err := p.Call(MethodNativeIsFileHidden, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3773,20 +2805,14 @@ func (p *Plugin) NativeKeyboardLayout() (*NativeKeyboardLayoutResponse, error) {
 }
 
 // NativeKeychainDelete delete a password from this plugin's keychain drawer.
-func (p *Plugin) NativeKeychainDelete(account string) error {
-	req := &NativeKeychainDeleteRequest{
-		Account: account,
-	}
-	return p.Call(MethodNativeKeychainDelete, req, nil)
+func (p *Plugin) NativeKeychainDelete(req NativeKeychainDeleteRequest) error {
+	return p.Call(MethodNativeKeychainDelete, &req, nil)
 }
 
 // NativeKeychainRead read a password from this plugin's keychain drawer.
-func (p *Plugin) NativeKeychainRead(account string) (*NativeKeychainReadResponse, error) {
-	req := &NativeKeychainReadRequest{
-		Account: account,
-	}
+func (p *Plugin) NativeKeychainRead(req NativeKeychainReadRequest) (*NativeKeychainReadResponse, error) {
 	var result NativeKeychainReadResponse
-	err := p.Call(MethodNativeKeychainRead, req, &result)
+	err := p.Call(MethodNativeKeychainRead, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3794,27 +2820,16 @@ func (p *Plugin) NativeKeychainRead(account string) (*NativeKeychainReadResponse
 }
 
 // NativeKeychainWrite store a password in this plugin's keychain drawer.
-func (p *Plugin) NativeKeychainWrite(account string, password string) error {
-	req := &NativeKeychainWriteRequest{
-		Account:  account,
-		Password: password,
-	}
-	return p.Call(MethodNativeKeychainWrite, req, nil)
+func (p *Plugin) NativeKeychainWrite(req NativeKeychainWriteRequest) error {
+	return p.Call(MethodNativeKeychainWrite, &req, nil)
 }
 
 // NativeKillProcess send a signal to a process by PID.
-//
-//   - pid: wire int32
-//   - signal: wire int32 · default 0
-func (p *Plugin) NativeKillProcess(pid int, signal *int) (bool, error) {
-	req := &NativeKillProcessRequest{
-		Pid:    pid,
-		Signal: signal,
-	}
+func (p *Plugin) NativeKillProcess(req NativeKillProcessRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeKillProcess, req, &result)
+	err := p.Call(MethodNativeKillProcess, &req, &result)
 	return result.Ok, err
 }
 
@@ -3829,14 +2844,8 @@ func (p *Plugin) NativeLastReboot() (*NativeLastRebootResponse, error) {
 }
 
 // NativeLaunchApp launch an application by bundle ID.
-//
-//   - newInstance: default false
-func (p *Plugin) NativeLaunchApp(bundleID string, newInstance *bool) error {
-	req := &NativeLaunchAppRequest{
-		BundleID:    bundleID,
-		NewInstance: newInstance,
-	}
-	return p.Call(MethodNativeLaunchApp, req, nil)
+func (p *Plugin) NativeLaunchApp(req NativeLaunchAppRequest) error {
+	return p.Call(MethodNativeLaunchApp, &req, nil)
 }
 
 // NativeLaunchdAgents list user launch agents.
@@ -4035,14 +3044,11 @@ func (p *Plugin) NativeMagnifierEnabled() (*NativeMagnifierEnabledResponse, erro
 }
 
 // NativeMaximizeWindow maximize window to fill screen.
-func (p *Plugin) NativeMaximizeWindow(windowID string) (bool, error) {
-	req := &NativeMaximizeWindowRequest{
-		WindowID: windowID,
-	}
+func (p *Plugin) NativeMaximizeWindow(req NativeMaximizeWindowRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeMaximizeWindow, req, &result)
+	err := p.Call(MethodNativeMaximizeWindow, &req, &result)
 	return result.Ok, err
 }
 
@@ -4092,16 +3098,11 @@ func (p *Plugin) NativeMemoryPressure() (*NativeMemoryPressureResponse, error) {
 }
 
 // NativeMenuBar read the menu bar structure of an application by PID.
-//
-//   - pid: wire int32
-func (p *Plugin) NativeMenuBar(pid int) ([]MenuItem, error) {
-	req := &NativeMenuBarRequest{
-		Pid: pid,
-	}
+func (p *Plugin) NativeMenuBar(req NativeMenuBarRequest) ([]MenuItem, error) {
 	var result struct {
 		Items []MenuItem `json:"items"`
 	}
-	err := p.Call(MethodNativeMenuBar, req, &result)
+	err := p.Call(MethodNativeMenuBar, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -4149,11 +3150,8 @@ func (p *Plugin) NativeMicrophonePermission() (*NativeMicrophonePermissionRespon
 }
 
 // NativeMinimizeWindow minimize a window by ID.
-func (p *Plugin) NativeMinimizeWindow(windowID string) error {
-	req := &NativeMinimizeWindowRequest{
-		WindowID: windowID,
-	}
-	return p.Call(MethodNativeMinimizeWindow, req, nil)
+func (p *Plugin) NativeMinimizeWindow(req NativeMinimizeWindowRequest) error {
+	return p.Call(MethodNativeMinimizeWindow, &req, nil)
 }
 
 // NativeModelName get the hardware model name (e.g. MacBook Pro 14-inch 2023).
@@ -4179,17 +3177,8 @@ func (p *Plugin) NativeMountPoints() ([]string, error) {
 }
 
 // NativeMouseButtonClick click a specific mouse button (middle, button4, etc.).
-//
-//   - button: wire uint32 · min 0
-//   - x: wire int32 · default null
-//   - y: wire int32 · default null
-func (p *Plugin) NativeMouseButtonClick(button int, x *int, y *int) error {
-	req := &NativeMouseButtonClickRequest{
-		Button: button,
-		X:      x,
-		Y:      y,
-	}
-	return p.Call(MethodNativeMouseButtonClick, req, nil)
+func (p *Plugin) NativeMouseButtonClick(req NativeMouseButtonClickRequest) error {
+	return p.Call(MethodNativeMouseButtonClick, &req, nil)
 }
 
 // NativeMouseKeys check if Mouse Keys is on (the numeric keypad moves the pointer).
@@ -4213,50 +3202,31 @@ func (p *Plugin) NativeMouseSpeed() (float64, error) {
 }
 
 // NativeMoveFile move or rename a file or directory.
-func (p *Plugin) NativeMoveFile(destination string, source string) (bool, error) {
-	req := &NativeMoveFileRequest{
-		Destination: destination,
-		Source:      source,
-	}
+func (p *Plugin) NativeMoveFile(req NativeMoveFileRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeMoveFile, req, &result)
+	err := p.Call(MethodNativeMoveFile, &req, &result)
 	return result.Ok, err
 }
 
 // NativeMoveWindowToDisplay move a window to a different display.
-//
-//   - displayID: wire uint32 · min 0
-func (p *Plugin) NativeMoveWindowToDisplay(displayID int, windowID string) error {
-	req := &NativeMoveWindowToDisplayRequest{
-		DisplayID: displayID,
-		WindowID:  windowID,
-	}
-	return p.Call(MethodNativeMoveWindowToDisplay, req, nil)
+func (p *Plugin) NativeMoveWindowToDisplay(req NativeMoveWindowToDisplayRequest) error {
+	return p.Call(MethodNativeMoveWindowToDisplay, &req, nil)
 }
 
 // NativeMoveWindowToSpace dEPRECATED, silent no-op on modern macOS: the private CGS move APIs this calls are dead (verified on Sequoia 2026-07-25) — the window does not move and the call still reports true. Kept for older systems. For a working move, drive the visible path the bundled windows plugin uses: mouse-hold the title bar + Ctrl+N. space_id here is an opaque CGS space id from native.list_spaces, NOT the 1-based ordinal that native.switch_space takes.
-//
-//   - spaceID: wire uint64 (64-bit) · min 0
-func (p *Plugin) NativeMoveWindowToSpace(spaceID int, windowID string) (bool, error) {
-	req := &NativeMoveWindowToSpaceRequest{
-		SpaceID:  spaceID,
-		WindowID: windowID,
-	}
+func (p *Plugin) NativeMoveWindowToSpace(req NativeMoveWindowToSpaceRequest) (bool, error) {
 	var result struct {
 		Result bool `json:"result"`
 	}
-	err := p.Call(MethodNativeMoveWindowToSpace, req, &result)
+	err := p.Call(MethodNativeMoveWindowToSpace, &req, &result)
 	return result.Result, err
 }
 
 // NativeMute set mute state on default output device.
-func (p *Plugin) NativeMute(muted bool) error {
-	req := &NativeMuteRequest{
-		Muted: muted,
-	}
-	return p.Call(MethodNativeMute, req, nil)
+func (p *Plugin) NativeMute(req NativeMuteRequest) error {
+	return p.Call(MethodNativeMute, &req, nil)
 }
 
 // NativeNetworkBandwidth get network link speed.
@@ -4312,12 +3282,9 @@ func (p *Plugin) NativeNetworkQuality() (*NativeNetworkQualityResponse, error) {
 }
 
 // NativeNetworkReachable check if a host is reachable via network.
-func (p *Plugin) NativeNetworkReachable(host string) (*NativeNetworkReachableResponse, error) {
-	req := &NativeNetworkReachableRequest{
-		Host: host,
-	}
+func (p *Plugin) NativeNetworkReachable(req NativeNetworkReachableRequest) (*NativeNetworkReachableResponse, error) {
 	var result NativeNetworkReachableResponse
-	err := p.Call(MethodNativeNetworkReachable, req, &result)
+	err := p.Call(MethodNativeNetworkReachable, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -4345,14 +3312,11 @@ func (p *Plugin) NativeNetworkSsid() (*NativeNetworkSsidResponse, error) {
 }
 
 // NativeNewAppWindow open a new window of an app on the current Space, without switching to an existing window on another Space.
-func (p *Plugin) NativeNewAppWindow(bundleID string) (bool, error) {
-	req := &NativeNewAppWindowRequest{
-		BundleID: bundleID,
-	}
+func (p *Plugin) NativeNewAppWindow(req NativeNewAppWindowRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeNewAppWindow, req, &result)
+	err := p.Call(MethodNativeNewAppWindow, &req, &result)
 	return result.Ok, err
 }
 
@@ -4377,19 +3341,9 @@ func (p *Plugin) NativeNotificationSoundEnabled() (*NativeNotificationSoundEnabl
 }
 
 // NativeNotify post a rich notification (osascript fallback).
-//
-//   - body: default null
-//   - sound: default null
-//   - subtitle: default null
-func (p *Plugin) NativeNotify(title string, body *string, sound *string, subtitle *string) (*NativeNotifyResponse, error) {
-	req := &NativeNotifyRequest{
-		Title:    title,
-		Body:     body,
-		Sound:    sound,
-		Subtitle: subtitle,
-	}
+func (p *Plugin) NativeNotify(req NativeNotifyRequest) (*NativeNotifyResponse, error) {
 	var result NativeNotifyResponse
-	err := p.Call(MethodNativeNotify, req, &result)
+	err := p.Call(MethodNativeNotify, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -4417,14 +3371,9 @@ func (p *Plugin) NativeNumberFormatDecimal() (*NativeNumberFormatDecimalResponse
 }
 
 // NativeObserveWindows start observing window events for a PID (STUB -- not yet implemented).
-//
-//   - pid: wire int32
-func (p *Plugin) NativeObserveWindows(pid int) (*NativeObserveWindowsResponse, error) {
-	req := &NativeObserveWindowsRequest{
-		Pid: pid,
-	}
+func (p *Plugin) NativeObserveWindows(req NativeObserveWindowsRequest) (*NativeObserveWindowsResponse, error) {
 	var result NativeObserveWindowsResponse
-	err := p.Call(MethodNativeObserveWindows, req, &result)
+	err := p.Call(MethodNativeObserveWindows, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -4444,14 +3393,11 @@ func (p *Plugin) NativeOcrClipboard() ([]OcrRegion, error) {
 }
 
 // NativeOcrFile oCR text from an image file path.
-func (p *Plugin) NativeOcrFile(path string) ([]OcrRegion, error) {
-	req := &NativeOcrFileRequest{
-		Path: path,
-	}
+func (p *Plugin) NativeOcrFile(req NativeOcrFileRequest) ([]OcrRegion, error) {
 	var result struct {
 		Regions []OcrRegion `json:"regions"`
 	}
-	err := p.Call(MethodNativeOcrFile, req, &result)
+	err := p.Call(MethodNativeOcrFile, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -4471,22 +3417,11 @@ func (p *Plugin) NativeOcrScreen() ([]OcrRegion, error) {
 }
 
 // NativeOcrScreenRegion oCR text from a screen region (x, y, width, height).
-//
-//   - height: wire double
-//   - width: wire double
-//   - x: wire double
-//   - y: wire double
-func (p *Plugin) NativeOcrScreenRegion(height float64, width float64, x float64, y float64) ([]OcrRegion, error) {
-	req := &NativeOcrScreenRegionRequest{
-		Height: height,
-		Width:  width,
-		X:      x,
-		Y:      y,
-	}
+func (p *Plugin) NativeOcrScreenRegion(req NativeOcrScreenRegionRequest) ([]OcrRegion, error) {
 	var result struct {
 		Regions []OcrRegion `json:"regions"`
 	}
-	err := p.Call(MethodNativeOcrScreenRegion, req, &result)
+	err := p.Call(MethodNativeOcrScreenRegion, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -4494,16 +3429,11 @@ func (p *Plugin) NativeOcrScreenRegion(height float64, width float64, x float64,
 }
 
 // NativeOcrWindow oCR text from a specific window by ID.
-//
-//   - windowID: wire uint32 · min 0
-func (p *Plugin) NativeOcrWindow(windowID int) ([]OcrRegion, error) {
-	req := &NativeOcrWindowRequest{
-		WindowID: windowID,
-	}
+func (p *Plugin) NativeOcrWindow(req NativeOcrWindowRequest) ([]OcrRegion, error) {
 	var result struct {
 		Regions []OcrRegion `json:"regions"`
 	}
-	err := p.Call(MethodNativeOcrWindow, req, &result)
+	err := p.Call(MethodNativeOcrWindow, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -4521,54 +3451,33 @@ func (p *Plugin) NativeOnScreenKeyboardEnabled() (*NativeOnScreenKeyboardEnabled
 }
 
 // NativeOpenAppSettings open an app's preferences window.
-func (p *Plugin) NativeOpenAppSettings(bundleID string) error {
-	req := &NativeOpenAppSettingsRequest{
-		BundleID: bundleID,
-	}
-	return p.Call(MethodNativeOpenAppSettings, req, nil)
+func (p *Plugin) NativeOpenAppSettings(req NativeOpenAppSettingsRequest) error {
+	return p.Call(MethodNativeOpenAppSettings, &req, nil)
 }
 
 // NativeOpenFinderWindow open a Finder window at a specific path. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeOpenFinderWindow(path string) error {
-	req := &NativeOpenFinderWindowRequest{
-		Path: path,
-	}
-	return p.Call(MethodNativeOpenFinderWindow, req, nil)
+func (p *Plugin) NativeOpenFinderWindow(req NativeOpenFinderWindowRequest) error {
+	return p.Call(MethodNativeOpenFinderWindow, &req, nil)
 }
 
 // NativeOpenSystemSettings open System Settings to a specific pane (e.g. 'Privacy_Accessibility').
-//
-//   - pane: default null
-func (p *Plugin) NativeOpenSystemSettings(pane *string) error {
-	req := &NativeOpenSystemSettingsRequest{
-		Pane: pane,
-	}
-	return p.Call(MethodNativeOpenSystemSettings, req, nil)
+func (p *Plugin) NativeOpenSystemSettings(req NativeOpenSystemSettingsRequest) error {
+	return p.Call(MethodNativeOpenSystemSettings, &req, nil)
 }
 
 // NativeOpenTarget open a URL or file path with the default handler.
-func (p *Plugin) NativeOpenTarget(target string) error {
-	req := &NativeOpenTargetRequest{
-		Target: target,
-	}
-	return p.Call(MethodNativeOpenTarget, req, nil)
+func (p *Plugin) NativeOpenTarget(req NativeOpenTargetRequest) error {
+	return p.Call(MethodNativeOpenTarget, &req, nil)
 }
 
 // NativeOpenURL open a URL in the default handler.
-func (p *Plugin) NativeOpenURL(url string) error {
-	req := &NativeOpenURLRequest{
-		URL: url,
-	}
-	return p.Call(MethodNativeOpenUrl, req, nil)
+func (p *Plugin) NativeOpenURL(req NativeOpenURLRequest) error {
+	return p.Call(MethodNativeOpenUrl, &req, nil)
 }
 
 // NativeOpenWithApp open a URL or path with a specific application.
-func (p *Plugin) NativeOpenWithApp(bundleID string, target string) error {
-	req := &NativeOpenWithAppRequest{
-		BundleID: bundleID,
-		Target:   target,
-	}
-	return p.Call(MethodNativeOpenWithApp, req, nil)
+func (p *Plugin) NativeOpenWithApp(req NativeOpenWithAppRequest) error {
+	return p.Call(MethodNativeOpenWithApp, &req, nil)
 }
 
 // NativeOptimizedCharging check if optimized battery charging is enabled.
@@ -4582,15 +3491,9 @@ func (p *Plugin) NativeOptimizedCharging() (*NativeOptimizedChargingResponse, er
 }
 
 // NativePdfExtractText extract text from a PDF file.
-//
-//   - page: wire uint64 (64-bit) · default 0 · min 0
-func (p *Plugin) NativePdfExtractText(path string, page *int) (string, error) {
-	req := &NativePdfExtractTextRequest{
-		Path: path,
-		Page: page,
-	}
+func (p *Plugin) NativePdfExtractText(req NativePdfExtractTextRequest) (string, error) {
 	var result string
-	err := p.Call(MethodNativePdfExtractText, req, &result)
+	err := p.Call(MethodNativePdfExtractText, &req, &result)
 	if err != nil {
 		return "", err
 	}
@@ -4598,12 +3501,9 @@ func (p *Plugin) NativePdfExtractText(path string, page *int) (string, error) {
 }
 
 // NativePdfPageCount get the page count of a PDF file.
-func (p *Plugin) NativePdfPageCount(path string) (int, error) {
-	req := &NativePdfPageCountRequest{
-		Path: path,
-	}
+func (p *Plugin) NativePdfPageCount(req NativePdfPageCountRequest) (int, error) {
 	var result int
-	err := p.Call(MethodNativePdfPageCount, req, &result)
+	err := p.Call(MethodNativePdfPageCount, &req, &result)
 	if err != nil {
 		return 0, err
 	}
@@ -4611,12 +3511,8 @@ func (p *Plugin) NativePdfPageCount(path string) (int, error) {
 }
 
 // NativePinWindowAbove pin or unpin a window above all others.
-func (p *Plugin) NativePinWindowAbove(pinned bool, windowID string) error {
-	req := &NativePinWindowAboveRequest{
-		Pinned:   pinned,
-		WindowID: windowID,
-	}
-	return p.Call(MethodNativePinWindowAbove, req, nil)
+func (p *Plugin) NativePinWindowAbove(req NativePinWindowAboveRequest) error {
+	return p.Call(MethodNativePinWindowAbove, &req, nil)
 }
 
 // NativePinchToZoom check if pinch-to-zoom gesture is enabled. Exists only on macOS and Windows; elsewhere it is refused with platform_no_analogue.
@@ -4630,12 +3526,9 @@ func (p *Plugin) NativePinchToZoom() (*NativePinchToZoomResponse, error) {
 }
 
 // NativePing ping a host and return latency in milliseconds.
-func (p *Plugin) NativePing(host string) (float64, error) {
-	req := &NativePingRequest{
-		Host: host,
-	}
+func (p *Plugin) NativePing(req NativePingRequest) (float64, error) {
 	var result float64
-	err := p.Call(MethodNativePing, req, &result)
+	err := p.Call(MethodNativePing, &req, &result)
 	if err != nil {
 		return 0, err
 	}
@@ -4653,11 +3546,8 @@ func (p *Plugin) NativePlayFeedbackWhenVolumeChanged() (*NativePlayFeedbackWhenV
 }
 
 // NativePlaySound play a named system sound.
-func (p *Plugin) NativePlaySound(name string) error {
-	req := &NativePlaySoundRequest{
-		Name: name,
-	}
-	return p.Call(MethodNativePlaySound, req, nil)
+func (p *Plugin) NativePlaySound(req NativePlaySoundRequest) error {
+	return p.Call(MethodNativePlaySound, &req, nil)
 }
 
 // NativePollBurst request burst-mode world model polling (200ms intervals).
@@ -4706,16 +3596,9 @@ func (p *Plugin) NativePressAndHoldEnabled() (*NativePressAndHoldEnabledResponse
 }
 
 // NativePreventSleep assert or release sleep prevention.
-//
-//   - assertionID: default null
-//   - reason: default "BranchKit plugin"
-func (p *Plugin) NativePreventSleep(assertionID *string, reason *string) (*NativePreventSleepResponse, error) {
-	req := &NativePreventSleepRequest{
-		AssertionID: assertionID,
-		Reason:      reason,
-	}
+func (p *Plugin) NativePreventSleep(req NativePreventSleepRequest) (*NativePreventSleepResponse, error) {
 	var result NativePreventSleepResponse
-	err := p.Call(MethodNativePreventSleep, req, &result)
+	err := p.Call(MethodNativePreventSleep, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -4775,14 +3658,9 @@ func (p *Plugin) NativeProcessCount() (*NativeProcessCountResponse, error) {
 }
 
 // NativeProcessCpuUsage get CPU usage for process by PID.
-//
-//   - pid: wire int32
-func (p *Plugin) NativeProcessCpuUsage(pid int) (float64, error) {
-	req := &NativeProcessCpuUsageRequest{
-		Pid: pid,
-	}
+func (p *Plugin) NativeProcessCpuUsage(req NativeProcessCpuUsageRequest) (float64, error) {
 	var result float64
-	err := p.Call(MethodNativeProcessCpuUsage, req, &result)
+	err := p.Call(MethodNativeProcessCpuUsage, &req, &result)
 	if err != nil {
 		return 0, err
 	}
@@ -4790,14 +3668,9 @@ func (p *Plugin) NativeProcessCpuUsage(pid int) (float64, error) {
 }
 
 // NativeProcessExists check if a process with given PID exists.
-//
-//   - pid: wire int32
-func (p *Plugin) NativeProcessExists(pid int) (*NativeProcessExistsResponse, error) {
-	req := &NativeProcessExistsRequest{
-		Pid: pid,
-	}
+func (p *Plugin) NativeProcessExists(req NativeProcessExistsRequest) (*NativeProcessExistsResponse, error) {
 	var result NativeProcessExistsResponse
-	err := p.Call(MethodNativeProcessExists, req, &result)
+	err := p.Call(MethodNativeProcessExists, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -4805,14 +3678,9 @@ func (p *Plugin) NativeProcessExists(pid int) (*NativeProcessExistsResponse, err
 }
 
 // NativeProcessInfo get info about a process by PID (name, cpu, memory, path).
-//
-//   - pid: wire int32
-func (p *Plugin) NativeProcessInfo(pid int) (*NativeProcessInfoResponse, error) {
-	req := &NativeProcessInfoRequest{
-		Pid: pid,
-	}
+func (p *Plugin) NativeProcessInfo(req NativeProcessInfoRequest) (*NativeProcessInfoResponse, error) {
 	var result NativeProcessInfoResponse
-	err := p.Call(MethodNativeProcessInfo, req, &result)
+	err := p.Call(MethodNativeProcessInfo, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -4832,14 +3700,9 @@ func (p *Plugin) NativeProcessList() ([]ProcessInfo, error) {
 }
 
 // NativeProcessMemoryUsage get memory usage in bytes for process by PID.
-//
-//   - pid: wire int32
-func (p *Plugin) NativeProcessMemoryUsage(pid int) (int, error) {
-	req := &NativeProcessMemoryUsageRequest{
-		Pid: pid,
-	}
+func (p *Plugin) NativeProcessMemoryUsage(req NativeProcessMemoryUsageRequest) (int, error) {
 	var result int
-	err := p.Call(MethodNativeProcessMemoryUsage, req, &result)
+	err := p.Call(MethodNativeProcessMemoryUsage, &req, &result)
 	if err != nil {
 		return 0, err
 	}
@@ -4847,14 +3710,9 @@ func (p *Plugin) NativeProcessMemoryUsage(pid int) (int, error) {
 }
 
 // NativeProcessName get process name by PID.
-//
-//   - pid: wire int32
-func (p *Plugin) NativeProcessName(pid int) (string, error) {
-	req := &NativeProcessNameRequest{
-		Pid: pid,
-	}
+func (p *Plugin) NativeProcessName(req NativeProcessNameRequest) (string, error) {
 	var result string
-	err := p.Call(MethodNativeProcessName, req, &result)
+	err := p.Call(MethodNativeProcessName, &req, &result)
 	if err != nil {
 		return "", err
 	}
@@ -4862,14 +3720,9 @@ func (p *Plugin) NativeProcessName(pid int) (string, error) {
 }
 
 // NativeProcessParentPid get parent PID of a process.
-//
-//   - pid: wire int32
-func (p *Plugin) NativeProcessParentPid(pid int) (int, error) {
-	req := &NativeProcessParentPidRequest{
-		Pid: pid,
-	}
+func (p *Plugin) NativeProcessParentPid(req NativeProcessParentPidRequest) (int, error) {
 	var result int
-	err := p.Call(MethodNativeProcessParentPid, req, &result)
+	err := p.Call(MethodNativeProcessParentPid, &req, &result)
 	if err != nil {
 		return 0, err
 	}
@@ -4877,14 +3730,9 @@ func (p *Plugin) NativeProcessParentPid(pid int) (int, error) {
 }
 
 // NativeProcessPath get the executable path for a PID.
-//
-//   - pid: wire int32
-func (p *Plugin) NativeProcessPath(pid int) (string, error) {
-	req := &NativeProcessPathRequest{
-		Pid: pid,
-	}
+func (p *Plugin) NativeProcessPath(req NativeProcessPathRequest) (string, error) {
 	var result string
-	err := p.Call(MethodNativeProcessPath, req, &result)
+	err := p.Call(MethodNativeProcessPath, &req, &result)
 	if err != nil {
 		return "", err
 	}
@@ -4892,14 +3740,9 @@ func (p *Plugin) NativeProcessPath(pid int) (string, error) {
 }
 
 // NativeProcessStartTime get process start time as ISO string.
-//
-//   - pid: wire int32
-func (p *Plugin) NativeProcessStartTime(pid int) (string, error) {
-	req := &NativeProcessStartTimeRequest{
-		Pid: pid,
-	}
+func (p *Plugin) NativeProcessStartTime(req NativeProcessStartTimeRequest) (string, error) {
 	var result string
-	err := p.Call(MethodNativeProcessStartTime, req, &result)
+	err := p.Call(MethodNativeProcessStartTime, &req, &result)
 	if err != nil {
 		return "", err
 	}
@@ -4946,15 +3789,9 @@ func (p *Plugin) NativePurgeableSpace() (int, error) {
 }
 
 // NativeQuickLook generate Quick Look thumbnail as PNG (base64).
-//
-//   - size: wire uint32 · default 512 · min 0
-func (p *Plugin) NativeQuickLook(path string, size *int) (*NativeQuickLookResponse, error) {
-	req := &NativeQuickLookRequest{
-		Path: path,
-		Size: size,
-	}
+func (p *Plugin) NativeQuickLook(req NativeQuickLookRequest) (*NativeQuickLookResponse, error) {
 	var result NativeQuickLookResponse
-	err := p.Call(MethodNativeQuickLook, req, &result)
+	err := p.Call(MethodNativeQuickLook, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -4962,23 +3799,17 @@ func (p *Plugin) NativeQuickLook(path string, size *int) (*NativeQuickLookRespon
 }
 
 // NativeQuitApp gracefully quit an app by bundle ID.
-func (p *Plugin) NativeQuitApp(bundleID string) (bool, error) {
-	req := &NativeQuitAppRequest{
-		BundleID: bundleID,
-	}
+func (p *Plugin) NativeQuitApp(req NativeQuitAppRequest) (bool, error) {
 	var result struct {
 		Result bool `json:"result"`
 	}
-	err := p.Call(MethodNativeQuitApp, req, &result)
+	err := p.Call(MethodNativeQuitApp, &req, &result)
 	return result.Result, err
 }
 
 // NativeRaiseWindow raise a window to the front.
-func (p *Plugin) NativeRaiseWindow(windowID string) error {
-	req := &NativeRaiseWindowRequest{
-		WindowID: windowID,
-	}
-	return p.Call(MethodNativeRaiseWindow, req, nil)
+func (p *Plugin) NativeRaiseWindow(req NativeRaiseWindowRequest) error {
+	return p.Call(MethodNativeRaiseWindow, &req, nil)
 }
 
 // NativeRandomUuid generate a random UUID v4.
@@ -4992,13 +3823,9 @@ func (p *Plugin) NativeRandomUuid() (*NativeRandomUuidResponse, error) {
 }
 
 // NativeReadAppPreference read a preference value for an app domain.
-func (p *Plugin) NativeReadAppPreference(domain string, key string) (json.RawMessage, error) {
-	req := &NativeReadAppPreferenceRequest{
-		Domain: domain,
-		Key:    key,
-	}
+func (p *Plugin) NativeReadAppPreference(req NativeReadAppPreferenceRequest) (json.RawMessage, error) {
 	var result json.RawMessage
-	err := p.Call(MethodNativeReadAppPreference, req, &result)
+	err := p.Call(MethodNativeReadAppPreference, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5006,12 +3833,9 @@ func (p *Plugin) NativeReadAppPreference(domain string, key string) (json.RawMes
 }
 
 // NativeReadFile read file contents as UTF-8 string.
-func (p *Plugin) NativeReadFile(path string) (*NativeReadFileResponse, error) {
-	req := &NativeReadFileRequest{
-		Path: path,
-	}
+func (p *Plugin) NativeReadFile(req NativeReadFileRequest) (*NativeReadFileResponse, error) {
 	var result NativeReadFileResponse
-	err := p.Call(MethodNativeReadFile, req, &result)
+	err := p.Call(MethodNativeReadFile, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5019,15 +3843,9 @@ func (p *Plugin) NativeReadFile(path string) (*NativeReadFileResponse, error) {
 }
 
 // NativeReadFileBinary read a file as base64-encoded binary.
-//
-//   - maxBytes: wire uint64 (64-bit) · default null · min 0
-func (p *Plugin) NativeReadFileBinary(path string, maxBytes *int) (*NativeReadFileBinaryResponse, error) {
-	req := &NativeReadFileBinaryRequest{
-		Path:     path,
-		MaxBytes: maxBytes,
-	}
+func (p *Plugin) NativeReadFileBinary(req NativeReadFileBinaryRequest) (*NativeReadFileBinaryResponse, error) {
 	var result NativeReadFileBinaryResponse
-	err := p.Call(MethodNativeReadFileBinary, req, &result)
+	err := p.Call(MethodNativeReadFileBinary, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5035,12 +3853,9 @@ func (p *Plugin) NativeReadFileBinary(path string, maxBytes *int) (*NativeReadFi
 }
 
 // NativeReadPlist read a property list file as JSON.
-func (p *Plugin) NativeReadPlist(path string) (json.RawMessage, error) {
-	req := &NativeReadPlistRequest{
-		Path: path,
-	}
+func (p *Plugin) NativeReadPlist(req NativeReadPlistRequest) (json.RawMessage, error) {
 	var result json.RawMessage
-	err := p.Call(MethodNativeReadPlist, req, &result)
+	err := p.Call(MethodNativeReadPlist, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5048,14 +3863,11 @@ func (p *Plugin) NativeReadPlist(path string) (json.RawMessage, error) {
 }
 
 // NativeRecentDocuments get recent documents for an app (by bundle ID).
-func (p *Plugin) NativeRecentDocuments(bundleID string) ([]string, error) {
-	req := &NativeRecentDocumentsRequest{
-		BundleID: bundleID,
-	}
+func (p *Plugin) NativeRecentDocuments(req NativeRecentDocumentsRequest) ([]string, error) {
 	var result struct {
 		Paths []string `json:"paths"`
 	}
-	err := p.Call(MethodNativeRecentDocuments, req, &result)
+	err := p.Call(MethodNativeRecentDocuments, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5105,15 +3917,11 @@ func (p *Plugin) NativeRemoteLoginEnabled() (*NativeRemoteLoginEnabledResponse, 
 }
 
 // NativeRenameFile rename a file or directory (same parent, new name).
-func (p *Plugin) NativeRenameFile(newName string, path string) (bool, error) {
-	req := &NativeRenameFileRequest{
-		NewName: newName,
-		Path:    path,
-	}
+func (p *Plugin) NativeRenameFile(req NativeRenameFileRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeRenameFile, req, &result)
+	err := p.Call(MethodNativeRenameFile, &req, &result)
 	return result.Ok, err
 }
 
@@ -5138,23 +3946,17 @@ func (p *Plugin) NativeResourceUsage() (*NativeResourceUsageResponse, error) {
 }
 
 // NativeRestartApp quit and relaunch an app by bundle ID.
-func (p *Plugin) NativeRestartApp(bundleID string) (bool, error) {
-	req := &NativeRestartAppRequest{
-		BundleID: bundleID,
-	}
+func (p *Plugin) NativeRestartApp(req NativeRestartAppRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeRestartApp, req, &result)
+	err := p.Call(MethodNativeRestartApp, &req, &result)
 	return result.Ok, err
 }
 
 // NativeRevealInFinder reveal file in Finder.
-func (p *Plugin) NativeRevealInFinder(path string) error {
-	req := &NativeRevealInFinderRequest{
-		Path: path,
-	}
-	return p.Call(MethodNativeRevealInFinder, req, nil)
+func (p *Plugin) NativeRevealInFinder(req NativeRevealInFinderRequest) error {
+	return p.Call(MethodNativeRevealInFinder, &req, nil)
 }
 
 // NativeRosettaInstalled check if Rosetta 2 is installed (Apple Silicon). Exists only on macOS; elsewhere it is refused with platform_no_analogue.
@@ -5168,14 +3970,9 @@ func (p *Plugin) NativeRosettaInstalled() (*NativeRosettaInstalledResponse, erro
 }
 
 // NativeRunApplescript execute an AppleScript via osascript. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-//
-//   - script: AppleScript source to execute via `osascript`.
-func (p *Plugin) NativeRunApplescript(script string) (*NativeRunApplescriptResponse, error) {
-	req := &NativeRunApplescriptRequest{
-		Script: script,
-	}
+func (p *Plugin) NativeRunApplescript(req NativeRunApplescriptRequest) (*NativeRunApplescriptResponse, error) {
 	var result NativeRunApplescriptResponse
-	err := p.Call(MethodNativeRunApplescript, req, &result)
+	err := p.Call(MethodNativeRunApplescript, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5183,12 +3980,9 @@ func (p *Plugin) NativeRunApplescript(script string) (*NativeRunApplescriptRespo
 }
 
 // NativeRunJxa run JavaScript for Automation (JXA) code. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeRunJxa(script string) (*NativeRunJxaResponse, error) {
-	req := &NativeRunJxaRequest{
-		Script: script,
-	}
+func (p *Plugin) NativeRunJxa(req NativeRunJxaRequest) (*NativeRunJxaResponse, error) {
 	var result NativeRunJxaResponse
-	err := p.Call(MethodNativeRunJxa, req, &result)
+	err := p.Call(MethodNativeRunJxa, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5196,15 +3990,9 @@ func (p *Plugin) NativeRunJxa(script string) (*NativeRunJxaResponse, error) {
 }
 
 // NativeRunShortcut run a Shortcuts.app shortcut by name. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-//
-//   - input: default null
-func (p *Plugin) NativeRunShortcut(name string, input *string) (*NativeRunShortcutResponse, error) {
-	req := &NativeRunShortcutRequest{
-		Name:  name,
-		Input: input,
-	}
+func (p *Plugin) NativeRunShortcut(req NativeRunShortcutRequest) (*NativeRunShortcutResponse, error) {
 	var result NativeRunShortcutResponse
-	err := p.Call(MethodNativeRunShortcut, req, &result)
+	err := p.Call(MethodNativeRunShortcut, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5324,17 +4112,9 @@ func (p *Plugin) NativeScreenSharingEnabled() (*NativeScreenSharingEnabledRespon
 }
 
 // NativeScreenshot capture a screenshot as base64-encoded PNG.
-//
-//   - displayID: wire uint32 · default null · min 0
-//   - windowID: default null
-func (p *Plugin) NativeScreenshot(displayID *int, region *ScreenshotRegion, windowID *string) (*NativeScreenshotResponse, error) {
-	req := &NativeScreenshotRequest{
-		DisplayID: displayID,
-		Region:    region,
-		WindowID:  windowID,
-	}
+func (p *Plugin) NativeScreenshot(req NativeScreenshotRequest) (*NativeScreenshotResponse, error) {
 	var result NativeScreenshotResponse
-	err := p.Call(MethodNativeScreenshot, req, &result)
+	err := p.Call(MethodNativeScreenshot, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5402,14 +4182,11 @@ func (p *Plugin) NativeScrollDirectionNatural() (*NativeScrollDirectionNaturalRe
 }
 
 // NativeSearchContacts search contacts by name.
-func (p *Plugin) NativeSearchContacts(query string) ([]ContactInfo, error) {
-	req := &NativeSearchContactsRequest{
-		Query: query,
-	}
+func (p *Plugin) NativeSearchContacts(req NativeSearchContactsRequest) ([]ContactInfo, error) {
 	var result struct {
 		Contacts []ContactInfo `json:"contacts"`
 	}
-	err := p.Call(MethodNativeSearchContacts, req, &result)
+	err := p.Call(MethodNativeSearchContacts, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5459,730 +4236,495 @@ func (p *Plugin) NativeSerialNumber() (*NativeSerialNumberResponse, error) {
 }
 
 // NativeSetAirportPower turn Wi-Fi (AirPort) on or off.
-func (p *Plugin) NativeSetAirportPower(on bool) (bool, error) {
-	req := &NativeSetAirportPowerRequest{
-		On: on,
-	}
+func (p *Plugin) NativeSetAirportPower(req NativeSetAirportPowerRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetAirportPower, req, &result)
+	err := p.Call(MethodNativeSetAirportPower, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetAppHidden hide or unhide an app.
-func (p *Plugin) NativeSetAppHidden(bundleID string, hidden bool) (bool, error) {
-	req := &NativeSetAppHiddenRequest{
-		BundleID: bundleID,
-		Hidden:   hidden,
-	}
+func (p *Plugin) NativeSetAppHidden(req NativeSetAppHiddenRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetAppHidden, req, &result)
+	err := p.Call(MethodNativeSetAppHidden, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetAppMuted mute or unmute one app in the system mixer; false when the app has no audio stream. Exists only on Linux and Windows; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeSetAppMuted(app string, muted bool) (bool, error) {
-	req := &NativeSetAppMutedRequest{
-		App:   app,
-		Muted: muted,
-	}
+func (p *Plugin) NativeSetAppMuted(req NativeSetAppMutedRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetAppMuted, req, &result)
+	err := p.Call(MethodNativeSetAppMuted, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetAppVolume set one app's volume (0.0-1.0) in the system mixer; false when the app has no audio stream. Exists only on Linux and Windows; elsewhere it is refused with platform_no_analogue.
-//
-//   - volume: wire double
-func (p *Plugin) NativeSetAppVolume(app string, volume float64) (bool, error) {
-	req := &NativeSetAppVolumeRequest{
-		App:    app,
-		Volume: volume,
-	}
+func (p *Plugin) NativeSetAppVolume(req NativeSetAppVolumeRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetAppVolume, req, &result)
+	err := p.Call(MethodNativeSetAppVolume, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetAudioDevice set the default audio input or output device.
-//
-//   - deviceType: "input" or "output".
-func (p *Plugin) NativeSetAudioDevice(deviceType string, uid string) error {
-	req := &NativeSetAudioDeviceRequest{
-		DeviceType: deviceType,
-		UID:        uid,
-	}
-	return p.Call(MethodNativeSetAudioDevice, req, nil)
+func (p *Plugin) NativeSetAudioDevice(req NativeSetAudioDeviceRequest) error {
+	return p.Call(MethodNativeSetAudioDevice, &req, nil)
 }
 
 // NativeSetAudioDeviceVolume set volume for a specific audio device by UID.
-//
-//   - volume: wire double
-func (p *Plugin) NativeSetAudioDeviceVolume(deviceUID string, volume float64) error {
-	req := &NativeSetAudioDeviceVolumeRequest{
-		DeviceUID: deviceUID,
-		Volume:    volume,
-	}
-	return p.Call(MethodNativeSetAudioDeviceVolume, req, nil)
+func (p *Plugin) NativeSetAudioDeviceVolume(req NativeSetAudioDeviceVolumeRequest) error {
+	return p.Call(MethodNativeSetAudioDeviceVolume, &req, nil)
 }
 
 // NativeSetAudioInputDevice set active audio input device by name.
-func (p *Plugin) NativeSetAudioInputDevice(name string) (bool, error) {
-	req := &NativeSetAudioInputDeviceRequest{
-		Name: name,
-	}
+func (p *Plugin) NativeSetAudioInputDevice(req NativeSetAudioInputDeviceRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetAudioInputDevice, req, &result)
+	err := p.Call(MethodNativeSetAudioInputDevice, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetAudioOutputDevice set active audio output device by name.
-func (p *Plugin) NativeSetAudioOutputDevice(name string) (bool, error) {
-	req := &NativeSetAudioOutputDeviceRequest{
-		Name: name,
-	}
+func (p *Plugin) NativeSetAudioOutputDevice(req NativeSetAudioOutputDeviceRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetAudioOutputDevice, req, &result)
+	err := p.Call(MethodNativeSetAudioOutputDevice, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetAutoRearrangeSpaces enable or disable auto-rearrange Spaces. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeSetAutoRearrangeSpaces(enabled bool) (bool, error) {
-	req := &NativeSetAutoRearrangeSpacesRequest{
-		Enabled: enabled,
-	}
+func (p *Plugin) NativeSetAutoRearrangeSpaces(req NativeSetAutoRearrangeSpacesRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetAutoRearrangeSpaces, req, &result)
+	err := p.Call(MethodNativeSetAutoRearrangeSpaces, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetBluetoothPower turn Bluetooth on or off.
-func (p *Plugin) NativeSetBluetoothPower(on bool) (bool, error) {
-	req := &NativeSetBluetoothPowerRequest{
-		On: on,
-	}
+func (p *Plugin) NativeSetBluetoothPower(req NativeSetBluetoothPowerRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetBluetoothPower, req, &result)
+	err := p.Call(MethodNativeSetBluetoothPower, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetBounceKeys turn Bounce Keys on or off (repeated presses of one key are ignored).
-func (p *Plugin) NativeSetBounceKeys(enabled bool) (bool, error) {
-	req := &NativeSetBounceKeysRequest{
-		Enabled: enabled,
-	}
+func (p *Plugin) NativeSetBounceKeys(req NativeSetBounceKeysRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetBounceKeys, req, &result)
+	err := p.Call(MethodNativeSetBounceKeys, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetBrightness set display brightness (0.0-1.0).
-//
-//   - brightness: wire double
-//   - displayID: wire uint32 · default null · min 0
-func (p *Plugin) NativeSetBrightness(brightness float64, displayID *int) error {
-	req := &NativeSetBrightnessRequest{
-		Brightness: brightness,
-		DisplayID:  displayID,
-	}
-	return p.Call(MethodNativeSetBrightness, req, nil)
+func (p *Plugin) NativeSetBrightness(req NativeSetBrightnessRequest) error {
+	return p.Call(MethodNativeSetBrightness, &req, nil)
 }
 
 // NativeSetComputerName set the computer name.
-func (p *Plugin) NativeSetComputerName(name string) (bool, error) {
-	req := &NativeSetComputerNameRequest{
-		Name: name,
-	}
+func (p *Plugin) NativeSetComputerName(req NativeSetComputerNameRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetComputerName, req, &result)
+	err := p.Call(MethodNativeSetComputerName, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetDarkMode set dark or light mode.
-func (p *Plugin) NativeSetDarkMode(dark bool) error {
-	req := &NativeSetDarkModeRequest{
-		Dark: dark,
-	}
-	return p.Call(MethodNativeSetDarkMode, req, nil)
+func (p *Plugin) NativeSetDarkMode(req NativeSetDarkModeRequest) error {
+	return p.Call(MethodNativeSetDarkMode, &req, nil)
 }
 
 // NativeSetDnd set Do Not Disturb on or off (idempotent; via the BranchKit Focus helper shortcut).
-func (p *Plugin) NativeSetDnd(enabled bool) error {
-	req := &NativeSetDndRequest{
-		Enabled: enabled,
-	}
-	return p.Call(MethodNativeSetDnd, req, nil)
+func (p *Plugin) NativeSetDnd(req NativeSetDndRequest) error {
+	return p.Call(MethodNativeSetDnd, &req, nil)
 }
 
 // NativeSetDockAutoHide enable or disable Dock auto-hide. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeSetDockAutoHide(enabled bool) (bool, error) {
-	req := &NativeSetDockAutoHideRequest{
-		Enabled: enabled,
-	}
+func (p *Plugin) NativeSetDockAutoHide(req NativeSetDockAutoHideRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetDockAutoHide, req, &result)
+	err := p.Call(MethodNativeSetDockAutoHide, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetDockMagnification enable or disable Dock magnification. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeSetDockMagnification(enabled bool) (bool, error) {
-	req := &NativeSetDockMagnificationRequest{
-		Enabled: enabled,
-	}
+func (p *Plugin) NativeSetDockMagnification(req NativeSetDockMagnificationRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetDockMagnification, req, &result)
+	err := p.Call(MethodNativeSetDockMagnification, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetDockMinimizeEffect set Dock minimize animation (genie/scale). Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeSetDockMinimizeEffect(effect string) (bool, error) {
-	req := &NativeSetDockMinimizeEffectRequest{
-		Effect: effect,
-	}
+func (p *Plugin) NativeSetDockMinimizeEffect(req NativeSetDockMinimizeEffectRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetDockMinimizeEffect, req, &result)
+	err := p.Call(MethodNativeSetDockMinimizeEffect, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetDockPosition set the Dock position (left, bottom, right). Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeSetDockPosition(position string) (bool, error) {
-	req := &NativeSetDockPositionRequest{
-		Position: position,
-	}
+func (p *Plugin) NativeSetDockPosition(req NativeSetDockPositionRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetDockPosition, req, &result)
+	err := p.Call(MethodNativeSetDockPosition, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetDockShowRecents show or hide recent apps in Dock. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeSetDockShowRecents(enabled bool) (bool, error) {
-	req := &NativeSetDockShowRecentsRequest{
-		Enabled: enabled,
-	}
+func (p *Plugin) NativeSetDockShowRecents(req NativeSetDockShowRecentsRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetDockShowRecents, req, &result)
+	err := p.Call(MethodNativeSetDockShowRecents, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetDockSize set Dock tile size. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-//
-//   - size: wire double
-func (p *Plugin) NativeSetDockSize(size float64) (bool, error) {
-	req := &NativeSetDockSizeRequest{
-		Size: size,
-	}
+func (p *Plugin) NativeSetDockSize(req NativeSetDockSizeRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetDockSize, req, &result)
+	err := p.Call(MethodNativeSetDockSize, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetExtendedAttribute set an extended attribute on a file.
-func (p *Plugin) NativeSetExtendedAttribute(name string, path string, value string) (bool, error) {
-	req := &NativeSetExtendedAttributeRequest{
-		Name:  name,
-		Path:  path,
-		Value: value,
-	}
+func (p *Plugin) NativeSetExtendedAttribute(req NativeSetExtendedAttributeRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetExtendedAttribute, req, &result)
+	err := p.Call(MethodNativeSetExtendedAttribute, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetFileHidden set file hidden flag.
-func (p *Plugin) NativeSetFileHidden(hidden bool, path string) (bool, error) {
-	req := &NativeSetFileHiddenRequest{
-		Hidden: hidden,
-		Path:   path,
-	}
+func (p *Plugin) NativeSetFileHidden(req NativeSetFileHiddenRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetFileHidden, req, &result)
+	err := p.Call(MethodNativeSetFileHidden, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetFilePermissions set file permissions (chmod octal mode). Exists only on macOS and Linux; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeSetFilePermissions(mode string, path string) (bool, error) {
-	req := &NativeSetFilePermissionsRequest{
-		Mode: mode,
-		Path: path,
-	}
+func (p *Plugin) NativeSetFilePermissions(req NativeSetFilePermissionsRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetFilePermissions, req, &result)
+	err := p.Call(MethodNativeSetFilePermissions, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetFinderShowExtensions show or hide file extensions in Finder. Exists only on macOS and Windows; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeSetFinderShowExtensions(enabled bool) (bool, error) {
-	req := &NativeSetFinderShowExtensionsRequest{
-		Enabled: enabled,
-	}
+func (p *Plugin) NativeSetFinderShowExtensions(req NativeSetFinderShowExtensionsRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetFinderShowExtensions, req, &result)
+	err := p.Call(MethodNativeSetFinderShowExtensions, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetFinderShowHidden show or hide hidden files in Finder.
-func (p *Plugin) NativeSetFinderShowHidden(enabled bool) (bool, error) {
-	req := &NativeSetFinderShowHiddenRequest{
-		Enabled: enabled,
-	}
+func (p *Plugin) NativeSetFinderShowHidden(req NativeSetFinderShowHiddenRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetFinderShowHidden, req, &result)
+	err := p.Call(MethodNativeSetFinderShowHidden, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetHighlightColor set system highlight/accent color.
-func (p *Plugin) NativeSetHighlightColor(color string) (bool, error) {
-	req := &NativeSetHighlightColorRequest{
-		Color: color,
-	}
+func (p *Plugin) NativeSetHighlightColor(req NativeSetHighlightColorRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetHighlightColor, req, &result)
+	err := p.Call(MethodNativeSetHighlightColor, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetHotCorner set a hot corner action.
-//
-//   - action: wire uint32 · min 0
-func (p *Plugin) NativeSetHotCorner(action int, corner string) (bool, error) {
-	req := &NativeSetHotCornerRequest{
-		Action: action,
-		Corner: corner,
-	}
+func (p *Plugin) NativeSetHotCorner(req NativeSetHotCornerRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetHotCorner, req, &result)
+	err := p.Call(MethodNativeSetHotCorner, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetInputSource switch to a keyboard input source by ID.
-func (p *Plugin) NativeSetInputSource(sourceID string) (bool, error) {
-	req := &NativeSetInputSourceRequest{
-		SourceID: sourceID,
-	}
+func (p *Plugin) NativeSetInputSource(req NativeSetInputSourceRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetInputSource, req, &result)
+	err := p.Call(MethodNativeSetInputSource, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetKeyRepeatDelay set initial key repeat delay (seconds).
-//
-//   - delay: wire double
-func (p *Plugin) NativeSetKeyRepeatDelay(delay float64) (bool, error) {
-	req := &NativeSetKeyRepeatDelayRequest{
-		Delay: delay,
-	}
+func (p *Plugin) NativeSetKeyRepeatDelay(req NativeSetKeyRepeatDelayRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetKeyRepeatDelay, req, &result)
+	err := p.Call(MethodNativeSetKeyRepeatDelay, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetKeyRepeatRate set key repeat rate (keys per second).
-//
-//   - rate: wire double
-func (p *Plugin) NativeSetKeyRepeatRate(rate float64) (bool, error) {
-	req := &NativeSetKeyRepeatRateRequest{
-		Rate: rate,
-	}
+func (p *Plugin) NativeSetKeyRepeatRate(req NativeSetKeyRepeatRateRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetKeyRepeatRate, req, &result)
+	err := p.Call(MethodNativeSetKeyRepeatRate, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetMagnifierEnabled turn the screen magnifier on or off; false when it did not change.
-func (p *Plugin) NativeSetMagnifierEnabled(enabled bool) (bool, error) {
-	req := &NativeSetMagnifierEnabledRequest{
-		Enabled: enabled,
-	}
+func (p *Plugin) NativeSetMagnifierEnabled(req NativeSetMagnifierEnabledRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetMagnifierEnabled, req, &result)
+	err := p.Call(MethodNativeSetMagnifierEnabled, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetMenuBarAutoHide enable or disable menu bar auto-hide. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeSetMenuBarAutoHide(enabled bool) (bool, error) {
-	req := &NativeSetMenuBarAutoHideRequest{
-		Enabled: enabled,
-	}
+func (p *Plugin) NativeSetMenuBarAutoHide(req NativeSetMenuBarAutoHideRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetMenuBarAutoHide, req, &result)
+	err := p.Call(MethodNativeSetMenuBarAutoHide, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetMouseKeys turn Mouse Keys on or off (the numeric keypad moves the pointer).
-func (p *Plugin) NativeSetMouseKeys(enabled bool) (bool, error) {
-	req := &NativeSetMouseKeysRequest{
-		Enabled: enabled,
-	}
+func (p *Plugin) NativeSetMouseKeys(req NativeSetMouseKeysRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetMouseKeys, req, &result)
+	err := p.Call(MethodNativeSetMouseKeys, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetMouseSpeed set mouse tracking speed.
-//
-//   - speed: wire double
-func (p *Plugin) NativeSetMouseSpeed(speed float64) (bool, error) {
-	req := &NativeSetMouseSpeedRequest{
-		Speed: speed,
-	}
+func (p *Plugin) NativeSetMouseSpeed(req NativeSetMouseSpeedRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetMouseSpeed, req, &result)
+	err := p.Call(MethodNativeSetMouseSpeed, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetNightShift enable or disable Night Shift.
-func (p *Plugin) NativeSetNightShift(enabled bool) error {
-	req := &NativeSetNightShiftRequest{
-		Enabled: enabled,
-	}
-	return p.Call(MethodNativeSetNightShift, req, nil)
+func (p *Plugin) NativeSetNightShift(req NativeSetNightShiftRequest) error {
+	return p.Call(MethodNativeSetNightShift, &req, nil)
 }
 
 // NativeSetOnScreenKeyboardEnabled show or hide the on-screen keyboard; false when it did not change.
-func (p *Plugin) NativeSetOnScreenKeyboardEnabled(enabled bool) (bool, error) {
-	req := &NativeSetOnScreenKeyboardEnabledRequest{
-		Enabled: enabled,
-	}
+func (p *Plugin) NativeSetOnScreenKeyboardEnabled(req NativeSetOnScreenKeyboardEnabledRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetOnScreenKeyboardEnabled, req, &result)
+	err := p.Call(MethodNativeSetOnScreenKeyboardEnabled, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetPowerMode set the power mode (power-saver, balanced or performance); false when refused or not offered.
-func (p *Plugin) NativeSetPowerMode(mode string) (bool, error) {
-	req := &NativeSetPowerModeRequest{
-		Mode: mode,
-	}
+func (p *Plugin) NativeSetPowerMode(req NativeSetPowerModeRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetPowerMode, req, &result)
+	err := p.Call(MethodNativeSetPowerMode, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetScreenReaderEnabled turn the screen reader on or off (VoiceOver, Orca, Narrator); false when it did not change.
-func (p *Plugin) NativeSetScreenReaderEnabled(enabled bool) (bool, error) {
-	req := &NativeSetScreenReaderEnabledRequest{
-		Enabled: enabled,
-	}
+func (p *Plugin) NativeSetScreenReaderEnabled(req NativeSetScreenReaderEnabledRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetScreenReaderEnabled, req, &result)
+	err := p.Call(MethodNativeSetScreenReaderEnabled, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetScreenshotFormat set screenshot file format (png/jpg/pdf/tiff). Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeSetScreenshotFormat(format string) (bool, error) {
-	req := &NativeSetScreenshotFormatRequest{
-		Format: format,
-	}
+func (p *Plugin) NativeSetScreenshotFormat(req NativeSetScreenshotFormatRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetScreenshotFormat, req, &result)
+	err := p.Call(MethodNativeSetScreenshotFormat, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetScreenshotIncludeShadow enable or disable window shadow in screenshots. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeSetScreenshotIncludeShadow(enabled bool) (bool, error) {
-	req := &NativeSetScreenshotIncludeShadowRequest{
-		Enabled: enabled,
-	}
+func (p *Plugin) NativeSetScreenshotIncludeShadow(req NativeSetScreenshotIncludeShadowRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetScreenshotIncludeShadow, req, &result)
+	err := p.Call(MethodNativeSetScreenshotIncludeShadow, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetScreenshotLocation set the screenshot save location. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeSetScreenshotLocation(path string) (bool, error) {
-	req := &NativeSetScreenshotLocationRequest{
-		Path: path,
-	}
+func (p *Plugin) NativeSetScreenshotLocation(req NativeSetScreenshotLocationRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetScreenshotLocation, req, &result)
+	err := p.Call(MethodNativeSetScreenshotLocation, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetScrollDirectionNatural set natural scroll direction.
-func (p *Plugin) NativeSetScrollDirectionNatural(enabled bool) (bool, error) {
-	req := &NativeSetScrollDirectionNaturalRequest{
-		Enabled: enabled,
-	}
+func (p *Plugin) NativeSetScrollDirectionNatural(req NativeSetScrollDirectionNaturalRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetScrollDirectionNatural, req, &result)
+	err := p.Call(MethodNativeSetScrollDirectionNatural, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetSidebarIconSize set sidebar icon size (1=small,2=medium,3=large). Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-//
-//   - size: wire uint32 · min 0
-func (p *Plugin) NativeSetSidebarIconSize(size int) (bool, error) {
-	req := &NativeSetSidebarIconSizeRequest{
-		Size: size,
-	}
+func (p *Plugin) NativeSetSidebarIconSize(req NativeSetSidebarIconSizeRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetSidebarIconSize, req, &result)
+	err := p.Call(MethodNativeSetSidebarIconSize, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetSlowKeys turn Slow Keys on or off (a key registers only after it is held).
-func (p *Plugin) NativeSetSlowKeys(enabled bool) (bool, error) {
-	req := &NativeSetSlowKeysRequest{
-		Enabled: enabled,
-	}
+func (p *Plugin) NativeSetSlowKeys(req NativeSetSlowKeysRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetSlowKeys, req, &result)
+	err := p.Call(MethodNativeSetSlowKeys, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetStageManager enable or disable Stage Manager. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeSetStageManager(enabled bool) (bool, error) {
-	req := &NativeSetStageManagerRequest{
-		Enabled: enabled,
-	}
+func (p *Plugin) NativeSetStageManager(req NativeSetStageManagerRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetStageManager, req, &result)
+	err := p.Call(MethodNativeSetStageManager, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetStickyKeys turn Sticky Keys on or off (modifiers latch, so shortcuts need one key at a time).
-func (p *Plugin) NativeSetStickyKeys(enabled bool) (bool, error) {
-	req := &NativeSetStickyKeysRequest{
-		Enabled: enabled,
-	}
+func (p *Plugin) NativeSetStickyKeys(req NativeSetStickyKeysRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetStickyKeys, req, &result)
+	err := p.Call(MethodNativeSetStickyKeys, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetTapToClick enable or disable tap-to-click.
-func (p *Plugin) NativeSetTapToClick(enabled bool) (bool, error) {
-	req := &NativeSetTapToClickRequest{
-		Enabled: enabled,
-	}
+func (p *Plugin) NativeSetTapToClick(req NativeSetTapToClickRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetTapToClick, req, &result)
+	err := p.Call(MethodNativeSetTapToClick, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetTextScale set the system text size as a factor of the default (1.0); false when refused.
-//
-//   - scale: wire double
-func (p *Plugin) NativeSetTextScale(scale float64) (bool, error) {
-	req := &NativeSetTextScaleRequest{
-		Scale: scale,
-	}
+func (p *Plugin) NativeSetTextScale(req NativeSetTextScaleRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetTextScale, req, &result)
+	err := p.Call(MethodNativeSetTextScale, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetTrackpadSpeed set trackpad tracking speed.
-//
-//   - speed: wire double
-func (p *Plugin) NativeSetTrackpadSpeed(speed float64) (bool, error) {
-	req := &NativeSetTrackpadSpeedRequest{
-		Speed: speed,
-	}
+func (p *Plugin) NativeSetTrackpadSpeed(req NativeSetTrackpadSpeedRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetTrackpadSpeed, req, &result)
+	err := p.Call(MethodNativeSetTrackpadSpeed, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetURLSchemeHandler register an application as the handler for a URL scheme.
-func (p *Plugin) NativeSetURLSchemeHandler(bundleID string, scheme string) (bool, error) {
-	req := &NativeSetURLSchemeHandlerRequest{
-		BundleID: bundleID,
-		Scheme:   scheme,
-	}
+func (p *Plugin) NativeSetURLSchemeHandler(req NativeSetURLSchemeHandlerRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetUrlSchemeHandler, req, &result)
+	err := p.Call(MethodNativeSetUrlSchemeHandler, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetVisualAlertsEnabled turn screen flashing on alert sounds on or off; false when it did not change.
-func (p *Plugin) NativeSetVisualAlertsEnabled(enabled bool) (bool, error) {
-	req := &NativeSetVisualAlertsEnabledRequest{
-		Enabled: enabled,
-	}
+func (p *Plugin) NativeSetVisualAlertsEnabled(req NativeSetVisualAlertsEnabledRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetVisualAlertsEnabled, req, &result)
+	err := p.Call(MethodNativeSetVisualAlertsEnabled, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetVolume set system volume (0.0–1.0).
-//
-//   - volume: wire double
-func (p *Plugin) NativeSetVolume(volume float64) error {
-	req := &NativeSetVolumeRequest{
-		Volume: volume,
-	}
-	return p.Call(MethodNativeSetVolume, req, nil)
+func (p *Plugin) NativeSetVolume(req NativeSetVolumeRequest) error {
+	return p.Call(MethodNativeSetVolume, &req, nil)
 }
 
 // NativeSetWallpaper set the desktop wallpaper to an image file.
-func (p *Plugin) NativeSetWallpaper(path string) (bool, error) {
-	req := &NativeSetWallpaperRequest{
-		Path: path,
-	}
+func (p *Plugin) NativeSetWallpaper(req NativeSetWallpaperRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetWallpaper, req, &result)
+	err := p.Call(MethodNativeSetWallpaper, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetWindowAlpha set window transparency.
-//
-//   - alpha: wire double
-func (p *Plugin) NativeSetWindowAlpha(alpha float64, windowID string) error {
-	req := &NativeSetWindowAlphaRequest{
-		Alpha:    alpha,
-		WindowID: windowID,
-	}
-	return p.Call(MethodNativeSetWindowAlpha, req, nil)
+func (p *Plugin) NativeSetWindowAlpha(req NativeSetWindowAlphaRequest) error {
+	return p.Call(MethodNativeSetWindowAlpha, &req, nil)
 }
 
 // NativeSetWindowLevel set a window's level (floating, normal, below).
-func (p *Plugin) NativeSetWindowLevel(level string, windowID string) (bool, error) {
-	req := &NativeSetWindowLevelRequest{
-		Level:    level,
-		WindowID: windowID,
-	}
+func (p *Plugin) NativeSetWindowLevel(req NativeSetWindowLevelRequest) (bool, error) {
 	var result struct {
 		Result bool `json:"result"`
 	}
-	err := p.Call(MethodNativeSetWindowLevel, req, &result)
+	err := p.Call(MethodNativeSetWindowLevel, &req, &result)
 	return result.Result, err
 }
 
 // NativeSetWindowPosition move a window to x,y without changing size.
-//
-//   - x: wire int32
-//   - y: wire int32
-func (p *Plugin) NativeSetWindowPosition(windowID string, x int, y int) error {
-	req := &NativeSetWindowPositionRequest{
-		WindowID: windowID,
-		X:        x,
-		Y:        y,
-	}
-	return p.Call(MethodNativeSetWindowPosition, req, nil)
+func (p *Plugin) NativeSetWindowPosition(req NativeSetWindowPositionRequest) error {
+	return p.Call(MethodNativeSetWindowPosition, &req, nil)
 }
 
 // NativeSetWindowShadow enable or disable the drop shadow for a window. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeSetWindowShadow(enabled bool, windowID string) error {
-	req := &NativeSetWindowShadowRequest{
-		Enabled:  enabled,
-		WindowID: windowID,
-	}
-	return p.Call(MethodNativeSetWindowShadow, req, nil)
+func (p *Plugin) NativeSetWindowShadow(req NativeSetWindowShadowRequest) error {
+	return p.Call(MethodNativeSetWindowShadow, &req, nil)
 }
 
 // NativeSetWindowSize resize a window without changing position.
-//
-//   - h: wire int32
-//   - w: wire int32
-func (p *Plugin) NativeSetWindowSize(h int, w int, windowID string) error {
-	req := &NativeSetWindowSizeRequest{
-		H:        h,
-		W:        w,
-		WindowID: windowID,
-	}
-	return p.Call(MethodNativeSetWindowSize, req, nil)
+func (p *Plugin) NativeSetWindowSize(req NativeSetWindowSizeRequest) error {
+	return p.Call(MethodNativeSetWindowSize, &req, nil)
 }
 
 // NativeSetWindowSticky set a window to appear on all spaces (sticky).
-func (p *Plugin) NativeSetWindowSticky(sticky bool, windowID string) error {
-	req := &NativeSetWindowStickyRequest{
-		Sticky:   sticky,
-		WindowID: windowID,
-	}
-	return p.Call(MethodNativeSetWindowSticky, req, nil)
+func (p *Plugin) NativeSetWindowSticky(req NativeSetWindowStickyRequest) error {
+	return p.Call(MethodNativeSetWindowSticky, &req, nil)
 }
 
 // NativeSharingName get the local network sharing name.
@@ -6291,16 +4833,8 @@ func (p *Plugin) NativeSpacesSpanDisplays() (*NativeSpacesSpanDisplaysResponse, 
 }
 
 // NativeSpeak speak text using the system text-to-speech engine.
-//
-//   - rate: wire double · default null
-//   - voice: default null
-func (p *Plugin) NativeSpeak(text string, rate *float64, voice *string) error {
-	req := &NativeSpeakRequest{
-		Text:  text,
-		Rate:  rate,
-		Voice: voice,
-	}
-	return p.Call(MethodNativeSpeak, req, nil)
+func (p *Plugin) NativeSpeak(req NativeSpeakRequest) error {
+	return p.Call(MethodNativeSpeak, &req, nil)
 }
 
 // NativeSpeechLocales list available speech recognition locales.
@@ -6326,15 +4860,9 @@ func (p *Plugin) NativeSpeechRecognitionAvailable() (*NativeSpeechRecognitionAva
 }
 
 // NativeSpeechRecognizeFile recognize speech from an audio file (returns transcript).
-//
-//   - locale: default ""
-func (p *Plugin) NativeSpeechRecognizeFile(path string, locale *string) (string, error) {
-	req := &NativeSpeechRecognizeFileRequest{
-		Path:   path,
-		Locale: locale,
-	}
+func (p *Plugin) NativeSpeechRecognizeFile(req NativeSpeechRecognizeFileRequest) (string, error) {
 	var result string
-	err := p.Call(MethodNativeSpeechRecognizeFile, req, &result)
+	err := p.Call(MethodNativeSpeechRecognizeFile, &req, &result)
 	if err != nil {
 		return "", err
 	}
@@ -6352,19 +4880,11 @@ func (p *Plugin) NativeSpellingLanguage() (*NativeSpellingLanguageResponse, erro
 }
 
 // NativeSpotlight search files via Spotlight.
-//
-//   - limit: wire uint32 · default 20 · min 0
-//   - scope: default null
-func (p *Plugin) NativeSpotlight(query string, limit *int, scope []string) ([]SpotlightResult, error) {
-	req := &NativeSpotlightRequest{
-		Query: query,
-		Limit: limit,
-		Scope: scope,
-	}
+func (p *Plugin) NativeSpotlight(req NativeSpotlightRequest) ([]SpotlightResult, error) {
 	var result struct {
 		Results []SpotlightResult `json:"results"`
 	}
-	err := p.Call(MethodNativeSpotlight, req, &result)
+	err := p.Call(MethodNativeSpotlight, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -6432,13 +4952,8 @@ func (p *Plugin) NativeSwipeBetweenPages() (*NativeSwipeBetweenPagesResponse, er
 }
 
 // NativeSwitchSpace switch to a Mission Control desktop by number (1-16) via the user's Switch-to-Desktop symbolic hotkey (respects remaps, auto-enables disabled shortcuts; falls back to default Ctrl+N).
-//
-//   - spaceID: wire uint64 (64-bit) · min 0
-func (p *Plugin) NativeSwitchSpace(spaceID int) error {
-	req := &NativeSwitchSpaceRequest{
-		SpaceID: spaceID,
-	}
-	return p.Call(MethodNativeSwitchSpace, req, nil)
+func (p *Plugin) NativeSwitchSpace(req NativeSwitchSpaceRequest) error {
+	return p.Call(MethodNativeSwitchSpace, &req, nil)
 }
 
 // NativeSwitchSpaceWhenSwitchingApp check if switching to app switches to its Space. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
@@ -6452,15 +4967,11 @@ func (p *Plugin) NativeSwitchSpaceWhenSwitchingApp() (*NativeSwitchSpaceWhenSwit
 }
 
 // NativeSymlink create a symbolic link.
-func (p *Plugin) NativeSymlink(link string, source string) (bool, error) {
-	req := &NativeSymlinkRequest{
-		Link:   link,
-		Source: source,
-	}
+func (p *Plugin) NativeSymlink(req NativeSymlinkRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSymlink, req, &result)
+	err := p.Call(MethodNativeSymlink, &req, &result)
 	return result.Ok, err
 }
 
@@ -6677,34 +5188,25 @@ func (p *Plugin) NativeTimezone() (*NativeTimezoneResponse, error) {
 }
 
 // NativeToggleBluetooth toggle Bluetooth on/off.
-func (p *Plugin) NativeToggleBluetooth(enabled bool) (bool, error) {
-	req := &NativeToggleBluetoothRequest{
-		Enabled: enabled,
-	}
+func (p *Plugin) NativeToggleBluetooth(req NativeToggleBluetoothRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeToggleBluetooth, req, &result)
+	err := p.Call(MethodNativeToggleBluetooth, &req, &result)
 	return result.Ok, err
 }
 
 // NativeToggleFullscreen toggle native fullscreen for a window.
-func (p *Plugin) NativeToggleFullscreen(windowID string) error {
-	req := &NativeToggleFullscreenRequest{
-		WindowID: windowID,
-	}
-	return p.Call(MethodNativeToggleFullscreen, req, nil)
+func (p *Plugin) NativeToggleFullscreen(req NativeToggleFullscreenRequest) error {
+	return p.Call(MethodNativeToggleFullscreen, &req, nil)
 }
 
 // NativeToggleWifi toggle Wi-Fi on/off.
-func (p *Plugin) NativeToggleWifi(enabled bool) (bool, error) {
-	req := &NativeToggleWifiRequest{
-		Enabled: enabled,
-	}
+func (p *Plugin) NativeToggleWifi(req NativeToggleWifiRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeToggleWifi, req, &result)
+	err := p.Call(MethodNativeToggleWifi, &req, &result)
 	return result.Ok, err
 }
 
@@ -6729,12 +5231,9 @@ func (p *Plugin) NativeTrackpadSpeed() (float64, error) {
 }
 
 // NativeTransparencyConsent check TCC consent status for a service (e.g. kTCCServiceAccessibility). Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeTransparencyConsent(service string) (string, error) {
-	req := &NativeTransparencyConsentRequest{
-		Service: service,
-	}
+func (p *Plugin) NativeTransparencyConsent(req NativeTransparencyConsentRequest) (string, error) {
 	var result string
-	err := p.Call(MethodNativeTransparencyConsent, req, &result)
+	err := p.Call(MethodNativeTransparencyConsent, &req, &result)
 	if err != nil {
 		return "", err
 	}
@@ -6742,14 +5241,11 @@ func (p *Plugin) NativeTransparencyConsent(service string) (string, error) {
 }
 
 // NativeTrash move file to Trash.
-func (p *Plugin) NativeTrash(path string) (bool, error) {
-	req := &NativeTrashRequest{
-		Path: path,
-	}
+func (p *Plugin) NativeTrash(req NativeTrashRequest) (bool, error) {
 	var result struct {
 		Result bool `json:"result"`
 	}
-	err := p.Call(MethodNativeTrash, req, &result)
+	err := p.Call(MethodNativeTrash, &req, &result)
 	return result.Result, err
 }
 
@@ -6786,53 +5282,37 @@ func (p *Plugin) NativeTwentyFourHourClock() (*NativeTwentyFourHourClockResponse
 }
 
 // NativeUnhideApp unhide a hidden application.
-func (p *Plugin) NativeUnhideApp(bundleID string) error {
-	req := &NativeUnhideAppRequest{
-		BundleID: bundleID,
-	}
-	return p.Call(MethodNativeUnhideApp, req, nil)
+func (p *Plugin) NativeUnhideApp(req NativeUnhideAppRequest) error {
+	return p.Call(MethodNativeUnhideApp, &req, nil)
 }
 
 // NativeUnminimizeWindow restore a minimized window by ID.
-func (p *Plugin) NativeUnminimizeWindow(windowID string) error {
-	req := &NativeUnminimizeWindowRequest{
-		WindowID: windowID,
-	}
-	return p.Call(MethodNativeUnminimizeWindow, req, nil)
+func (p *Plugin) NativeUnminimizeWindow(req NativeUnminimizeWindowRequest) error {
+	return p.Call(MethodNativeUnminimizeWindow, &req, nil)
 }
 
 // NativeUnobserveWindows stop observing window events (STUB).
-func (p *Plugin) NativeUnobserveWindows(subscriptionID string) (bool, error) {
-	req := &NativeUnobserveWindowsRequest{
-		SubscriptionID: subscriptionID,
-	}
+func (p *Plugin) NativeUnobserveWindows(req NativeUnobserveWindowsRequest) (bool, error) {
 	var result struct {
 		Result bool `json:"result"`
 	}
-	err := p.Call(MethodNativeUnobserveWindows, req, &result)
+	err := p.Call(MethodNativeUnobserveWindows, &req, &result)
 	return result.Result, err
 }
 
 // NativeUnzip extract a zip archive to a directory.
-func (p *Plugin) NativeUnzip(destination string, source string) (bool, error) {
-	req := &NativeUnzipRequest{
-		Destination: destination,
-		Source:      source,
-	}
+func (p *Plugin) NativeUnzip(req NativeUnzipRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeUnzip, req, &result)
+	err := p.Call(MethodNativeUnzip, &req, &result)
 	return result.Ok, err
 }
 
 // NativeURLSchemeHandler get the bundle ID registered as the handler for a URL scheme.
-func (p *Plugin) NativeURLSchemeHandler(scheme string) (*NativeURLSchemeHandlerResponse, error) {
-	req := &NativeURLSchemeHandlerRequest{
-		Scheme: scheme,
-	}
+func (p *Plugin) NativeURLSchemeHandler(req NativeURLSchemeHandlerRequest) (*NativeURLSchemeHandlerResponse, error) {
 	var result NativeURLSchemeHandlerResponse
-	err := p.Call(MethodNativeUrlSchemeHandler, req, &result)
+	err := p.Call(MethodNativeUrlSchemeHandler, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -6912,15 +5392,8 @@ func (p *Plugin) NativeVpnStatus() (*NativeVpnStatusResponse, error) {
 }
 
 // NativeWarpCursor move the cursor to a position.
-//
-//   - x: wire int32
-//   - y: wire int32
-func (p *Plugin) NativeWarpCursor(x int, y int) error {
-	req := &NativeWarpCursorRequest{
-		X: x,
-		Y: y,
-	}
-	return p.Call(MethodNativeWarpCursor, req, nil)
+func (p *Plugin) NativeWarpCursor(req NativeWarpCursorRequest) error {
+	return p.Call(MethodNativeWarpCursor, &req, nil)
 }
 
 // NativeWifi get WiFi interface information.
@@ -6946,12 +5419,9 @@ func (p *Plugin) NativeWifiNetworks() ([]string, error) {
 }
 
 // NativeWindowApp get the owning app bundle ID for a window.
-func (p *Plugin) NativeWindowApp(windowID string) (string, error) {
-	req := &NativeWindowAppRequest{
-		WindowID: windowID,
-	}
+func (p *Plugin) NativeWindowApp(req NativeWindowAppRequest) (string, error) {
 	var result string
-	err := p.Call(MethodNativeWindowApp, req, &result)
+	err := p.Call(MethodNativeWindowApp, &req, &result)
 	if err != nil {
 		return "", err
 	}
@@ -6959,12 +5429,9 @@ func (p *Plugin) NativeWindowApp(windowID string) (string, error) {
 }
 
 // NativeWindowBounds get a window position and size by ID.
-func (p *Plugin) NativeWindowBounds(windowID string) (*NativeWindowBoundsResponse, error) {
-	req := &NativeWindowBoundsRequest{
-		WindowID: windowID,
-	}
+func (p *Plugin) NativeWindowBounds(req NativeWindowBoundsRequest) (*NativeWindowBoundsResponse, error) {
 	var result NativeWindowBoundsResponse
-	err := p.Call(MethodNativeWindowBounds, req, &result)
+	err := p.Call(MethodNativeWindowBounds, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -6972,12 +5439,9 @@ func (p *Plugin) NativeWindowBounds(windowID string) (*NativeWindowBoundsRespons
 }
 
 // NativeWindowDisplayID get display ID for window.
-func (p *Plugin) NativeWindowDisplayID(windowID string) (int, error) {
-	req := &NativeWindowDisplayIDRequest{
-		WindowID: windowID,
-	}
+func (p *Plugin) NativeWindowDisplayID(req NativeWindowDisplayIDRequest) (int, error) {
 	var result int
-	err := p.Call(MethodNativeWindowDisplayId, req, &result)
+	err := p.Call(MethodNativeWindowDisplayId, &req, &result)
 	if err != nil {
 		return 0, err
 	}
@@ -6985,12 +5449,9 @@ func (p *Plugin) NativeWindowDisplayID(windowID string) (int, error) {
 }
 
 // NativeWindowIsFullscreen check if window is fullscreen.
-func (p *Plugin) NativeWindowIsFullscreen(windowID string) (bool, error) {
-	req := &NativeWindowIsFullscreenRequest{
-		WindowID: windowID,
-	}
+func (p *Plugin) NativeWindowIsFullscreen(req NativeWindowIsFullscreenRequest) (bool, error) {
 	var result bool
-	err := p.Call(MethodNativeWindowIsFullscreen, req, &result)
+	err := p.Call(MethodNativeWindowIsFullscreen, &req, &result)
 	if err != nil {
 		return false, err
 	}
@@ -6998,12 +5459,9 @@ func (p *Plugin) NativeWindowIsFullscreen(windowID string) (bool, error) {
 }
 
 // NativeWindowIsMinimized check if window is minimized.
-func (p *Plugin) NativeWindowIsMinimized(windowID string) (bool, error) {
-	req := &NativeWindowIsMinimizedRequest{
-		WindowID: windowID,
-	}
+func (p *Plugin) NativeWindowIsMinimized(req NativeWindowIsMinimizedRequest) (bool, error) {
 	var result bool
-	err := p.Call(MethodNativeWindowIsMinimized, req, &result)
+	err := p.Call(MethodNativeWindowIsMinimized, &req, &result)
 	if err != nil {
 		return false, err
 	}
@@ -7011,12 +5469,9 @@ func (p *Plugin) NativeWindowIsMinimized(windowID string) (bool, error) {
 }
 
 // NativeWindowLayer get window layer level.
-func (p *Plugin) NativeWindowLayer(windowID string) (int, error) {
-	req := &NativeWindowLayerRequest{
-		WindowID: windowID,
-	}
+func (p *Plugin) NativeWindowLayer(req NativeWindowLayerRequest) (int, error) {
 	var result int
-	err := p.Call(MethodNativeWindowLayer, req, &result)
+	err := p.Call(MethodNativeWindowLayer, &req, &result)
 	if err != nil {
 		return 0, err
 	}
@@ -7024,14 +5479,9 @@ func (p *Plugin) NativeWindowLayer(windowID string) (int, error) {
 }
 
 // NativeWindowScreenshot take a screenshot of a specific window as base64 PNG.
-//
-//   - windowID: wire uint32 · min 0
-func (p *Plugin) NativeWindowScreenshot(windowID int) (string, error) {
-	req := &NativeWindowScreenshotRequest{
-		WindowID: windowID,
-	}
+func (p *Plugin) NativeWindowScreenshot(req NativeWindowScreenshotRequest) (string, error) {
 	var result string
-	err := p.Call(MethodNativeWindowScreenshot, req, &result)
+	err := p.Call(MethodNativeWindowScreenshot, &req, &result)
 	if err != nil {
 		return "", err
 	}
@@ -7039,12 +5489,9 @@ func (p *Plugin) NativeWindowScreenshot(windowID int) (string, error) {
 }
 
 // NativeWindowSubrole get window subrole.
-func (p *Plugin) NativeWindowSubrole(windowID string) (string, error) {
-	req := &NativeWindowSubroleRequest{
-		WindowID: windowID,
-	}
+func (p *Plugin) NativeWindowSubrole(req NativeWindowSubroleRequest) (string, error) {
 	var result string
-	err := p.Call(MethodNativeWindowSubrole, req, &result)
+	err := p.Call(MethodNativeWindowSubrole, &req, &result)
 	if err != nil {
 		return "", err
 	}
@@ -7052,12 +5499,9 @@ func (p *Plugin) NativeWindowSubrole(windowID string) (string, error) {
 }
 
 // NativeWindowTitle get a window title by ID.
-func (p *Plugin) NativeWindowTitle(windowID string) (string, error) {
-	req := &NativeWindowTitleRequest{
-		WindowID: windowID,
-	}
+func (p *Plugin) NativeWindowTitle(req NativeWindowTitleRequest) (string, error) {
 	var result string
-	err := p.Call(MethodNativeWindowTitle, req, &result)
+	err := p.Call(MethodNativeWindowTitle, &req, &result)
 	if err != nil {
 		return "", err
 	}
@@ -7065,15 +5509,9 @@ func (p *Plugin) NativeWindowTitle(windowID string) (string, error) {
 }
 
 // NativeWorldModel get a snapshot of all windows and displays (with managed HUD windows).
-//
-//   - onScreen: If true, only return windows visible on screen.
-//     default false
-func (p *Plugin) NativeWorldModel(onScreen *bool) (*WorldModel, error) {
-	req := &NativeWorldModelRequest{
-		OnScreen: onScreen,
-	}
+func (p *Plugin) NativeWorldModel(req NativeWorldModelRequest) (*WorldModel, error) {
 	var result WorldModel
-	err := p.Call(MethodNativeWorldModel, req, &result)
+	err := p.Call(MethodNativeWorldModel, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -7081,29 +5519,20 @@ func (p *Plugin) NativeWorldModel(onScreen *bool) (*WorldModel, error) {
 }
 
 // NativeWriteAppPreference write a preference value for an app domain.
-func (p *Plugin) NativeWriteAppPreference(domain string, key string, value json.RawMessage) (bool, error) {
-	req := &NativeWriteAppPreferenceRequest{
-		Domain: domain,
-		Key:    key,
-		Value:  value,
-	}
+func (p *Plugin) NativeWriteAppPreference(req NativeWriteAppPreferenceRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeWriteAppPreference, req, &result)
+	err := p.Call(MethodNativeWriteAppPreference, &req, &result)
 	return result.Ok, err
 }
 
 // NativeWriteFile write string contents to a file.
-func (p *Plugin) NativeWriteFile(contents string, path string) (bool, error) {
-	req := &NativeWriteFileRequest{
-		Contents: contents,
-		Path:     path,
-	}
+func (p *Plugin) NativeWriteFile(req NativeWriteFileRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeWriteFile, req, &result)
+	err := p.Call(MethodNativeWriteFile, &req, &result)
 	return result.Ok, err
 }
 
@@ -7128,30 +5557,18 @@ func (p *Plugin) NativeXcodeVersion() (*NativeXcodeVersionResponse, error) {
 }
 
 // NativeZip create a zip archive from files or a directory.
-func (p *Plugin) NativeZip(destination string, source string) (bool, error) {
-	req := &NativeZipRequest{
-		Destination: destination,
-		Source:      source,
-	}
+func (p *Plugin) NativeZip(req NativeZipRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeZip, req, &result)
+	err := p.Call(MethodNativeZip, &req, &result)
 	return result.Ok, err
 }
 
 // NetworkRequestHost ask for one more network host at runtime (a plugin declaring requestable hosts). It appears on the plugin's page, off until the user allows it.
-//
-//   - host: One exact host (no wildcard, no port, no path).
-//   - reason: Shown to the user beside the switch — why the plugin wants it.
-//     default ""
-func (p *Plugin) NetworkRequestHost(host string, reason *string) (*NetworkRequestHostResponse, error) {
-	req := &NetworkRequestHostRequest{
-		Host:   host,
-		Reason: reason,
-	}
+func (p *Plugin) NetworkRequestHost(req NetworkRequestHostRequest) (*NetworkRequestHostResponse, error) {
 	var result NetworkRequestHostResponse
-	err := p.Call(MethodNetworkRequestHost, req, &result)
+	err := p.Call(MethodNetworkRequestHost, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -7159,15 +5576,9 @@ func (p *Plugin) NetworkRequestHost(host string, reason *string) (*NetworkReques
 }
 
 // OutputClear nothing is true on one of your HUD channels now: clears its semantic state so every renderer stops conveying it; visibility stays yours (hud.hide).
-//
-//   - channel: The channel on which nothing is true now. Must be owned by the
-//     calling plugin.
-func (p *Plugin) OutputClear(channel string) (*OutputClearResponse, error) {
-	req := &OutputClearRequest{
-		Channel: channel,
-	}
+func (p *Plugin) OutputClear(req OutputClearRequest) (*OutputClearResponse, error) {
 	var result OutputClearResponse
-	err := p.Call(MethodOutputClear, req, &result)
+	err := p.Call(MethodOutputClear, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -7175,15 +5586,9 @@ func (p *Plugin) OutputClear(channel string) (*OutputClearResponse, error) {
 }
 
 // OutputState set a HUD channel's current semantic output state — a document of what is true for the person, in human language, consumed by every renderer; supersedes the previous state.
-//
-//   - state: The document that becomes the channel's current state. Its `channel`
-//     must be owned by the calling plugin.
-func (p *Plugin) OutputState(state OutputState) (*OutputStateResponse, error) {
-	req := &OutputStateRequest{
-		State: state,
-	}
+func (p *Plugin) OutputState(req OutputStateRequest) (*OutputStateResponse, error) {
 	var result OutputStateResponse
-	err := p.Call(MethodOutputState, req, &result)
+	err := p.Call(MethodOutputState, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -7191,46 +5596,9 @@ func (p *Plugin) OutputState(state OutputState) (*OutputStateResponse, error) {
 }
 
 // OverridesApply add, remove, restore, patch, rename, revert (reset one entry to its plugin default), or reset user overrides for a collection.
-//
-//   - action: Action: "add", "remove", "restore", "reset", "patch", "rename", or
-//     "revert".
-//   - collection: Collection name to override.
-//   - field: Field key for the "unpatch" action — removes ONE field from the
-//     tenant's patch of `id` (the per-field inverse of "patch"; the patch
-//     entry is dropped when its last field goes). The settings form's
-//     per-field revert: sparse by construction, so the reverted field
-//     resumes tracking the shipped default. Ignored by other actions.
-//     default null
-//   - fields: Partial record fields for "patch", or complete record for "add".
-//     default null
-//   - id: Record ID (id_field value) for patch/remove/restore actions. For
-//     "rename" it is the entry's *current* key (surface form) to replace; for
-//     "revert" the current key of the entry to reset to its plugin default.
-//     default null
-//   - newID: New key (id_field value) for the "rename" action — the entry is re-added
-//     under this key with every other field (value, aliases) preserved.
-//     Ignored by other actions.
-//     default null
-//   - tenant: Which overlay tenant this mutation targets — a writer-namespace value
-//     (`"_user"` or a plugin id). Defaults: a plugin caller targets its OWN
-//     overlay; a host caller targets `"_user"`. A plugin transporting a user
-//     gesture from its settings tab says `"_user"` explicitly; it may never
-//     target another plugin's overlay. Plugin overlays carry per-field
-//     patches only (`patch`/`restore`/`reset`) — annotation, not authorship;
-//     a plugin's patch never changes who owns the record.
-//     default null
-func (p *Plugin) OverridesApply(action string, collection string, field *string, fields json.RawMessage, id *string, newID *string, tenant *string) (*OverridesApplyResponse, error) {
-	req := &OverridesApplyRequest{
-		Action:     action,
-		Collection: collection,
-		Field:      field,
-		Fields:     fields,
-		ID:         id,
-		NewID:      newID,
-		Tenant:     tenant,
-	}
+func (p *Plugin) OverridesApply(req OverridesApplyRequest) (*OverridesApplyResponse, error) {
 	var result OverridesApplyResponse
-	err := p.Call(MethodOverridesApply, req, &result)
+	err := p.Call(MethodOverridesApply, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -7250,19 +5618,9 @@ func (p *Plugin) OverridesList() ([]OverlayRow, error) {
 }
 
 // PipelinesGrammar get the current command grammar word list — or, with full=true, the complete vocabulary_update seed payload (words, narrow_to, weights, DAG).
-//
-//   - full: When true, also return the full `vocabulary_update` payload a starting
-//     recognition pipeline would be seeded with — words plus narrow_to,
-//     word_weights, and the structured grammar DAG. Read-only: exporting
-//     does not touch the committed-vocab accounting. Used by the
-//     voice-regress harness to decode against the exact live grammar.
-//     default false
-func (p *Plugin) PipelinesGrammar(full *bool) (*PipelinesGrammarResponse, error) {
-	req := &PipelinesGrammarRequest{
-		Full: full,
-	}
+func (p *Plugin) PipelinesGrammar(req PipelinesGrammarRequest) (*PipelinesGrammarResponse, error) {
 	var result PipelinesGrammarResponse
-	err := p.Call(MethodPipelinesGrammar, req, &result)
+	err := p.Call(MethodPipelinesGrammar, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -7270,26 +5628,9 @@ func (p *Plugin) PipelinesGrammar(full *bool) (*PipelinesGrammarResponse, error)
 }
 
 // PipelinesInject send a custom configuration event to one stage of a running pipeline.
-//
-//   - eventType: Must be a custom event type — `ext.<vendor>.<name>`. The typed families
-//     (`audio_*`, `transcript`, `vocabulary_update`) are the platform's to
-//     send; a plugin forging one into its own pipeline was previously
-//     unchecked here.
-//   - name: Pipeline to configure. The caller must have introduced it.
-//   - stage: Stage within that pipeline, spelled as the pipeline definition spells
-//     it — a role like `_platform.stt` or a qualified stage name. Required:
-//     before per-stage channels existed this operation could only ever reach
-//     the terminal stage, and silently did nothing for any other.
-//   - data: default null
-func (p *Plugin) PipelinesInject(eventType string, name string, stage string, data json.RawMessage) (*PipelinesInjectResponse, error) {
-	req := &PipelinesInjectRequest{
-		EventType: eventType,
-		Name:      name,
-		Stage:     stage,
-		Data:      data,
-	}
+func (p *Plugin) PipelinesInject(req PipelinesInjectRequest) (*PipelinesInjectResponse, error) {
 	var result PipelinesInjectResponse
-	err := p.Call(MethodPipelinesInject, req, &result)
+	err := p.Call(MethodPipelinesInject, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -7297,17 +5638,9 @@ func (p *Plugin) PipelinesInject(eventType string, name string, stage string, da
 }
 
 // PipelinesRun start a named pipeline.
-//
-//   - ephemeral: default false
-//   - paramOverrides: default {}
-func (p *Plugin) PipelinesRun(name string, ephemeral *bool, paramOverrides map[string]json.RawMessage) (*PipelinesRunResponse, error) {
-	req := &PipelinesRunRequest{
-		Name:           name,
-		Ephemeral:      ephemeral,
-		ParamOverrides: paramOverrides,
-	}
+func (p *Plugin) PipelinesRun(req PipelinesRunRequest) (*PipelinesRunResponse, error) {
 	var result PipelinesRunResponse
-	err := p.Call(MethodPipelinesRun, req, &result)
+	err := p.Call(MethodPipelinesRun, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -7325,19 +5658,9 @@ func (p *Plugin) PipelinesStatus() (*PipelinesStatusResponse, error) {
 }
 
 // PipelinesStop stop a running pipeline by name.
-//
-//   - audioCutoffMs: Shared-clock position (the AudioChunk timestamp_ms timebase) after
-//     which buffered audio must not be processed — e.g. the onset of a
-//     detected dictation stop phrase, from the transcript's word_onsets_ms.
-//     Absent = process everything.
-//     wire uint64 (64-bit) · default null · min 0
-func (p *Plugin) PipelinesStop(name string, audioCutoffMs *int) (*PipelinesStopResponse, error) {
-	req := &PipelinesStopRequest{
-		Name:          name,
-		AudioCutoffMs: audioCutoffMs,
-	}
+func (p *Plugin) PipelinesStop(req PipelinesStopRequest) (*PipelinesStopResponse, error) {
 	var result PipelinesStopResponse
-	err := p.Call(MethodPipelinesStop, req, &result)
+	err := p.Call(MethodPipelinesStop, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -7345,18 +5668,9 @@ func (p *Plugin) PipelinesStop(name string, audioCutoffMs *int) (*PipelinesStopR
 }
 
 // PipelinesWarm pre-spawn + pre-load a pipeline's recognizer stages (grammar built off the hold path).
-//
-//   - paramOverrides: Per-stage param overrides applied to the warmed consumer stages, mirroring
-//     `pipelines.run`. Lets a caller prewarm the model it will actually run (e.g.
-//     a user-selected STT model) instead of only the pipeline's default.
-//     default {}
-func (p *Plugin) PipelinesWarm(name string, paramOverrides map[string]json.RawMessage) (*PipelinesWarmResponse, error) {
-	req := &PipelinesWarmRequest{
-		Name:           name,
-		ParamOverrides: paramOverrides,
-	}
+func (p *Plugin) PipelinesWarm(req PipelinesWarmRequest) (*PipelinesWarmResponse, error) {
 	var result PipelinesWarmResponse
-	err := p.Call(MethodPipelinesWarm, req, &result)
+	err := p.Call(MethodPipelinesWarm, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -7374,19 +5688,9 @@ func (p *Plugin) PlatformProfile() (*PlatformProfileResponse, error) {
 }
 
 // PluginDataExport copy one file out of the caller's own data dir into Downloads and reveal it (the one egress a plugin cannot perform itself).
-//
-//   - path: Path of the file to export, relative to the caller's data dir.
-//   - filename: Name to save it under. Defaults to the source file's name. A path
-//     separator here is refused rather than resolved — this names a file in
-//     Downloads, not a location.
-//     default null
-func (p *Plugin) PluginDataExport(path string, filename *string) (*PluginDataExportResponse, error) {
-	req := &PluginDataExportRequest{
-		Path:     path,
-		Filename: filename,
-	}
+func (p *Plugin) PluginDataExport(req PluginDataExportRequest) (*PluginDataExportResponse, error) {
 	var result PluginDataExportResponse
-	err := p.Call(MethodPluginDataExport, req, &result)
+	err := p.Call(MethodPluginDataExport, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -7394,64 +5698,19 @@ func (p *Plugin) PluginDataExport(path string, filename *string) (*PluginDataExp
 }
 
 // PluginDebug write a diagnostic line to this plugin's per-plugin log file. Use shared.Logf instead for cross-cutting coordination lines that belong in actuator.log..
-//
-//   - data: Arbitrary JSON payload — serialized to one line in the log file
-//     so `tail -f` and `grep` work, while `jq` can still operate on
-//     the payload column.
-//     default null
-//   - level: Severity level for the line. v1 callers omit this and the handler
-//     falls through to `Debug`; v2 callers pass one of
-//     `trace`/`debug`/`info`/`warn`/`error`. Lines below the per-plugin
-//     threshold are dropped at the handler; `warn`/`error` additionally
-//     cross-post to `actuator.log` via the `plugin.diagnostic` event.
-//   - tag: Optional structural tag (e.g. `BK_ACTIVATE_PATH`, `STT_BATCH`).
-//     Renders between the timestamp and the payload in the per-plugin
-//     log file, matching the actuator log's `[TAG]` column convention.
-//     Empty/missing renders as `[<ts>] <payload>` with no tag bracket.
-//     default null
-func (p *Plugin) PluginDebug(data json.RawMessage, level *PluginLogLevel, tag *string) error {
-	req := &PluginDebugRequest{
-		Data:  data,
-		Level: level,
-		Tag:   tag,
-	}
-	return p.Call(MethodPluginDebug, req, nil)
+func (p *Plugin) PluginDebug(req PluginDebugRequest) error {
+	return p.Call(MethodPluginDebug, &req, nil)
 }
 
 // PluginReportHealth report whether this plugin can do its job. For a standing condition the platform cannot see from outside — a companion app disconnected, a device unplugged — not for a call that failed once..
-//
-//   - degraded: `true` when the plugin is running but cannot do its job — an external
-//     dependency it needs is gone, a device it drives is unplugged, a
-//     companion it talks to has disconnected. `false` clears the report.
-//
-//     This is NOT for "something failed once": a failed call is a failed
-//     call. It is for a standing condition the user can act on and would
-//     otherwise have to guess at.
-//
-//   - reason: One user-facing sentence saying what is wrong and, where possible, what
-//     to do about it — "Chrome — extension disconnected; reload it at
-//     chrome://extensions". The plugin owns this text; the platform invents
-//     no copy for a plugin's failure.
-//
-//     Required when `degraded` is true and ignored otherwise. Truncated to
-//     200 characters (one status line; a plugin with more to say has
-//     `plugin.debug`) and rendered as data, never markup.
-//     default null
-func (p *Plugin) PluginReportHealth(degraded bool, reason *string) error {
-	req := &PluginReportHealthRequest{
-		Degraded: degraded,
-		Reason:   reason,
-	}
-	return p.Call(MethodPluginReportHealth, req, nil)
+func (p *Plugin) PluginReportHealth(req PluginReportHealthRequest) error {
+	return p.Call(MethodPluginReportHealth, &req, nil)
 }
 
 // PrivacyGetRecording read the effective recording flag for a log-kind collection (privacy control plane).
-func (p *Plugin) PrivacyGetRecording(name string) (*PrivacyGetRecordingResponse, error) {
-	req := &PrivacyGetRecordingRequest{
-		Name: name,
-	}
+func (p *Plugin) PrivacyGetRecording(req PrivacyGetRecordingRequest) (*PrivacyGetRecordingResponse, error) {
 	var result PrivacyGetRecordingResponse
-	err := p.Call(MethodPrivacyGetRecording, req, &result)
+	err := p.Call(MethodPrivacyGetRecording, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -7459,12 +5718,8 @@ func (p *Plugin) PrivacyGetRecording(name string) (*PrivacyGetRecordingResponse,
 }
 
 // PrivacySetRecording toggle the recording flag on a log-kind collection (privacy control plane).
-func (p *Plugin) PrivacySetRecording(enabled bool, name string) error {
-	req := &PrivacySetRecordingRequest{
-		Enabled: enabled,
-		Name:    name,
-	}
-	return p.Call(MethodPrivacySetRecording, req, nil)
+func (p *Plugin) PrivacySetRecording(req PrivacySetRecordingRequest) error {
+	return p.Call(MethodPrivacySetRecording, &req, nil)
 }
 
 // PrivilegesList the caller's own declared privileges with live granted/pending/denied state.
@@ -7480,15 +5735,9 @@ func (p *Plugin) PrivilegesList() ([]PrivilegeStatusEntry, error) {
 }
 
 // PrivilegesRelinquish give back one of the caller's optional privileges: returns a live grant and/or withdraws a pending request; de-escalation, no consent needed.
-//
-//   - privilege: Privilege name — must appear in the calling plugin's
-//     `optional_privileges`.
-func (p *Plugin) PrivilegesRelinquish(privilege string) (*PrivilegesRelinquishResponse, error) {
-	req := &PrivilegesRelinquishRequest{
-		Privilege: privilege,
-	}
+func (p *Plugin) PrivilegesRelinquish(req PrivilegesRelinquishRequest) (*PrivilegesRelinquishResponse, error) {
 	var result PrivilegesRelinquishResponse
-	err := p.Call(MethodPrivilegesRelinquish, req, &result)
+	err := p.Call(MethodPrivilegesRelinquish, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -7496,20 +5745,9 @@ func (p *Plugin) PrivilegesRelinquish(privilege string) (*PrivilegesRelinquishRe
 }
 
 // PrivilegesRequest request one of the caller's declared optional privileges; lands as an Approve/Dismiss to-do on the Plugins page.
-//
-//   - privilege: Privilege name — must appear in the calling plugin's
-//     `optional_privileges`.
-//   - reason: Short attributed reason shown to the user next to the Approve
-//     button (e.g. "script 'headphones' uses query:power"). Untrusted
-//     text; capped server-side.
-//     default ""
-func (p *Plugin) PrivilegesRequest(privilege string, reason *string) (*PrivilegesRequestResponse, error) {
-	req := &PrivilegesRequestRequest{
-		Privilege: privilege,
-		Reason:    reason,
-	}
+func (p *Plugin) PrivilegesRequest(req PrivilegesRequestRequest) (*PrivilegesRequestResponse, error) {
 	var result PrivilegesRequestResponse
-	err := p.Call(MethodPrivilegesRequest, req, &result)
+	err := p.Call(MethodPrivilegesRequest, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -7517,20 +5755,9 @@ func (p *Plugin) PrivilegesRequest(privilege string, reason *string) (*Privilege
 }
 
 // RecognitionBiasApply apply a calibration-measured strength to the never-standalone recognition bias (provenance: calibration); refuses over a manually-set value unless force.
-//
-//   - strength: Strength to apply (> 0; the setting is also switched on).
-//     wire double
-//   - force: Overwrite a manually-set value. Without it, `manual` provenance refuses
-//     (`applied: false`) so the caller can confirm with the user first — a
-//     calibration apply must never silently clobber a hand-set value.
-//     default false
-func (p *Plugin) RecognitionBiasApply(strength float64, force *bool) (*RecognitionBiasApplyResponse, error) {
-	req := &RecognitionBiasApplyRequest{
-		Strength: strength,
-		Force:    force,
-	}
+func (p *Plugin) RecognitionBiasApply(req RecognitionBiasApplyRequest) (*RecognitionBiasApplyResponse, error) {
 	var result RecognitionBiasApplyResponse
-	err := p.Call(MethodRecognitionBiasApply, req, &result)
+	err := p.Call(MethodRecognitionBiasApply, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -7548,18 +5775,9 @@ func (p *Plugin) RecognitionBiasGet() (*RecognitionBiasGetResponse, error) {
 }
 
 // RecognitionBiasSet manually set the never-standalone recognition bias (provenance: manual); the write path behind the Recordings tab's control.
-//
-//   - enabled: Omitted = leave the on/off half unchanged.
-//     default null
-//   - strength: Omitted = leave the stored strength unchanged. Negative → 0.
-//     wire double · default null
-func (p *Plugin) RecognitionBiasSet(enabled *bool, strength *float64) (*RecognitionBiasSetResponse, error) {
-	req := &RecognitionBiasSetRequest{
-		Enabled:  enabled,
-		Strength: strength,
-	}
+func (p *Plugin) RecognitionBiasSet(req RecognitionBiasSetRequest) (*RecognitionBiasSetResponse, error) {
 	var result RecognitionBiasSetResponse
-	err := p.Call(MethodRecognitionBiasSet, req, &result)
+	err := p.Call(MethodRecognitionBiasSet, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -7567,21 +5785,9 @@ func (p *Plugin) RecognitionBiasSet(enabled *bool, strength *float64) (*Recognit
 }
 
 // RecognitionRedecode re-decode the caller's own captured audio through a registered recognizer stage against the LIVE grammar (the fragility ladder) — the actuator runs it because the grammar is platform state and plugins cannot exec.
-//
-//   - model: Model dir name under app-support `models/` (single component, no
-//     traversal), e.g. `"sherpa-offline-nemo"`.
-//   - stage: Registered stage id whose binary's `probe` subcommand runs the re-decode,
-//     e.g. `"voice.sherpa_commands"`. Validated against the stage registry.
-//   - maxActive: wire uint32 · default null · min 0
-func (p *Plugin) RecognitionRedecode(items []RedecodeItem, model string, stage string, maxActive *int) (*RecognitionRedecodeResponse, error) {
-	req := &RecognitionRedecodeRequest{
-		Items:     items,
-		Model:     model,
-		Stage:     stage,
-		MaxActive: maxActive,
-	}
+func (p *Plugin) RecognitionRedecode(req RecognitionRedecodeRequest) (*RecognitionRedecodeResponse, error) {
 	var result RecognitionRedecodeResponse
-	err := p.Call(MethodRecognitionRedecode, req, &result)
+	err := p.Call(MethodRecognitionRedecode, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -7589,12 +5795,9 @@ func (p *Plugin) RecognitionRedecode(items []RedecodeItem, model string, stage s
 }
 
 // SecretsDelete remove a stored credential. Deleting a name that was never set is not an error.
-func (p *Plugin) SecretsDelete(name string) (*SecretsDeleteResponse, error) {
-	req := &SecretsDeleteRequest{
-		Name: name,
-	}
+func (p *Plugin) SecretsDelete(req SecretsDeleteRequest) (*SecretsDeleteResponse, error) {
 	var result SecretsDeleteResponse
-	err := p.Call(MethodSecretsDelete, req, &result)
+	err := p.Call(MethodSecretsDelete, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -7602,12 +5805,9 @@ func (p *Plugin) SecretsDelete(name string) (*SecretsDeleteResponse, error) {
 }
 
 // SecretsIsSet whether this plugin has stored a credential under this name. The only question askable about a value that cannot be read.
-func (p *Plugin) SecretsIsSet(name string) (*SecretsIsSetResponse, error) {
-	req := &SecretsIsSetRequest{
-		Name: name,
-	}
+func (p *Plugin) SecretsIsSet(req SecretsIsSetRequest) (*SecretsIsSetResponse, error) {
 	var result SecretsIsSetResponse
-	err := p.Call(MethodSecretsIsSet, req, &result)
+	err := p.Call(MethodSecretsIsSet, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -7625,21 +5825,9 @@ func (p *Plugin) SecretsList() (*SecretsListResponse, error) {
 }
 
 // SecretsRequestSlot ask for a credential row on this plugin's Settings page: the user pastes the value straight into the store, bound to one host this plugin can reach. The plugin never sees the value.
-//
-//   - host: The ONE host the value may be sent to — one this plugin may already
-//     reach (declared, or requested with `network.request_host`).
-//   - name: The secret's name in this plugin's drawer (ASCII letters, digits,
-//     `_`, `-`, `.`).
-//   - label: What the user sees on the row, e.g. "Weather script — API key".
-//     default ""
-func (p *Plugin) SecretsRequestSlot(host string, name string, label *string) (*SecretsRequestSlotResponse, error) {
-	req := &SecretsRequestSlotRequest{
-		Host:  host,
-		Name:  name,
-		Label: label,
-	}
+func (p *Plugin) SecretsRequestSlot(req SecretsRequestSlotRequest) (*SecretsRequestSlotResponse, error) {
 	var result SecretsRequestSlotResponse
-	err := p.Call(MethodSecretsRequestSlot, req, &result)
+	err := p.Call(MethodSecretsRequestSlot, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -7647,33 +5835,9 @@ func (p *Plugin) SecretsRequestSlot(host string, name string, label *string) (*S
 }
 
 // SecretsSet store a credential for this plugin. Values are encrypted and can never be read back over the wire.
-//
-//   - name: The secret's name within this plugin. What a manifest or a script
-//     header refers to.
-//
-//   - value: The value. This is the only direction a value travels over the wire.
-//
-//   - host: The host this credential may be sent to, such as
-//     `api.openweathermap.org`.
-//
-//     Recorded with the value and checked when the platform substitutes it
-//     into a request. A caller that declares two hosts cannot get a secret
-//     bound to one of them into a request to the other, which is what makes
-//     storing a reference safer than holding the value: without it, a
-//     credential that can never be read can still be sent to the wrong
-//     place.
-//
-//     Optional today because substitution is not built yet, and a store
-//     written before bindings existed holds none. An unbound secret is
-//     refused at substitution rather than treated as usable anywhere.
-func (p *Plugin) SecretsSet(name string, value string, host *string) (*SecretsSetResponse, error) {
-	req := &SecretsSetRequest{
-		Name:  name,
-		Value: value,
-		Host:  host,
-	}
+func (p *Plugin) SecretsSet(req SecretsSetRequest) (*SecretsSetResponse, error) {
 	var result SecretsSetResponse
-	err := p.Call(MethodSecretsSet, req, &result)
+	err := p.Call(MethodSecretsSet, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -7681,15 +5845,9 @@ func (p *Plugin) SecretsSet(name string, value string, host *string) (*SecretsSe
 }
 
 // SelectionPick resolve a selection pick by index — clears selection state, emits event, closes HUD.
-//
-//   - index: Zero-based index into the previously-set selection items array.
-//     wire uint64 (64-bit) · min 0
-func (p *Plugin) SelectionPick(index int) (*SelectionPickResponse, error) {
-	req := &SelectionPickRequest{
-		Index: index,
-	}
+func (p *Plugin) SelectionPick(req SelectionPickRequest) (*SelectionPickResponse, error) {
 	var result SelectionPickResponse
-	err := p.Call(MethodSelectionPick, req, &result)
+	err := p.Call(MethodSelectionPick, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -7697,26 +5855,8 @@ func (p *Plugin) SelectionPick(index int) (*SelectionPickResponse, error) {
 }
 
 // SelectionSet show the selection HUD with items for the user to pick from.
-//
-//   - channel: HUD channel to show the selection in. Defaults to `"main"`.
-//     default null
-//
-//   - items: The selectable items, in display order.
-//
-//     Declared 2026-09-19 (census). The handler already deserialized
-//     exactly `Vec<HUDItem>`; the doc comment was listing the fields a
-//     generated type can list itself.
-//     default []
-//
-//   - title: Optional title displayed at the top of the selection HUD.
-//     default null
-func (p *Plugin) SelectionSet(channel *string, items []HUDItem, title *string) error {
-	req := &SelectionSetRequest{
-		Channel: channel,
-		Items:   items,
-		Title:   title,
-	}
-	return p.Call(MethodSelectionSet, req, nil)
+func (p *Plugin) SelectionSet(req SelectionSetRequest) error {
+	return p.Call(MethodSelectionSet, &req, nil)
 }
 
 // SessionBoundary emit _platform.input.session_boundary at actual session boundaries.
@@ -7735,22 +5875,13 @@ func (p *Plugin) SessionEndCleanup() (*SessionEndCleanupResponse, error) {
 }
 
 // SettingsPatchSignals push Datastar signal patches to the calling plugin's active settings SSE streams.
-//
-//   - signals: Datastar signal expression, e.g. `{activeGroup: 2, activeDialModeIndex: 1}`.
-//     Sent as a `datastar-patch-signals` SSE event to all active settings streams.
-func (p *Plugin) SettingsPatchSignals(signals string) error {
-	req := &SettingsPatchSignalsRequest{
-		Signals: signals,
-	}
-	return p.Call(MethodSettingsPatchSignals, req, nil)
+func (p *Plugin) SettingsPatchSignals(req SettingsPatchSignalsRequest) error {
+	return p.Call(MethodSettingsPatchSignals, &req, nil)
 }
 
 // SettingsRedirect navigate the settings UI to a tab declared by the calling plugin.
-func (p *Plugin) SettingsRedirect(tab string) error {
-	req := &SettingsRedirectRequest{
-		Tab: tab,
-	}
-	return p.Call(MethodSettingsRedirect, req, nil)
+func (p *Plugin) SettingsRedirect(req SettingsRedirectRequest) error {
+	return p.Call(MethodSettingsRedirect, &req, nil)
 }
 
 // SettingsRefresh trigger a full re-render of all active settings SSE streams.
@@ -7759,41 +5890,9 @@ func (p *Plugin) SettingsRefresh() error {
 }
 
 // SettingsRulesCreate create a new user voice command from settings-UI signals.
-//
-//   - newruleactionjson: Raw JSON action body, used when `newruleactiontype = "json"`.
-//     default null
-//   - newruleactiontype: Action variant (dotted type like "system.volume_up", "sequence", "json", ...).
-//     Determines which other `newruleaction*` fields are consumed.
-//     default null
-//   - newruleactionval: Action value used by simple action types (e.g. text for "input.type").
-//     default null
-//   - newrulecategory: Category bucket the rule belongs to. Defaults to "User".
-//     default null
-//   - newruleclearstags: Comma-separated tags the rule clears when it fires.
-//     default null
-//   - newruledescription: Optional human-readable description shown in the rules table.
-//     default null
-//   - newrulephrase: The phrase the user wants matched (with optional `<slot>` placeholders).
-//     Required — `build_command_from_signals` rejects an empty phrase.
-//     default null
-//   - newrulerequirestags: Comma-separated tags required for the rule to match.
-//     default null
-//   - newrulesetstags: Comma-separated tags the rule sets when it fires.
-//     default null
-func (p *Plugin) SettingsRulesCreate(newruleactionjson *string, newruleactiontype *string, newruleactionval *string, newrulecategory *string, newruleclearstags *string, newruledescription *string, newrulephrase *string, newrulerequirestags *string, newrulesetstags *string) (*SettingsRulesCreateResponse, error) {
-	req := &SettingsRulesCreateRequest{
-		Newruleactionjson:   newruleactionjson,
-		Newruleactiontype:   newruleactiontype,
-		Newruleactionval:    newruleactionval,
-		Newrulecategory:     newrulecategory,
-		Newruleclearstags:   newruleclearstags,
-		Newruledescription:  newruledescription,
-		Newrulephrase:       newrulephrase,
-		Newrulerequirestags: newrulerequirestags,
-		Newrulesetstags:     newrulesetstags,
-	}
+func (p *Plugin) SettingsRulesCreate(req SettingsRulesCreateRequest) (*SettingsRulesCreateResponse, error) {
 	var result SettingsRulesCreateResponse
-	err := p.Call(MethodSettingsRulesCreate, req, &result)
+	err := p.Call(MethodSettingsRulesCreate, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -7801,33 +5900,9 @@ func (p *Plugin) SettingsRulesCreate(newruleactionjson *string, newruleactiontyp
 }
 
 // SettingsRulesUpdate update an existing user voice command from settings-UI signals.
-//
-//   - canonical: Existing canonical command id (the previous canonical phrase) of
-//     the rule being updated. Required.
-//   - newruleactionjson: default null
-//   - newruleactiontype: default null
-//   - newruleactionval: default null
-//   - newrulecategory: default null
-//   - newruleclearstags: default null
-//   - newruledescription: default null
-//   - newrulephrase: default null
-//   - newrulerequirestags: default null
-//   - newrulesetstags: default null
-func (p *Plugin) SettingsRulesUpdate(canonical string, newruleactionjson *string, newruleactiontype *string, newruleactionval *string, newrulecategory *string, newruleclearstags *string, newruledescription *string, newrulephrase *string, newrulerequirestags *string, newrulesetstags *string) (*SettingsRulesUpdateResponse, error) {
-	req := &SettingsRulesUpdateRequest{
-		Canonical:           canonical,
-		Newruleactionjson:   newruleactionjson,
-		Newruleactiontype:   newruleactiontype,
-		Newruleactionval:    newruleactionval,
-		Newrulecategory:     newrulecategory,
-		Newruleclearstags:   newruleclearstags,
-		Newruledescription:  newruledescription,
-		Newrulephrase:       newrulephrase,
-		Newrulerequirestags: newrulerequirestags,
-		Newrulesetstags:     newrulesetstags,
-	}
+func (p *Plugin) SettingsRulesUpdate(req SettingsRulesUpdateRequest) (*SettingsRulesUpdateResponse, error) {
 	var result SettingsRulesUpdateResponse
-	err := p.Call(MethodSettingsRulesUpdate, req, &result)
+	err := p.Call(MethodSettingsRulesUpdate, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -7835,25 +5910,13 @@ func (p *Plugin) SettingsRulesUpdate(canonical string, newruleactionjson *string
 }
 
 // SpeechAnnounce post a VoiceOver announcement (spoken in the person's VoiceOver voice when VoiceOver is running; ignored otherwise).
-func (p *Plugin) SpeechAnnounce(text string) error {
-	req := &SpeechAnnounceRequest{
-		Text: text,
-	}
-	return p.Call(MethodSpeechAnnounce, req, nil)
+func (p *Plugin) SpeechAnnounce(req SpeechAnnounceRequest) error {
+	return p.Call(MethodSpeechAnnounce, &req, nil)
 }
 
 // SpeechSay speak words through the system voice (a primitive: the platform makes the sound and reports the span for echo suppression; what to say is the caller's policy).
-//
-//   - text: The words. Plain language, no markup; the system voice reads it as is.
-//   - priority: `"normal"` queues behind whatever is playing; `"high"` cuts it off
-//     and speaks now. Defaults to normal.
-//     default null
-func (p *Plugin) SpeechSay(text string, priority *string) error {
-	req := &SpeechSayRequest{
-		Text:     text,
-		Priority: priority,
-	}
-	return p.Call(MethodSpeechSay, req, nil)
+func (p *Plugin) SpeechSay(req SpeechSayRequest) error {
+	return p.Call(MethodSpeechSay, &req, nil)
 }
 
 // SpeechStop stop the system voice now and drop anything queued behind it.
@@ -7862,44 +5925,18 @@ func (p *Plugin) SpeechStop() error {
 }
 
 // SystemLaunchApp launch an app and post a 'Launching' notification to the HUD.
-//
-//   - bundleID: Bundle ID of the application to launch (e.g. "com.apple.Safari").
-//   - newInstance: Whether to launch a fresh instance even if the app is already running.
-//     default false
-func (p *Plugin) SystemLaunchApp(bundleID string, newInstance *bool) error {
-	req := &SystemLaunchAppRequest{
-		BundleID:    bundleID,
-		NewInstance: newInstance,
-	}
-	return p.Call(MethodSystemLaunchApp, req, nil)
+func (p *Plugin) SystemLaunchApp(req SystemLaunchAppRequest) error {
+	return p.Call(MethodSystemLaunchApp, &req, nil)
 }
 
 // SystemNotify show a HUD notification with title and body text.
-//
-//   - body: Notification body text (rendered inside `<div id="body-text">`).
-//   - title: Notification title (rendered as `<h1 id="title">`).
-//   - durationSecs: Auto-dismiss duration in seconds. When absent, defaults to
-//     [`DEFAULT_NOTIFY_DURATION_SECS`] (5s). Pass `0` for a sticky
-//     notification that only closes when the user clicks Dismiss.
-//     Pass any positive integer for a custom duration.
-//     wire uint32 · default null · min 0
-func (p *Plugin) SystemNotify(body string, title string, durationSecs *int) error {
-	req := &SystemNotifyRequest{
-		Body:         body,
-		Title:        title,
-		DurationSecs: durationSecs,
-	}
-	return p.Call(MethodSystemNotify, req, nil)
+func (p *Plugin) SystemNotify(req SystemNotifyRequest) error {
+	return p.Call(MethodSystemNotify, &req, nil)
 }
 
 // SystemRunShell start a shell command via /bin/bash -c, run by the actuator outside any plugin sandbox (security-sensitive; not on Windows).
-//
-//   - command: Shell command to execute via `/bin/bash -c`.
-func (p *Plugin) SystemRunShell(command string) error {
-	req := &SystemRunShellRequest{
-		Command: command,
-	}
-	return p.Call(MethodSystemRunShell, req, nil)
+func (p *Plugin) SystemRunShell(req SystemRunShellRequest) error {
+	return p.Call(MethodSystemRunShell, &req, nil)
 }
 
 // TrialBegin open a calibration trial — writes _platform.calibration.active, returns a trial_id.
@@ -7913,12 +5950,9 @@ func (p *Plugin) TrialBegin() (*TrialBeginResponse, error) {
 }
 
 // TrialEnd close a calibration trial — clears the tag and spawns release RPCs to fixture owners.
-func (p *Plugin) TrialEnd(trialID string) (*TrialEndResponse, error) {
-	req := &TrialEndRequest{
-		TrialID: trialID,
-	}
+func (p *Plugin) TrialEnd(req TrialEndRequest) (*TrialEndResponse, error) {
 	var result TrialEndResponse
-	err := p.Call(MethodTrialEnd, req, &result)
+	err := p.Call(MethodTrialEnd, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -7926,15 +5960,9 @@ func (p *Plugin) TrialEnd(trialID string) (*TrialEndResponse, error) {
 }
 
 // TrialEnterContext enter a command's context for a trial — writes mode-gated requires_tags (platform write) or forwards trial_apply_fixture to a dynamic command's owner — and returns the entered context (kind + tags + fixture_handle).
-//
-//   - commandID: Command id from `commands.enumerate` — `<owner_plugin>:<pattern>`.
-func (p *Plugin) TrialEnterContext(commandID string, trialID string) (*TrialEnterContextResponse, error) {
-	req := &TrialEnterContextRequest{
-		CommandID: commandID,
-		TrialID:   trialID,
-	}
+func (p *Plugin) TrialEnterContext(req TrialEnterContextRequest) (*TrialEnterContextResponse, error) {
 	var result TrialEnterContextResponse
-	err := p.Call(MethodTrialEnterContext, req, &result)
+	err := p.Call(MethodTrialEnterContext, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -7942,26 +5970,16 @@ func (p *Plugin) TrialEnterContext(commandID string, trialID string) (*TrialEnte
 }
 
 // TrialRegisterFixture register a fixture handle under an open trial so trial_end can release it.
-func (p *Plugin) TrialRegisterFixture(fixtureHandle string, ownerPluginID string, trialID string) error {
-	req := &TrialRegisterFixtureRequest{
-		FixtureHandle: fixtureHandle,
-		OwnerPluginID: ownerPluginID,
-		TrialID:       trialID,
-	}
-	return p.Call(MethodTrialRegisterFixture, req, nil)
+func (p *Plugin) TrialRegisterFixture(req TrialRegisterFixtureRequest) error {
+	return p.Call(MethodTrialRegisterFixture, &req, nil)
 }
 
 // TrialResolveSamples resolve concrete prompt phrases for a command whose vocabulary the caller can't derive — forwards trial_samples to a dynamic command's owner (empty when the owner doesn't implement the optional hook; the host then falls back to its own default)..
-//
-//   - commandID: Command id from `commands.enumerate` — `<owner_plugin>:<pattern>`.
-func (p *Plugin) TrialResolveSamples(commandID string) ([]string, error) {
-	req := &TrialResolveSamplesRequest{
-		CommandID: commandID,
-	}
+func (p *Plugin) TrialResolveSamples(req TrialResolveSamplesRequest) ([]string, error) {
 	var result struct {
 		Prompts []string `json:"prompts"`
 	}
-	err := p.Call(MethodTrialResolveSamples, req, &result)
+	err := p.Call(MethodTrialResolveSamples, &req, &result)
 	if err != nil {
 		return nil, err
 	}

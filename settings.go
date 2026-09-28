@@ -130,7 +130,7 @@ func (s *SettingsMirror[T]) SetUserFields(fields map[string]any) error {
 	}
 	id := s.name
 	tenant := "_user"
-	if _, err := s.p.OverridesApply("patch", s.name, nil, raw, &id, nil, &tenant); err != nil {
+	if _, err := s.p.OverridesApply(OverridesApplyRequest{Action: "patch", Collection: s.name, Fields: raw, ID: &id, Tenant: &tenant}); err != nil {
 		return err
 	}
 	return s.Refresh()
@@ -144,7 +144,7 @@ func (s *SettingsMirror[T]) UnpatchUser(field string) error {
 	id := s.name
 	tenant := "_user"
 	f := field
-	if _, err := s.p.OverridesApply("unpatch", s.name, &f, nil, &id, nil, &tenant); err != nil {
+	if _, err := s.p.OverridesApply(OverridesApplyRequest{Action: "unpatch", Collection: s.name, Field: &f, ID: &id, Tenant: &tenant}); err != nil {
 		return err
 	}
 	return s.Refresh()

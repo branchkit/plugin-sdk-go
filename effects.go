@@ -51,7 +51,7 @@ type EffectAssertOutcome struct {
 // ownership stack: the last assert wins, and a retract restores the previous
 // owner.
 func (p *Plugin) AssertEffect(name string) (EffectAssertOutcome, error) {
-	res, err := p.EffectsAssert(name)
+	res, err := p.EffectsAssert(EffectsAssertRequest{Name: name})
 	if err != nil {
 		return EffectAssertOutcome{}, err
 	}
@@ -73,7 +73,7 @@ func (p *Plugin) AssertEffect(name string) (EffectAssertOutcome, error) {
 // `newOwner` names the effective owner after the call, or "" when the
 // stack is now empty.
 func (p *Plugin) RetractEffect(name string) (retracted bool, newOwner string, err error) {
-	res, err := p.EffectsRetract(name)
+	res, err := p.EffectsRetract(EffectsRetractRequest{Name: name})
 	if err != nil {
 		return false, "", err
 	}
@@ -92,7 +92,7 @@ func (p *Plugin) RetractEffect(name string) (retracted bool, newOwner string, er
 // empty stack — so polling on a typo'd name doesn't require error
 // handling.
 func (p *Plugin) IsEffectActive(name string) (active bool, currentOwner string, err error) {
-	res, err := p.EffectsIsActive(name)
+	res, err := p.EffectsIsActive(EffectsIsActiveRequest{Name: name})
 	if err != nil {
 		return false, "", err
 	}

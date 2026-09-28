@@ -297,7 +297,7 @@ func pushCommandSpecs(p *Plugin, specs []CommandSpec, group *string) (int, error
 	// `[]CommandSpec` as of 2026-09-19. This used to copy the slice into an
 	// identical one, build a map[string]any and hand-roll p.Call with a
 	// private response struct — all of it because the wrapper took raw JSON.
-	resp, err := p.CommandsPush(specs, group)
+	resp, err := p.CommandsPush(CommandsPushRequest{Commands: specs, Group: group})
 	if err != nil {
 		return 0, fmt.Errorf("commands.push: %w", err)
 	}

@@ -71,21 +71,23 @@ func TestOutputStateWrapperCarriesTheDocument(t *testing.T) {
 			return map[string]any{"ok": true, "generation": 7}, ""
 		},
 		func(p *Plugin) {
-			res, err := p.OutputState(OutputState{
-				Channel: "discovery",
-				Kind:    OutputKindChoices,
-				Title:   "Commands",
-				Phrase:  "twelve commands",
-				Sections: []OutputSection{{
-					Title: "Windows",
-					Items: []OutputItem{{
-						ID: "snap_left", Title: "snap left", Phrase: "snap left",
-						Action: SayAction("snap left"),
+			res, err := p.OutputState(OutputStateRequest{
+				State: OutputState{
+					Channel: "discovery",
+					Kind:    OutputKindChoices,
+					Title:   "Commands",
+					Phrase:  "twelve commands",
+					Sections: []OutputSection{{
+						Title: "Windows",
+						Items: []OutputItem{{
+							ID: "snap_left", Title: "snap left", Phrase: "snap left",
+							Action: SayAction("snap left"),
+						}},
 					}},
-				}},
-				Urgency: OutputUrgencyAmbient,
-				Locale:  "en",
-				V:       1,
+					Urgency: OutputUrgencyAmbient,
+					Locale:  "en",
+					V:       1,
+				},
 			})
 			if err != nil {
 				t.Fatalf("OutputState: %v", err)

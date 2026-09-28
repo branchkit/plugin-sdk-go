@@ -118,7 +118,7 @@ func (m *CollectionMirror) Refresh() error {
 			}
 		}
 	} else {
-		res, err := m.p.CollectionGet(m.name)
+		res, err := m.p.CollectionGet(CollectionGetRequest{Name: m.name})
 		if err != nil {
 			return err
 		}

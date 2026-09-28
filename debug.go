@@ -65,5 +65,5 @@ func (p *Plugin) logAtLevel(level, tag string, data any) {
 		return
 	}
 	lvl := PluginLogLevel(level)
-	_ = p.PluginDebug(json.RawMessage(payload), &lvl, &tag)
+	_ = p.PluginDebug(PluginDebugRequest{Data: json.RawMessage(payload), Level: &lvl, Tag: &tag})
 }

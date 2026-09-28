@@ -28,7 +28,7 @@ func (p *Plugin) Append(name string, payload any) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("marshal payload: %w", err)
 	}
-	entry, err := p.CollectionAppend(name, raw)
+	entry, err := p.CollectionAppend(CollectionAppendRequest{Name: name, Payload: raw})
 	if err != nil {
 		// errors.Is(err, ErrRecordingDisabled) works directly off the wire's
 		// structured kind — this used to substring-match the message prose.
@@ -47,7 +47,7 @@ func (p *Plugin) AppendEntry(name string, payload any) (*LogEntry, error) {
 	if err != nil {
 		return nil, fmt.Errorf("marshal payload: %w", err)
 	}
-	entry, err := p.CollectionAppend(name, raw)
+	entry, err := p.CollectionAppend(CollectionAppendRequest{Name: name, Payload: raw})
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +76,7 @@ func (p *Plugin) AppendKeyed(name, key string, payload any) error {
 	if err != nil {
 		return fmt.Errorf("marshal payload: %w", err)
 	}
-	_, err = p.CollectionAppendKeyed(key, name, raw)
+	_, err = p.CollectionAppendKeyed(CollectionAppendKeyedRequest{Key: key, Name: name, Payload: raw})
 	if err != nil {
 		return err
 	}
@@ -202,14 +202,14 @@ func (p *Plugin) DeleteLogEntry(name, id string) (bool, error) {
 // collection. When false, subsequent Append calls fail with
 // ErrRecordingDisabled until re-enabled.
 func (p *Plugin) SetCollectionRecording(name string, enabled bool) error {
-	return p.PrivacySetRecording(enabled, name)
+	return p.PrivacySetRecording(PrivacySetRecordingRequest{Enabled: enabled, Name: name})
 }
 
 // GetCollectionRecording reads the effective recording flag for a
 // log-kind collection — the user override if set, otherwise the
 // manifest's `default_recording_enabled`.
 func (p *Plugin) GetCollectionRecording(name string) (bool, error) {
-	res, err := p.PrivacyGetRecording(name)
+	res, err := p.PrivacyGetRecording(PrivacyGetRecordingRequest{Name: name})
 	if err != nil {
 		return false, err
 	}
