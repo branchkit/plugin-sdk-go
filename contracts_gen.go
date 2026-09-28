@@ -645,6 +645,7 @@ const (
 	EventActionExecuted         = "_platform.action.executed"
 	EventAppFocused             = "_platform.app.focused"
 	EventAudioDevicesChanged    = "_platform.audio_devices.changed"
+	EventAxNotification         = "_platform.ax.notification"
 	EventBleNotification        = "_platform.ble.notification"
 	EventBlobUpdated            = "_platform.blob.updated"
 	EventCaptureProgress        = "_platform.capture.progress"

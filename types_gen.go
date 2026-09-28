@@ -3324,8 +3324,11 @@ type NativeAxElementTreeRequest struct {
 
 // NativeAxObserveRequest is the request type for native.ax_observe.
 type NativeAxObserveRequest struct {
+	// The notifications wanted, from the portable vocabulary; none means
+	// all of them. An unknown name is refused.
 	// default []
 	Notifications []string `json:"notifications,omitempty"`
+	// The application to observe.
 	// wire int32
 	Pid int `json:"pid"`
 }
@@ -7443,6 +7446,26 @@ type AudioDevicesChangedEventParams struct {
 	Name string `json:"name"`
 	// CoreAudio device UID.
 	UID string `json:"uid"`
+}
+
+// AxNotificationEventParams is the payload of the _platform.ax.notification event.
+type AxNotificationEventParams struct {
+	// The element it happened to, as the tree operations describe one.
+	Element AccessibleElement `json:"element"`
+	// focus_changed, value_changed, name_changed, state_changed,
+	// children_changed, selection_changed or window_opened.
+	Notification string `json:"notification"`
+	// For state_changed: whether that state is now on.
+	On *bool `json:"on,omitempty"`
+	// The plugin holding the subscription. The event is ADDRESSED to it:
+	// what a user types into a field arrives as value_changed, so no other
+	// plugin receives it, whatever it holds.
+	OwnerPlugin string `json:"owner_plugin"`
+	// For state_changed: the ARIA state that changed (checked, expanded,
+	// selected, pressed, disabled).
+	State *string `json:"state,omitempty"`
+	// The subscription `native.ax_observe` returned.
+	SubscriptionID string `json:"subscription_id"`
 }
 
 // BleNotificationEventParams is the payload of the _platform.ble.notification event.

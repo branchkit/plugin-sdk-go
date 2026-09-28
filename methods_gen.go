@@ -1658,10 +1658,13 @@ func (p *Plugin) NativeAxElementTree(element AccessibleRef, depth *int) (*Access
 	return &result, nil
 }
 
-// NativeAxObserve start observing AX notifications (STUB -- not yet implemented).
+// NativeAxObserve observe an application's accessibility changes. Notifications arrive as _platform.ax.notification, addressed to the calling plugin alone: focus_changed, value_changed, name_changed, state_changed, children_changed, selection_changed, window_opened (none named means all).
 //
-//   - pid: wire int32
-//   - notifications: default []
+//   - pid: The application to observe.
+//     wire int32
+//   - notifications: The notifications wanted, from the portable vocabulary; none means
+//     all of them. An unknown name is refused.
+//     default []
 func (p *Plugin) NativeAxObserve(pid int, notifications []string) (*NativeAxObserveResponse, error) {
 	req := &NativeAxObserveRequest{
 		Pid:           pid,
@@ -1718,7 +1721,7 @@ func (p *Plugin) NativeAxSetAttribute(attribute string, element AccessibleRef, v
 	return result.Result, err
 }
 
-// NativeAxUnobserve stop observing AX notifications (STUB).
+// NativeAxUnobserve stop observing accessibility changes. A plugin can end only its own subscriptions.
 func (p *Plugin) NativeAxUnobserve(subscriptionID string) (bool, error) {
 	req := &NativeAxUnobserveRequest{
 		SubscriptionID: subscriptionID,
