@@ -336,6 +336,7 @@ const (
 	MethodNativeMicrophonePermission          = "native.microphone_permission"             // since 0.1.0
 	MethodNativeMinimizeWindow                = "native.minimize_window"                   // since 0.1.0
 	MethodNativeModelName                     = "native.model_name"                        // since 0.1.0
+	MethodNativeMonoAudio                     = "native.mono_audio"                        // since 0.2.0
 	MethodNativeMountPoints                   = "native.mount_points"                      // since 0.1.0
 	MethodNativeMouseButtonClick              = "native.mouse_button_click"                // since 0.1.0
 	MethodNativeMouseKeys                     = "native.mouse_keys"                        // since 0.2.0
@@ -482,6 +483,7 @@ const (
 	MethodNativeSetKeyRepeatRate              = "native.set_key_repeat_rate"               // since 0.1.0
 	MethodNativeSetMagnifierEnabled           = "native.set_magnifier_enabled"             // since 0.2.0
 	MethodNativeSetMenuBarAutoHide            = "native.set_menu_bar_auto_hide"            // since 0.1.0
+	MethodNativeSetMonoAudio                  = "native.set_mono_audio"                    // since 0.2.0
 	MethodNativeSetMouseKeys                  = "native.set_mouse_keys"                    // since 0.2.0
 	MethodNativeSetMouseSpeed                 = "native.set_mouse_speed"                   // since 0.1.0
 	MethodNativeSetNightShift                 = "native.set_night_shift"                   // since 0.1.0

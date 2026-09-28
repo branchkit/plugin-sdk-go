@@ -4841,6 +4841,11 @@ type NativeModelNameResponse struct {
 	Model string `json:"model"`
 }
 
+// NativeMonoAudioResponse is the response type for native.mono_audio.
+type NativeMonoAudioResponse struct {
+	Enabled bool `json:"enabled"`
+}
+
 // NativeMountPointsResponse is the response type for native.mount_points.
 type NativeMountPointsResponse struct {
 	Volumes []string `json:"volumes"`
@@ -5894,6 +5899,16 @@ type NativeSetMenuBarAutoHideRequest struct {
 
 // NativeSetMenuBarAutoHideResponse is the response type for native.set_menu_bar_auto_hide.
 type NativeSetMenuBarAutoHideResponse struct {
+	Ok bool `json:"ok"`
+}
+
+// NativeSetMonoAudioRequest is the request type for native.set_mono_audio.
+type NativeSetMonoAudioRequest struct {
+	Enabled bool `json:"enabled"`
+}
+
+// NativeSetMonoAudioResponse is the response type for native.set_mono_audio.
+type NativeSetMonoAudioResponse struct {
 	Ok bool `json:"ok"`
 }
 

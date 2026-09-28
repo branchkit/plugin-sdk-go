@@ -3174,6 +3174,16 @@ func (p *Plugin) NativeModelName() (*NativeModelNameResponse, error) {
 	return &result, nil
 }
 
+// NativeMonoAudio check if mono audio is on (the left and right channels are mixed, so either ear hears everything).
+func (p *Plugin) NativeMonoAudio() (*NativeMonoAudioResponse, error) {
+	var result NativeMonoAudioResponse
+	err := p.Call(MethodNativeMonoAudio, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // NativeMountPoints list mounted volumes.
 func (p *Plugin) NativeMountPoints() ([]string, error) {
 	var result struct {
@@ -4519,6 +4529,15 @@ func (p *Plugin) NativeSetMenuBarAutoHide(req NativeSetMenuBarAutoHideRequest) (
 		Ok bool `json:"ok"`
 	}
 	err := p.Call(MethodNativeSetMenuBarAutoHide, &req, &result)
+	return result.Ok, err
+}
+
+// NativeSetMonoAudio turn mono audio on or off (the left and right channels are mixed, so either ear hears everything).
+func (p *Plugin) NativeSetMonoAudio(req NativeSetMonoAudioRequest) (bool, error) {
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeSetMonoAudio, &req, &result)
 	return result.Ok, err
 }
 
