@@ -1243,7 +1243,7 @@ func (p *Plugin) NativeActiveSpace() ([]ActiveSpace, error) {
 	return result.Active, nil
 }
 
-// NativeAirdropEnabled check if AirDrop discoverability is enabled.
+// NativeAirdropEnabled check if AirDrop discoverability is enabled. Exists only on macOS and Windows; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeAirdropEnabled() (*NativeAirdropEnabledResponse, error) {
 	var result NativeAirdropEnabledResponse
 	err := p.Call(MethodNativeAirdropEnabled, nil, &result)
@@ -1295,7 +1295,7 @@ func (p *Plugin) NativeAllWindowIds() ([]string, error) {
 	return result.WindowIds, nil
 }
 
-// NativeApfsSnapshots list APFS local snapshots as `tmutil listlocalsnapshots` prints them — a header line followed by one snapshot name per line, NOT JSON.
+// NativeApfsSnapshots list APFS local snapshots as `tmutil listlocalsnapshots` prints them — a header line followed by one snapshot name per line, NOT JSON. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeApfsSnapshots() (*NativeApfsSnapshotsResponse, error) {
 	var result NativeApfsSnapshotsResponse
 	err := p.Call(MethodNativeApfsSnapshots, nil, &result)
@@ -1360,7 +1360,7 @@ func (p *Plugin) NativeAppIconPath(bundleID string) (string, error) {
 	return result, nil
 }
 
-// NativeAppIsAgent check if app is an LSUIElement (agent/background).
+// NativeAppIsAgent check if app is an LSUIElement (agent/background). Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeAppIsAgent(bundleID string) (*NativeAppIsAgentResponse, error) {
 	req := &NativeAppIsAgentRequest{
 		BundleID: bundleID,
@@ -1461,7 +1461,7 @@ func (p *Plugin) NativeAppVersion(bundleID string) (string, error) {
 	return result, nil
 }
 
-// NativeAppVolumes list each app playing audio, with its own volume and mute, as the system mixer shows it.
+// NativeAppVolumes list each app playing audio, with its own volume and mute, as the system mixer shows it. Exists only on Linux and Windows; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeAppVolumes() ([]AppVolume, error) {
 	var result struct {
 		Apps []AppVolume `json:"apps"`
@@ -1581,7 +1581,7 @@ func (p *Plugin) NativeAutoBrightness() (*NativeAutoBrightnessResponse, error) {
 	return &result, nil
 }
 
-// NativeAutoRearrangeSpaces check if Spaces auto-rearrange based on usage.
+// NativeAutoRearrangeSpaces check if Spaces auto-rearrange based on usage. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeAutoRearrangeSpaces() (*NativeAutoRearrangeSpacesResponse, error) {
 	var result NativeAutoRearrangeSpacesResponse
 	err := p.Call(MethodNativeAutoRearrangeSpaces, nil, &result)
@@ -1601,7 +1601,7 @@ func (p *Plugin) NativeAutoTimezone() (*NativeAutoTimezoneResponse, error) {
 	return &result, nil
 }
 
-// NativeAutocorrectEnabled check if auto-correction is enabled.
+// NativeAutocorrectEnabled check if auto-correction is enabled. Exists only on macOS and Windows; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeAutocorrectEnabled() (*NativeAutocorrectEnabledResponse, error) {
 	var result NativeAutocorrectEnabledResponse
 	err := p.Call(MethodNativeAutocorrectEnabled, nil, &result)
@@ -1621,7 +1621,7 @@ func (p *Plugin) NativeAutomaticLoginUser() (*NativeAutomaticLoginUserResponse, 
 	return &result, nil
 }
 
-// NativeAutomationPermission check if automation permission is granted for target app.
+// NativeAutomationPermission check if automation permission is granted for target app. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeAutomationPermission(bundleID string) (*NativeAutomationPermissionResponse, error) {
 	req := &NativeAutomationPermissionRequest{
 		BundleID: bundleID,
@@ -1930,7 +1930,7 @@ func (p *Plugin) NativeBluetoothPower() (*NativeBluetoothPowerResponse, error) {
 	return &result, nil
 }
 
-// NativeBoldTextEnabled check if bold text is enabled in accessibility.
+// NativeBoldTextEnabled check if bold text is enabled in accessibility. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeBoldTextEnabled() (*NativeBoldTextEnabledResponse, error) {
 	var result NativeBoldTextEnabledResponse
 	err := p.Call(MethodNativeBoldTextEnabled, nil, &result)
@@ -2280,7 +2280,7 @@ func (p *Plugin) NativeCreateDirectory(path string) (bool, error) {
 	return result.Ok, err
 }
 
-// NativeCronJobs list the current user crontab entries.
+// NativeCronJobs list the current user crontab entries. Exists only on macOS and Linux; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeCronJobs() ([]string, error) {
 	var result struct {
 		Jobs []string `json:"jobs"`
@@ -2494,7 +2494,7 @@ func (p *Plugin) NativeDictationEnabled() (*NativeDictationEnabledResponse, erro
 	return &result, nil
 }
 
-// NativeDifferentiateWithoutColor check if differentiate without color is enabled.
+// NativeDifferentiateWithoutColor check if differentiate without color is enabled. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeDifferentiateWithoutColor() (*NativeDifferentiateWithoutColorResponse, error) {
 	var result NativeDifferentiateWithoutColorResponse
 	err := p.Call(MethodNativeDifferentiateWithoutColor, nil, &result)
@@ -2696,7 +2696,7 @@ func (p *Plugin) NativeDnsServers() ([]string, error) {
 	return result.Servers, nil
 }
 
-// NativeDockAutoHide check if Dock auto-hide is enabled.
+// NativeDockAutoHide check if Dock auto-hide is enabled. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeDockAutoHide() (*NativeDockAutoHideResponse, error) {
 	var result NativeDockAutoHideResponse
 	err := p.Call(MethodNativeDockAutoHide, nil, &result)
@@ -2706,7 +2706,7 @@ func (p *Plugin) NativeDockAutoHide() (*NativeDockAutoHideResponse, error) {
 	return &result, nil
 }
 
-// NativeDockMagnification check if Dock magnification is enabled.
+// NativeDockMagnification check if Dock magnification is enabled. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeDockMagnification() (*NativeDockMagnificationResponse, error) {
 	var result NativeDockMagnificationResponse
 	err := p.Call(MethodNativeDockMagnification, nil, &result)
@@ -2716,7 +2716,7 @@ func (p *Plugin) NativeDockMagnification() (*NativeDockMagnificationResponse, er
 	return &result, nil
 }
 
-// NativeDockMinimizeEffect get Dock minimize animation. Returns one of: genie, scale, suck.
+// NativeDockMinimizeEffect get Dock minimize animation. Returns one of: genie, scale, suck. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeDockMinimizeEffect() (*NativeDockMinimizeEffectResponse, error) {
 	var result NativeDockMinimizeEffectResponse
 	err := p.Call(MethodNativeDockMinimizeEffect, nil, &result)
@@ -2726,7 +2726,7 @@ func (p *Plugin) NativeDockMinimizeEffect() (*NativeDockMinimizeEffectResponse, 
 	return &result, nil
 }
 
-// NativeDockMinimizeToApp check if windows minimize into app icon.
+// NativeDockMinimizeToApp check if windows minimize into app icon. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeDockMinimizeToApp() (*NativeDockMinimizeToAppResponse, error) {
 	var result NativeDockMinimizeToAppResponse
 	err := p.Call(MethodNativeDockMinimizeToApp, nil, &result)
@@ -2736,7 +2736,7 @@ func (p *Plugin) NativeDockMinimizeToApp() (*NativeDockMinimizeToAppResponse, er
 	return &result, nil
 }
 
-// NativeDockPosition get the Dock position (left, bottom, right).
+// NativeDockPosition get the Dock position (left, bottom, right). Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeDockPosition() (*NativeDockPositionResponse, error) {
 	var result NativeDockPositionResponse
 	err := p.Call(MethodNativeDockPosition, nil, &result)
@@ -2746,7 +2746,7 @@ func (p *Plugin) NativeDockPosition() (*NativeDockPositionResponse, error) {
 	return &result, nil
 }
 
-// NativeDockShowIndicators check if Dock shows running app indicators.
+// NativeDockShowIndicators check if Dock shows running app indicators. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeDockShowIndicators() (*NativeDockShowIndicatorsResponse, error) {
 	var result NativeDockShowIndicatorsResponse
 	err := p.Call(MethodNativeDockShowIndicators, nil, &result)
@@ -2756,7 +2756,7 @@ func (p *Plugin) NativeDockShowIndicators() (*NativeDockShowIndicatorsResponse, 
 	return &result, nil
 }
 
-// NativeDockShowRecents check if Dock shows recent apps.
+// NativeDockShowRecents check if Dock shows recent apps. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeDockShowRecents() (*NativeDockShowRecentsResponse, error) {
 	var result NativeDockShowRecentsResponse
 	err := p.Call(MethodNativeDockShowRecents, nil, &result)
@@ -2766,7 +2766,7 @@ func (p *Plugin) NativeDockShowRecents() (*NativeDockShowRecentsResponse, error)
 	return &result, nil
 }
 
-// NativeDockSize get the Dock tile size (0-128).
+// NativeDockSize get the Dock tile size (0-128). Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeDockSize() (int, error) {
 	var result int
 	err := p.Call(MethodNativeDockSize, nil, &result)
@@ -3104,7 +3104,7 @@ func (p *Plugin) NativeFinderDefaultView() (*NativeFinderDefaultViewResponse, er
 	return &result, nil
 }
 
-// NativeFinderNewWindowTarget get Finder new window default location.
+// NativeFinderNewWindowTarget get Finder new window default location. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeFinderNewWindowTarget() (*NativeFinderNewWindowTargetResponse, error) {
 	var result NativeFinderNewWindowTargetResponse
 	err := p.Call(MethodNativeFinderNewWindowTarget, nil, &result)
@@ -3114,7 +3114,7 @@ func (p *Plugin) NativeFinderNewWindowTarget() (*NativeFinderNewWindowTargetResp
 	return &result, nil
 }
 
-// NativeFinderSelection get the currently selected files in Finder.
+// NativeFinderSelection get the currently selected files in Finder. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeFinderSelection() ([]string, error) {
 	var result struct {
 		Paths []string `json:"paths"`
@@ -3126,7 +3126,7 @@ func (p *Plugin) NativeFinderSelection() ([]string, error) {
 	return result.Paths, nil
 }
 
-// NativeFinderShowExtensions whether the file manager shows file extensions.
+// NativeFinderShowExtensions whether the file manager shows file extensions. Exists only on macOS and Windows; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeFinderShowExtensions() (*NativeFinderShowExtensionsResponse, error) {
 	var result NativeFinderShowExtensionsResponse
 	err := p.Call(MethodNativeFinderShowExtensions, nil, &result)
@@ -3146,7 +3146,7 @@ func (p *Plugin) NativeFinderShowHidden() (*NativeFinderShowHiddenResponse, erro
 	return &result, nil
 }
 
-// NativeFinderShowPathBar check if Finder shows path bar.
+// NativeFinderShowPathBar check if Finder shows path bar. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeFinderShowPathBar() (*NativeFinderShowPathBarResponse, error) {
 	var result NativeFinderShowPathBarResponse
 	err := p.Call(MethodNativeFinderShowPathBar, nil, &result)
@@ -3166,7 +3166,7 @@ func (p *Plugin) NativeFinderShowStatusBar() (*NativeFinderShowStatusBarResponse
 	return &result, nil
 }
 
-// NativeFinderWindowPath get the path of the frontmost Finder window.
+// NativeFinderWindowPath get the path of the frontmost Finder window. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeFinderWindowPath() (*NativeFinderWindowPathResponse, error) {
 	var result NativeFinderWindowPathResponse
 	err := p.Call(MethodNativeFinderWindowPath, nil, &result)
@@ -3205,7 +3205,7 @@ func (p *Plugin) NativeFlushDns() (bool, error) {
 	return result.Ok, err
 }
 
-// NativeFnKeyFunction get function key default behavior.
+// NativeFnKeyFunction get function key default behavior. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeFnKeyFunction() (*NativeFnKeyFunctionResponse, error) {
 	var result NativeFnKeyFunctionResponse
 	err := p.Call(MethodNativeFnKeyFunction, nil, &result)
@@ -3291,7 +3291,7 @@ func (p *Plugin) NativeFrontmostApp() (*NativeFrontmostAppResponse, error) {
 	return &result, nil
 }
 
-// NativeFullDiskAccess check if full disk access is granted.
+// NativeFullDiskAccess check if full disk access is granted. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeFullDiskAccess() (*NativeFullDiskAccessResponse, error) {
 	var result NativeFullDiskAccessResponse
 	err := p.Call(MethodNativeFullDiskAccess, nil, &result)
@@ -3301,7 +3301,7 @@ func (p *Plugin) NativeFullDiskAccess() (*NativeFullDiskAccessResponse, error) {
 	return &result, nil
 }
 
-// NativeFunctionKeysStandard check if function keys are set to standard behavior (not media).
+// NativeFunctionKeysStandard check if function keys are set to standard behavior (not media). Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeFunctionKeysStandard() (*NativeFunctionKeysStandardResponse, error) {
 	var result NativeFunctionKeysStandardResponse
 	err := p.Call(MethodNativeFunctionKeysStandard, nil, &result)
@@ -3395,7 +3395,7 @@ func (p *Plugin) NativeGrayscaleEnabled() (*NativeGrayscaleEnabledResponse, erro
 	return &result, nil
 }
 
-// NativeGroupWindowsByApp check if Mission Control groups windows by app.
+// NativeGroupWindowsByApp check if Mission Control groups windows by app. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeGroupWindowsByApp() (*NativeGroupWindowsByAppResponse, error) {
 	var result NativeGroupWindowsByAppResponse
 	err := p.Call(MethodNativeGroupWindowsByApp, nil, &result)
@@ -3405,7 +3405,7 @@ func (p *Plugin) NativeGroupWindowsByApp() (*NativeGroupWindowsByAppResponse, er
 	return &result, nil
 }
 
-// NativeHandoffEnabled check if Handoff is enabled.
+// NativeHandoffEnabled check if Handoff is enabled. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeHandoffEnabled() (*NativeHandoffEnabledResponse, error) {
 	var result NativeHandoffEnabledResponse
 	err := p.Call(MethodNativeHandoffEnabled, nil, &result)
@@ -3545,7 +3545,7 @@ func (p *Plugin) NativeHomeDirectory() (*NativeHomeDirectoryResponse, error) {
 	return &result, nil
 }
 
-// NativeHomebrewPrefix get the Homebrew installation prefix.
+// NativeHomebrewPrefix get the Homebrew installation prefix. Exists only on macOS and Linux; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeHomebrewPrefix() (*NativeHomebrewPrefixResponse, error) {
 	var result NativeHomebrewPrefixResponse
 	err := p.Call(MethodNativeHomebrewPrefix, nil, &result)
@@ -3590,7 +3590,7 @@ func (p *Plugin) NativeHotCorners() (*NativeHotCornersResponse, error) {
 	return &result, nil
 }
 
-// NativeIcloudDesktopSync check if iCloud Desktop & Documents sync is enabled.
+// NativeIcloudDesktopSync check if iCloud Desktop & Documents sync is enabled. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeIcloudDesktopSync() (*NativeIcloudDesktopSyncResponse, error) {
 	var result NativeIcloudDesktopSyncResponse
 	err := p.Call(MethodNativeIcloudDesktopSync, nil, &result)
@@ -3600,7 +3600,7 @@ func (p *Plugin) NativeIcloudDesktopSync() (*NativeIcloudDesktopSyncResponse, er
 	return &result, nil
 }
 
-// NativeIcloudDrivePath get the local path to iCloud Drive.
+// NativeIcloudDrivePath get the local path to iCloud Drive. Exists only on macOS and Windows; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeIcloudDrivePath() (*NativeIcloudDrivePathResponse, error) {
 	var result NativeIcloudDrivePathResponse
 	err := p.Call(MethodNativeIcloudDrivePath, nil, &result)
@@ -3610,7 +3610,7 @@ func (p *Plugin) NativeIcloudDrivePath() (*NativeIcloudDrivePathResponse, error)
 	return &result, nil
 }
 
-// NativeIcloudSignedIn check if the user is signed into iCloud.
+// NativeIcloudSignedIn check if the user is signed into iCloud. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeIcloudSignedIn() (*NativeIcloudSignedInResponse, error) {
 	var result NativeIcloudSignedInResponse
 	err := p.Call(MethodNativeIcloudSignedIn, nil, &result)
@@ -3654,7 +3654,7 @@ func (p *Plugin) NativeInstalledApps() ([]InstalledApp, error) {
 	return result.Apps, nil
 }
 
-// NativeInterfaceStyleSwitcher get auto appearance switching setting.
+// NativeInterfaceStyleSwitcher get auto appearance switching setting. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeInterfaceStyleSwitcher() (*NativeInterfaceStyleSwitcherResponse, error) {
 	var result NativeInterfaceStyleSwitcherResponse
 	err := p.Call(MethodNativeInterfaceStyleSwitcher, nil, &result)
@@ -3889,7 +3889,7 @@ func (p *Plugin) NativeListNotifications() ([]DeliveredNotification, error) {
 	return result.Notifications, nil
 }
 
-// NativeListShortcuts list available Shortcuts.app shortcuts.
+// NativeListShortcuts list available Shortcuts.app shortcuts. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeListShortcuts() ([]ShortcutInfo, error) {
 	var result struct {
 		Shortcuts []ShortcutInfo `json:"shortcuts"`
@@ -3913,7 +3913,7 @@ func (p *Plugin) NativeListSpaces() ([]SpaceInfo, error) {
 	return result.Spaces, nil
 }
 
-// NativeLiveTextEnabled check if Live Text is enabled.
+// NativeLiveTextEnabled check if Live Text is enabled. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeLiveTextEnabled() (*NativeLiveTextEnabledResponse, error) {
 	var result NativeLiveTextEnabledResponse
 	err := p.Call(MethodNativeLiveTextEnabled, nil, &result)
@@ -3982,7 +3982,7 @@ func (p *Plugin) NativeLoginItems() ([]LoginItem, error) {
 	return result.Items, nil
 }
 
-// NativeLoginItemsModern list modern login items (SMAppService).
+// NativeLoginItemsModern list modern login items (SMAppService). Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeLoginItemsModern() ([]string, error) {
 	var result struct {
 		Items []string `json:"items"`
@@ -4088,7 +4088,7 @@ func (p *Plugin) NativeMenuBar(pid int) ([]MenuItem, error) {
 	return result.Items, nil
 }
 
-// NativeMenuBarAutoHide check if menu bar auto-hide is enabled.
+// NativeMenuBarAutoHide check if menu bar auto-hide is enabled. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeMenuBarAutoHide() (*NativeMenuBarAutoHideResponse, error) {
 	var result NativeMenuBarAutoHideResponse
 	err := p.Call(MethodNativeMenuBarAutoHide, nil, &result)
@@ -4271,7 +4271,7 @@ func (p *Plugin) NativeNetworkProxyEnabled() (*NativeNetworkProxyEnabledResponse
 	return &result, nil
 }
 
-// NativeNetworkQuality run a quick network quality test (upload/download Mbps).
+// NativeNetworkQuality run a quick network quality test (upload/download Mbps). Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeNetworkQuality() (*NativeNetworkQualityResponse, error) {
 	var result NativeNetworkQualityResponse
 	err := p.Call(MethodNativeNetworkQuality, nil, &result)
@@ -4488,7 +4488,7 @@ func (p *Plugin) NativeOpenAppSettings(bundleID string) error {
 	return p.Call(MethodNativeOpenAppSettings, req, nil)
 }
 
-// NativeOpenFinderWindow open a Finder window at a specific path.
+// NativeOpenFinderWindow open a Finder window at a specific path. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeOpenFinderWindow(path string) error {
 	req := &NativeOpenFinderWindowRequest{
 		Path: path,
@@ -4579,7 +4579,7 @@ func (p *Plugin) NativePinWindowAbove(pinned bool, windowID string) error {
 	return p.Call(MethodNativePinWindowAbove, req, nil)
 }
 
-// NativePinchToZoom check if pinch-to-zoom gesture is enabled.
+// NativePinchToZoom check if pinch-to-zoom gesture is enabled. Exists only on macOS and Windows; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativePinchToZoom() (*NativePinchToZoomResponse, error) {
 	var result NativePinchToZoomResponse
 	err := p.Call(MethodNativePinchToZoom, nil, &result)
@@ -4602,7 +4602,7 @@ func (p *Plugin) NativePing(host string) (float64, error) {
 	return result, nil
 }
 
-// NativePlayFeedbackWhenVolumeChanged check if volume change feedback sound is enabled.
+// NativePlayFeedbackWhenVolumeChanged check if volume change feedback sound is enabled. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativePlayFeedbackWhenVolumeChanged() (*NativePlayFeedbackWhenVolumeChangedResponse, error) {
 	var result NativePlayFeedbackWhenVolumeChangedResponse
 	err := p.Call(MethodNativePlayFeedbackWhenVolumeChanged, nil, &result)
@@ -4645,7 +4645,7 @@ func (p *Plugin) NativePowerSource() (*NativePowerSourceResponse, error) {
 	return &result, nil
 }
 
-// NativePressAndHoldEnabled check if press-and-hold for accented characters is enabled.
+// NativePressAndHoldEnabled check if press-and-hold for accented characters is enabled. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativePressAndHoldEnabled() (*NativePressAndHoldEnabledResponse, error) {
 	var result NativePressAndHoldEnabledResponse
 	err := p.Call(MethodNativePressAndHoldEnabled, nil, &result)
@@ -4885,7 +4885,7 @@ func (p *Plugin) NativePurgeMemory() (bool, error) {
 	return result.Ok, err
 }
 
-// NativePurgeableSpace get purgeable disk space in bytes.
+// NativePurgeableSpace get purgeable disk space in bytes. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativePurgeableSpace() (int, error) {
 	var result int
 	err := p.Call(MethodNativePurgeableSpace, nil, &result)
@@ -5022,7 +5022,7 @@ func (p *Plugin) NativeReduceMotion() (*NativeReduceMotionResponse, error) {
 	return &result, nil
 }
 
-// NativeReduceTransparency check if Reduce Transparency is enabled.
+// NativeReduceTransparency check if Reduce Transparency is enabled. Exists only on macOS and Windows; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeReduceTransparency() (*NativeReduceTransparencyResponse, error) {
 	var result NativeReduceTransparencyResponse
 	err := p.Call(MethodNativeReduceTransparency, nil, &result)
@@ -5107,7 +5107,7 @@ func (p *Plugin) NativeRevealInFinder(path string) error {
 	return p.Call(MethodNativeRevealInFinder, req, nil)
 }
 
-// NativeRosettaInstalled check if Rosetta 2 is installed (Apple Silicon).
+// NativeRosettaInstalled check if Rosetta 2 is installed (Apple Silicon). Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeRosettaInstalled() (*NativeRosettaInstalledResponse, error) {
 	var result NativeRosettaInstalledResponse
 	err := p.Call(MethodNativeRosettaInstalled, nil, &result)
@@ -5132,7 +5132,7 @@ func (p *Plugin) NativeRunApplescript(script string) (*NativeRunApplescriptRespo
 	return &result, nil
 }
 
-// NativeRunJxa run JavaScript for Automation (JXA) code.
+// NativeRunJxa run JavaScript for Automation (JXA) code. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeRunJxa(script string) (*NativeRunJxaResponse, error) {
 	req := &NativeRunJxaRequest{
 		Script: script,
@@ -5145,7 +5145,7 @@ func (p *Plugin) NativeRunJxa(script string) (*NativeRunJxaResponse, error) {
 	return &result, nil
 }
 
-// NativeRunShortcut run a Shortcuts.app shortcut by name.
+// NativeRunShortcut run a Shortcuts.app shortcut by name. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 //
 //   - input: default null
 func (p *Plugin) NativeRunShortcut(name string, input *string) (*NativeRunShortcutResponse, error) {
@@ -5281,7 +5281,7 @@ func (p *Plugin) NativeScreenshot(displayID *int, region *ScreenshotRegion, wind
 	return &result, nil
 }
 
-// NativeScreenshotFormat get screenshot file format.
+// NativeScreenshotFormat get screenshot file format. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeScreenshotFormat() (*NativeScreenshotFormatResponse, error) {
 	var result NativeScreenshotFormatResponse
 	err := p.Call(MethodNativeScreenshotFormat, nil, &result)
@@ -5291,7 +5291,7 @@ func (p *Plugin) NativeScreenshotFormat() (*NativeScreenshotFormatResponse, erro
 	return &result, nil
 }
 
-// NativeScreenshotIncludeShadow check if screenshots include window shadow.
+// NativeScreenshotIncludeShadow check if screenshots include window shadow. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeScreenshotIncludeShadow() (*NativeScreenshotIncludeShadowResponse, error) {
 	var result NativeScreenshotIncludeShadowResponse
 	err := p.Call(MethodNativeScreenshotIncludeShadow, nil, &result)
@@ -5301,7 +5301,7 @@ func (p *Plugin) NativeScreenshotIncludeShadow() (*NativeScreenshotIncludeShadow
 	return &result, nil
 }
 
-// NativeScreenshotLocation get the configured screenshot save location.
+// NativeScreenshotLocation get the configured screenshot save location. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeScreenshotLocation() (*NativeScreenshotLocationResponse, error) {
 	var result NativeScreenshotLocationResponse
 	err := p.Call(MethodNativeScreenshotLocation, nil, &result)
@@ -5311,7 +5311,7 @@ func (p *Plugin) NativeScreenshotLocation() (*NativeScreenshotLocationResponse, 
 	return &result, nil
 }
 
-// NativeScreenshotShowThumbnail check if screenshot thumbnail is shown.
+// NativeScreenshotShowThumbnail check if screenshot thumbnail is shown. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeScreenshotShowThumbnail() (*NativeScreenshotShowThumbnailResponse, error) {
 	var result NativeScreenshotShowThumbnailResponse
 	err := p.Call(MethodNativeScreenshotShowThumbnail, nil, &result)
@@ -5423,7 +5423,7 @@ func (p *Plugin) NativeSetAppHidden(bundleID string, hidden bool) (bool, error) 
 	return result.Ok, err
 }
 
-// NativeSetAppMuted mute or unmute one app in the system mixer; false when the app has no audio stream.
+// NativeSetAppMuted mute or unmute one app in the system mixer; false when the app has no audio stream. Exists only on Linux and Windows; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeSetAppMuted(app string, muted bool) (bool, error) {
 	req := &NativeSetAppMutedRequest{
 		App:   app,
@@ -5436,7 +5436,7 @@ func (p *Plugin) NativeSetAppMuted(app string, muted bool) (bool, error) {
 	return result.Ok, err
 }
 
-// NativeSetAppVolume set one app's volume (0.0-1.0) in the system mixer; false when the app has no audio stream.
+// NativeSetAppVolume set one app's volume (0.0-1.0) in the system mixer; false when the app has no audio stream. Exists only on Linux and Windows; elsewhere it is refused with platform_no_analogue.
 //
 //   - volume: wire double
 func (p *Plugin) NativeSetAppVolume(app string, volume float64) (bool, error) {
@@ -5497,7 +5497,7 @@ func (p *Plugin) NativeSetAudioOutputDevice(name string) (bool, error) {
 	return result.Ok, err
 }
 
-// NativeSetAutoRearrangeSpaces enable or disable auto-rearrange Spaces.
+// NativeSetAutoRearrangeSpaces enable or disable auto-rearrange Spaces. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeSetAutoRearrangeSpaces(enabled bool) (bool, error) {
 	req := &NativeSetAutoRearrangeSpacesRequest{
 		Enabled: enabled,
@@ -5561,7 +5561,7 @@ func (p *Plugin) NativeSetDnd(enabled bool) error {
 	return p.Call(MethodNativeSetDnd, req, nil)
 }
 
-// NativeSetDockAutoHide enable or disable Dock auto-hide.
+// NativeSetDockAutoHide enable or disable Dock auto-hide. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeSetDockAutoHide(enabled bool) (bool, error) {
 	req := &NativeSetDockAutoHideRequest{
 		Enabled: enabled,
@@ -5573,7 +5573,7 @@ func (p *Plugin) NativeSetDockAutoHide(enabled bool) (bool, error) {
 	return result.Ok, err
 }
 
-// NativeSetDockMagnification enable or disable Dock magnification.
+// NativeSetDockMagnification enable or disable Dock magnification. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeSetDockMagnification(enabled bool) (bool, error) {
 	req := &NativeSetDockMagnificationRequest{
 		Enabled: enabled,
@@ -5585,7 +5585,7 @@ func (p *Plugin) NativeSetDockMagnification(enabled bool) (bool, error) {
 	return result.Ok, err
 }
 
-// NativeSetDockMinimizeEffect set Dock minimize animation (genie/scale).
+// NativeSetDockMinimizeEffect set Dock minimize animation (genie/scale). Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeSetDockMinimizeEffect(effect string) (bool, error) {
 	req := &NativeSetDockMinimizeEffectRequest{
 		Effect: effect,
@@ -5597,7 +5597,7 @@ func (p *Plugin) NativeSetDockMinimizeEffect(effect string) (bool, error) {
 	return result.Ok, err
 }
 
-// NativeSetDockPosition set the Dock position (left, bottom, right).
+// NativeSetDockPosition set the Dock position (left, bottom, right). Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeSetDockPosition(position string) (bool, error) {
 	req := &NativeSetDockPositionRequest{
 		Position: position,
@@ -5609,7 +5609,7 @@ func (p *Plugin) NativeSetDockPosition(position string) (bool, error) {
 	return result.Ok, err
 }
 
-// NativeSetDockShowRecents show or hide recent apps in Dock.
+// NativeSetDockShowRecents show or hide recent apps in Dock. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeSetDockShowRecents(enabled bool) (bool, error) {
 	req := &NativeSetDockShowRecentsRequest{
 		Enabled: enabled,
@@ -5621,7 +5621,7 @@ func (p *Plugin) NativeSetDockShowRecents(enabled bool) (bool, error) {
 	return result.Ok, err
 }
 
-// NativeSetDockSize set Dock tile size.
+// NativeSetDockSize set Dock tile size. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 //
 //   - size: wire double
 func (p *Plugin) NativeSetDockSize(size float64) (bool, error) {
@@ -5662,7 +5662,7 @@ func (p *Plugin) NativeSetFileHidden(hidden bool, path string) (bool, error) {
 	return result.Ok, err
 }
 
-// NativeSetFilePermissions set file permissions (chmod octal mode).
+// NativeSetFilePermissions set file permissions (chmod octal mode). Exists only on macOS and Linux; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeSetFilePermissions(mode string, path string) (bool, error) {
 	req := &NativeSetFilePermissionsRequest{
 		Mode: mode,
@@ -5675,7 +5675,7 @@ func (p *Plugin) NativeSetFilePermissions(mode string, path string) (bool, error
 	return result.Ok, err
 }
 
-// NativeSetFinderShowExtensions show or hide file extensions in Finder.
+// NativeSetFinderShowExtensions show or hide file extensions in Finder. Exists only on macOS and Windows; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeSetFinderShowExtensions(enabled bool) (bool, error) {
 	req := &NativeSetFinderShowExtensionsRequest{
 		Enabled: enabled,
@@ -5766,7 +5766,7 @@ func (p *Plugin) NativeSetKeyRepeatRate(rate float64) (bool, error) {
 	return result.Ok, err
 }
 
-// NativeSetMenuBarAutoHide enable or disable menu bar auto-hide.
+// NativeSetMenuBarAutoHide enable or disable menu bar auto-hide. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeSetMenuBarAutoHide(enabled bool) (bool, error) {
 	req := &NativeSetMenuBarAutoHideRequest{
 		Enabled: enabled,
@@ -5800,7 +5800,7 @@ func (p *Plugin) NativeSetNightShift(enabled bool) error {
 	return p.Call(MethodNativeSetNightShift, req, nil)
 }
 
-// NativeSetScreenshotFormat set screenshot file format (png/jpg/pdf/tiff).
+// NativeSetScreenshotFormat set screenshot file format (png/jpg/pdf/tiff). Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeSetScreenshotFormat(format string) (bool, error) {
 	req := &NativeSetScreenshotFormatRequest{
 		Format: format,
@@ -5812,7 +5812,7 @@ func (p *Plugin) NativeSetScreenshotFormat(format string) (bool, error) {
 	return result.Ok, err
 }
 
-// NativeSetScreenshotIncludeShadow enable or disable window shadow in screenshots.
+// NativeSetScreenshotIncludeShadow enable or disable window shadow in screenshots. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeSetScreenshotIncludeShadow(enabled bool) (bool, error) {
 	req := &NativeSetScreenshotIncludeShadowRequest{
 		Enabled: enabled,
@@ -5824,7 +5824,7 @@ func (p *Plugin) NativeSetScreenshotIncludeShadow(enabled bool) (bool, error) {
 	return result.Ok, err
 }
 
-// NativeSetScreenshotLocation set the screenshot save location.
+// NativeSetScreenshotLocation set the screenshot save location. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeSetScreenshotLocation(path string) (bool, error) {
 	req := &NativeSetScreenshotLocationRequest{
 		Path: path,
@@ -5848,7 +5848,7 @@ func (p *Plugin) NativeSetScrollDirectionNatural(enabled bool) (bool, error) {
 	return result.Ok, err
 }
 
-// NativeSetSidebarIconSize set sidebar icon size (1=small,2=medium,3=large).
+// NativeSetSidebarIconSize set sidebar icon size (1=small,2=medium,3=large). Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 //
 //   - size: wire uint32 · min 0
 func (p *Plugin) NativeSetSidebarIconSize(size int) (bool, error) {
@@ -5862,7 +5862,7 @@ func (p *Plugin) NativeSetSidebarIconSize(size int) (bool, error) {
 	return result.Ok, err
 }
 
-// NativeSetStageManager enable or disable Stage Manager.
+// NativeSetStageManager enable or disable Stage Manager. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeSetStageManager(enabled bool) (bool, error) {
 	req := &NativeSetStageManagerRequest{
 		Enabled: enabled,
@@ -5972,7 +5972,7 @@ func (p *Plugin) NativeSetWindowPosition(windowID string, x int, y int) error {
 	return p.Call(MethodNativeSetWindowPosition, req, nil)
 }
 
-// NativeSetWindowShadow enable or disable the drop shadow for a window.
+// NativeSetWindowShadow enable or disable the drop shadow for a window. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeSetWindowShadow(enabled bool, windowID string) error {
 	req := &NativeSetWindowShadowRequest{
 		Enabled:  enabled,
@@ -6023,7 +6023,7 @@ func (p *Plugin) NativeShowScrollBars() (*NativeShowScrollBarsResponse, error) {
 	return &result, nil
 }
 
-// NativeSidebarIconSize get sidebar icon size. Returns one of: small, medium, large.
+// NativeSidebarIconSize get sidebar icon size. Returns one of: small, medium, large. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeSidebarIconSize() (*NativeSidebarIconSizeResponse, error) {
 	var result NativeSidebarIconSizeResponse
 	err := p.Call(MethodNativeSidebarIconSize, nil, &result)
@@ -6043,7 +6043,7 @@ func (p *Plugin) NativeSipStatus() (*NativeSipStatusResponse, error) {
 	return &result, nil
 }
 
-// NativeSiriEnabled check if Siri is enabled.
+// NativeSiriEnabled check if Siri is enabled. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeSiriEnabled() (*NativeSiriEnabledResponse, error) {
 	var result NativeSiriEnabledResponse
 	err := p.Call(MethodNativeSiriEnabled, nil, &result)
@@ -6068,7 +6068,7 @@ func (p *Plugin) NativeSlowKeys() (*NativeSlowKeysResponse, error) {
 	return &result, nil
 }
 
-// NativeSmartQuotesEnabled check if smart quotes are enabled.
+// NativeSmartQuotesEnabled check if smart quotes are enabled. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeSmartQuotesEnabled() (*NativeSmartQuotesEnabledResponse, error) {
 	var result NativeSmartQuotesEnabledResponse
 	err := p.Call(MethodNativeSmartQuotesEnabled, nil, &result)
@@ -6078,7 +6078,7 @@ func (p *Plugin) NativeSmartQuotesEnabled() (*NativeSmartQuotesEnabledResponse, 
 	return &result, nil
 }
 
-// NativeSmartZoom check if smart zoom (double-tap) is enabled.
+// NativeSmartZoom check if smart zoom (double-tap) is enabled. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeSmartZoom() (*NativeSmartZoomResponse, error) {
 	var result NativeSmartZoomResponse
 	err := p.Call(MethodNativeSmartZoom, nil, &result)
@@ -6189,7 +6189,7 @@ func (p *Plugin) NativeSpotlight(query string, limit *int, scope []string) ([]Sp
 	return result.Results, nil
 }
 
-// NativeStageManagerEnabled check if Stage Manager is enabled.
+// NativeStageManagerEnabled check if Stage Manager is enabled. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeStageManagerEnabled() (*NativeStageManagerEnabledResponse, error) {
 	var result NativeStageManagerEnabledResponse
 	err := p.Call(MethodNativeStageManagerEnabled, nil, &result)
@@ -6209,7 +6209,7 @@ func (p *Plugin) NativeStartupDisk() (*NativeStartupDiskResponse, error) {
 	return &result, nil
 }
 
-// NativeStartupSoundEnabled check if startup sound is enabled.
+// NativeStartupSoundEnabled check if startup sound is enabled. Exists only on macOS and Windows; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeStartupSoundEnabled() (*NativeStartupSoundEnabledResponse, error) {
 	var result NativeStartupSoundEnabledResponse
 	err := p.Call(MethodNativeStartupSoundEnabled, nil, &result)
@@ -6239,7 +6239,7 @@ func (p *Plugin) NativeStickyKeys() (*NativeStickyKeysResponse, error) {
 	return &result, nil
 }
 
-// NativeSwipeBetweenPages check if swipe between pages gesture is enabled.
+// NativeSwipeBetweenPages check if swipe between pages gesture is enabled. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeSwipeBetweenPages() (*NativeSwipeBetweenPagesResponse, error) {
 	var result NativeSwipeBetweenPagesResponse
 	err := p.Call(MethodNativeSwipeBetweenPages, nil, &result)
@@ -6259,7 +6259,7 @@ func (p *Plugin) NativeSwitchSpace(spaceID int) error {
 	return p.Call(MethodNativeSwitchSpace, req, nil)
 }
 
-// NativeSwitchSpaceWhenSwitchingApp check if switching to app switches to its Space.
+// NativeSwitchSpaceWhenSwitchingApp check if switching to app switches to its Space. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeSwitchSpaceWhenSwitchingApp() (*NativeSwitchSpaceWhenSwitchingAppResponse, error) {
 	var result NativeSwitchSpaceWhenSwitchingAppResponse
 	err := p.Call(MethodNativeSwitchSpaceWhenSwitchingApp, nil, &result)
@@ -6394,7 +6394,7 @@ func (p *Plugin) NativeTemperatureUnit() (*NativeTemperatureUnitResponse, error)
 	return &result, nil
 }
 
-// NativeTextReplacements get user text replacements as the raw `NSUserDictionaryReplacementItems` preference value — macOS plist text, NOT JSON.
+// NativeTextReplacements get user text replacements as the raw `NSUserDictionaryReplacementItems` preference value — macOS plist text, NOT JSON. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeTextReplacements() (*NativeTextReplacementsResponse, error) {
 	var result NativeTextReplacementsResponse
 	err := p.Call(MethodNativeTextReplacements, nil, &result)
@@ -6414,7 +6414,7 @@ func (p *Plugin) NativeThermalState() (*NativeThermalStateResponse, error) {
 	return &result, nil
 }
 
-// NativeThreeFingerDrag check if three-finger drag is enabled.
+// NativeThreeFingerDrag check if three-finger drag is enabled. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeThreeFingerDrag() (*NativeThreeFingerDragResponse, error) {
 	var result NativeThreeFingerDragResponse
 	err := p.Call(MethodNativeThreeFingerDrag, nil, &result)
@@ -6536,7 +6536,7 @@ func (p *Plugin) NativeTrackpadSpeed() (float64, error) {
 	return result, nil
 }
 
-// NativeTransparencyConsent check TCC consent status for a service (e.g. kTCCServiceAccessibility).
+// NativeTransparencyConsent check TCC consent status for a service (e.g. kTCCServiceAccessibility). Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeTransparencyConsent(service string) (string, error) {
 	req := &NativeTransparencyConsentRequest{
 		Service: service,
@@ -6561,7 +6561,7 @@ func (p *Plugin) NativeTrash(path string) (bool, error) {
 	return result.Result, err
 }
 
-// NativeTrueTone check if True Tone is enabled. KNOWN LIMITATION: the `corebrightnessdiag` probe this depends on is absent from macOS 15, where this always reports false.
+// NativeTrueTone check if True Tone is enabled. KNOWN LIMITATION: the `corebrightnessdiag` probe this depends on is absent from macOS 15, where this always reports false. Exists only on macOS and Windows; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeTrueTone() (*NativeTrueToneResponse, error) {
 	var result NativeTrueToneResponse
 	err := p.Call(MethodNativeTrueTone, nil, &result)
@@ -6679,7 +6679,7 @@ func (p *Plugin) NativeUserName() (*NativeUserNameResponse, error) {
 	return &result, nil
 }
 
-// NativeUserShell get the current user's login shell path.
+// NativeUserShell get the current user's login shell path. Exists only on macOS and Linux; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeUserShell() (*NativeUserShellResponse, error) {
 	var result NativeUserShellResponse
 	err := p.Call(MethodNativeUserShell, nil, &result)
@@ -6915,7 +6915,7 @@ func (p *Plugin) NativeWriteFile(contents string, path string) (bool, error) {
 	return result.Ok, err
 }
 
-// NativeXcodePath get the active Xcode developer directory path.
+// NativeXcodePath get the active Xcode developer directory path. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeXcodePath() (*NativeXcodePathResponse, error) {
 	var result NativeXcodePathResponse
 	err := p.Call(MethodNativeXcodePath, nil, &result)
@@ -6925,7 +6925,7 @@ func (p *Plugin) NativeXcodePath() (*NativeXcodePathResponse, error) {
 	return &result, nil
 }
 
-// NativeXcodeVersion get the installed Xcode version.
+// NativeXcodeVersion get the installed Xcode version. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeXcodeVersion() (*NativeXcodeVersionResponse, error) {
 	var result NativeXcodeVersionResponse
 	err := p.Call(MethodNativeXcodeVersion, nil, &result)
