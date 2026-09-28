@@ -5117,7 +5117,7 @@ func (p *Plugin) NativeRosettaInstalled() (*NativeRosettaInstalledResponse, erro
 	return &result, nil
 }
 
-// NativeRunApplescript execute an AppleScript via osascript.
+// NativeRunApplescript execute an AppleScript via osascript. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 //
 //   - script: AppleScript source to execute via `osascript`.
 func (p *Plugin) NativeRunApplescript(script string) (*NativeRunApplescriptResponse, error) {
