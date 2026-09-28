@@ -1675,7 +1675,7 @@ func (p *Plugin) NativeAxObserve(pid int, notifications []string) (*NativeAxObse
 	return &result, nil
 }
 
-// NativeAxPerformAction perform an action on an accessibility element.
+// NativeAxPerformAction perform an action on an accessibility element: press (its default action, what a click does), toggle, focus, expand, collapse, increment, decrement, scroll_into_view, show_menu, or one of the element's own actions by its OS name. The element's actions list says which it offers.
 func (p *Plugin) NativeAxPerformAction(action string, element AccessibleRef) (bool, error) {
 	req := &NativeAxPerformActionRequest{
 		Action:  action,
@@ -1704,7 +1704,7 @@ func (p *Plugin) NativeAxReadAttributes(element AccessibleRef, attributes []stri
 	return result, nil
 }
 
-// NativeAxSetAttribute set an attribute on an accessibility element.
+// NativeAxSetAttribute set an accessibility element's value (text, or a number for a slider or spin button) or focus it (focused: true). Returns whether it took.
 func (p *Plugin) NativeAxSetAttribute(attribute string, element AccessibleRef, value json.RawMessage) (bool, error) {
 	req := &NativeAxSetAttributeRequest{
 		Attribute: attribute,
