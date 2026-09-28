@@ -209,6 +209,24 @@ const (
 	AnchorCenter       Anchor = "center"
 )
 
+// AppVolume is auto-generated from the OpenRPC spec.
+// One app's audio in the system mixer: its own volume and mute, apart from
+// the device's. An app with several streams (a browser's tabs) is one
+// entry, and setting it sets them all.
+type AppVolume struct {
+	// The app's identity, as `native.running_apps` reports it.
+	App string `json:"app"`
+	// True when every one of its streams is muted.
+	Muted bool `json:"muted"`
+	// The app's name as the mixer shows it.
+	Name string `json:"name"`
+	// True when a stream is playing now; a paused one stays listed.
+	Playing bool `json:"playing"`
+	// 0.0–1.0; the loudest of its streams.
+	// wire double
+	Volume float64 `json:"volume"`
+}
+
 // AudioDevice is auto-generated from the OpenRPC spec.
 // An audio input/output device.
 type AudioDevice struct {
@@ -3181,6 +3199,11 @@ type NativeAppVersionRequest struct {
 	BundleID string `json:"bundle_id"`
 }
 
+// NativeAppVolumesResponse is the response type for native.app_volumes.
+type NativeAppVolumesResponse struct {
+	Apps []AppVolume `json:"apps"`
+}
+
 // NativeAppWindowsRequest is the request type for native.app_windows.
 type NativeAppWindowsRequest struct {
 	BundleID string `json:"bundle_id"`
@@ -5503,6 +5526,29 @@ type NativeSetAppHiddenRequest struct {
 
 // NativeSetAppHiddenResponse is the response type for native.set_app_hidden.
 type NativeSetAppHiddenResponse struct {
+	Ok bool `json:"ok"`
+}
+
+// NativeSetAppMutedRequest is the request type for native.set_app_muted.
+type NativeSetAppMutedRequest struct {
+	App   string `json:"app"`
+	Muted bool   `json:"muted"`
+}
+
+// NativeSetAppMutedResponse is the response type for native.set_app_muted.
+type NativeSetAppMutedResponse struct {
+	Ok bool `json:"ok"`
+}
+
+// NativeSetAppVolumeRequest is the request type for native.set_app_volume.
+type NativeSetAppVolumeRequest struct {
+	App string `json:"app"`
+	// wire double
+	Volume float64 `json:"volume"`
+}
+
+// NativeSetAppVolumeResponse is the response type for native.set_app_volume.
+type NativeSetAppVolumeResponse struct {
 	Ok bool `json:"ok"`
 }
 

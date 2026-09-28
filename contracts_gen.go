@@ -101,6 +101,7 @@ const (
 	MethodNativeAppPid                        = "native.app_pid"                           // since 0.1.0
 	MethodNativeAppSupportDirectory           = "native.app_support_directory"             // since 0.1.0
 	MethodNativeAppVersion                    = "native.app_version"                       // since 0.1.0
+	MethodNativeAppVolumes                    = "native.app_volumes"                       // since 0.2.0
 	MethodNativeAppWindows                    = "native.app_windows"                       // since 0.1.0
 	MethodNativeAppWindowsCount               = "native.app_windows_count"                 // since 0.1.0
 	MethodNativeAppsForPath                   = "native.apps_for_path"                     // since 0.1.0
@@ -443,6 +444,8 @@ const (
 	MethodNativeSerialNumber                  = "native.serial_number"                     // since 0.1.0
 	MethodNativeSetAirportPower               = "native.set_airport_power"                 // since 0.1.0
 	MethodNativeSetAppHidden                  = "native.set_app_hidden"                    // since 0.1.0
+	MethodNativeSetAppMuted                   = "native.set_app_muted"                     // since 0.2.0
+	MethodNativeSetAppVolume                  = "native.set_app_volume"                    // since 0.2.0
 	MethodNativeSetAudioDevice                = "native.set_audio_device"                  // since 0.1.0
 	MethodNativeSetAudioDeviceVolume          = "native.set_audio_device_volume"           // since 0.1.0
 	MethodNativeSetAudioInputDevice           = "native.set_audio_input_device"            // since 0.1.0

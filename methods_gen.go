@@ -1461,6 +1461,18 @@ func (p *Plugin) NativeAppVersion(bundleID string) (string, error) {
 	return result, nil
 }
 
+// NativeAppVolumes list each app playing audio, with its own volume and mute, as the system mixer shows it.
+func (p *Plugin) NativeAppVolumes() ([]AppVolume, error) {
+	var result struct {
+		Apps []AppVolume `json:"apps"`
+	}
+	err := p.Call(MethodNativeAppVolumes, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Apps, nil
+}
+
 // NativeAppWindows list all windows belonging to a specific app by bundle ID.
 func (p *Plugin) NativeAppWindows(bundleID string) ([]WindowDetail, error) {
 	req := &NativeAppWindowsRequest{
@@ -5408,6 +5420,34 @@ func (p *Plugin) NativeSetAppHidden(bundleID string, hidden bool) (bool, error) 
 		Ok bool `json:"ok"`
 	}
 	err := p.Call(MethodNativeSetAppHidden, req, &result)
+	return result.Ok, err
+}
+
+// NativeSetAppMuted mute or unmute one app in the system mixer; false when the app has no audio stream.
+func (p *Plugin) NativeSetAppMuted(app string, muted bool) (bool, error) {
+	req := &NativeSetAppMutedRequest{
+		App:   app,
+		Muted: muted,
+	}
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeSetAppMuted, req, &result)
+	return result.Ok, err
+}
+
+// NativeSetAppVolume set one app's volume (0.0-1.0) in the system mixer; false when the app has no audio stream.
+//
+//   - volume: wire double
+func (p *Plugin) NativeSetAppVolume(app string, volume float64) (bool, error) {
+	req := &NativeSetAppVolumeRequest{
+		App:    app,
+		Volume: volume,
+	}
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeSetAppVolume, req, &result)
 	return result.Ok, err
 }
 
