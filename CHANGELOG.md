@@ -5,6 +5,14 @@ git history.
 
 ## Unreleased
 
+### D-Bus calls (Linux)
+
+- `NativeDbusCall(NativeDbusCallRequest)` calls one D-Bus method the plugin
+  declared in `requires.dbus.methods` and the user switched on. Linux only;
+  elsewhere the call fails with "D-Bus exists only on Linux".
+
+## 0.13.0 — 2026-09-28
+
 ### Breaking: generated methods take a request struct
 
 - Every generated method that takes parameters now takes its request struct
@@ -31,6 +39,8 @@ git history.
   nothing but its own literal text. The matcher runs the platform's topic
   conformance table (a copy ships beside the tests), so it answers exactly
   what delivery does.
+
+## 0.12.0 — 2026-09-25
 
 ### Who sent this event
 
