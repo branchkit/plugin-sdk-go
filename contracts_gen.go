@@ -138,6 +138,7 @@ const (
 	MethodNativeBoldTextEnabled               = "native.bold_text_enabled"                 // since 0.1.0
 	MethodNativeBootVolume                    = "native.boot_volume"                       // since 0.1.0
 	MethodNativeBorders                       = "native.borders"                           // since 0.1.0
+	MethodNativeBounceKeys                    = "native.bounce_keys"                       // since 0.2.0
 	MethodNativeBrightness                    = "native.brightness"                        // since 0.1.0
 	MethodNativeBundleForRemotePort           = "native.bundle_for_remote_port"            // since 0.1.0
 	MethodNativeCalendarEventsRange           = "native.calendar_events_range"             // since 0.1.0
@@ -319,6 +320,7 @@ const (
 	MethodNativeLoginItemsModern              = "native.login_items_modern"                // since 0.1.0
 	MethodNativeLowPowerMode                  = "native.low_power_mode"                    // since 0.1.0
 	MethodNativeMacAddress                    = "native.mac_address"                       // since 0.1.0
+	MethodNativeMagnifierEnabled              = "native.magnifier_enabled"                 // since 0.1.0
 	MethodNativeMaximizeWindow                = "native.maximize_window"                   // since 0.1.0
 	MethodNativeMeasurementSystem             = "native.measurement_system"                // since 0.1.0
 	MethodNativeMediaNextTrack                = "native.media_next_track"                  // since 0.1.0
@@ -335,6 +337,7 @@ const (
 	MethodNativeModelName                     = "native.model_name"                        // since 0.1.0
 	MethodNativeMountPoints                   = "native.mount_points"                      // since 0.1.0
 	MethodNativeMouseButtonClick              = "native.mouse_button_click"                // since 0.1.0
+	MethodNativeMouseKeys                     = "native.mouse_keys"                        // since 0.2.0
 	MethodNativeMouseSpeed                    = "native.mouse_speed"                       // since 0.1.0
 	MethodNativeMoveFile                      = "native.move_file"                         // since 0.1.0
 	MethodNativeMoveWindowToDisplay           = "native.move_window_to_display"            // since 0.1.0
@@ -360,6 +363,7 @@ const (
 	MethodNativeOcrScreen                     = "native.ocr_screen"                        // since 0.1.0
 	MethodNativeOcrScreenRegion               = "native.ocr_screen_region"                 // since 0.1.0
 	MethodNativeOcrWindow                     = "native.ocr_window"                        // since 0.1.0
+	MethodNativeOnScreenKeyboardEnabled       = "native.on_screen_keyboard_enabled"        // since 0.2.0
 	MethodNativeOpenAppSettings               = "native.open_app_settings"                 // since 0.1.0
 	MethodNativeOpenFinderWindow              = "native.open_finder_window"                // since 0.1.0
 	MethodNativeOpenSystemSettings            = "native.open_system_settings"              // since 0.1.0
@@ -424,6 +428,7 @@ const (
 	MethodNativeScreenCount                   = "native.screen_count"                      // since 0.1.0
 	MethodNativeScreenLock                    = "native.screen_lock"                       // since 0.1.0
 	MethodNativeScreenLocked                  = "native.screen_locked"                     // since 0.1.0
+	MethodNativeScreenReaderEnabled           = "native.screen_reader_enabled"             // since 0.1.0
 	MethodNativeScreenResolution              = "native.screen_resolution"                 // since 0.1.0
 	MethodNativeScreenSaverAskPassword        = "native.screen_saver_ask_password"         // since 0.1.0
 	MethodNativeScreenSaverDelay              = "native.screen_saver_delay"                // since 0.1.0
@@ -452,6 +457,7 @@ const (
 	MethodNativeSetAudioOutputDevice          = "native.set_audio_output_device"           // since 0.1.0
 	MethodNativeSetAutoRearrangeSpaces        = "native.set_auto_rearrange_spaces"         // since 0.1.0
 	MethodNativeSetBluetoothPower             = "native.set_bluetooth_power"               // since 0.1.0
+	MethodNativeSetBounceKeys                 = "native.set_bounce_keys"                   // since 0.2.0
 	MethodNativeSetBrightness                 = "native.set_brightness"                    // since 0.1.0
 	MethodNativeSetComputerName               = "native.set_computer_name"                 // since 0.1.0
 	MethodNativeSetDarkMode                   = "native.set_dark_mode"                     // since 0.1.0
@@ -472,16 +478,23 @@ const (
 	MethodNativeSetInputSource                = "native.set_input_source"                  // since 0.1.0
 	MethodNativeSetKeyRepeatDelay             = "native.set_key_repeat_delay"              // since 0.1.0
 	MethodNativeSetKeyRepeatRate              = "native.set_key_repeat_rate"               // since 0.1.0
+	MethodNativeSetMagnifierEnabled           = "native.set_magnifier_enabled"             // since 0.2.0
 	MethodNativeSetMenuBarAutoHide            = "native.set_menu_bar_auto_hide"            // since 0.1.0
+	MethodNativeSetMouseKeys                  = "native.set_mouse_keys"                    // since 0.2.0
 	MethodNativeSetMouseSpeed                 = "native.set_mouse_speed"                   // since 0.1.0
 	MethodNativeSetNightShift                 = "native.set_night_shift"                   // since 0.1.0
+	MethodNativeSetOnScreenKeyboardEnabled    = "native.set_on_screen_keyboard_enabled"    // since 0.2.0
+	MethodNativeSetScreenReaderEnabled        = "native.set_screen_reader_enabled"         // since 0.2.0
 	MethodNativeSetScreenshotFormat           = "native.set_screenshot_format"             // since 0.1.0
 	MethodNativeSetScreenshotIncludeShadow    = "native.set_screenshot_include_shadow"     // since 0.1.0
 	MethodNativeSetScreenshotLocation         = "native.set_screenshot_location"           // since 0.1.0
 	MethodNativeSetScrollDirectionNatural     = "native.set_scroll_direction_natural"      // since 0.1.0
 	MethodNativeSetSidebarIconSize            = "native.set_sidebar_icon_size"             // since 0.1.0
+	MethodNativeSetSlowKeys                   = "native.set_slow_keys"                     // since 0.2.0
 	MethodNativeSetStageManager               = "native.set_stage_manager"                 // since 0.1.0
+	MethodNativeSetStickyKeys                 = "native.set_sticky_keys"                   // since 0.2.0
 	MethodNativeSetTapToClick                 = "native.set_tap_to_click"                  // since 0.1.0
+	MethodNativeSetTextScale                  = "native.set_text_scale"                    // since 0.2.0
 	MethodNativeSetTrackpadSpeed              = "native.set_trackpad_speed"                // since 0.1.0
 	MethodNativeSetUrlSchemeHandler           = "native.set_url_scheme_handler"            // since 0.1.0
 	MethodNativeSetVolume                     = "native.set_volume"                        // since 0.1.0
@@ -530,6 +543,7 @@ const (
 	MethodNativeTempDirectory                 = "native.temp_directory"                    // since 0.1.0
 	MethodNativeTemperatureUnit               = "native.temperature_unit"                  // since 0.1.0
 	MethodNativeTextReplacements              = "native.text_replacements"                 // since 0.1.0
+	MethodNativeTextScale                     = "native.text_scale"                        // since 0.2.0
 	MethodNativeThermalState                  = "native.thermal_state"                     // since 0.1.0
 	MethodNativeThreeFingerDrag               = "native.three_finger_drag"                 // since 0.1.0
 	MethodNativeThunderboltDevices            = "native.thunderbolt_devices"               // since 0.1.0
@@ -557,7 +571,6 @@ const (
 	MethodNativeUserAvatar                    = "native.user_avatar"                       // since 0.1.0
 	MethodNativeUserName                      = "native.user_name"                         // since 0.1.0
 	MethodNativeUserShell                     = "native.user_shell"                        // since 0.1.0
-	MethodNativeVoiceoverEnabled              = "native.voiceover_enabled"                 // since 0.1.0
 	MethodNativeVolume                        = "native.volume"                            // since 0.1.0
 	MethodNativeVpnStatus                     = "native.vpn_status"                        // since 0.1.0
 	MethodNativeWarpCursor                    = "native.warp_cursor"                       // since 0.1.0
@@ -578,7 +591,6 @@ const (
 	MethodNativeXcodePath                     = "native.xcode_path"                        // since 0.1.0
 	MethodNativeXcodeVersion                  = "native.xcode_version"                     // since 0.1.0
 	MethodNativeZip                           = "native.zip"                               // since 0.1.0
-	MethodNativeZoomEnabled                   = "native.zoom_enabled"                      // since 0.1.0
 	MethodNetworkRequestHost                  = "network.request_host"                     // since 0.2.0
 	MethodOutputClear                         = "output.clear"                             // since 0.1.0
 	MethodOutputState                         = "output.state"                             // since 0.1.0

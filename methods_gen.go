@@ -1960,6 +1960,16 @@ func (p *Plugin) NativeBorders(frames []WindowFrame) error {
 	return p.Call(MethodNativeBorders, req, nil)
 }
 
+// NativeBounceKeys check if Bounce Keys is on (repeated presses of one key are ignored).
+func (p *Plugin) NativeBounceKeys() (*NativeBounceKeysResponse, error) {
+	var result NativeBounceKeysResponse
+	err := p.Call(MethodNativeBounceKeys, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // NativeBrightness get display brightness (0.0-1.0).
 //
 //   - displayID: wire uint32 · default null · min 0
@@ -4014,6 +4024,16 @@ func (p *Plugin) NativeMacAddress() (*NativeMacAddressResponse, error) {
 	return &result, nil
 }
 
+// NativeMagnifierEnabled check if the screen magnifier is on (Zoom, the GNOME magnifier, Magnifier).
+func (p *Plugin) NativeMagnifierEnabled() (*NativeMagnifierEnabledResponse, error) {
+	var result NativeMagnifierEnabledResponse
+	err := p.Call(MethodNativeMagnifierEnabled, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // NativeMaximizeWindow maximize window to fill screen.
 func (p *Plugin) NativeMaximizeWindow(windowID string) (bool, error) {
 	req := &NativeMaximizeWindowRequest{
@@ -4170,6 +4190,16 @@ func (p *Plugin) NativeMouseButtonClick(button int, x *int, y *int) error {
 		Y:      y,
 	}
 	return p.Call(MethodNativeMouseButtonClick, req, nil)
+}
+
+// NativeMouseKeys check if Mouse Keys is on (the numeric keypad moves the pointer).
+func (p *Plugin) NativeMouseKeys() (*NativeMouseKeysResponse, error) {
+	var result NativeMouseKeysResponse
+	err := p.Call(MethodNativeMouseKeys, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
 }
 
 // NativeMouseSpeed get the mouse tracking speed (0.0-3.0).
@@ -4478,6 +4508,16 @@ func (p *Plugin) NativeOcrWindow(windowID int) ([]OcrRegion, error) {
 		return nil, err
 	}
 	return result.Regions, nil
+}
+
+// NativeOnScreenKeyboardEnabled check if the on-screen keyboard is on.
+func (p *Plugin) NativeOnScreenKeyboardEnabled() (*NativeOnScreenKeyboardEnabledResponse, error) {
+	var result NativeOnScreenKeyboardEnabledResponse
+	err := p.Call(MethodNativeOnScreenKeyboardEnabled, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
 }
 
 // NativeOpenAppSettings open an app's preferences window.
@@ -5208,6 +5248,16 @@ func (p *Plugin) NativeScreenLocked() (*NativeScreenLockedResponse, error) {
 	return &result, nil
 }
 
+// NativeScreenReaderEnabled check if the screen reader is on (VoiceOver, Orca, Narrator).
+func (p *Plugin) NativeScreenReaderEnabled() (*NativeScreenReaderEnabledResponse, error) {
+	var result NativeScreenReaderEnabledResponse
+	err := p.Call(MethodNativeScreenReaderEnabled, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // NativeScreenResolution get primary display resolution as 'WxH'.
 func (p *Plugin) NativeScreenResolution() (*NativeScreenResolutionResponse, error) {
 	var result NativeScreenResolutionResponse
@@ -5521,6 +5571,18 @@ func (p *Plugin) NativeSetBluetoothPower(on bool) (bool, error) {
 	return result.Ok, err
 }
 
+// NativeSetBounceKeys turn Bounce Keys on or off (repeated presses of one key are ignored).
+func (p *Plugin) NativeSetBounceKeys(enabled bool) (bool, error) {
+	req := &NativeSetBounceKeysRequest{
+		Enabled: enabled,
+	}
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeSetBounceKeys, req, &result)
+	return result.Ok, err
+}
+
 // NativeSetBrightness set display brightness (0.0-1.0).
 //
 //   - brightness: wire double
@@ -5766,6 +5828,18 @@ func (p *Plugin) NativeSetKeyRepeatRate(rate float64) (bool, error) {
 	return result.Ok, err
 }
 
+// NativeSetMagnifierEnabled turn the screen magnifier on or off; false when it did not change.
+func (p *Plugin) NativeSetMagnifierEnabled(enabled bool) (bool, error) {
+	req := &NativeSetMagnifierEnabledRequest{
+		Enabled: enabled,
+	}
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeSetMagnifierEnabled, req, &result)
+	return result.Ok, err
+}
+
 // NativeSetMenuBarAutoHide enable or disable menu bar auto-hide. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeSetMenuBarAutoHide(enabled bool) (bool, error) {
 	req := &NativeSetMenuBarAutoHideRequest{
@@ -5775,6 +5849,18 @@ func (p *Plugin) NativeSetMenuBarAutoHide(enabled bool) (bool, error) {
 		Ok bool `json:"ok"`
 	}
 	err := p.Call(MethodNativeSetMenuBarAutoHide, req, &result)
+	return result.Ok, err
+}
+
+// NativeSetMouseKeys turn Mouse Keys on or off (the numeric keypad moves the pointer).
+func (p *Plugin) NativeSetMouseKeys(enabled bool) (bool, error) {
+	req := &NativeSetMouseKeysRequest{
+		Enabled: enabled,
+	}
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeSetMouseKeys, req, &result)
 	return result.Ok, err
 }
 
@@ -5798,6 +5884,30 @@ func (p *Plugin) NativeSetNightShift(enabled bool) error {
 		Enabled: enabled,
 	}
 	return p.Call(MethodNativeSetNightShift, req, nil)
+}
+
+// NativeSetOnScreenKeyboardEnabled show or hide the on-screen keyboard; false when it did not change.
+func (p *Plugin) NativeSetOnScreenKeyboardEnabled(enabled bool) (bool, error) {
+	req := &NativeSetOnScreenKeyboardEnabledRequest{
+		Enabled: enabled,
+	}
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeSetOnScreenKeyboardEnabled, req, &result)
+	return result.Ok, err
+}
+
+// NativeSetScreenReaderEnabled turn the screen reader on or off (VoiceOver, Orca, Narrator); false when it did not change.
+func (p *Plugin) NativeSetScreenReaderEnabled(enabled bool) (bool, error) {
+	req := &NativeSetScreenReaderEnabledRequest{
+		Enabled: enabled,
+	}
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeSetScreenReaderEnabled, req, &result)
+	return result.Ok, err
 }
 
 // NativeSetScreenshotFormat set screenshot file format (png/jpg/pdf/tiff). Exists only on macOS; elsewhere it is refused with platform_no_analogue.
@@ -5862,6 +5972,18 @@ func (p *Plugin) NativeSetSidebarIconSize(size int) (bool, error) {
 	return result.Ok, err
 }
 
+// NativeSetSlowKeys turn Slow Keys on or off (a key registers only after it is held).
+func (p *Plugin) NativeSetSlowKeys(enabled bool) (bool, error) {
+	req := &NativeSetSlowKeysRequest{
+		Enabled: enabled,
+	}
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeSetSlowKeys, req, &result)
+	return result.Ok, err
+}
+
 // NativeSetStageManager enable or disable Stage Manager. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeSetStageManager(enabled bool) (bool, error) {
 	req := &NativeSetStageManagerRequest{
@@ -5874,6 +5996,18 @@ func (p *Plugin) NativeSetStageManager(enabled bool) (bool, error) {
 	return result.Ok, err
 }
 
+// NativeSetStickyKeys turn Sticky Keys on or off (modifiers latch, so shortcuts need one key at a time).
+func (p *Plugin) NativeSetStickyKeys(enabled bool) (bool, error) {
+	req := &NativeSetStickyKeysRequest{
+		Enabled: enabled,
+	}
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeSetStickyKeys, req, &result)
+	return result.Ok, err
+}
+
 // NativeSetTapToClick enable or disable tap-to-click.
 func (p *Plugin) NativeSetTapToClick(enabled bool) (bool, error) {
 	req := &NativeSetTapToClickRequest{
@@ -5883,6 +6017,20 @@ func (p *Plugin) NativeSetTapToClick(enabled bool) (bool, error) {
 		Ok bool `json:"ok"`
 	}
 	err := p.Call(MethodNativeSetTapToClick, req, &result)
+	return result.Ok, err
+}
+
+// NativeSetTextScale set the system text size as a factor of the default (1.0); false when refused.
+//
+//   - scale: wire double
+func (p *Plugin) NativeSetTextScale(scale float64) (bool, error) {
+	req := &NativeSetTextScaleRequest{
+		Scale: scale,
+	}
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeSetTextScale, req, &result)
 	return result.Ok, err
 }
 
@@ -6404,6 +6552,16 @@ func (p *Plugin) NativeTextReplacements() (*NativeTextReplacementsResponse, erro
 	return &result, nil
 }
 
+// NativeTextScale get the system text size as a factor of the default (1.0).
+func (p *Plugin) NativeTextScale() (float64, error) {
+	var result float64
+	err := p.Call(MethodNativeTextScale, nil, &result)
+	if err != nil {
+		return 0, err
+	}
+	return result, nil
+}
+
 // NativeThermalState get coarse CPU throttling state from `pmset -g therm`. NOT ProcessInfo.thermalState — for the four-level nominal/fair/serious/critical reading, subscribe to _platform.thermal.changed. Returns one of: nominal, throttled.
 func (p *Plugin) NativeThermalState() (*NativeThermalStateResponse, error) {
 	var result NativeThermalStateResponse
@@ -6689,16 +6847,6 @@ func (p *Plugin) NativeUserShell() (*NativeUserShellResponse, error) {
 	return &result, nil
 }
 
-// NativeVoiceoverEnabled check if VoiceOver is enabled.
-func (p *Plugin) NativeVoiceoverEnabled() (*NativeVoiceoverEnabledResponse, error) {
-	var result NativeVoiceoverEnabledResponse
-	err := p.Call(MethodNativeVoiceoverEnabled, nil, &result)
-	if err != nil {
-		return nil, err
-	}
-	return &result, nil
-}
-
 // NativeVolume get system volume and mute state.
 func (p *Plugin) NativeVolume() (*NativeVolumeResponse, error) {
 	var result NativeVolumeResponse
@@ -6946,16 +7094,6 @@ func (p *Plugin) NativeZip(destination string, source string) (bool, error) {
 	}
 	err := p.Call(MethodNativeZip, req, &result)
 	return result.Ok, err
-}
-
-// NativeZoomEnabled check if Zoom accessibility is enabled.
-func (p *Plugin) NativeZoomEnabled() (*NativeZoomEnabledResponse, error) {
-	var result NativeZoomEnabledResponse
-	err := p.Call(MethodNativeZoomEnabled, nil, &result)
-	if err != nil {
-		return nil, err
-	}
-	return &result, nil
 }
 
 // NetworkRequestHost ask for one more network host at runtime (a plugin declaring requestable hosts). It appears on the plugin's page, off until the user allows it.

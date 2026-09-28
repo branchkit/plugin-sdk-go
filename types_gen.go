@@ -3541,6 +3541,11 @@ type NativeBordersRequest struct {
 	Frames []WindowFrame `json:"frames,omitempty"`
 }
 
+// NativeBounceKeysResponse is the response type for native.bounce_keys.
+type NativeBounceKeysResponse struct {
+	Enabled bool `json:"enabled"`
+}
+
 // NativeBrightnessRequest is the request type for native.brightness.
 type NativeBrightnessRequest struct {
 	// wire uint32 · default null · min 0
@@ -4731,6 +4736,11 @@ type NativeMacAddressResponse struct {
 	Value string `json:"value"`
 }
 
+// NativeMagnifierEnabledResponse is the response type for native.magnifier_enabled.
+type NativeMagnifierEnabledResponse struct {
+	Enabled bool `json:"enabled"`
+}
+
 // NativeMaximizeWindowRequest is the request type for native.maximize_window.
 type NativeMaximizeWindowRequest struct {
 	WindowID string `json:"window_id"`
@@ -4810,6 +4820,11 @@ type NativeMouseButtonClickRequest struct {
 	X *int `json:"x,omitempty"`
 	// wire int32 · default null
 	Y *int `json:"y,omitempty"`
+}
+
+// NativeMouseKeysResponse is the response type for native.mouse_keys.
+type NativeMouseKeysResponse struct {
+	Enabled bool `json:"enabled"`
 }
 
 // NativeMoveFileRequest is the request type for native.move_file.
@@ -4990,6 +5005,11 @@ type NativeOcrWindowRequest struct {
 // NativeOcrWindowResponse is the response type for native.ocr_window.
 type NativeOcrWindowResponse struct {
 	Regions []OcrRegion `json:"regions"`
+}
+
+// NativeOnScreenKeyboardEnabledResponse is the response type for native.on_screen_keyboard_enabled.
+type NativeOnScreenKeyboardEnabledResponse struct {
+	Enabled bool `json:"enabled"`
 }
 
 // NativeOpenAppSettingsRequest is the request type for native.open_app_settings.
@@ -5411,6 +5431,11 @@ type NativeScreenLockedResponse struct {
 	Enabled bool `json:"enabled"`
 }
 
+// NativeScreenReaderEnabledResponse is the response type for native.screen_reader_enabled.
+type NativeScreenReaderEnabledResponse struct {
+	Enabled bool `json:"enabled"`
+}
+
 // NativeScreenResolutionResponse is the response type for native.screen_resolution.
 type NativeScreenResolutionResponse struct {
 	Value string `json:"value"`
@@ -5603,6 +5628,16 @@ type NativeSetBluetoothPowerRequest struct {
 
 // NativeSetBluetoothPowerResponse is the response type for native.set_bluetooth_power.
 type NativeSetBluetoothPowerResponse struct {
+	Ok bool `json:"ok"`
+}
+
+// NativeSetBounceKeysRequest is the request type for native.set_bounce_keys.
+type NativeSetBounceKeysRequest struct {
+	Enabled bool `json:"enabled"`
+}
+
+// NativeSetBounceKeysResponse is the response type for native.set_bounce_keys.
+type NativeSetBounceKeysResponse struct {
 	Ok bool `json:"ok"`
 }
 
@@ -5803,6 +5838,16 @@ type NativeSetKeyRepeatRateResponse struct {
 	Ok bool `json:"ok"`
 }
 
+// NativeSetMagnifierEnabledRequest is the request type for native.set_magnifier_enabled.
+type NativeSetMagnifierEnabledRequest struct {
+	Enabled bool `json:"enabled"`
+}
+
+// NativeSetMagnifierEnabledResponse is the response type for native.set_magnifier_enabled.
+type NativeSetMagnifierEnabledResponse struct {
+	Ok bool `json:"ok"`
+}
+
 // NativeSetMenuBarAutoHideRequest is the request type for native.set_menu_bar_auto_hide.
 type NativeSetMenuBarAutoHideRequest struct {
 	Enabled bool `json:"enabled"`
@@ -5810,6 +5855,16 @@ type NativeSetMenuBarAutoHideRequest struct {
 
 // NativeSetMenuBarAutoHideResponse is the response type for native.set_menu_bar_auto_hide.
 type NativeSetMenuBarAutoHideResponse struct {
+	Ok bool `json:"ok"`
+}
+
+// NativeSetMouseKeysRequest is the request type for native.set_mouse_keys.
+type NativeSetMouseKeysRequest struct {
+	Enabled bool `json:"enabled"`
+}
+
+// NativeSetMouseKeysResponse is the response type for native.set_mouse_keys.
+type NativeSetMouseKeysResponse struct {
 	Ok bool `json:"ok"`
 }
 
@@ -5827,6 +5882,26 @@ type NativeSetMouseSpeedResponse struct {
 // NativeSetNightShiftRequest is the request type for native.set_night_shift.
 type NativeSetNightShiftRequest struct {
 	Enabled bool `json:"enabled"`
+}
+
+// NativeSetOnScreenKeyboardEnabledRequest is the request type for native.set_on_screen_keyboard_enabled.
+type NativeSetOnScreenKeyboardEnabledRequest struct {
+	Enabled bool `json:"enabled"`
+}
+
+// NativeSetOnScreenKeyboardEnabledResponse is the response type for native.set_on_screen_keyboard_enabled.
+type NativeSetOnScreenKeyboardEnabledResponse struct {
+	Ok bool `json:"ok"`
+}
+
+// NativeSetScreenReaderEnabledRequest is the request type for native.set_screen_reader_enabled.
+type NativeSetScreenReaderEnabledRequest struct {
+	Enabled bool `json:"enabled"`
+}
+
+// NativeSetScreenReaderEnabledResponse is the response type for native.set_screen_reader_enabled.
+type NativeSetScreenReaderEnabledResponse struct {
+	Ok bool `json:"ok"`
 }
 
 // NativeSetScreenshotFormatRequest is the request type for native.set_screenshot_format.
@@ -5880,6 +5955,16 @@ type NativeSetSidebarIconSizeResponse struct {
 	Ok bool `json:"ok"`
 }
 
+// NativeSetSlowKeysRequest is the request type for native.set_slow_keys.
+type NativeSetSlowKeysRequest struct {
+	Enabled bool `json:"enabled"`
+}
+
+// NativeSetSlowKeysResponse is the response type for native.set_slow_keys.
+type NativeSetSlowKeysResponse struct {
+	Ok bool `json:"ok"`
+}
+
 // NativeSetStageManagerRequest is the request type for native.set_stage_manager.
 type NativeSetStageManagerRequest struct {
 	Enabled bool `json:"enabled"`
@@ -5890,6 +5975,16 @@ type NativeSetStageManagerResponse struct {
 	Ok bool `json:"ok"`
 }
 
+// NativeSetStickyKeysRequest is the request type for native.set_sticky_keys.
+type NativeSetStickyKeysRequest struct {
+	Enabled bool `json:"enabled"`
+}
+
+// NativeSetStickyKeysResponse is the response type for native.set_sticky_keys.
+type NativeSetStickyKeysResponse struct {
+	Ok bool `json:"ok"`
+}
+
 // NativeSetTapToClickRequest is the request type for native.set_tap_to_click.
 type NativeSetTapToClickRequest struct {
 	Enabled bool `json:"enabled"`
@@ -5897,6 +5992,17 @@ type NativeSetTapToClickRequest struct {
 
 // NativeSetTapToClickResponse is the response type for native.set_tap_to_click.
 type NativeSetTapToClickResponse struct {
+	Ok bool `json:"ok"`
+}
+
+// NativeSetTextScaleRequest is the request type for native.set_text_scale.
+type NativeSetTextScaleRequest struct {
+	// wire double
+	Scale float64 `json:"scale"`
+}
+
+// NativeSetTextScaleResponse is the response type for native.set_text_scale.
+type NativeSetTextScaleResponse struct {
 	Ok bool `json:"ok"`
 }
 
@@ -6382,11 +6488,6 @@ type NativeUserShellResponse struct {
 	Shell string `json:"shell"`
 }
 
-// NativeVoiceoverEnabledResponse is the response type for native.voiceover_enabled.
-type NativeVoiceoverEnabledResponse struct {
-	Enabled bool `json:"enabled"`
-}
-
 // NativeVolumeResponse is the response type for native.volume.
 type NativeVolumeResponse struct {
 	IsMuted bool `json:"is_muted"`
@@ -6534,11 +6635,6 @@ type NativeZipRequest struct {
 // NativeZipResponse is the response type for native.zip.
 type NativeZipResponse struct {
 	Ok bool `json:"ok"`
-}
-
-// NativeZoomEnabledResponse is the response type for native.zoom_enabled.
-type NativeZoomEnabledResponse struct {
-	Enabled bool `json:"enabled"`
 }
 
 // NetworkRequestHostRequest is the request type for network.request_host.
