@@ -1609,7 +1609,17 @@ func (p *Plugin) NativeDbusCall(req NativeDbusCallRequest) (*NativeDbusCallRespo
 	return &result, nil
 }
 
-// NativeDefaultAppForUti get the default application for a UTI.
+// NativeDefaultAppForMimeType get the application that opens files of a MIME type by default, by the identity the app operations use.
+func (p *Plugin) NativeDefaultAppForMimeType(req NativeDefaultAppForMimeTypeRequest) (*NativeDefaultAppForMimeTypeResponse, error) {
+	var result NativeDefaultAppForMimeTypeResponse
+	err := p.Call(MethodNativeDefaultAppForMimeType, &req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeDefaultAppForUti get the default application for a UTI. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeDefaultAppForUti(req NativeDefaultAppForUtiRequest) (*NativeDefaultAppForUtiResponse, error) {
 	var result NativeDefaultAppForUtiResponse
 	err := p.Call(MethodNativeDefaultAppForUti, &req, &result)
@@ -2141,6 +2151,16 @@ func (p *Plugin) NativeFileMetadata(req NativeFileMetadataRequest) (*NativeFileM
 	return &result, nil
 }
 
+// NativeFileMimeType get a file's MIME type (text/plain, image/png), the file-type name every OS shares.
+func (p *Plugin) NativeFileMimeType(req NativeFileMimeTypeRequest) (string, error) {
+	var result string
+	err := p.Call(MethodNativeFileMimeType, &req, &result)
+	if err != nil {
+		return "", err
+	}
+	return result, nil
+}
+
 // NativeFileModificationDate get file modification date as ISO string.
 func (p *Plugin) NativeFileModificationDate(req NativeFileModificationDateRequest) (string, error) {
 	var result string
@@ -2201,7 +2221,7 @@ func (p *Plugin) NativeFileTags(req NativeFileTagsRequest) (json.RawMessage, err
 	return result, nil
 }
 
-// NativeFileType get the UTI type of a file.
+// NativeFileType get the UTI type of a file. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeFileType(req NativeFileTypeRequest) (*NativeFileTypeResponse, error) {
 	var result NativeFileTypeResponse
 	err := p.Call(MethodNativeFileType, &req, &result)
@@ -2211,7 +2231,7 @@ func (p *Plugin) NativeFileType(req NativeFileTypeRequest) (*NativeFileTypeRespo
 	return &result, nil
 }
 
-// NativeFileUti get the UTI (Uniform Type Identifier) for a file.
+// NativeFileUti get the UTI (Uniform Type Identifier) for a file. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeFileUti(req NativeFileUtiRequest) (string, error) {
 	var result string
 	err := p.Call(MethodNativeFileUti, &req, &result)

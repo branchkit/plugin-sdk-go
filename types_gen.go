@@ -3950,6 +3950,16 @@ type NativeDbusCallResponse struct {
 	Values []json.RawMessage `json:"values"`
 }
 
+// NativeDefaultAppForMimeTypeRequest is the request type for native.default_app_for_mime_type.
+type NativeDefaultAppForMimeTypeRequest struct {
+	MimeType string `json:"mime_type"`
+}
+
+// NativeDefaultAppForMimeTypeResponse is the response type for native.default_app_for_mime_type.
+type NativeDefaultAppForMimeTypeResponse struct {
+	App string `json:"app"`
+}
+
 // NativeDefaultAppForUtiRequest is the request type for native.default_app_for_uti.
 type NativeDefaultAppForUtiRequest struct {
 	Uti string `json:"uti"`
@@ -4281,6 +4291,11 @@ type NativeFileMetadataResponse struct {
 	Readonly bool `json:"readonly"`
 	// wire uint64 (64-bit) · min 0
 	Size int `json:"size"`
+}
+
+// NativeFileMimeTypeRequest is the request type for native.file_mime_type.
+type NativeFileMimeTypeRequest struct {
+	Path string `json:"path"`
 }
 
 // NativeFileModificationDateRequest is the request type for native.file_modification_date.

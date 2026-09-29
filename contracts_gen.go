@@ -179,6 +179,7 @@ const (
 	MethodNativeDarkMode                      = "native.dark_mode"                         // since 0.1.0
 	MethodNativeDateFormat                    = "native.date_format"                       // since 0.1.0
 	MethodNativeDbusCall                      = "native.dbus_call"                         // since 0.2.0
+	MethodNativeDefaultAppForMimeType         = "native.default_app_for_mime_type"         // since 0.2.0
 	MethodNativeDefaultAppForUti              = "native.default_app_for_uti"               // since 0.1.0
 	MethodNativeDefaultBrowser                = "native.default_browser"                   // since 0.1.0
 	MethodNativeDefaultEmailClient            = "native.default_email_client"              // since 0.1.0
@@ -231,6 +232,7 @@ const (
 	MethodNativeFileExtendedAttributes        = "native.file_extended_attributes"          // since 0.1.0
 	MethodNativeFileHash                      = "native.file_hash"                         // since 0.1.0
 	MethodNativeFileMetadata                  = "native.file_metadata"                     // since 0.1.0
+	MethodNativeFileMimeType                  = "native.file_mime_type"                    // since 0.2.0
 	MethodNativeFileModificationDate          = "native.file_modification_date"            // since 0.1.0
 	MethodNativeFileOwner                     = "native.file_owner"                        // since 0.1.0
 	MethodNativeFileQuarantine                = "native.file_quarantine"                   // since 0.1.0
