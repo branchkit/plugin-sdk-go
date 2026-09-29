@@ -5653,6 +5653,24 @@ func (p *Plugin) OutputState(req OutputStateRequest) (*OutputStateResponse, erro
 	return &result, nil
 }
 
+// OverlayClear remove the caller's overlay of that id.
+func (p *Plugin) OverlayClear(req OverlayClearRequest) (bool, error) {
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodOverlayClear, &req, &result)
+	return result.Ok, err
+}
+
+// OverlayShow draw shapes over the screen (outlines, fills, circles, a countdown ring; never text), replacing the caller's overlay of that id.
+func (p *Plugin) OverlayShow(req OverlayShowRequest) (bool, error) {
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodOverlayShow, &req, &result)
+	return result.Ok, err
+}
+
 // OverridesApply add, remove, restore, patch, rename, revert (reset one entry to its plugin default), or reset user overrides for a collection.
 func (p *Plugin) OverridesApply(req OverridesApplyRequest) (*OverridesApplyResponse, error) {
 	var result OverridesApplyResponse

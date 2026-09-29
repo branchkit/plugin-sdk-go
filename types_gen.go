@@ -1682,6 +1682,46 @@ type SettingsTagSchemaInfo struct {
 	SourcePlugin string `json:"source_plugin"`
 }
 
+// Shape is auto-generated from the OpenRPC spec.
+// One shape.
+//
+// Exactly one variant applies, selected by Kind; the other variants' fields are ignored.
+type Shape struct {
+	Kind          ShapeKind `json:"kind"`
+	Color         *string   `json:"color,omitempty"`          // Kind == ShapeKindRect | ShapeKindFill | ShapeKindCircle | ShapeKindRing
+	CornerRadius  *float64  `json:"corner_radius,omitempty"`  // Kind == ShapeKindRect | ShapeKindFill
+	Height        *float64  `json:"height,omitempty"`         // Kind == ShapeKindRect | ShapeKindFill
+	Stroke        *float64  `json:"stroke,omitempty"`         // Kind == ShapeKindRect | ShapeKindCircle | ShapeKindRing
+	Width         *float64  `json:"width,omitempty"`          // Kind == ShapeKindRect | ShapeKindFill
+	X             *float64  `json:"x,omitempty"`              // Kind == ShapeKindRect | ShapeKindFill
+	Y             *float64  `json:"y,omitempty"`              // Kind == ShapeKindRect | ShapeKindFill
+	Cx            *float64  `json:"cx,omitempty"`             // Kind == ShapeKindCircle | ShapeKindRing
+	Cy            *float64  `json:"cy,omitempty"`             // Kind == ShapeKindCircle | ShapeKindRing
+	Radius        *float64  `json:"radius,omitempty"`         // Kind == ShapeKindCircle | ShapeKindRing
+	DurationMs    *int      `json:"duration_ms,omitempty"`    // Kind == ShapeKindRing
+	FollowPointer *bool     `json:"follow_pointer,omitempty"` // Kind == ShapeKindRing
+}
+
+// ShapeKind selects the variant of Shape.
+type ShapeKind string
+
+const (
+	// A rectangle's outline (`stroke` wide, drawn inside the rectangle),
+	// with rounded corners when `radius` is set: a window border, a target.
+	ShapeKindRect ShapeKind = "rect"
+	// A filled rectangle: a highlight or a dimmed region. Use a colour
+	// with alpha (`#RRGGBB40`) to leave what is under it readable.
+	ShapeKindFill ShapeKind = "fill"
+	// A circle, outlined when `stroke` is set, filled otherwise.
+	ShapeKindCircle ShapeKind = "circle"
+	// A ring that fills clockwise from twelve o'clock over `duration_ms`,
+	// over a faint track: a dwell click's countdown. With
+	// `follow_pointer`, the host keeps it centred on the pointer and
+	// `cx` / `cy` are ignored (send 0). It stays full when the time is up,
+	// until the overlay is cleared or replaced.
+	ShapeKindRing ShapeKind = "ring"
+)
+
 // ShortcutInfo is auto-generated from the OpenRPC spec.
 type ShortcutInfo struct {
 	Folder *string `json:"folder,omitempty"`
@@ -6818,6 +6858,34 @@ type OutputStateResponse struct {
 	// phrase, items) rather than only its progress, footer or urgency.
 	MeaningChanged bool `json:"meaning_changed"`
 	Ok             bool `json:"ok"`
+}
+
+// OverlayClearRequest is the request type for overlay.clear.
+type OverlayClearRequest struct {
+	// The overlay to remove; nothing happens if it is not showing.
+	ID string `json:"id"`
+}
+
+// OverlayClearResponse is the response type for overlay.clear.
+type OverlayClearResponse struct {
+	Ok bool `json:"ok"`
+}
+
+// OverlayShowRequest is the request type for overlay.show.
+type OverlayShowRequest struct {
+	// The caller's name for this overlay (letters, digits, `_`, `-`, `.`;
+	// up to 64). Showing it again replaces its shapes. Overlays are kept
+	// per caller, so one plugin cannot replace or clear another's.
+	ID string `json:"id"`
+	// Up to 64 shapes: outlines, fills, circles and a countdown ring. No
+	// text or images: nothing drawn can pass for a prompt. An empty list
+	// clears the overlay.
+	Shapes []Shape `json:"shapes"`
+}
+
+// OverlayShowResponse is the response type for overlay.show.
+type OverlayShowResponse struct {
+	Ok bool `json:"ok"`
 }
 
 // OverridesApplyRequest is the request type for overrides.apply.

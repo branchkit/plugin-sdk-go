@@ -604,6 +604,8 @@ const (
 	MethodNetworkRequestHost                  = "network.request_host"                     // since 0.2.0
 	MethodOutputClear                         = "output.clear"                             // since 0.1.0
 	MethodOutputState                         = "output.state"                             // since 0.1.0
+	MethodOverlayClear                        = "overlay.clear"                            // since 0.2.0
+	MethodOverlayShow                         = "overlay.show"                             // since 0.2.0
 	MethodOverridesApply                      = "overrides.apply"                          // stable, since 0.1.0
 	MethodOverridesList                       = "overrides.list"                           // since 0.1.0
 	MethodPipelinesGrammar                    = "pipelines.grammar"                        // since 0.1.0
