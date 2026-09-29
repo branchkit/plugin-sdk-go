@@ -2050,6 +2050,7 @@ type ActionsListResponse struct {
 
 // ArtifactDeleteRequest is the request type for artifact.delete.
 type ArtifactDeleteRequest struct {
+	// non-empty
 	Ref string `json:"ref"`
 }
 
@@ -2066,6 +2067,7 @@ type BlobPublishRequest struct {
 	// wire uint64 (64-bit) · min 0
 	Length int `json:"length"`
 	// The blob's name, as declared in this plugin's `provides.blobs`.
+	// non-empty
 	Name string `json:"name"`
 	// Start a new generation instead of appending to the current one — the
 	// way a provider shrinks. A new generation is a NEW backing file, so
@@ -2107,6 +2109,7 @@ type BlobPublishResponse struct {
 // BlobStateRequest is the request type for blob.state.
 type BlobStateRequest struct {
 	// The blob's name, as its provider declared it in `provides.blobs`.
+	// non-empty
 	Name string `json:"name"`
 	// The providing plugin. Omitted: the caller's own blob. Another
 	// plugin's blob is answerable only to a consumer granted to read it.
@@ -2131,6 +2134,7 @@ type BlobStateResponse struct {
 // CollectionAppendRequest is the request type for collection.append.
 type CollectionAppendRequest struct {
 	// Collection name. Must be a `kind: "log"` collection.
+	// non-empty
 	Name string `json:"name"`
 	// Entry payload — validated against the collection's `fields` schema.
 	Payload json.RawMessage `json:"payload"`
@@ -2147,9 +2151,11 @@ type CollectionAppendKeyedRequest struct {
 	// The fold key — stamped into the payload's key field. Appending another
 	// record with the same key annotates the first (compacted-changelog
 	// shape); a compacted read folds them into one record.
+	// non-empty
 	Key string `json:"key"`
 	// Collection name. Must be a keyed (`id_strategy: by_field`) `log`
 	// collection.
+	// non-empty
 	Name string `json:"name"`
 	// Entry payload — validated against the collection's `fields` schema (the
 	// key field is supplied via `key`, not here).
@@ -2164,6 +2170,7 @@ type CollectionAppendKeyedResponse struct {
 
 // CollectionCountRequest is the request type for collection.count.
 type CollectionCountRequest struct {
+	// non-empty
 	Name string `json:"name"`
 }
 
@@ -2178,8 +2185,9 @@ type CollectionDeleteRecordsRequest struct {
 	// Record ids to remove. Always an array; single-record callers wrap
 	// one id. SDK helpers (`Delete` vs `DeleteMany`) hide the wrapping.
 	// default []
-	Ids  []string `json:"ids,omitempty"`
-	Name string   `json:"name"`
+	Ids []string `json:"ids,omitempty"`
+	// non-empty
+	Name string `json:"name"`
 }
 
 // CollectionDeleteRecordsResponse is the response type for collection.delete_records.
@@ -2194,7 +2202,9 @@ type CollectionDeleteRecordsResponse struct {
 
 // CollectionFetchRequest is the request type for collection.fetch.
 type CollectionFetchRequest struct {
-	ID   string `json:"id"`
+	// non-empty
+	ID string `json:"id"`
+	// non-empty
 	Name string `json:"name"`
 }
 
@@ -2206,7 +2216,9 @@ type CollectionFetchResponse struct {
 
 // CollectionFetchCompactedRequest is the request type for collection.fetch_compacted.
 type CollectionFetchCompactedRequest struct {
-	ID   string `json:"id"`
+	// non-empty
+	ID string `json:"id"`
+	// non-empty
 	Name string `json:"name"`
 }
 
@@ -2218,6 +2230,7 @@ type CollectionFetchCompactedResponse struct {
 
 // CollectionGetRequest is the request type for collection.get.
 type CollectionGetRequest struct {
+	// non-empty
 	Name string `json:"name"`
 }
 
@@ -2235,6 +2248,7 @@ type CollectionGetResponse struct {
 
 // CollectionListRequest is the request type for collection.list.
 type CollectionListRequest struct {
+	// non-empty
 	Name string `json:"name"`
 	// default {}
 	Opts *ListOpts `json:"opts,omitempty"`
@@ -2252,8 +2266,10 @@ type CollectionListResponse struct {
 type CollectionPatchRequest struct {
 	// Object of fields to merge over the existing record.
 	Fields json.RawMessage `json:"fields"`
-	ID     string          `json:"id"`
-	Name   string          `json:"name"`
+	// non-empty
+	ID string `json:"id"`
+	// non-empty
+	Name string `json:"name"`
 }
 
 // CollectionPutRequest is the request type for collection.put.
@@ -2282,7 +2298,8 @@ type CollectionPutRequest struct {
 	// semantics as `roles`: last-write-wins, and a put omitting `label`
 	// leaves the prior setting in place.
 	Label *string `json:"label,omitempty"`
-	Name  string  `json:"name"`
+	// non-empty
+	Name string `json:"name"`
 	// Optional per-payload-field display roles. Used by the Settings
 	// UI / discovery HUD to know which payload field is the primary
 	// label, which is the subtitle, etc. Equivalent to the `roles`
@@ -2314,7 +2331,8 @@ type CollectionReplaceRequest struct {
 	Entries []CollectionPutEntry `json:"entries,omitempty"`
 	// Same semantics as `collection.put`'s `label`.
 	Label *string `json:"label,omitempty"`
-	Name  string  `json:"name"`
+	// non-empty
+	Name string `json:"name"`
 	// Same semantics as `collection.put`'s `roles`.
 	Roles map[string]FieldDisplay `json:"roles"`
 	// What the call is allowed to delete. Required — see `ReplaceScope`.
@@ -2344,6 +2362,7 @@ type CollectionsCreateUserRequest struct {
 	// default ""
 	Description *string `json:"description,omitempty"`
 	// Collection name (lowercase, underscores).
+	// non-empty
 	Name string `json:"name"`
 	// default ""
 	WordsText *string `json:"words_text,omitempty"`
@@ -2374,9 +2393,12 @@ type CollectionsOwnedResponse struct {
 
 // CommandsAddAliasRequest is the request type for commands.add_alias.
 type CommandsAddAliasRequest struct {
-	Action         string `json:"action"`
+	// non-empty
+	Action string `json:"action"`
+	// non-empty
 	DefaultPattern string `json:"default_pattern"`
-	NewPattern     string `json:"new_pattern"`
+	// non-empty
+	NewPattern string `json:"new_pattern"`
 }
 
 // CommandsConfusabilityRequest is the request type for commands.confusability.
@@ -2397,6 +2419,7 @@ type CommandsConfusabilityResponse struct {
 
 // CommandsDeleteRequest is the request type for commands.delete.
 type CommandsDeleteRequest struct {
+	// non-empty
 	Canonical string `json:"canonical"`
 }
 
@@ -2470,9 +2493,12 @@ type CommandsPushResponse struct {
 
 // CommandsRemoveAliasRequest is the request type for commands.remove_alias.
 type CommandsRemoveAliasRequest struct {
-	Action         string `json:"action"`
+	// non-empty
+	Action string `json:"action"`
+	// non-empty
 	DefaultPattern string `json:"default_pattern"`
-	NewPattern     string `json:"new_pattern"`
+	// non-empty
+	NewPattern string `json:"new_pattern"`
 }
 
 // CommandsRemoveAliasResponse is the response type for commands.remove_alias.
@@ -2484,12 +2510,15 @@ type CommandsRemoveAliasResponse struct {
 
 // CommandsResetRequest is the request type for commands.reset.
 type CommandsResetRequest struct {
+	// non-empty
 	Canonical string `json:"canonical"`
 }
 
 // CommandsResetOverrideRequest is the request type for commands.reset_override.
 type CommandsResetOverrideRequest struct {
-	Action         string `json:"action"`
+	// non-empty
+	Action string `json:"action"`
+	// non-empty
 	DefaultPattern string `json:"default_pattern"`
 }
 
@@ -2612,15 +2641,19 @@ type CommandsResolveResponse struct {
 
 // CommandsSetOverrideRequest is the request type for commands.set_override.
 type CommandsSetOverrideRequest struct {
-	Action         string `json:"action"`
+	// non-empty
+	Action string `json:"action"`
+	// non-empty
 	DefaultPattern string `json:"default_pattern"`
-	NewPattern     string `json:"new_pattern"`
+	// non-empty
+	NewPattern string `json:"new_pattern"`
 }
 
 // ControlSignalRequest is the request type for control.signal.
 type ControlSignalRequest struct {
 	// Raw control-stream signal string (e.g. "open hud", "hide discovery").
 	// Forwarded verbatim to the Swift shell via the actuator's control stream.
+	// non-empty
 	Signal string `json:"signal"`
 }
 
@@ -2653,6 +2686,7 @@ type EffectsAssertRequest struct {
 	// Registered effect name (e.g. `suppress_notifications`). Must be
 	// declared in the plugin's manifest `consumes.effects.asserts` and
 	// match an entry in the closed `effects::REGISTERED_EFFECTS` registry.
+	// non-empty
 	Name string `json:"name"`
 }
 
@@ -2686,6 +2720,7 @@ type EffectsAssertResponse struct {
 // EffectsIsActiveRequest is the request type for effects.is_active.
 type EffectsIsActiveRequest struct {
 	// Registered effect name to query.
+	// non-empty
 	Name string `json:"name"`
 }
 
@@ -2706,6 +2741,7 @@ type EffectsRetractRequest struct {
 	// Registered effect name to retract. The plugin's frame is removed
 	// from this effect's ownership stack. If no frame exists, the call
 	// is a no-op (`retracted=false`, no error).
+	// non-empty
 	Name string `json:"name"`
 }
 
@@ -2728,6 +2764,7 @@ type EventsAppendRequest struct {
 	// default null
 	Data json.RawMessage `json:"data,omitempty"`
 	// Event type discriminator (e.g. "session_start", "match", "miss").
+	// non-empty
 	EventType string `json:"event_type"`
 	// Logical session id this event belongs to (8-char prefix used by
 	// the event-stream tooling). Defaults to "?" if absent.
@@ -2747,6 +2784,7 @@ type EventsEmitRequest struct {
 	Data json.RawMessage `json:"data,omitempty"`
 	// Convention-based event type (e.g. "clipboard.copied"). The
 	// `_platform.*` namespace is reserved for the actuator.
+	// non-empty
 	EventType string `json:"event_type"`
 }
 
@@ -2765,6 +2803,7 @@ type HttpRequestRequest struct {
 	TimeoutMs *int `json:"timeout_ms,omitempty"`
 	// `https://` only, to a host this plugin declares in `requires.network`
 	// and the user has allowed.
+	// non-empty
 	URL string `json:"url"`
 }
 
@@ -2796,6 +2835,7 @@ type HUDCreateChannelRequest struct {
 	// default "top-right"
 	Anchor *Anchor `json:"anchor,omitempty"`
 	// Channel name. Must be unique across all plugins.
+	// non-empty
 	Channel string `json:"channel"`
 	// Optional human-readable description shown in dev tooling.
 	// default ""
@@ -2837,6 +2877,7 @@ type HUDCreateChannelRequest struct {
 type HUDHideRequest struct {
 	// Channel name to hide. Sends a `close <channel>` (or
 	// `hide <channel>` for built-in channels) to the Swift shell.
+	// non-empty
 	Channel string `json:"channel"`
 }
 
@@ -2845,6 +2886,7 @@ type HUDPushRequest struct {
 	// Name of the HUD channel to push fragments into. Must be owned by
 	// the calling plugin (verified via
 	// `HudChannelRegistry::verify_owner`).
+	// non-empty
 	Channel string `json:"channel"`
 	// The fragments to patch into the channel, in order.
 	//
@@ -2858,6 +2900,7 @@ type HUDPushRequest struct {
 // HUDRemoveChannelRequest is the request type for hud.remove_channel.
 type HUDRemoveChannelRequest struct {
 	// Channel name to remove. Must be owned by the calling plugin.
+	// non-empty
 	Channel string `json:"channel"`
 }
 
@@ -2872,6 +2915,7 @@ type HUDRemoveChannelResponse struct {
 // HUDSetSizeRequest is the request type for hud.set_size.
 type HUDSetSizeRequest struct {
 	// Channel name whose actual rendered size is being reported.
+	// non-empty
 	Channel string `json:"channel"`
 	// Actual rendered height in points (used by world-model entries
 	// instead of `min_height` when known).
@@ -2883,6 +2927,7 @@ type HUDSetSizeRequest struct {
 type HUDShowRequest struct {
 	// Channel name to show. Sends an `open <channel>` message to the
 	// Swift shell.
+	// non-empty
 	Channel string `json:"channel"`
 }
 
@@ -2896,6 +2941,7 @@ type InputClickRequest struct {
 // InputClipboardActionRequest is the request type for input.clipboard_action.
 type InputClipboardActionRequest struct {
 	// Action: "copy", "paste", or "set".
+	// non-empty
 	Action string `json:"action"`
 	// Text to set (only used by `action: "set"`).
 	// default null
@@ -2909,6 +2955,7 @@ type InputClipboardHistoryResponse struct {
 
 // InputClipboardReadRequest is the request type for input.clipboard_read.
 type InputClipboardReadRequest struct {
+	// non-empty
 	ContentType string `json:"content_type"`
 }
 
@@ -2928,6 +2975,7 @@ type InputClipboardReadAllResponse struct {
 
 // InputClipboardReadFormatRequest is the request type for input.clipboard_read_format.
 type InputClipboardReadFormatRequest struct {
+	// non-empty
 	Format string `json:"format"`
 }
 
@@ -2938,6 +2986,7 @@ type InputClipboardReadFormatResponse struct {
 
 // InputClipboardWriteRequest is the request type for input.clipboard_write.
 type InputClipboardWriteRequest struct {
+	// non-empty
 	ContentType string `json:"content_type"`
 	Data        string `json:"data"`
 }
@@ -2994,6 +3043,7 @@ type InputMouseButtonRequest struct {
 	// zero-distance dragged event at the current cursor position — macOS
 	// only treats a window as grabbed once a dragged event follows the
 	// press, so drag-based operations need it between press and release.
+	// non-empty
 	Direction string `json:"direction"`
 }
 
@@ -3050,6 +3100,7 @@ type InputRawKeyRequest struct {
 	// wire uint16 · min 0 · max 65535
 	Code int `json:"code"`
 	// One of "press", "release", or "click".
+	// non-empty
 	Direction string `json:"direction"`
 }
 
@@ -3067,6 +3118,7 @@ type InputScrollRequest struct {
 	// wire int32 · default 5
 	Amount *int `json:"amount,omitempty"`
 	// Direction: "up", "down", "left", or "right".
+	// non-empty
 	Direction string `json:"direction"`
 	// Scroll unit: "line" (discrete, default) or "pixel" (continuous/smooth).
 	// Pixel units are needed for horizontal scroll in most browsers.
@@ -3076,6 +3128,7 @@ type InputScrollRequest struct {
 
 // InputSwitchInputSourceRequest is the request type for input.switch_input_source.
 type InputSwitchInputSourceRequest struct {
+	// non-empty
 	SourceID string `json:"source_id"`
 }
 
@@ -3135,8 +3188,9 @@ type NativeAccessibilityEnabledResponse struct {
 // NativeActivateAppRequest is the request type for native.activate_app.
 type NativeActivateAppRequest struct {
 	// default false
-	AllWindows *bool  `json:"all_windows,omitempty"`
-	BundleID   string `json:"bundle_id"`
+	AllWindows *bool `json:"all_windows,omitempty"`
+	// non-empty
+	BundleID string `json:"bundle_id"`
 }
 
 // NativeActiveNetworkServiceResponse is the response type for native.active_network_service.
@@ -3181,6 +3235,7 @@ type NativeApfsSnapshotsResponse struct {
 
 // NativeAppBundlePathRequest is the request type for native.app_bundle_path.
 type NativeAppBundlePathRequest struct {
+	// non-empty
 	BundleID string `json:"bundle_id"`
 }
 
@@ -3191,11 +3246,13 @@ type NativeAppBundlePathResponse struct {
 
 // NativeAppFocusedWindowIDRequest is the request type for native.app_focused_window_id.
 type NativeAppFocusedWindowIDRequest struct {
+	// non-empty
 	BundleID string `json:"bundle_id"`
 }
 
 // NativeAppIconRequest is the request type for native.app_icon.
 type NativeAppIconRequest struct {
+	// non-empty
 	BundleID string `json:"bundle_id"`
 	// wire uint32 · default 64 · min 0
 	Size *int `json:"size,omitempty"`
@@ -3211,11 +3268,13 @@ type NativeAppIconResponse struct {
 
 // NativeAppIconPathRequest is the request type for native.app_icon_path.
 type NativeAppIconPathRequest struct {
+	// non-empty
 	BundleID string `json:"bundle_id"`
 }
 
 // NativeAppIsAgentRequest is the request type for native.app_is_agent.
 type NativeAppIsAgentRequest struct {
+	// non-empty
 	BundleID string `json:"bundle_id"`
 }
 
@@ -3226,6 +3285,7 @@ type NativeAppIsAgentResponse struct {
 
 // NativeAppIsRunningRequest is the request type for native.app_is_running.
 type NativeAppIsRunningRequest struct {
+	// non-empty
 	BundleID string `json:"bundle_id"`
 }
 
@@ -3236,6 +3296,7 @@ type NativeAppIsRunningResponse struct {
 
 // NativeAppLaunchAtLoginRequest is the request type for native.app_launch_at_login.
 type NativeAppLaunchAtLoginRequest struct {
+	// non-empty
 	BundleID string `json:"bundle_id"`
 }
 
@@ -3246,6 +3307,7 @@ type NativeAppLaunchAtLoginResponse struct {
 
 // NativeAppMetadataRequest is the request type for native.app_metadata.
 type NativeAppMetadataRequest struct {
+	// non-empty
 	BundleID string `json:"bundle_id"`
 }
 
@@ -3262,11 +3324,13 @@ type NativeAppMetadataResponse struct {
 
 // NativeAppPathRequest is the request type for native.app_path.
 type NativeAppPathRequest struct {
+	// non-empty
 	BundleID string `json:"bundle_id"`
 }
 
 // NativeAppPidRequest is the request type for native.app_pid.
 type NativeAppPidRequest struct {
+	// non-empty
 	BundleID string `json:"bundle_id"`
 }
 
@@ -3282,6 +3346,7 @@ type NativeAppVerificationResponse struct {
 
 // NativeAppVersionRequest is the request type for native.app_version.
 type NativeAppVersionRequest struct {
+	// non-empty
 	BundleID string `json:"bundle_id"`
 }
 
@@ -3292,6 +3357,7 @@ type NativeAppVolumesResponse struct {
 
 // NativeAppWindowsRequest is the request type for native.app_windows.
 type NativeAppWindowsRequest struct {
+	// non-empty
 	BundleID string `json:"bundle_id"`
 }
 
@@ -3302,11 +3368,13 @@ type NativeAppWindowsResponse struct {
 
 // NativeAppWindowsCountRequest is the request type for native.app_windows_count.
 type NativeAppWindowsCountRequest struct {
+	// non-empty
 	BundleID string `json:"bundle_id"`
 }
 
 // NativeAppsForPathRequest is the request type for native.apps_for_path.
 type NativeAppsForPathRequest struct {
+	// non-empty
 	Path string `json:"path"`
 }
 
@@ -3317,6 +3385,7 @@ type NativeAppsForPathResponse struct {
 
 // NativeAudioDeviceVolumeRequest is the request type for native.audio_device_volume.
 type NativeAudioDeviceVolumeRequest struct {
+	// non-empty
 	DeviceUID string `json:"device_uid"`
 }
 
@@ -3369,6 +3438,7 @@ type NativeAutomaticLoginUserResponse struct {
 
 // NativeAutomationPermissionRequest is the request type for native.automation_permission.
 type NativeAutomationPermissionRequest struct {
+	// non-empty
 	BundleID string `json:"bundle_id"`
 }
 
@@ -3449,6 +3519,7 @@ type NativeAxObserveResponse struct {
 
 // NativeAxPerformActionRequest is the request type for native.ax_perform_action.
 type NativeAxPerformActionRequest struct {
+	// non-empty
 	Action  string        `json:"action"`
 	Element AccessibleRef `json:"element"`
 }
@@ -3467,6 +3538,7 @@ type NativeAxReadAttributesRequest struct {
 
 // NativeAxSetAttributeRequest is the request type for native.ax_set_attribute.
 type NativeAxSetAttributeRequest struct {
+	// non-empty
 	Attribute string          `json:"attribute"`
 	Element   AccessibleRef   `json:"element"`
 	Value     json.RawMessage `json:"value"`
@@ -3479,6 +3551,7 @@ type NativeAxSetAttributeResponse struct {
 
 // NativeAxUnobserveRequest is the request type for native.ax_unobserve.
 type NativeAxUnobserveRequest struct {
+	// non-empty
 	SubscriptionID string `json:"subscription_id"`
 }
 
@@ -3544,6 +3617,7 @@ type NativeBleDiscoverServicesRequest struct {
 	// Identifier for the paired BLE device. Accepts a CoreBluetooth
 	// peripheral UUID (e.g. "12345678-...") or a device name to match
 	// among connected BLE HID peripherals (e.g. "Shortcut Remote").
+	// non-empty
 	DeviceIdentifier string `json:"device_identifier"`
 }
 
@@ -3555,10 +3629,13 @@ type NativeBleDiscoverServicesResponse struct {
 // NativeBleSubscribeRequest is the request type for native.ble_subscribe.
 type NativeBleSubscribeRequest struct {
 	// GATT characteristic UUID to subscribe to (must support notify).
+	// non-empty
 	CharacteristicUuid string `json:"characteristic_uuid"`
 	// CoreBluetooth peripheral UUID or device name.
+	// non-empty
 	DeviceIdentifier string `json:"device_identifier"`
 	// GATT service UUID containing the characteristic.
+	// non-empty
 	ServiceUuid string `json:"service_uuid"`
 }
 
@@ -3570,6 +3647,7 @@ type NativeBleSubscribeResponse struct {
 // NativeBleSubscribeAllThenWriteRequest is the request type for native.ble_subscribe_all_then_write.
 type NativeBleSubscribeAllThenWriteRequest struct {
 	// CoreBluetooth peripheral UUID or device name.
+	// non-empty
 	DeviceIdentifier string `json:"device_identifier"`
 	// GATT service UUIDs to subscribe to all notify characteristics on.
 	// default []
@@ -3587,14 +3665,17 @@ type NativeBleSubscribeAllThenWriteResponse struct {
 // NativeBleWriteRequest is the request type for native.ble_write.
 type NativeBleWriteRequest struct {
 	// GATT characteristic UUID (e.g. "FFF1").
+	// non-empty
 	CharacteristicUuid string `json:"characteristic_uuid"`
 	// Bytes to write to the characteristic.
 	// default []
 	Data []int `json:"data,omitempty"`
 	// Identifier for the paired BLE device. Accepts a CoreBluetooth
 	// peripheral UUID or a device name (see ble_discover_services).
+	// non-empty
 	DeviceIdentifier string `json:"device_identifier"`
 	// GATT service UUID (e.g. "FFF0").
+	// non-empty
 	ServiceUuid string `json:"service_uuid"`
 	// Write type: "with_response" (default, reliable) or "without_response" (fire-and-forget).
 	// default "with_response"
@@ -3662,7 +3743,9 @@ type NativeBundleForRemotePortResponse struct {
 
 // NativeCalendarEventsRangeRequest is the request type for native.calendar_events_range.
 type NativeCalendarEventsRangeRequest struct {
-	End   string `json:"end"`
+	// non-empty
+	End string `json:"end"`
+	// non-empty
 	Start string `json:"start"`
 }
 
@@ -3698,6 +3781,7 @@ type NativeCapsLockStateResponse struct {
 
 // NativeCaptureWindowRequest is the request type for native.capture_window.
 type NativeCaptureWindowRequest struct {
+	// non-empty
 	WindowID string `json:"window_id"`
 }
 
@@ -3711,6 +3795,7 @@ type NativeCaptureWindowResponse struct {
 
 // NativeCascadeWindowsRequest is the request type for native.cascade_windows.
 type NativeCascadeWindowsRequest struct {
+	// non-empty
 	BundleID string `json:"bundle_id"`
 }
 
@@ -3721,11 +3806,13 @@ type NativeCascadeWindowsResponse struct {
 
 // NativeCenterWindowRequest is the request type for native.center_window.
 type NativeCenterWindowRequest struct {
+	// non-empty
 	WindowID string `json:"window_id"`
 }
 
 // NativeCheckPermissionRequest is the request type for native.check_permission.
 type NativeCheckPermissionRequest struct {
+	// non-empty
 	Permission string `json:"permission"`
 }
 
@@ -3737,6 +3824,7 @@ type NativeCheckPermissionResponse struct {
 
 // NativeClearFileQuarantineRequest is the request type for native.clear_file_quarantine.
 type NativeClearFileQuarantineRequest struct {
+	// non-empty
 	Path string `json:"path"`
 }
 
@@ -3747,6 +3835,7 @@ type NativeClearFileQuarantineResponse struct {
 
 // NativeClearNotificationsRequest is the request type for native.clear_notifications.
 type NativeClearNotificationsRequest struct {
+	// non-empty
 	BundleID string `json:"bundle_id"`
 }
 
@@ -3781,6 +3870,7 @@ type NativeClipboardImageDimensionsResponse struct {
 
 // NativeCloseWindowRequest is the request type for native.close_window.
 type NativeCloseWindowRequest struct {
+	// non-empty
 	WindowID string `json:"window_id"`
 }
 
@@ -3822,8 +3912,10 @@ type NativeContactsPermissionResponse struct {
 
 // NativeCopyFileRequest is the request type for native.copy_file.
 type NativeCopyFileRequest struct {
+	// non-empty
 	Destination string `json:"destination"`
-	Source      string `json:"source"`
+	// non-empty
+	Source string `json:"source"`
 }
 
 // NativeCopyFileResponse is the response type for native.copy_file.
@@ -3838,6 +3930,7 @@ type NativeCpuInfoResponse struct {
 
 // NativeCreateDirectoryRequest is the request type for native.create_directory.
 type NativeCreateDirectoryRequest struct {
+	// non-empty
 	Path string `json:"path"`
 }
 
@@ -3945,12 +4038,16 @@ type NativeDbusCallRequest struct {
 	Args []json.RawMessage `json:"args,omitempty"`
 	// `session` (the default) or `system` (Properties.Get / GetAll only).
 	// default null
-	Bus       *string `json:"bus,omitempty"`
-	Interface string  `json:"interface"`
-	Method    string  `json:"method"`
+	Bus *string `json:"bus,omitempty"`
+	// non-empty
+	Interface string `json:"interface"`
+	// non-empty
+	Method string `json:"method"`
 	// The object path (`/org/mpris/MediaPlayer2`).
+	// non-empty
 	Path string `json:"path"`
 	// The well-known service name (`org.mpris.MediaPlayer2.spotify`).
+	// non-empty
 	Service string `json:"service"`
 	// The arguments' D-Bus signature (`su`); empty or absent for none.
 	// default null
@@ -3968,6 +4065,7 @@ type NativeDbusCallResponse struct {
 
 // NativeDefaultAppForMimeTypeRequest is the request type for native.default_app_for_mime_type.
 type NativeDefaultAppForMimeTypeRequest struct {
+	// non-empty
 	MimeType string `json:"mime_type"`
 }
 
@@ -3978,6 +4076,7 @@ type NativeDefaultAppForMimeTypeResponse struct {
 
 // NativeDefaultAppForUtiRequest is the request type for native.default_app_for_uti.
 type NativeDefaultAppForUtiRequest struct {
+	// non-empty
 	Uti string `json:"uti"`
 }
 
@@ -4003,6 +4102,7 @@ type NativeDefaultPrinterResponse struct {
 
 // NativeDeleteFileRequest is the request type for native.delete_file.
 type NativeDeleteFileRequest struct {
+	// non-empty
 	Path string `json:"path"`
 }
 
@@ -4023,6 +4123,7 @@ type NativeDetectBarcodesResponse struct {
 
 // NativeDetectBarcodesFileRequest is the request type for native.detect_barcodes_file.
 type NativeDetectBarcodesFileRequest struct {
+	// non-empty
 	Path string `json:"path"`
 }
 
@@ -4044,8 +4145,9 @@ type NativeDifferentiateWithoutColorResponse struct {
 // NativeDirectoryContentsRequest is the request type for native.directory_contents.
 type NativeDirectoryContentsRequest struct {
 	// default false
-	IncludeHidden *bool  `json:"include_hidden,omitempty"`
-	Path          string `json:"path"`
+	IncludeHidden *bool `json:"include_hidden,omitempty"`
+	// non-empty
+	Path string `json:"path"`
 }
 
 // NativeDirectoryContentsResponse is the response type for native.directory_contents.
@@ -4072,6 +4174,7 @@ type NativeDiskSpaceResponse struct {
 
 // NativeDiskUsageRequest is the request type for native.disk_usage.
 type NativeDiskUsageRequest struct {
+	// non-empty
 	Path string `json:"path"`
 }
 
@@ -4082,6 +4185,7 @@ type NativeDiskUsageResponse struct {
 
 // NativeDismissNotificationRequest is the request type for native.dismiss_notification.
 type NativeDismissNotificationRequest struct {
+	// non-empty
 	ID string `json:"id"`
 }
 
@@ -4193,6 +4297,7 @@ type NativeDwellClickResponse struct {
 
 // NativeEjectDiskRequest is the request type for native.eject_disk.
 type NativeEjectDiskRequest struct {
+	// non-empty
 	MountPoint string `json:"mount_point"`
 }
 
@@ -4208,6 +4313,7 @@ type NativeEmptyTrashResponse struct {
 
 // NativeEnvVarRequest is the request type for native.env_var.
 type NativeEnvVarRequest struct {
+	// non-empty
 	Name string `json:"name"`
 }
 
@@ -4224,6 +4330,7 @@ type NativeEpochTimeResponse struct {
 
 // NativeExtendedAttributesRequest is the request type for native.extended_attributes.
 type NativeExtendedAttributesRequest struct {
+	// non-empty
 	Path string `json:"path"`
 }
 
@@ -4249,16 +4356,19 @@ type NativeFastUserSwitchingResponse struct {
 
 // NativeFileAclRequest is the request type for native.file_acl.
 type NativeFileAclRequest struct {
+	// non-empty
 	Path string `json:"path"`
 }
 
 // NativeFileCreationDateRequest is the request type for native.file_creation_date.
 type NativeFileCreationDateRequest struct {
+	// non-empty
 	Path string `json:"path"`
 }
 
 // NativeFileExistsRequest is the request type for native.file_exists.
 type NativeFileExistsRequest struct {
+	// non-empty
 	Path string `json:"path"`
 }
 
@@ -4269,6 +4379,7 @@ type NativeFileExistsResponse struct {
 
 // NativeFileExtendedAttributesRequest is the request type for native.file_extended_attributes.
 type NativeFileExtendedAttributesRequest struct {
+	// non-empty
 	Path string `json:"path"`
 }
 
@@ -4281,7 +4392,8 @@ type NativeFileExtendedAttributesResponse struct {
 type NativeFileHashRequest struct {
 	// default ""
 	Algorithm *string `json:"algorithm,omitempty"`
-	Path      string  `json:"path"`
+	// non-empty
+	Path string `json:"path"`
 }
 
 // NativeFileHashResponse is the response type for native.file_hash.
@@ -4291,6 +4403,7 @@ type NativeFileHashResponse struct {
 
 // NativeFileMetadataRequest is the request type for native.file_metadata.
 type NativeFileMetadataRequest struct {
+	// non-empty
 	Path string `json:"path"`
 }
 
@@ -4311,16 +4424,19 @@ type NativeFileMetadataResponse struct {
 
 // NativeFileMimeTypeRequest is the request type for native.file_mime_type.
 type NativeFileMimeTypeRequest struct {
+	// non-empty
 	Path string `json:"path"`
 }
 
 // NativeFileModificationDateRequest is the request type for native.file_modification_date.
 type NativeFileModificationDateRequest struct {
+	// non-empty
 	Path string `json:"path"`
 }
 
 // NativeFileOwnerRequest is the request type for native.file_owner.
 type NativeFileOwnerRequest struct {
+	// non-empty
 	Path string `json:"path"`
 }
 
@@ -4331,6 +4447,7 @@ type NativeFileOwnerResponse struct {
 
 // NativeFileQuarantineRequest is the request type for native.file_quarantine.
 type NativeFileQuarantineRequest struct {
+	// non-empty
 	Path string `json:"path"`
 }
 
@@ -4346,11 +4463,13 @@ type NativeFileSharingEnabledResponse struct {
 
 // NativeFileSizeRequest is the request type for native.file_size.
 type NativeFileSizeRequest struct {
+	// non-empty
 	Path string `json:"path"`
 }
 
 // NativeFileTagsRequest is the request type for native.file_tags.
 type NativeFileTagsRequest struct {
+	// non-empty
 	Path string `json:"path"`
 	// default null
 	Tags []string `json:"tags"`
@@ -4358,6 +4477,7 @@ type NativeFileTagsRequest struct {
 
 // NativeFileTypeRequest is the request type for native.file_type.
 type NativeFileTypeRequest struct {
+	// non-empty
 	Path string `json:"path"`
 }
 
@@ -4368,6 +4488,7 @@ type NativeFileTypeResponse struct {
 
 // NativeFileUtiRequest is the request type for native.file_uti.
 type NativeFileUtiRequest struct {
+	// non-empty
 	Path string `json:"path"`
 }
 
@@ -4453,6 +4574,7 @@ type NativeFontSmoothingResponse struct {
 
 // NativeForceQuitAppRequest is the request type for native.force_quit_app.
 type NativeForceQuitAppRequest struct {
+	// non-empty
 	BundleID string `json:"bundle_id"`
 }
 
@@ -4463,8 +4585,10 @@ type NativeForceQuitAppResponse struct {
 
 // NativeFormatDateRequest is the request type for native.format_date.
 type NativeFormatDateRequest struct {
+	// non-empty
 	Style string `json:"style"`
-	When  string `json:"when"`
+	// non-empty
+	When string `json:"when"`
 }
 
 // NativeFormatDateResponse is the response type for native.format_date.
@@ -4494,7 +4618,9 @@ type NativeGatewayAddressResponse struct {
 
 // NativeGeneratePdfRequest is the request type for native.generate_pdf.
 type NativeGeneratePdfRequest struct {
-	HTML       string `json:"html"`
+	// non-empty
+	HTML string `json:"html"`
+	// non-empty
 	OutputPath string `json:"output_path"`
 }
 
@@ -4505,6 +4631,7 @@ type NativeGeneratePdfResponse struct {
 
 // NativeGetWindowInfoRequest is the request type for native.get_window_info.
 type NativeGetWindowInfoRequest struct {
+	// non-empty
 	WindowID string `json:"window_id"`
 }
 
@@ -4526,8 +4653,9 @@ type NativeGetWindowInfoResponse struct {
 // NativeGlobFilesRequest is the request type for native.glob_files.
 type NativeGlobFilesRequest struct {
 	// wire uint32 · default 0 · min 0
-	MaxResults *int   `json:"max_results,omitempty"`
-	Pattern    string `json:"pattern"`
+	MaxResults *int `json:"max_results,omitempty"`
+	// non-empty
+	Pattern string `json:"pattern"`
 }
 
 // NativeGlobFilesResponse is the response type for native.glob_files.
@@ -4568,6 +4696,7 @@ type NativeHardwareUuidResponse struct {
 // NativeHidClaimRequest is the request type for native.hid_claim.
 type NativeHidClaimRequest struct {
 	// Device ID (e.g. "0x28bd:0x0202:0x48f42695").
+	// non-empty
 	DeviceID string `json:"device_id"`
 }
 
@@ -4584,6 +4713,7 @@ type NativeHidDevicesResponse struct {
 // NativeHidElementsRequest is the request type for native.hid_elements.
 type NativeHidElementsRequest struct {
 	// Device ID (e.g. "0x28bd:0x0202:0x48f42695").
+	// non-empty
 	DeviceID string `json:"device_id"`
 }
 
@@ -4595,6 +4725,7 @@ type NativeHidElementsResponse struct {
 // NativeHidReleaseRequest is the request type for native.hid_release.
 type NativeHidReleaseRequest struct {
 	// Device ID (e.g. "0x28bd:0x0202:0x48f42695").
+	// non-empty
 	DeviceID string `json:"device_id"`
 }
 
@@ -4609,11 +4740,13 @@ type NativeHidSendReportRequest struct {
 	// default []
 	Data []int `json:"data,omitempty"`
 	// Device ID (e.g. "0x28bd:0x0202:0x48f42695").
+	// non-empty
 	DeviceID string `json:"device_id"`
 	// HID report ID.
 	// wire uint32 · min 0
 	ReportID int `json:"report_id"`
 	// Report type: "output" or "feature".
+	// non-empty
 	ReportType string `json:"report_type"`
 }
 
@@ -4624,6 +4757,7 @@ type NativeHidSendReportResponse struct {
 
 // NativeHideAppRequest is the request type for native.hide_app.
 type NativeHideAppRequest struct {
+	// non-empty
 	BundleID string `json:"bundle_id"`
 }
 
@@ -4649,6 +4783,7 @@ type NativeHostnameResponse struct {
 
 // NativeHostnameResolveRequest is the request type for native.hostname_resolve.
 type NativeHostnameResolveRequest struct {
+	// non-empty
 	Hostname string `json:"hostname"`
 }
 
@@ -4704,6 +4839,7 @@ type NativeIpv6AddressResponse struct {
 
 // NativeIsAppHiddenRequest is the request type for native.is_app_hidden.
 type NativeIsAppHiddenRequest struct {
+	// non-empty
 	BundleID string `json:"bundle_id"`
 }
 
@@ -4714,6 +4850,7 @@ type NativeIsAppHiddenResponse struct {
 
 // NativeIsDirectoryRequest is the request type for native.is_directory.
 type NativeIsDirectoryRequest struct {
+	// non-empty
 	Path string `json:"path"`
 }
 
@@ -4724,6 +4861,7 @@ type NativeIsDirectoryResponse struct {
 
 // NativeIsFileHiddenRequest is the request type for native.is_file_hidden.
 type NativeIsFileHiddenRequest struct {
+	// non-empty
 	Path string `json:"path"`
 }
 
@@ -4747,11 +4885,13 @@ type NativeKeyboardLayoutResponse struct {
 
 // NativeKeychainDeleteRequest is the request type for native.keychain_delete.
 type NativeKeychainDeleteRequest struct {
+	// non-empty
 	Account string `json:"account"`
 }
 
 // NativeKeychainReadRequest is the request type for native.keychain_read.
 type NativeKeychainReadRequest struct {
+	// non-empty
 	Account string `json:"account"`
 }
 
@@ -4762,7 +4902,9 @@ type NativeKeychainReadResponse struct {
 
 // NativeKeychainWriteRequest is the request type for native.keychain_write.
 type NativeKeychainWriteRequest struct {
-	Account  string `json:"account"`
+	// non-empty
+	Account string `json:"account"`
+	// non-empty
 	Password string `json:"password"`
 }
 
@@ -4786,6 +4928,7 @@ type NativeLastRebootResponse struct {
 
 // NativeLaunchAppRequest is the request type for native.launch_app.
 type NativeLaunchAppRequest struct {
+	// non-empty
 	BundleID string `json:"bundle_id"`
 	// default false
 	NewInstance *bool `json:"new_instance,omitempty"`
@@ -4873,6 +5016,7 @@ type NativeMagnifierEnabledResponse struct {
 
 // NativeMaximizeWindowRequest is the request type for native.maximize_window.
 type NativeMaximizeWindowRequest struct {
+	// non-empty
 	WindowID string `json:"window_id"`
 }
 
@@ -4929,6 +5073,7 @@ type NativeMicrophonePermissionResponse struct {
 
 // NativeMinimizeWindowRequest is the request type for native.minimize_window.
 type NativeMinimizeWindowRequest struct {
+	// non-empty
 	WindowID string `json:"window_id"`
 }
 
@@ -4964,8 +5109,10 @@ type NativeMouseKeysResponse struct {
 
 // NativeMoveFileRequest is the request type for native.move_file.
 type NativeMoveFileRequest struct {
+	// non-empty
 	Destination string `json:"destination"`
-	Source      string `json:"source"`
+	// non-empty
+	Source string `json:"source"`
 }
 
 // NativeMoveFileResponse is the response type for native.move_file.
@@ -4976,14 +5123,16 @@ type NativeMoveFileResponse struct {
 // NativeMoveWindowToDisplayRequest is the request type for native.move_window_to_display.
 type NativeMoveWindowToDisplayRequest struct {
 	// wire uint32 · min 0
-	DisplayID int    `json:"display_id"`
-	WindowID  string `json:"window_id"`
+	DisplayID int `json:"display_id"`
+	// non-empty
+	WindowID string `json:"window_id"`
 }
 
 // NativeMoveWindowToSpaceRequest is the request type for native.move_window_to_space.
 type NativeMoveWindowToSpaceRequest struct {
 	// wire uint64 (64-bit) · min 0
-	SpaceID  int    `json:"space_id"`
+	SpaceID int `json:"space_id"`
+	// non-empty
 	WindowID string `json:"window_id"`
 }
 
@@ -5024,6 +5173,7 @@ type NativeNetworkQualityResponse struct {
 
 // NativeNetworkReachableRequest is the request type for native.network_reachable.
 type NativeNetworkReachableRequest struct {
+	// non-empty
 	Host string `json:"host"`
 }
 
@@ -5039,6 +5189,7 @@ type NativeNetworkSsidResponse struct {
 
 // NativeNewAppWindowRequest is the request type for native.new_app_window.
 type NativeNewAppWindowRequest struct {
+	// non-empty
 	BundleID string `json:"bundle_id"`
 }
 
@@ -5065,7 +5216,8 @@ type NativeNotifyRequest struct {
 	Sound *string `json:"sound,omitempty"`
 	// default null
 	Subtitle *string `json:"subtitle,omitempty"`
-	Title    string  `json:"title"`
+	// non-empty
+	Title string `json:"title"`
 }
 
 // NativeNotifyResponse is the response type for native.notify.
@@ -5101,6 +5253,7 @@ type NativeOcrClipboardResponse struct {
 
 // NativeOcrFileRequest is the request type for native.ocr_file.
 type NativeOcrFileRequest struct {
+	// non-empty
 	Path string `json:"path"`
 }
 
@@ -5149,11 +5302,13 @@ type NativeOnScreenKeyboardEnabledResponse struct {
 
 // NativeOpenAppSettingsRequest is the request type for native.open_app_settings.
 type NativeOpenAppSettingsRequest struct {
+	// non-empty
 	BundleID string `json:"bundle_id"`
 }
 
 // NativeOpenFinderWindowRequest is the request type for native.open_finder_window.
 type NativeOpenFinderWindowRequest struct {
+	// non-empty
 	Path string `json:"path"`
 }
 
@@ -5165,18 +5320,22 @@ type NativeOpenSystemSettingsRequest struct {
 
 // NativeOpenTargetRequest is the request type for native.open_target.
 type NativeOpenTargetRequest struct {
+	// non-empty
 	Target string `json:"target"`
 }
 
 // NativeOpenURLRequest is the request type for native.open_url.
 type NativeOpenURLRequest struct {
+	// non-empty
 	URL string `json:"url"`
 }
 
 // NativeOpenWithAppRequest is the request type for native.open_with_app.
 type NativeOpenWithAppRequest struct {
+	// non-empty
 	BundleID string `json:"bundle_id"`
-	Target   string `json:"target"`
+	// non-empty
+	Target string `json:"target"`
 }
 
 // NativeOptimizedChargingResponse is the response type for native.optimized_charging.
@@ -5187,18 +5346,21 @@ type NativeOptimizedChargingResponse struct {
 // NativePdfExtractTextRequest is the request type for native.pdf_extract_text.
 type NativePdfExtractTextRequest struct {
 	// wire uint64 (64-bit) · default 0 · min 0
-	Page *int   `json:"page,omitempty"`
+	Page *int `json:"page,omitempty"`
+	// non-empty
 	Path string `json:"path"`
 }
 
 // NativePdfPageCountRequest is the request type for native.pdf_page_count.
 type NativePdfPageCountRequest struct {
+	// non-empty
 	Path string `json:"path"`
 }
 
 // NativePinWindowAboveRequest is the request type for native.pin_window_above.
 type NativePinWindowAboveRequest struct {
-	Pinned   bool   `json:"pinned"`
+	Pinned bool `json:"pinned"`
+	// non-empty
 	WindowID string `json:"window_id"`
 }
 
@@ -5209,6 +5371,7 @@ type NativePinchToZoomResponse struct {
 
 // NativePingRequest is the request type for native.ping.
 type NativePingRequest struct {
+	// non-empty
 	Host string `json:"host"`
 }
 
@@ -5219,6 +5382,7 @@ type NativePlayFeedbackWhenVolumeChangedResponse struct {
 
 // NativePlaySoundRequest is the request type for native.play_sound.
 type NativePlaySoundRequest struct {
+	// non-empty
 	Name string `json:"name"`
 }
 
@@ -5365,6 +5529,7 @@ type NativePublicIPResponse struct {
 
 // NativeQuickLookRequest is the request type for native.quick_look.
 type NativeQuickLookRequest struct {
+	// non-empty
 	Path string `json:"path"`
 	// wire uint32 · default 512 · min 0
 	Size *int `json:"size,omitempty"`
@@ -5380,6 +5545,7 @@ type NativeQuickLookResponse struct {
 
 // NativeQuitAppRequest is the request type for native.quit_app.
 type NativeQuitAppRequest struct {
+	// non-empty
 	BundleID string `json:"bundle_id"`
 }
 
@@ -5390,6 +5556,7 @@ type NativeQuitAppResponse struct {
 
 // NativeRaiseWindowRequest is the request type for native.raise_window.
 type NativeRaiseWindowRequest struct {
+	// non-empty
 	WindowID string `json:"window_id"`
 }
 
@@ -5400,12 +5567,15 @@ type NativeRandomUuidResponse struct {
 
 // NativeReadAppPreferenceRequest is the request type for native.read_app_preference.
 type NativeReadAppPreferenceRequest struct {
+	// non-empty
 	Domain string `json:"domain"`
-	Key    string `json:"key"`
+	// non-empty
+	Key string `json:"key"`
 }
 
 // NativeReadFileRequest is the request type for native.read_file.
 type NativeReadFileRequest struct {
+	// non-empty
 	Path string `json:"path"`
 }
 
@@ -5417,8 +5587,9 @@ type NativeReadFileResponse struct {
 // NativeReadFileBinaryRequest is the request type for native.read_file_binary.
 type NativeReadFileBinaryRequest struct {
 	// wire uint64 (64-bit) · default null · min 0
-	MaxBytes *int   `json:"max_bytes,omitempty"`
-	Path     string `json:"path"`
+	MaxBytes *int `json:"max_bytes,omitempty"`
+	// non-empty
+	Path string `json:"path"`
 }
 
 // NativeReadFileBinaryResponse is the response type for native.read_file_binary.
@@ -5428,11 +5599,13 @@ type NativeReadFileBinaryResponse struct {
 
 // NativeReadPlistRequest is the request type for native.read_plist.
 type NativeReadPlistRequest struct {
+	// non-empty
 	Path string `json:"path"`
 }
 
 // NativeRecentDocumentsRequest is the request type for native.recent_documents.
 type NativeRecentDocumentsRequest struct {
+	// non-empty
 	BundleID string `json:"bundle_id"`
 }
 
@@ -5463,8 +5636,10 @@ type NativeRemoteLoginEnabledResponse struct {
 
 // NativeRenameFileRequest is the request type for native.rename_file.
 type NativeRenameFileRequest struct {
+	// non-empty
 	NewName string `json:"new_name"`
-	Path    string `json:"path"`
+	// non-empty
+	Path string `json:"path"`
 }
 
 // NativeRenameFileResponse is the response type for native.rename_file.
@@ -5491,6 +5666,7 @@ type NativeResourceUsageResponse struct {
 
 // NativeRestartAppRequest is the request type for native.restart_app.
 type NativeRestartAppRequest struct {
+	// non-empty
 	BundleID string `json:"bundle_id"`
 }
 
@@ -5501,6 +5677,7 @@ type NativeRestartAppResponse struct {
 
 // NativeRevealInFinderRequest is the request type for native.reveal_in_finder.
 type NativeRevealInFinderRequest struct {
+	// non-empty
 	Path string `json:"path"`
 }
 
@@ -5512,6 +5689,7 @@ type NativeRosettaInstalledResponse struct {
 // NativeRunApplescriptRequest is the request type for native.run_applescript.
 type NativeRunApplescriptRequest struct {
 	// AppleScript source to execute via `osascript`.
+	// non-empty
 	Script string `json:"script"`
 }
 
@@ -5525,6 +5703,7 @@ type NativeRunApplescriptResponse struct {
 
 // NativeRunJxaRequest is the request type for native.run_jxa.
 type NativeRunJxaRequest struct {
+	// non-empty
 	Script string `json:"script"`
 }
 
@@ -5537,7 +5716,8 @@ type NativeRunJxaResponse struct {
 type NativeRunShortcutRequest struct {
 	// default null
 	Input *string `json:"input,omitempty"`
-	Name  string  `json:"name"`
+	// non-empty
+	Name string `json:"name"`
 }
 
 // NativeRunShortcutResponse is the response type for native.run_shortcut.
@@ -5640,6 +5820,7 @@ type NativeScrollDirectionNaturalResponse struct {
 
 // NativeSearchContactsRequest is the request type for native.search_contacts.
 type NativeSearchContactsRequest struct {
+	// non-empty
 	Query string `json:"query"`
 }
 
@@ -5680,6 +5861,7 @@ type NativeSetAirportPowerResponse struct {
 
 // NativeSetAppHiddenRequest is the request type for native.set_app_hidden.
 type NativeSetAppHiddenRequest struct {
+	// non-empty
 	BundleID string `json:"bundle_id"`
 	Hidden   bool   `json:"hidden"`
 }
@@ -5691,6 +5873,7 @@ type NativeSetAppHiddenResponse struct {
 
 // NativeSetAppMutedRequest is the request type for native.set_app_muted.
 type NativeSetAppMutedRequest struct {
+	// non-empty
 	App   string `json:"app"`
 	Muted bool   `json:"muted"`
 }
@@ -5702,6 +5885,7 @@ type NativeSetAppMutedResponse struct {
 
 // NativeSetAppVolumeRequest is the request type for native.set_app_volume.
 type NativeSetAppVolumeRequest struct {
+	// non-empty
 	App string `json:"app"`
 	// wire double
 	Volume float64 `json:"volume"`
@@ -5715,12 +5899,15 @@ type NativeSetAppVolumeResponse struct {
 // NativeSetAudioDeviceRequest is the request type for native.set_audio_device.
 type NativeSetAudioDeviceRequest struct {
 	// "input" or "output".
+	// non-empty
 	DeviceType string `json:"device_type"`
-	UID        string `json:"uid"`
+	// non-empty
+	UID string `json:"uid"`
 }
 
 // NativeSetAudioDeviceVolumeRequest is the request type for native.set_audio_device_volume.
 type NativeSetAudioDeviceVolumeRequest struct {
+	// non-empty
 	DeviceUID string `json:"device_uid"`
 	// wire double
 	Volume float64 `json:"volume"`
@@ -5728,6 +5915,7 @@ type NativeSetAudioDeviceVolumeRequest struct {
 
 // NativeSetAudioInputDeviceRequest is the request type for native.set_audio_input_device.
 type NativeSetAudioInputDeviceRequest struct {
+	// non-empty
 	Name string `json:"name"`
 }
 
@@ -5738,6 +5926,7 @@ type NativeSetAudioInputDeviceResponse struct {
 
 // NativeSetAudioOutputDeviceRequest is the request type for native.set_audio_output_device.
 type NativeSetAudioOutputDeviceRequest struct {
+	// non-empty
 	Name string `json:"name"`
 }
 
@@ -5816,6 +6005,7 @@ type NativeSetDockMagnificationResponse struct {
 
 // NativeSetDockMinimizeEffectRequest is the request type for native.set_dock_minimize_effect.
 type NativeSetDockMinimizeEffectRequest struct {
+	// non-empty
 	Effect string `json:"effect"`
 }
 
@@ -5826,6 +6016,7 @@ type NativeSetDockMinimizeEffectResponse struct {
 
 // NativeSetDockPositionRequest is the request type for native.set_dock_position.
 type NativeSetDockPositionRequest struct {
+	// non-empty
 	Position string `json:"position"`
 }
 
@@ -5867,7 +6058,9 @@ type NativeSetDwellClickResponse struct {
 
 // NativeSetExtendedAttributeRequest is the request type for native.set_extended_attribute.
 type NativeSetExtendedAttributeRequest struct {
-	Name  string `json:"name"`
+	// non-empty
+	Name string `json:"name"`
+	// non-empty
 	Path  string `json:"path"`
 	Value string `json:"value"`
 }
@@ -5879,8 +6072,9 @@ type NativeSetExtendedAttributeResponse struct {
 
 // NativeSetFileHiddenRequest is the request type for native.set_file_hidden.
 type NativeSetFileHiddenRequest struct {
-	Hidden bool   `json:"hidden"`
-	Path   string `json:"path"`
+	Hidden bool `json:"hidden"`
+	// non-empty
+	Path string `json:"path"`
 }
 
 // NativeSetFileHiddenResponse is the response type for native.set_file_hidden.
@@ -5890,7 +6084,9 @@ type NativeSetFileHiddenResponse struct {
 
 // NativeSetFilePermissionsRequest is the request type for native.set_file_permissions.
 type NativeSetFilePermissionsRequest struct {
+	// non-empty
 	Mode string `json:"mode"`
+	// non-empty
 	Path string `json:"path"`
 }
 
@@ -5921,6 +6117,7 @@ type NativeSetFinderShowHiddenResponse struct {
 
 // NativeSetHighlightColorRequest is the request type for native.set_highlight_color.
 type NativeSetHighlightColorRequest struct {
+	// non-empty
 	Color string `json:"color"`
 }
 
@@ -5932,7 +6129,8 @@ type NativeSetHighlightColorResponse struct {
 // NativeSetHotCornerRequest is the request type for native.set_hot_corner.
 type NativeSetHotCornerRequest struct {
 	// wire uint32 · min 0
-	Action int    `json:"action"`
+	Action int `json:"action"`
+	// non-empty
 	Corner string `json:"corner"`
 }
 
@@ -5943,6 +6141,7 @@ type NativeSetHotCornerResponse struct {
 
 // NativeSetInputSourceRequest is the request type for native.set_input_source.
 type NativeSetInputSourceRequest struct {
+	// non-empty
 	SourceID string `json:"source_id"`
 }
 
@@ -6041,6 +6240,7 @@ type NativeSetOnScreenKeyboardEnabledResponse struct {
 
 // NativeSetPowerModeRequest is the request type for native.set_power_mode.
 type NativeSetPowerModeRequest struct {
+	// non-empty
 	Mode string `json:"mode"`
 }
 
@@ -6061,6 +6261,7 @@ type NativeSetScreenReaderEnabledResponse struct {
 
 // NativeSetScreenshotFormatRequest is the request type for native.set_screenshot_format.
 type NativeSetScreenshotFormatRequest struct {
+	// non-empty
 	Format string `json:"format"`
 }
 
@@ -6081,6 +6282,7 @@ type NativeSetScreenshotIncludeShadowResponse struct {
 
 // NativeSetScreenshotLocationRequest is the request type for native.set_screenshot_location.
 type NativeSetScreenshotLocationRequest struct {
+	// non-empty
 	Path string `json:"path"`
 }
 
@@ -6174,8 +6376,10 @@ type NativeSetTrackpadSpeedResponse struct {
 
 // NativeSetURLSchemeHandlerRequest is the request type for native.set_url_scheme_handler.
 type NativeSetURLSchemeHandlerRequest struct {
+	// non-empty
 	BundleID string `json:"bundle_id"`
-	Scheme   string `json:"scheme"`
+	// non-empty
+	Scheme string `json:"scheme"`
 }
 
 // NativeSetURLSchemeHandlerResponse is the response type for native.set_url_scheme_handler.
@@ -6201,6 +6405,7 @@ type NativeSetVolumeRequest struct {
 
 // NativeSetWallpaperRequest is the request type for native.set_wallpaper.
 type NativeSetWallpaperRequest struct {
+	// non-empty
 	Path string `json:"path"`
 }
 
@@ -6212,13 +6417,16 @@ type NativeSetWallpaperResponse struct {
 // NativeSetWindowAlphaRequest is the request type for native.set_window_alpha.
 type NativeSetWindowAlphaRequest struct {
 	// wire double
-	Alpha    float64 `json:"alpha"`
-	WindowID string  `json:"window_id"`
+	Alpha float64 `json:"alpha"`
+	// non-empty
+	WindowID string `json:"window_id"`
 }
 
 // NativeSetWindowLevelRequest is the request type for native.set_window_level.
 type NativeSetWindowLevelRequest struct {
-	Level    string `json:"level"`
+	// non-empty
+	Level string `json:"level"`
+	// non-empty
 	WindowID string `json:"window_id"`
 }
 
@@ -6229,6 +6437,7 @@ type NativeSetWindowLevelResponse struct {
 
 // NativeSetWindowPositionRequest is the request type for native.set_window_position.
 type NativeSetWindowPositionRequest struct {
+	// non-empty
 	WindowID string `json:"window_id"`
 	// wire int32
 	X int `json:"x"`
@@ -6238,7 +6447,8 @@ type NativeSetWindowPositionRequest struct {
 
 // NativeSetWindowShadowRequest is the request type for native.set_window_shadow.
 type NativeSetWindowShadowRequest struct {
-	Enabled  bool   `json:"enabled"`
+	Enabled bool `json:"enabled"`
+	// non-empty
 	WindowID string `json:"window_id"`
 }
 
@@ -6247,13 +6457,15 @@ type NativeSetWindowSizeRequest struct {
 	// wire int32
 	H int `json:"h"`
 	// wire int32
-	W        int    `json:"w"`
+	W int `json:"w"`
+	// non-empty
 	WindowID string `json:"window_id"`
 }
 
 // NativeSetWindowStickyRequest is the request type for native.set_window_sticky.
 type NativeSetWindowStickyRequest struct {
-	Sticky   bool   `json:"sticky"`
+	Sticky bool `json:"sticky"`
+	// non-empty
 	WindowID string `json:"window_id"`
 }
 
@@ -6306,7 +6518,8 @@ type NativeSpacesSpanDisplaysResponse struct {
 type NativeSpeakRequest struct {
 	// wire double · default null
 	Rate *float64 `json:"rate,omitempty"`
-	Text string   `json:"text"`
+	// non-empty
+	Text string `json:"text"`
 	// default null
 	Voice *string `json:"voice,omitempty"`
 }
@@ -6325,7 +6538,8 @@ type NativeSpeechRecognitionAvailableResponse struct {
 type NativeSpeechRecognizeFileRequest struct {
 	// default ""
 	Locale *string `json:"locale,omitempty"`
-	Path   string  `json:"path"`
+	// non-empty
+	Path string `json:"path"`
 }
 
 // NativeSpellingLanguageResponse is the response type for native.spelling_language.
@@ -6336,7 +6550,8 @@ type NativeSpellingLanguageResponse struct {
 // NativeSpotlightRequest is the request type for native.spotlight.
 type NativeSpotlightRequest struct {
 	// wire uint32 · default 20 · min 0
-	Limit *int   `json:"limit,omitempty"`
+	Limit *int `json:"limit,omitempty"`
+	// non-empty
 	Query string `json:"query"`
 	// default null
 	Scope []string `json:"scope"`
@@ -6390,7 +6605,9 @@ type NativeSwitchSpaceWhenSwitchingAppResponse struct {
 
 // NativeSymlinkRequest is the request type for native.symlink.
 type NativeSymlinkRequest struct {
-	Link   string `json:"link"`
+	// non-empty
+	Link string `json:"link"`
+	// non-empty
 	Source string `json:"source"`
 }
 
@@ -6539,6 +6756,7 @@ type NativeToggleBluetoothResponse struct {
 
 // NativeToggleFullscreenRequest is the request type for native.toggle_fullscreen.
 type NativeToggleFullscreenRequest struct {
+	// non-empty
 	WindowID string `json:"window_id"`
 }
 
@@ -6559,11 +6777,13 @@ type NativeTouchIDAvailableResponse struct {
 
 // NativeTransparencyConsentRequest is the request type for native.transparency_consent.
 type NativeTransparencyConsentRequest struct {
+	// non-empty
 	Service string `json:"service"`
 }
 
 // NativeTrashRequest is the request type for native.trash.
 type NativeTrashRequest struct {
+	// non-empty
 	Path string `json:"path"`
 }
 
@@ -6589,16 +6809,19 @@ type NativeTwentyFourHourClockResponse struct {
 
 // NativeUnhideAppRequest is the request type for native.unhide_app.
 type NativeUnhideAppRequest struct {
+	// non-empty
 	BundleID string `json:"bundle_id"`
 }
 
 // NativeUnminimizeWindowRequest is the request type for native.unminimize_window.
 type NativeUnminimizeWindowRequest struct {
+	// non-empty
 	WindowID string `json:"window_id"`
 }
 
 // NativeUnobserveWindowsRequest is the request type for native.unobserve_windows.
 type NativeUnobserveWindowsRequest struct {
+	// non-empty
 	SubscriptionID string `json:"subscription_id"`
 }
 
@@ -6609,8 +6832,10 @@ type NativeUnobserveWindowsResponse struct {
 
 // NativeUnzipRequest is the request type for native.unzip.
 type NativeUnzipRequest struct {
+	// non-empty
 	Destination string `json:"destination"`
-	Source      string `json:"source"`
+	// non-empty
+	Source string `json:"source"`
 }
 
 // NativeUnzipResponse is the response type for native.unzip.
@@ -6620,6 +6845,7 @@ type NativeUnzipResponse struct {
 
 // NativeURLSchemeHandlerRequest is the request type for native.url_scheme_handler.
 type NativeURLSchemeHandlerRequest struct {
+	// non-empty
 	Scheme string `json:"scheme"`
 }
 
@@ -6695,11 +6921,13 @@ type NativeWifiNetworksResponse struct {
 
 // NativeWindowAppRequest is the request type for native.window_app.
 type NativeWindowAppRequest struct {
+	// non-empty
 	WindowID string `json:"window_id"`
 }
 
 // NativeWindowBoundsRequest is the request type for native.window_bounds.
 type NativeWindowBoundsRequest struct {
+	// non-empty
 	WindowID string `json:"window_id"`
 }
 
@@ -6717,21 +6945,25 @@ type NativeWindowBoundsResponse struct {
 
 // NativeWindowDisplayIDRequest is the request type for native.window_display_id.
 type NativeWindowDisplayIDRequest struct {
+	// non-empty
 	WindowID string `json:"window_id"`
 }
 
 // NativeWindowIsFullscreenRequest is the request type for native.window_is_fullscreen.
 type NativeWindowIsFullscreenRequest struct {
+	// non-empty
 	WindowID string `json:"window_id"`
 }
 
 // NativeWindowIsMinimizedRequest is the request type for native.window_is_minimized.
 type NativeWindowIsMinimizedRequest struct {
+	// non-empty
 	WindowID string `json:"window_id"`
 }
 
 // NativeWindowLayerRequest is the request type for native.window_layer.
 type NativeWindowLayerRequest struct {
+	// non-empty
 	WindowID string `json:"window_id"`
 }
 
@@ -6743,17 +6975,20 @@ type NativeWindowScreenshotRequest struct {
 
 // NativeWindowSubroleRequest is the request type for native.window_subrole.
 type NativeWindowSubroleRequest struct {
+	// non-empty
 	WindowID string `json:"window_id"`
 }
 
 // NativeWindowTitleRequest is the request type for native.window_title.
 type NativeWindowTitleRequest struct {
+	// non-empty
 	WindowID string `json:"window_id"`
 }
 
 // NativeWmiQueryRequest is the request type for native.wmi_query.
 type NativeWmiQueryRequest struct {
 	// The class (`Win32_Battery`).
+	// non-empty
 	Class string `json:"class"`
 	// Instances to return at most, 1 to 1000 (default 200); more sets
 	// `truncated`.
@@ -6798,9 +7033,11 @@ type NativeWorldModelRequest struct {
 
 // NativeWriteAppPreferenceRequest is the request type for native.write_app_preference.
 type NativeWriteAppPreferenceRequest struct {
-	Domain string          `json:"domain"`
-	Key    string          `json:"key"`
-	Value  json.RawMessage `json:"value"`
+	// non-empty
+	Domain string `json:"domain"`
+	// non-empty
+	Key   string          `json:"key"`
+	Value json.RawMessage `json:"value"`
 }
 
 // NativeWriteAppPreferenceResponse is the response type for native.write_app_preference.
@@ -6811,7 +7048,8 @@ type NativeWriteAppPreferenceResponse struct {
 // NativeWriteFileRequest is the request type for native.write_file.
 type NativeWriteFileRequest struct {
 	Contents string `json:"contents"`
-	Path     string `json:"path"`
+	// non-empty
+	Path string `json:"path"`
 }
 
 // NativeWriteFileResponse is the response type for native.write_file.
@@ -6831,8 +7069,10 @@ type NativeXcodeVersionResponse struct {
 
 // NativeZipRequest is the request type for native.zip.
 type NativeZipRequest struct {
+	// non-empty
 	Destination string `json:"destination"`
-	Source      string `json:"source"`
+	// non-empty
+	Source string `json:"source"`
 }
 
 // NativeZipResponse is the response type for native.zip.
@@ -6843,6 +7083,7 @@ type NativeZipResponse struct {
 // NetworkRequestHostRequest is the request type for network.request_host.
 type NetworkRequestHostRequest struct {
 	// One exact host (no wildcard, no port, no path).
+	// non-empty
 	Host string `json:"host"`
 	// Shown to the user beside the switch — why the plugin wants it.
 	// default ""
@@ -6860,6 +7101,7 @@ type NetworkRequestHostResponse struct {
 type OutputClearRequest struct {
 	// The channel on which nothing is true now. Must be owned by the
 	// calling plugin.
+	// non-empty
 	Channel string `json:"channel"`
 }
 
@@ -6894,6 +7136,7 @@ type OutputStateResponse struct {
 // OverlayClearRequest is the request type for overlay.clear.
 type OverlayClearRequest struct {
 	// The overlay to remove; nothing happens if it is not showing.
+	// non-empty
 	ID string `json:"id"`
 }
 
@@ -6907,6 +7150,7 @@ type OverlayShowRequest struct {
 	// The caller's name for this overlay (letters, digits, `_`, `-`, `.`;
 	// up to 64). Showing it again replaces its shapes. Overlays are kept
 	// per caller, so one plugin cannot replace or clear another's.
+	// non-empty
 	ID string `json:"id"`
 	// Up to 64 shapes: outlines, fills, circles and a countdown ring. No
 	// text or images: nothing drawn can pass for a prompt. An empty list
@@ -6923,8 +7167,10 @@ type OverlayShowResponse struct {
 type OverridesApplyRequest struct {
 	// Action: "add", "remove", "restore", "reset", "patch", "rename", or
 	// "revert".
+	// non-empty
 	Action string `json:"action"`
 	// Collection name to override.
+	// non-empty
 	Collection string `json:"collection"`
 	// Field key for the "unpatch" action — removes ONE field from the
 	// tenant's patch of `id` (the per-field inverse of "patch"; the patch
@@ -6997,13 +7243,16 @@ type PipelinesInjectRequest struct {
 	// (`audio_*`, `transcript`, `vocabulary_update`) are the platform's to
 	// send; a plugin forging one into its own pipeline was previously
 	// unchecked here.
+	// non-empty
 	EventType string `json:"event_type"`
 	// Pipeline to configure. The caller must have introduced it.
+	// non-empty
 	Name string `json:"name"`
 	// Stage within that pipeline, spelled as the pipeline definition spells
 	// it — a role like `_platform.stt` or a qualified stage name. Required:
 	// before per-stage channels existed this operation could only ever reach
 	// the terminal stage, and silently did nothing for any other.
+	// non-empty
 	Stage string `json:"stage"`
 }
 
@@ -7015,8 +7264,9 @@ type PipelinesInjectResponse struct {
 // PipelinesRunRequest is the request type for pipelines.run.
 type PipelinesRunRequest struct {
 	// default false
-	Ephemeral *bool  `json:"ephemeral,omitempty"`
-	Name      string `json:"name"`
+	Ephemeral *bool `json:"ephemeral,omitempty"`
+	// non-empty
+	Name string `json:"name"`
 	// default {}
 	ParamOverrides map[string]json.RawMessage `json:"param_overrides,omitempty"`
 }
@@ -7041,8 +7291,9 @@ type PipelinesStopRequest struct {
 	// detected dictation stop phrase, from the transcript's word_onsets_ms.
 	// Absent = process everything.
 	// wire uint64 (64-bit) · default null · min 0
-	AudioCutoffMs *int   `json:"audio_cutoff_ms,omitempty"`
-	Name          string `json:"name"`
+	AudioCutoffMs *int `json:"audio_cutoff_ms,omitempty"`
+	// non-empty
+	Name string `json:"name"`
 }
 
 // PipelinesStopResponse is the response type for pipelines.stop.
@@ -7052,6 +7303,7 @@ type PipelinesStopResponse struct {
 
 // PipelinesWarmRequest is the request type for pipelines.warm.
 type PipelinesWarmRequest struct {
+	// non-empty
 	Name string `json:"name"`
 	// Per-stage param overrides applied to the warmed consumer stages, mirroring
 	// `pipelines.run`. Lets a caller prewarm the model it will actually run (e.g.
@@ -7090,6 +7342,7 @@ type PluginDataExportRequest struct {
 	// default null
 	Filename *string `json:"filename,omitempty"`
 	// Path of the file to export, relative to the caller's data dir.
+	// non-empty
 	Path string `json:"path"`
 }
 
@@ -7146,6 +7399,7 @@ type PluginReportHealthRequest struct {
 
 // PrivacyGetRecordingRequest is the request type for privacy.get_recording.
 type PrivacyGetRecordingRequest struct {
+	// non-empty
 	Name string `json:"name"`
 }
 
@@ -7158,8 +7412,9 @@ type PrivacyGetRecordingResponse struct {
 
 // PrivacySetRecordingRequest is the request type for privacy.set_recording.
 type PrivacySetRecordingRequest struct {
-	Enabled bool   `json:"enabled"`
-	Name    string `json:"name"`
+	Enabled bool `json:"enabled"`
+	// non-empty
+	Name string `json:"name"`
 }
 
 // PrivilegesListResponse is the response type for privileges.list.
@@ -7172,6 +7427,7 @@ type PrivilegesListResponse struct {
 type PrivilegesRelinquishRequest struct {
 	// Privilege name — must appear in the calling plugin's
 	// `optional_privileges`.
+	// non-empty
 	Privilege string `json:"privilege"`
 }
 
@@ -7187,6 +7443,7 @@ type PrivilegesRelinquishResponse struct {
 type PrivilegesRequestRequest struct {
 	// Privilege name — must appear in the calling plugin's
 	// `optional_privileges`.
+	// non-empty
 	Privilege string `json:"privilege"`
 	// Short attributed reason shown to the user next to the Approve
 	// button (e.g. "script 'headphones' uses query:power"). Untrusted
@@ -7258,9 +7515,11 @@ type RecognitionRedecodeRequest struct {
 	MaxActive *int `json:"max_active,omitempty"`
 	// Model dir name under app-support `models/` (single component, no
 	// traversal), e.g. `"sherpa-offline-nemo"`.
+	// non-empty
 	Model string `json:"model"`
 	// Registered stage id whose binary's `probe` subcommand runs the re-decode,
 	// e.g. `"voice.sherpa_commands"`. Validated against the stage registry.
+	// non-empty
 	Stage string `json:"stage"`
 }
 
@@ -7276,6 +7535,7 @@ type RecognitionRedecodeResponse struct {
 
 // SecretsDeleteRequest is the request type for secrets.delete.
 type SecretsDeleteRequest struct {
+	// non-empty
 	Name string `json:"name"`
 }
 
@@ -7289,6 +7549,7 @@ type SecretsDeleteResponse struct {
 
 // SecretsIsSetRequest is the request type for secrets.is_set.
 type SecretsIsSetRequest struct {
+	// non-empty
 	Name string `json:"name"`
 }
 
@@ -7314,12 +7575,14 @@ type SecretsListResponse struct {
 type SecretsRequestSlotRequest struct {
 	// The ONE host the value may be sent to — one this plugin may already
 	// reach (declared, or requested with `network.request_host`).
+	// non-empty
 	Host string `json:"host"`
 	// What the user sees on the row, e.g. "Weather script — API key".
 	// default ""
 	Label *string `json:"label,omitempty"`
 	// The secret's name in this plugin's drawer (ASCII letters, digits,
 	// `_`, `-`, `.`).
+	// non-empty
 	Name string `json:"name"`
 }
 
@@ -7347,8 +7610,10 @@ type SecretsSetRequest struct {
 	Host *string `json:"host,omitempty"`
 	// The secret's name within this plugin. What a manifest or a script
 	// header refers to.
+	// non-empty
 	Name string `json:"name"`
 	// The value. This is the only direction a value travels over the wire.
+	// non-empty
 	Value string `json:"value"`
 }
 
@@ -7411,11 +7676,13 @@ type SessionEndCleanupResponse struct {
 type SettingsPatchSignalsRequest struct {
 	// Datastar signal expression, e.g. `{activeGroup: 2, activeDialModeIndex: 1}`.
 	// Sent as a `datastar-patch-signals` SSE event to all active settings streams.
+	// non-empty
 	Signals string `json:"signals"`
 }
 
 // SettingsRedirectRequest is the request type for settings.redirect.
 type SettingsRedirectRequest struct {
+	// non-empty
 	Tab string `json:"tab"`
 }
 
@@ -7472,6 +7739,7 @@ type SettingsRulesCreateResponse struct {
 type SettingsRulesUpdateRequest struct {
 	// Existing canonical command id (the previous canonical phrase) of
 	// the rule being updated. Required.
+	// non-empty
 	Canonical string `json:"canonical"`
 	// Check the candidate and report any conflict without saving it or
 	// removing the command it would replace.
@@ -7507,6 +7775,7 @@ type SettingsRulesUpdateResponse struct {
 
 // SpeechAnnounceRequest is the request type for speech.announce.
 type SpeechAnnounceRequest struct {
+	// non-empty
 	Text string `json:"text"`
 }
 
@@ -7517,12 +7786,14 @@ type SpeechSayRequest struct {
 	// default null
 	Priority *string `json:"priority,omitempty"`
 	// The words. Plain language, no markup; the system voice reads it as is.
+	// non-empty
 	Text string `json:"text"`
 }
 
 // SystemLaunchAppRequest is the request type for system.launch_app.
 type SystemLaunchAppRequest struct {
 	// Bundle ID of the application to launch (e.g. "com.apple.Safari").
+	// non-empty
 	BundleID string `json:"bundle_id"`
 	// Whether to launch a fresh instance even if the app is already running.
 	// default false
@@ -7540,12 +7811,14 @@ type SystemNotifyRequest struct {
 	// wire uint32 · default null · min 0
 	DurationSecs *int `json:"duration_secs,omitempty"`
 	// Notification title (rendered as `<h1 id="title">`).
+	// non-empty
 	Title string `json:"title"`
 }
 
 // SystemRunShellRequest is the request type for system.run_shell.
 type SystemRunShellRequest struct {
 	// Shell command to execute via `/bin/bash -c`.
+	// non-empty
 	Command string `json:"command"`
 }
 
@@ -7556,6 +7829,7 @@ type TrialBeginResponse struct {
 
 // TrialEndRequest is the request type for trial.end.
 type TrialEndRequest struct {
+	// non-empty
 	TrialID string `json:"trial_id"`
 }
 
@@ -7570,8 +7844,10 @@ type TrialEndResponse struct {
 // TrialEnterContextRequest is the request type for trial.enter_context.
 type TrialEnterContextRequest struct {
 	// Command id from `commands.enumerate` — `<owner_plugin>:<pattern>`.
+	// non-empty
 	CommandID string `json:"command_id"`
-	TrialID   string `json:"trial_id"`
+	// non-empty
+	TrialID string `json:"trial_id"`
 }
 
 // TrialEnterContextResponse is the response type for trial.enter_context.
@@ -7594,14 +7870,18 @@ type TrialEnterContextResponse struct {
 
 // TrialRegisterFixtureRequest is the request type for trial.register_fixture.
 type TrialRegisterFixtureRequest struct {
+	// non-empty
 	FixtureHandle string `json:"fixture_handle"`
+	// non-empty
 	OwnerPluginID string `json:"owner_plugin_id"`
-	TrialID       string `json:"trial_id"`
+	// non-empty
+	TrialID string `json:"trial_id"`
 }
 
 // TrialResolveSamplesRequest is the request type for trial.resolve_samples.
 type TrialResolveSamplesRequest struct {
 	// Command id from `commands.enumerate` — `<owner_plugin>:<pattern>`.
+	// non-empty
 	CommandID string `json:"command_id"`
 }
 
