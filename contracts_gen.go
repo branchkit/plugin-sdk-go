@@ -175,7 +175,6 @@ const (
 	MethodNativeCurrentWallpaper              = "native.current_wallpaper"                 // since 0.1.0
 	MethodNativeCursor                        = "native.cursor"                            // since 0.1.0
 	MethodNativeCursorInfo                    = "native.cursor_info"                       // since 0.1.0
-	MethodNativeCursorShakeToLocate           = "native.cursor_shake_to_locate"            // since 0.1.0
 	MethodNativeDarkMode                      = "native.dark_mode"                         // since 0.1.0
 	MethodNativeDateFormat                    = "native.date_format"                       // since 0.1.0
 	MethodNativeDbusCall                      = "native.dbus_call"                         // since 0.2.0
@@ -316,6 +315,7 @@ const (
 	MethodNativeLiveTextEnabled               = "native.live_text_enabled"                 // since 0.1.0
 	MethodNativeLocalIp                       = "native.local_ip"                          // since 0.1.0
 	MethodNativeLocale                        = "native.locale"                            // since 0.1.0
+	MethodNativeLocatePointerEnabled          = "native.locate_pointer_enabled"            // since 0.1.0
 	MethodNativeLocationEnabled               = "native.location_enabled"                  // since 0.1.0
 	MethodNativeLogOut                        = "native.log_out"                           // since 0.1.0
 	MethodNativeLoggedInUsers                 = "native.logged_in_users"                   // since 0.1.0

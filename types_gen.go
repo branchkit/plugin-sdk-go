@@ -3877,11 +3877,6 @@ type NativeCursorInfoResponse struct {
 	Y int `json:"y"`
 }
 
-// NativeCursorShakeToLocateResponse is the response type for native.cursor_shake_to_locate.
-type NativeCursorShakeToLocateResponse struct {
-	Enabled bool `json:"enabled"`
-}
-
 // NativeDarkModeResponse is the response type for native.dark_mode.
 type NativeDarkModeResponse struct {
 	IsDark bool `json:"is_dark"`
@@ -4818,6 +4813,11 @@ type NativeLocalIPResponse struct {
 // NativeLocaleResponse is the response type for native.locale.
 type NativeLocaleResponse struct {
 	Locale string `json:"locale"`
+}
+
+// NativeLocatePointerEnabledResponse is the response type for native.locate_pointer_enabled.
+type NativeLocatePointerEnabledResponse struct {
+	Enabled bool `json:"enabled"`
 }
 
 // NativeLocationEnabledResponse is the response type for native.location_enabled.

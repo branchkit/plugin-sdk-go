@@ -1569,16 +1569,6 @@ func (p *Plugin) NativeCursorInfo() (*NativeCursorInfoResponse, error) {
 	return &result, nil
 }
 
-// NativeCursorShakeToLocate check if shake mouse to locate cursor is enabled.
-func (p *Plugin) NativeCursorShakeToLocate() (*NativeCursorShakeToLocateResponse, error) {
-	var result NativeCursorShakeToLocateResponse
-	err := p.Call(MethodNativeCursorShakeToLocate, nil, &result)
-	if err != nil {
-		return nil, err
-	}
-	return &result, nil
-}
-
 // NativeDarkMode check if dark mode is active.
 func (p *Plugin) NativeDarkMode() (*NativeDarkModeResponse, error) {
 	var result NativeDarkModeResponse
@@ -2984,6 +2974,16 @@ func (p *Plugin) NativeLocalIP() (*NativeLocalIPResponse, error) {
 func (p *Plugin) NativeLocale() (*NativeLocaleResponse, error) {
 	var result NativeLocaleResponse
 	err := p.Call(MethodNativeLocale, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeLocatePointerEnabled check if the system shows where the pointer is on request: shaking it on macOS, pressing Ctrl on GNOME and Windows.
+func (p *Plugin) NativeLocatePointerEnabled() (*NativeLocatePointerEnabledResponse, error) {
+	var result NativeLocatePointerEnabledResponse
+	err := p.Call(MethodNativeLocatePointerEnabled, nil, &result)
 	if err != nil {
 		return nil, err
 	}
