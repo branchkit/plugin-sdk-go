@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"reflect"
+	"sync"
 	"testing"
 	"time"
 )
@@ -56,7 +58,7 @@ func mockActuator(
 // which is not enough to exercise error classification.
 func runPluginCallWireErr(t *testing.T, wireErr *rpcError, call func(p *Plugin)) {
 	t.Helper()
-	p, w, r := newTestPlugin()
+	p, w, r := newTestPluginT(t)
 	go p.Run()
 
 	go func() {
@@ -93,7 +95,7 @@ func runPluginCall(
 	call func(p *Plugin),
 ) {
 	t.Helper()
-	p, w, r := newTestPlugin()
+	p, w, r := newTestPluginT(t)
 	go p.Run()
 	mockActuator(t, w, r, responder)
 
@@ -109,6 +111,71 @@ func runPluginCall(
 		t.Fatal("plugin call did not return within timeout")
 	}
 	w.(io.Closer).Close()
+}
+
+// wireCall is one request the plugin put on the wire.
+type wireCall struct {
+	Method string
+	Params json.RawMessage
+}
+
+// captureCalls runs `call` against a mock actuator that answers every
+// request with reply(method) and records each request verbatim (bar Run's
+// plugin.initialized notification), so a test
+// can assert the exact wire shape rather than only what the responder
+// accepted.
+func captureCalls(t *testing.T, reply func(method string) any, call func(p *Plugin)) []wireCall {
+	t.Helper()
+	var mu sync.Mutex
+	var calls []wireCall
+	runPluginCall(t,
+		func(method string, params json.RawMessage) (any, string) {
+			// Run's own startup notification is not the call under test.
+			if method == "plugin.initialized" {
+				return nil, ""
+			}
+			mu.Lock()
+			calls = append(calls, wireCall{method, append(json.RawMessage(nil), params...)})
+			mu.Unlock()
+			return reply(method), ""
+		},
+		call,
+	)
+	mu.Lock()
+	defer mu.Unlock()
+	return append([]wireCall(nil), calls...)
+}
+
+// assertWire fails unless got is exactly one call to `method` whose params
+// are JSON-equal to want (a JSON literal; key order is irrelevant). A
+// top-level null in the sent params is treated as absent: the actuator reads
+// those fields as Option, where null and missing are the same, and some
+// generated request fields (`roles`) lack omitempty.
+func assertWire(t *testing.T, got []wireCall, method, want string) {
+	t.Helper()
+	if len(got) != 1 {
+		t.Fatalf("got %d calls, want exactly 1: %+v", len(got), got)
+	}
+	if got[0].Method != method {
+		t.Fatalf("method = %q, want %q", got[0].Method, method)
+	}
+	var g, w any
+	if err := json.Unmarshal(got[0].Params, &g); err != nil {
+		t.Fatalf("params are not JSON: %s", got[0].Params)
+	}
+	if m, ok := g.(map[string]any); ok {
+		for k, v := range m {
+			if v == nil {
+				delete(m, k)
+			}
+		}
+	}
+	if err := json.Unmarshal([]byte(want), &w); err != nil {
+		t.Fatalf("bad want literal: %v", err)
+	}
+	if !reflect.DeepEqual(g, w) {
+		t.Fatalf("%s params =\n  %s\nwant\n  %s", method, got[0].Params, want)
+	}
 }
 
 func TestAppendReturnsEntryID(t *testing.T) {

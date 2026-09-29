@@ -91,7 +91,7 @@ func TestSetAmbientCorrelationIgnoresEmpty(t *testing.T) {
 // a handler reads the inbound envelope id via CurrentCorrelation(), and an
 // outbound Notify it makes carries the same id on the envelope.
 func TestHandlerReadsInboundCorrelationAndStampsOutbound(t *testing.T) {
-	p, actuatorW, actuatorR := newTestPlugin()
+	p, actuatorW, actuatorR := newTestPluginT(t)
 
 	seen := make(chan string, 1)
 	p.Handle("do_thing", func(_ json.RawMessage) (any, error) {
@@ -131,7 +131,7 @@ func TestHandlerReadsInboundCorrelationAndStampsOutbound(t *testing.T) {
 // TestNoInboundCorrelationLeavesOutboundUnstamped verifies that with no inbound
 // id, the handler sees "" and outbound messages carry no correlation.
 func TestNoInboundCorrelationLeavesOutboundUnstamped(t *testing.T) {
-	p, actuatorW, actuatorR := newTestPlugin()
+	p, actuatorW, actuatorR := newTestPluginT(t)
 
 	p.Handle("do_thing", func(_ json.RawMessage) (any, error) {
 		if got := p.CurrentCorrelation(); got != "" {

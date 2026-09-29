@@ -1,13 +1,39 @@
 package harness_test
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/branchkit/plugin-sdk-go/harness"
 )
 
+// These tests drive the real branchkit-test-harness binary against the
+// app repo's plugins/helloworld, which must be BUILT first — the harness
+// spawns the plugin's `run` binary:
+//
+//	cd plugins/helloworld/src && go build -o ../helloworld-plugin .
+//
+// Both missing pieces skip with a message; BRANCHKIT_REQUIRE_HARNESS=1 makes
+// them fail instead (see harness.Start).
+const helloworldDir = "../../plugins/helloworld"
+
+func startHelloworld(t *testing.T) *harness.Harness {
+	t.Helper()
+	bin := filepath.Join(helloworldDir, "helloworld-plugin")
+	if _, err := os.Stat(bin); err != nil {
+		msg := "helloworld plugin not built (" + bin + "); build it with " +
+			"`cd plugins/helloworld/src && go build -o ../helloworld-plugin .`"
+		if harness.Required() {
+			t.Fatal(msg)
+		}
+		t.Skip(msg)
+	}
+	return harness.Start(t, helloworldDir)
+}
+
 func TestStartStop(t *testing.T) {
-	h := harness.Start(t, "../../plugins/helloworld")
+	h := startHelloworld(t)
 	state := h.GetPluginState()
 	if !state.Alive {
 		t.Fatal("plugin should be alive after start")
@@ -18,7 +44,7 @@ func TestStartStop(t *testing.T) {
 }
 
 func TestSimulateCommandTie(t *testing.T) {
-	h := harness.Start(t, "../../plugins/helloworld")
+	h := startHelloworld(t)
 
 	// Seed the consumed `apps` vocabulary so the capture branch is live —
 	// helloworld only consumes it; in production the system plugin
@@ -50,7 +76,7 @@ func TestSimulateCommandTie(t *testing.T) {
 }
 
 func TestSimulateCommandNoMatch(t *testing.T) {
-	h := harness.Start(t, "../../plugins/helloworld")
+	h := startHelloworld(t)
 
 	result := h.SimulateCommand("this will not match anything")
 	if result.Matched {
@@ -59,7 +85,7 @@ func TestSimulateCommandNoMatch(t *testing.T) {
 }
 
 func TestParameterizedCommand(t *testing.T) {
-	h := harness.Start(t, "../../plugins/helloworld")
+	h := startHelloworld(t)
 
 	// With the provider stub's schema loaded, the `<apps>` capture
 	// resolves the spoken key to the collection's value field, so the
@@ -82,7 +108,7 @@ func TestParameterizedCommand(t *testing.T) {
 }
 
 func TestTagSetGetClear(t *testing.T) {
-	h := harness.Start(t, "../../plugins/helloworld")
+	h := startHelloworld(t)
 
 	h.SetTag("test.example.tag")
 	h.RequireTag("test.example.tag")
@@ -97,7 +123,7 @@ func TestTagSetGetClear(t *testing.T) {
 }
 
 func TestReset(t *testing.T) {
-	h := harness.Start(t, "../../plugins/helloworld")
+	h := startHelloworld(t)
 
 	h.SetTag("test.before.reset")
 	h.RequireTag("test.before.reset")

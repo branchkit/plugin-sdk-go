@@ -51,7 +51,9 @@ type Harness struct {
 
 // Start spawns the test harness and loads the plugin at dir.
 // The harness binary is located via BRANCHKIT_TEST_HARNESS env var, or by
-// searching common build output paths relative to the workspace root.
+// searching common build output paths relative to the workspace root, then the
+// installed app. A missing binary skips the test, or fails it when
+// BRANCHKIT_REQUIRE_HARNESS is set.
 // Cleanup is registered via t.Cleanup — no need to call Stop manually.
 func Start(t testing.TB, dir string) *Harness {
 	t.Helper()
@@ -340,24 +342,46 @@ func (h *Harness) TryCallPlugin(method string, params any, result any) error {
 	return h.tryCall("test.call_plugin_method", map[string]any{"method": method, "params": params}, result)
 }
 
-func findHarnessBinary(t testing.TB) string {
-	t.Helper()
+// harnessMissing is the one message every SDK gives when the binary is
+// absent: where it ships and how to build it.
+const harnessMissing = "harness: branchkit-test-harness binary not found. It ships inside " +
+	"BranchKit.app (Contents/Resources); install the app, or set " +
+	"BRANCHKIT_TEST_HARNESS to a harness binary. In an app-repo checkout, " +
+	"build it with `cargo build -p branchkit-test-harness` (it lands in " +
+	"target/debug/branchkit-test-harness)."
 
+// Required reports whether BRANCHKIT_REQUIRE_HARNESS asks for a missing
+// harness binary to fail the test instead of skipping it. Set it in any CI
+// lane that builds the binary: without it, a lookup that silently stops
+// finding the binary turns every harness test into a skip and the suite still
+// reports green.
+func Required() bool {
+	switch os.Getenv("BRANCHKIT_REQUIRE_HARNESS") {
+	case "", "0", "false":
+		return false
+	}
+	return true
+}
+
+// lookupHarnessBinary returns the harness binary's path, or "" when none is
+// found. BRANCHKIT_TEST_HARNESS wins; then a Cargo target directory walking up
+// from the working directory (app-repo checkouts), then the installed app, then
+// PATH. A freshly built binary is searched before the installed app's so a
+// stale installed harness never shadows the one just built.
+func lookupHarnessBinary() string {
 	if env := os.Getenv("BRANCHKIT_TEST_HARNESS"); env != "" {
 		return env
 	}
 
-	// The installed app ships the harness in its Resources; then walk up
-	// from CWD looking for a Cargo target directory (app-repo checkouts).
 	candidates := []string{
-		"/Applications/BranchKit.app/Contents/Resources/branchkit-test-harness",
-		filepath.Join(os.Getenv("HOME"), "Applications/BranchKit.app/Contents/Resources/branchkit-test-harness"),
 		"target/debug/branchkit-test-harness",
 		"target/release/branchkit-test-harness",
 		"../target/debug/branchkit-test-harness",
 		"../target/release/branchkit-test-harness",
 		"../../target/debug/branchkit-test-harness",
 		"../../target/release/branchkit-test-harness",
+		"/Applications/BranchKit.app/Contents/Resources/branchkit-test-harness",
+		filepath.Join(os.Getenv("HOME"), "Applications/BranchKit.app/Contents/Resources/branchkit-test-harness"),
 	}
 
 	for _, c := range candidates {
@@ -370,17 +394,28 @@ func findHarnessBinary(t testing.TB) string {
 		}
 	}
 
-	// Try PATH
 	if p, err := exec.LookPath("branchkit-test-harness"); err == nil {
+		return p
+	}
+	return ""
+}
+
+func findHarnessBinary(t testing.TB) string {
+	t.Helper()
+
+	if p := lookupHarnessBinary(); p != "" {
 		return p
 	}
 
 	// Skip (not fail) when the binary is absent — but say where it lives,
 	// so a skip is never mistaken for "these tests can't be run here."
-	t.Skip("harness: branchkit-test-harness binary not found. It ships inside " +
-		"BranchKit.app (Contents/Resources); install the app, or set " +
-		"BRANCHKIT_TEST_HARNESS to a harness binary. These tests then run " +
-		"a real matcher, event bus, and HUD registry against your plugin.")
+	// BRANCHKIT_REQUIRE_HARNESS turns the skip into a failure.
+	if Required() {
+		t.Fatalf("%s (BRANCHKIT_REQUIRE_HARNESS is set, so a missing binary fails instead of skipping.)", harnessMissing)
+	}
+	t.Skip(harnessMissing + " These tests then run a real matcher, event bus, " +
+		"and HUD registry against your plugin; set BRANCHKIT_REQUIRE_HARNESS=1 " +
+		"to fail instead of skipping.")
 	return ""
 }
 

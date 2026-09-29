@@ -33,7 +33,7 @@ func sendAction(t *testing.T, w io.Writer, r *bufio.Scanner, action string, para
 }
 
 func TestHandleActionDispatchesByAction(t *testing.T) {
-	p, actuatorW, actuatorR := newTestPlugin()
+	p, actuatorW, actuatorR := newTestPluginT(t)
 
 	var snapCalls atomic.Int32
 	var focusCalls atomic.Int32
@@ -82,7 +82,7 @@ func TestHandleActionDispatchesByAction(t *testing.T) {
 }
 
 func TestHandleActionReturnsNotHandledForUnknown(t *testing.T) {
-	p, actuatorW, actuatorR := newTestPlugin()
+	p, actuatorW, actuatorR := newTestPluginT(t)
 
 	p.HandleAction("foo.snap", func(req *OnActionRequest) (any, error) {
 		return nil, nil
@@ -110,7 +110,7 @@ func TestHandleActionReturnsNotHandledForUnknown(t *testing.T) {
 // allowing both would silently clobber the dispatcher.
 
 func TestHandleActionPanicsAfterHandleOnAction(t *testing.T) {
-	p, _, _ := newTestPlugin()
+	p, _, _ := newTestPluginT(t)
 
 	p.Handle(HookOnAction, func(params json.RawMessage) (any, error) {
 		return OnActionResponse{Status: OnActionStatusOk}, nil
@@ -125,7 +125,7 @@ func TestHandleActionPanicsAfterHandleOnAction(t *testing.T) {
 }
 
 func TestHandleOnActionPanicsAfterHandleAction(t *testing.T) {
-	p, _, _ := newTestPlugin()
+	p, _, _ := newTestPluginT(t)
 
 	p.HandleAction("foo.snap", func(req *OnActionRequest) (any, error) { return nil, nil })
 
@@ -140,7 +140,7 @@ func TestHandleOnActionPanicsAfterHandleAction(t *testing.T) {
 }
 
 func TestHandleActionTypedHelper(t *testing.T) {
-	p, actuatorW, actuatorR := newTestPlugin()
+	p, actuatorW, actuatorR := newTestPluginT(t)
 
 	type SnapParams struct {
 		Position string `json:"position"`
@@ -166,7 +166,7 @@ func TestHandleActionTypedHelper(t *testing.T) {
 }
 
 func TestHandleActionPropagatesActiveAppContext(t *testing.T) {
-	p, actuatorW, actuatorR := newTestPlugin()
+	p, actuatorW, actuatorR := newTestPluginT(t)
 
 	var seenApp *string
 	p.HandleAction("foo.snap", func(req *OnActionRequest) (any, error) {
@@ -186,7 +186,7 @@ func TestHandleActionPropagatesActiveAppContext(t *testing.T) {
 }
 
 func TestRegisteredActionTypes(t *testing.T) {
-	p, _, _ := newTestPlugin()
+	p, _, _ := newTestPluginT(t)
 
 	if got := p.RegisteredActionTypes(); got != nil {
 		t.Fatalf("expected nil before registration, got %v", got)

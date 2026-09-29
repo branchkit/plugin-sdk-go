@@ -79,7 +79,7 @@ func TestEventOriginDoesNotCrossAGoroutine(t *testing.T) {
 // End to end through the read loop: the envelope field the actuator writes is
 // the one the listener reads.
 func TestEventOriginArrivesOffTheWire(t *testing.T) {
-	p, actuatorW, actuatorR := newTestPlugin()
+	p, actuatorW, actuatorR := newTestPluginT(t)
 	// Drain what the plugin writes (plugin.initialized): the pipe is
 	// unbuffered, so an undrained write would stall Run.
 	go func() {

@@ -170,7 +170,9 @@ func TestGreetMatches(t *testing.T) {
 ```
 
 It runs the `branchkit-test-harness` binary that ships inside BranchKit.app;
-set `BRANCHKIT_TEST_HARNESS` to its path anywhere else. `go test ./...` runs your
+set `BRANCHKIT_TEST_HARNESS` to its path anywhere else. Without the binary the
+harness tests skip; set `BRANCHKIT_REQUIRE_HARNESS=1` (in CI, say) to make that a
+failure instead. `go test ./...` runs your
 tests; `branchkit-cli dev test .` checks the manifest and runs the platform's
 own conformance checks against the plugin.
 

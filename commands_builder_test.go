@@ -129,3 +129,66 @@ func TestSetsTagsAndBridgeFlags(t *testing.T) {
 		t.Fatalf("cancels_bridge should be true, got %v", m["cancels_bridge"])
 	}
 }
+
+// PushCommandSpecs replaces the whole set (no group on the wire);
+// PushCommandGroup replaces one named group, and a nil slice retracts it.
+// Both return the count the platform reports for the whole plugin.
+
+func TestPushCommandSpecsWire(t *testing.T) {
+	spec := Command(Word("scroll"), Word("down")).Action("test.scroll", map[string]any{"n": 1}).Build()
+	var n int
+	calls := captureCalls(t,
+		func(string) any { return map[string]any{"ok": true, "count": 5} },
+		func(p *Plugin) {
+			var err error
+			if n, err = PushCommandSpecs(p, []CommandSpec{spec}); err != nil {
+				t.Errorf("PushCommandSpecs: %v", err)
+			}
+		})
+	specJSON, _ := json.Marshal(spec)
+	assertWire(t, calls, "commands.push", `{"commands":[`+string(specJSON)+`]}`)
+	if n != 5 {
+		t.Fatalf("count = %d, want 5", n)
+	}
+	// The spec itself carries the pattern and action the builder was given.
+	if !strings.Contains(string(specJSON), `"scroll"`) || !strings.Contains(string(specJSON), `"test.scroll"`) {
+		t.Fatalf("spec lost its pattern or action: %s", specJSON)
+	}
+}
+
+func TestPushCommandGroupWire(t *testing.T) {
+	spec := Command(Word("hint")).Action("test.hint").Build()
+	specJSON, _ := json.Marshal(spec)
+	calls := captureCalls(t,
+		func(string) any { return map[string]any{"ok": true, "count": 1} },
+		func(p *Plugin) {
+			if _, err := PushCommandGroup(p, "hints", []CommandSpec{spec}); err != nil {
+				t.Errorf("PushCommandGroup: %v", err)
+			}
+		})
+	assertWire(t, calls, "commands.push", `{"group":"hints","commands":[`+string(specJSON)+`]}`)
+
+	// Retracting a group sends the group with no commands (null reads as
+	// empty platform-side).
+	calls = captureCalls(t,
+		func(string) any { return map[string]any{"ok": true, "count": 0} },
+		func(p *Plugin) {
+			if _, err := PushCommandGroup(p, "hints", nil); err != nil {
+				t.Errorf("PushCommandGroup(nil): %v", err)
+			}
+		})
+	assertWire(t, calls, "commands.push", `{"group":"hints"}`)
+}
+
+func TestPushCommandGroupRequiresName(t *testing.T) {
+	calls := captureCalls(t,
+		func(string) any { return map[string]any{} },
+		func(p *Plugin) {
+			if _, err := PushCommandGroup(p, "", nil); err == nil {
+				t.Error("an empty group name must be refused")
+			}
+		})
+	if len(calls) != 0 {
+		t.Fatalf("an unnamed group push reached the wire: %+v", calls)
+	}
+}

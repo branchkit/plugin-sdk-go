@@ -270,7 +270,7 @@ func TestMirrorEventDrivenRefresh(t *testing.T) {
 		}, ""
 	}
 
-	p, w, r := newTestPlugin()
+	p, w, r := newTestPluginT(t)
 	m := p.MirrorCollection("alphabet")
 
 	var changeMu sync.Mutex

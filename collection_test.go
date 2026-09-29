@@ -2,6 +2,7 @@ package branchkit
 
 import (
 	"encoding/json"
+	"strings"
 	"testing"
 	"time"
 )
@@ -223,7 +224,7 @@ func TestListOptsBuilderEncodesTypedValues(t *testing.T) {
 }
 
 func TestSubscribeFiltersByName(t *testing.T) {
-	p, _, _ := newTestPlugin()
+	p, _, _ := newTestPluginT(t)
 
 	calls := make(chan CollectionUpdatedEventParams, 4)
 	p.Subscribe("things", func(evt CollectionUpdatedEventParams) {
@@ -490,4 +491,126 @@ func TestListAllGivesUpOnAnEndlesslyGrowingCollection(t *testing.T) {
 			}
 		},
 	)
+}
+
+// PutMany / DeleteMany / Replace are the batch writers; each test pins the
+// exact request (so a renamed or dropped field fails here, not in the
+// platform) and the decoding of the counts.
+
+func TestPutManyWireAndCount(t *testing.T) {
+	var n int
+	calls := captureCalls(t,
+		func(string) any { return map[string]any{"ok": true, "count": 2} },
+		func(p *Plugin) {
+			var err error
+			n, err = p.PutMany("things", []CollectionPutEntry{
+				{ID: "a", Payload: json.RawMessage(`{"v":1}`)},
+				{ID: "b", Payload: json.RawMessage(`{"v":2}`)},
+			})
+			if err != nil {
+				t.Errorf("PutMany: %v", err)
+			}
+		})
+	assertWire(t, calls, "collection.put",
+		`{"name":"things","entries":[{"id":"a","payload":{"v":1}},{"id":"b","payload":{"v":2}}]}`)
+	if n != 2 {
+		t.Fatalf("count = %d, want 2", n)
+	}
+}
+
+func TestPutManyWithDisplayCarriesRolesAndLabel(t *testing.T) {
+	calls := captureCalls(t,
+		func(string) any { return map[string]any{"ok": true, "count": 1} },
+		func(p *Plugin) {
+			_, err := p.PutManyWithDisplay("things",
+				[]CollectionPutEntry{{ID: "a", Payload: json.RawMessage(`{"t":"x"}`)}},
+				map[string]FieldDisplay{"t": FieldDisplayPrimary}, "Things")
+			if err != nil {
+				t.Errorf("PutManyWithDisplay: %v", err)
+			}
+		})
+	assertWire(t, calls, "collection.put",
+		`{"name":"things","entries":[{"id":"a","payload":{"t":"x"}}],"roles":{"t":"primary"},"label":"Things"}`)
+}
+
+// An empty batch is a local no-op: no request at all.
+func TestPutManyAndDeleteManyEmptySendNothing(t *testing.T) {
+	calls := captureCalls(t,
+		func(string) any { return map[string]any{} },
+		func(p *Plugin) {
+			if n, err := p.PutMany("things", nil); n != 0 || err != nil {
+				t.Errorf("PutMany(nil) = %d, %v", n, err)
+			}
+			if d, a, err := p.DeleteMany("things", nil); d != 0 || a != 0 || err != nil {
+				t.Errorf("DeleteMany(nil) = %d, %d, %v", d, a, err)
+			}
+		})
+	if len(calls) != 0 {
+		t.Fatalf("empty batches sent %d requests: %+v", len(calls), calls)
+	}
+}
+
+func TestDeleteManyWireAndSplitCounts(t *testing.T) {
+	var deleted, absent int
+	calls := captureCalls(t,
+		func(string) any { return map[string]any{"deleted": 2, "already_absent": 1} },
+		func(p *Plugin) {
+			var err error
+			if deleted, absent, err = p.DeleteMany("things", []string{"a", "b", "c"}); err != nil {
+				t.Errorf("DeleteMany: %v", err)
+			}
+		})
+	assertWire(t, calls, "collection.delete_records", `{"name":"things","ids":["a","b","c"]}`)
+	if deleted != 2 || absent != 1 {
+		t.Fatalf("got deleted=%d absent=%d, want 2 and 1", deleted, absent)
+	}
+}
+
+func TestReplaceGroupScopeWireAndResult(t *testing.T) {
+	var res ReplaceResult
+	calls := captureCalls(t,
+		func(string) any { return map[string]any{"put": 1, "deleted": 3, "skipped": 4} },
+		func(p *Plugin) {
+			var err error
+			res, err = p.Replace("cmds",
+				[]CollectionPutEntry{{ID: "x", Payload: json.RawMessage(`{"k":1}`)}},
+				ScopeGroup("hints"),
+				WithReplaceRoles(map[string]FieldDisplay{"k": FieldDisplaySecondary}),
+				WithReplaceLabel("Hints"))
+			if err != nil {
+				t.Errorf("Replace: %v", err)
+			}
+		})
+	assertWire(t, calls, "collection.replace",
+		`{"name":"cmds","scope":{"kind":"group","value":"hints"},"entries":[{"id":"x","payload":{"k":1}}],"roles":{"k":"secondary"},"label":"Hints"}`)
+	if res != (ReplaceResult{Put: 1, Deleted: 3, Skipped: 4}) {
+		t.Fatalf("result = %+v", res)
+	}
+}
+
+func TestReplaceCollectionScopeWire(t *testing.T) {
+	calls := captureCalls(t,
+		func(string) any { return map[string]any{"put": 0, "deleted": 0, "skipped": 0} },
+		func(p *Plugin) {
+			if _, err := p.Replace("cmds", nil, ScopeCollection()); err != nil {
+				t.Errorf("Replace: %v", err)
+			}
+		})
+	assertWire(t, calls, "collection.replace", `{"name":"cmds","scope":{"kind":"collection"}}`)
+}
+
+// A zero scope is refused locally, before any request, with the message that
+// names the fix — "everything I own" must never be inferred.
+func TestReplaceZeroScopeRefusedLocally(t *testing.T) {
+	calls := captureCalls(t,
+		func(string) any { return map[string]any{} },
+		func(p *Plugin) {
+			_, err := p.Replace("cmds", nil, ReplaceScope{})
+			if err == nil || !strings.Contains(err.Error(), "ScopeCollection") {
+				t.Errorf("err = %v, want the scope-required refusal", err)
+			}
+		})
+	if len(calls) != 0 {
+		t.Fatalf("a zero-scope Replace reached the wire: %+v", calls)
+	}
 }

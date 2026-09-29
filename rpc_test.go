@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"os"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -60,18 +59,13 @@ func scanRPC(t testing.TB, scanner *bufio.Scanner) rpcMessage {
 	return rpcMessage{}
 }
 
-// newTestPlugin creates a Plugin wired to in-memory pipes for testing.
+// newTestPluginT creates a Plugin wired to in-memory pipes for testing.
 // Returns (plugin, actuatorWriter, actuatorReader).
 // actuatorWriter: write JSON-RPC messages as if you're the actuator sending to the plugin's stdin.
 // actuatorReader: read JSON-RPC messages that the plugin writes to its stdout.
 //
-// When `t` is provided, registers a `t.Cleanup` that closes both pipe
-// ends so leaked drain/scanner goroutines exit when the test ends.
-// Pass `nil` to opt out (callers that manage cleanup explicitly).
-func newTestPlugin() (*Plugin, io.Writer, *bufio.Scanner) {
-	return newTestPluginT(nil)
-}
-
+// Registers a `t.Cleanup` that closes both pipe ends so leaked
+// drain/scanner goroutines exit when the test ends.
 func newTestPluginT(t testing.TB) (*Plugin, io.Writer, *bufio.Scanner) {
 	// plugin reads from stdinR, actuator writes to stdinW
 	stdinR, stdinW := io.Pipe()
@@ -97,17 +91,17 @@ func newTestPluginT(t testing.TB) (*Plugin, io.Writer, *bufio.Scanner) {
 	go p.notifyWorker()
 	go p.readLoop()
 
-	if t != nil {
-		t.Cleanup(func() {
-			// Closing both pipe ends unblocks any leaked
-			// scanner/drain goroutines (e.g. TestCallTimeout's
-			// `for actuatorR.Scan()`). Without this, goroutine
-			// scheduling between leaked drains and the next test's
-			// Plugin.Run() can deadlock TestCallRPCError below.
-			_ = stdinW.Close()
-			_ = stdoutW.Close()
-		})
-	}
+	t.Cleanup(func() {
+		// Closing both pipe ends unblocks any leaked
+		// scanner/drain goroutines (e.g. TestCallTimeout's
+		// `for actuatorR.Scan()`). Without this, goroutine
+		// scheduling between leaked drains and the next test's
+		// Plugin.Run() can deadlock TestCallRPCError below. Every
+		// test takes this constructor for that reason — there is
+		// deliberately no variant without the cleanup.
+		_ = stdinW.Close()
+		_ = stdoutW.Close()
+	})
 
 	return p, stdinW, actuatorScanner
 }
@@ -232,7 +226,7 @@ func TestNotificationsDeliveredInOrder(t *testing.T) {
 }
 
 func TestHandleRequest(t *testing.T) {
-	p, actuatorW, actuatorR := newTestPlugin()
+	p, actuatorW, actuatorR := newTestPluginT(t)
 
 	p.Handle("describe_tab", func(params json.RawMessage) (any, error) {
 		var req struct {
@@ -285,7 +279,7 @@ func TestHandleRequest(t *testing.T) {
 // Run() is called are held (not rejected with -32601). This prevents a race
 // where the actuator sends a request before the plugin has registered handlers.
 func TestReadyGateHoldsRequestsBeforeRun(t *testing.T) {
-	p, actuatorW, actuatorR := newTestPlugin()
+	p, actuatorW, actuatorR := newTestPluginT(t)
 
 	// Register handler AFTER creating plugin (mimics real init sequence)
 	p.Handle("on_commands_changed", func(params json.RawMessage) (any, error) {
@@ -338,7 +332,7 @@ func TestReadyGateHoldsRequestsBeforeRun(t *testing.T) {
 // TestReadyGateRejectsUnknownAfterRun verifies that unknown methods still get
 // -32601 after Run() is called (the gate doesn't suppress legitimate errors).
 func TestReadyGateRejectsUnknownAfterRun(t *testing.T) {
-	p, actuatorW, actuatorR := newTestPlugin()
+	p, actuatorW, actuatorR := newTestPluginT(t)
 
 	var wg sync.WaitGroup
 	wg.Add(1)
@@ -374,7 +368,7 @@ func TestReadyGateRejectsUnknownAfterRun(t *testing.T) {
 }
 
 func TestHandleNotification(t *testing.T) {
-	p, actuatorW, _ := newTestPlugin()
+	p, actuatorW, _ := newTestPluginT(t)
 
 	var received string
 	var mu sync.Mutex
@@ -538,7 +532,7 @@ func TestCallRPCError(t *testing.T) {
 }
 
 func TestMethodNotFound(t *testing.T) {
-	p, actuatorW, actuatorR := newTestPlugin()
+	p, actuatorW, actuatorR := newTestPluginT(t)
 
 	go p.Run()
 
@@ -643,10 +637,7 @@ func TestHandlerPanicRecovery(t *testing.T) {
 
 // TestNewPluginUsesEnv verifies NewPlugin reads BRANCHKIT_PLUGIN_ID.
 func TestNewPluginUsesEnv(t *testing.T) {
-	old := os.Getenv("BRANCHKIT_PLUGIN_ID")
-	defer os.Setenv("BRANCHKIT_PLUGIN_ID", old)
-
-	os.Setenv("BRANCHKIT_PLUGIN_ID", "test-kb")
+	t.Setenv("BRANCHKIT_PLUGIN_ID", "test-kb")
 	p := NewPlugin()
 	if p.pluginID != "test-kb" {
 		t.Fatalf("expected pluginID=test-kb, got %q", p.pluginID)
@@ -703,7 +694,7 @@ func TestOversizedFrameIsDispatchedNotFatal(t *testing.T) {
 
 // TestCallUnblocksOnStdinClose verifies in-flight Call() returns error when stdin closes.
 func TestCallUnblocksOnStdinClose(t *testing.T) {
-	p, actuatorW, actuatorR := newTestPlugin()
+	p, actuatorW, actuatorR := newTestPluginT(t)
 
 	go p.Run()
 
@@ -741,7 +732,7 @@ func TestCallUnblocksOnStdinClose(t *testing.T) {
 
 // TestMultipleListeners verifies multiple On() listeners for the same method all fire.
 func TestMultipleListeners(t *testing.T) {
-	p, actuatorW, _ := newTestPlugin()
+	p, actuatorW, _ := newTestPluginT(t)
 
 	var count atomic.Int32
 	done := make(chan struct{})
@@ -775,7 +766,7 @@ func TestMultipleListeners(t *testing.T) {
 
 // TestConcurrentCalls verifies multiple goroutines can Call() simultaneously.
 func TestConcurrentCalls(t *testing.T) {
-	p, actuatorW, actuatorR := newTestPlugin()
+	p, actuatorW, actuatorR := newTestPluginT(t)
 
 	go p.Run()
 
@@ -891,18 +882,77 @@ func TestWriterLockDoesNotBlockDispatch(t *testing.T) {
 
 // TestResponseWithUnknownID verifies unknown response IDs are silently dropped.
 func TestResponseWithUnknownID(t *testing.T) {
-	p, actuatorW, _ := newTestPlugin()
-
+	p, actuatorW, actuatorR := newTestPluginT(t)
+	p.Handle("ping", func(json.RawMessage) (any, error) {
+		return map[string]bool{"pong": true}, nil
+	})
 	go p.Run()
 
-	// Send a response with an ID that no one is waiting for
-	id := uint64(999)
-	msg := rpcMessage{JSONRPC: "2.0", ID: &id, Result: json.RawMessage(`{"data":"orphan"}`)}
-	data, _ := json.Marshal(msg)
-	actuatorW.Write(append(data, '\n'))
+	// One reader for the whole test: every framed message the plugin sends
+	// that carries an id (its outbound requests and its responses).
+	msgs := make(chan rpcMessage, 8)
+	go func() {
+		for actuatorR.Scan() {
+			var m rpcMessage
+			if json.Unmarshal(actuatorR.Bytes(), &m) == nil && m.ID != nil {
+				msgs <- m
+			}
+		}
+	}()
+	next := func() rpcMessage {
+		t.Helper()
+		select {
+		case m := <-msgs:
+			return m
+		case <-time.After(2 * time.Second):
+			t.Fatal("timed out waiting for the plugin")
+			return rpcMessage{}
+		}
+	}
+	send := func(m rpcMessage) {
+		data, _ := json.Marshal(m)
+		actuatorW.Write(append(data, '\n'))
+	}
 
-	// If there's a crash, the test will panic. Give it a moment to process.
-	time.Sleep(50 * time.Millisecond)
+	// A call is in flight while an orphan response arrives.
+	type callResult struct {
+		Data string `json:"data"`
+	}
+	done := make(chan callResult, 1)
+	go func() {
+		var out callResult
+		if err := p.Call("test.echo", nil, &out); err != nil {
+			t.Errorf("Call: %v", err)
+		}
+		done <- out
+	}()
+	req := next()
+	if req.Method != "test.echo" {
+		t.Fatalf("expected the plugin's outbound request, got %+v", req)
+	}
+
+	orphan := *req.ID + 999
+	send(rpcMessage{JSONRPC: "2.0", ID: &orphan, Result: json.RawMessage(`{"data":"orphan"}`)})
+	send(rpcMessage{JSONRPC: "2.0", ID: &orphan, Error: &rpcError{Code: -1, Message: "orphan error"}})
+	send(rpcMessage{JSONRPC: "2.0", ID: req.ID, Result: json.RawMessage(`{"data":"real"}`)})
+
+	// The orphans were dropped, not routed to the waiting call…
+	select {
+	case got := <-done:
+		if got.Data != "real" {
+			t.Fatalf("call resolved with %q, want the real response", got.Data)
+		}
+	case <-time.After(2 * time.Second):
+		t.Fatal("the in-flight call never resolved")
+	}
+
+	// …and the read loop is still serving inbound requests afterwards.
+	id := uint64(7)
+	send(rpcMessage{JSONRPC: "2.0", ID: &id, Method: "ping"})
+	resp := next()
+	if resp.ID == nil || *resp.ID != 7 || resp.Error != nil || string(resp.Result) != `{"pong":true}` {
+		t.Fatalf("ping after orphan = %+v (result %s)", resp, resp.Result)
+	}
 
 	actuatorW.(io.Closer).Close()
 }
@@ -935,7 +985,7 @@ func TestDetachedPlugin(t *testing.T) {
 // however the handler is written, because the signature admits no value.
 // The proxy refuses anything else with 422; this is the SDK's half.
 func TestHandleCommandAnswersNull(t *testing.T) {
-	p, actuatorW, actuatorR := newTestPlugin()
+	p, actuatorW, actuatorR := newTestPluginT(t)
 	got := make(chan int, 1)
 	HandleCommand(p, "set_volume", func(req *struct {
 		Volume int `json:"volume"`

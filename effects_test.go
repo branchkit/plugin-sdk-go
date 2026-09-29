@@ -103,3 +103,104 @@ func TestOnEffectDisplacedDropsUninterpretablePayloads(t *testing.T) {
 		t.Errorf("got %d events, want at most the empty-effect divergence", len(*seen))
 	}
 }
+
+// The effects wrappers flatten optional wire fields (displaced, new_owner,
+// current_owner) to "" — so a nil pointer must not panic and a present one
+// must come through. Each test pins the exact request and the decode.
+
+func TestAssertEffectWireAndDecode(t *testing.T) {
+	var out EffectAssertOutcome
+	calls := captureCalls(t,
+		func(string) any {
+			return map[string]any{"granted": true, "already_held": false, "displaced": "other-plugin", "enforced": true}
+		},
+		func(p *Plugin) {
+			var err error
+			if out, err = p.AssertEffect("focus.protect"); err != nil {
+				t.Errorf("AssertEffect: %v", err)
+			}
+		})
+	assertWire(t, calls, "effects.assert", `{"name":"focus.protect"}`)
+	want := EffectAssertOutcome{Granted: true, Displaced: "other-plugin", Enforced: true}
+	if out != want {
+		t.Fatalf("outcome = %+v, want %+v", out, want)
+	}
+}
+
+func TestAssertEffectAbsentDisplacedIsEmpty(t *testing.T) {
+	var out EffectAssertOutcome
+	captureCalls(t,
+		func(string) any { return map[string]any{"granted": true, "already_held": true, "enforced": false} },
+		func(p *Plugin) {
+			var err error
+			if out, err = p.AssertEffect("focus.protect"); err != nil {
+				t.Errorf("AssertEffect: %v", err)
+			}
+		})
+	want := EffectAssertOutcome{Granted: true, AlreadyHeld: true}
+	if out != want {
+		t.Fatalf("outcome = %+v, want %+v", out, want)
+	}
+}
+
+func TestRetractEffectWireAndDecode(t *testing.T) {
+	for _, tc := range []struct {
+		reply     map[string]any
+		retracted bool
+		owner     string
+	}{
+		{map[string]any{"retracted": true, "new_owner": "next-plugin"}, true, "next-plugin"},
+		{map[string]any{"retracted": false}, false, ""},
+	} {
+		var retracted bool
+		var owner string
+		calls := captureCalls(t,
+			func(string) any { return tc.reply },
+			func(p *Plugin) {
+				var err error
+				if retracted, owner, err = p.RetractEffect("focus.protect"); err != nil {
+					t.Errorf("RetractEffect: %v", err)
+				}
+			})
+		assertWire(t, calls, "effects.retract", `{"name":"focus.protect"}`)
+		if retracted != tc.retracted || owner != tc.owner {
+			t.Fatalf("got (%v, %q), want (%v, %q)", retracted, owner, tc.retracted, tc.owner)
+		}
+	}
+}
+
+func TestIsEffectActiveWireAndDecode(t *testing.T) {
+	for _, tc := range []struct {
+		reply  map[string]any
+		active bool
+		owner  string
+	}{
+		{map[string]any{"active": true, "current_owner": "holder"}, true, "holder"},
+		{map[string]any{"active": false}, false, ""},
+	} {
+		var active bool
+		var owner string
+		calls := captureCalls(t,
+			func(string) any { return tc.reply },
+			func(p *Plugin) {
+				var err error
+				if active, owner, err = p.IsEffectActive("signal_recording_active"); err != nil {
+					t.Errorf("IsEffectActive: %v", err)
+				}
+			})
+		assertWire(t, calls, "effects.is_active", `{"name":"signal_recording_active"}`)
+		if active != tc.active || owner != tc.owner {
+			t.Fatalf("got (%v, %q), want (%v, %q)", active, owner, tc.active, tc.owner)
+		}
+	}
+}
+
+func TestAssertEffectPropagatesError(t *testing.T) {
+	runPluginCall(t,
+		func(string, json.RawMessage) (any, string) { return nil, "no such effect" },
+		func(p *Plugin) {
+			if _, err := p.AssertEffect("bogus"); err == nil {
+				t.Error("AssertEffect swallowed the platform's error")
+			}
+		})
+}
