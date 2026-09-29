@@ -37,6 +37,7 @@ const (
 	LogEventNativeWindowSkipped      = "native.window_skipped"
 	LogEventNativeWorldPollerEvent   = "native.world_poller_event"
 	LogEventOperationCompleted       = "operation.completed"
+	LogEventPluginAppPreference      = "plugin.app_preference"
 	LogEventPluginDbusCall           = "plugin.dbus_call"
 	LogEventPluginDegraded           = "plugin.degraded"
 	LogEventPluginDiagnostic         = "plugin.diagnostic"
@@ -113,6 +114,7 @@ var LogEventRegistry = map[string]LogEventMeta{
 	"native.window_skipped":       {Name: "native.window_skipped", Summary: "World poller skipped a non-standard window (debug-level).", Since: "0.1.0", Source: "native", Severity: "debug", Redaction: "none"},
 	"native.world_poller_event":   {Name: "native.world_poller_event", Summary: "World poller lifecycle event (started, seeded, batch processed, idle).", Since: "0.1.0", Source: "native", Severity: "debug", Redaction: "none"},
 	"operation.completed":         {Name: "operation.completed", Summary: "An operation handler completed execution.", Since: "0.1.0", Source: "dispatch", Severity: "debug", Redaction: "none"},
+	"plugin.app_preference":       {Name: "plugin.app_preference", Summary: "A plugin read or changed (or was refused) a setting in another app's settings domain through native.read_app_preference / native.write_app_preference: allowed, failed, denied (not declared, or declared for reading only), off (switched off by the user) or forbidden (no grant can reach it). The domain and key only, never the value. Audit-eligible.", Since: "0.2.0", Source: "plugins", Severity: "info", Redaction: "full"},
 	"plugin.dbus_call":            {Name: "plugin.dbus_call", Summary: "A plugin called (or was refused) a D-Bus method through native.dbus_call: allowed, failed, denied (not declared), off (switched off by the user) or forbidden (no grant can reach it). The method and argument signature only. Audit-eligible.", Since: "0.2.0", Source: "plugins", Severity: "info", Redaction: "full"},
 	"plugin.degraded":             {Name: "plugin.degraded", Summary: "A plugin is running but not fully working — its RPC channel hit the consecutive-timeout threshold (reason absent), it stopped reading its stdin (the platform's reason), or it reported the fault itself via plugin.report_health (its own reason).", Since: "0.1.0", Source: "plugins", Severity: "warn", Redaction: "full"},
 	"plugin.diagnostic":           {Name: "plugin.diagnostic", Summary: "A plugin emitted a warn- or error-level diagnostic via plugin.debug; cross-posted to actuator.log so plugin-level failures interleave with the actuator's view of dispatch / coordination.", Since: "0.2.0", Source: "plugins", Severity: "warn", Redaction: "full"},

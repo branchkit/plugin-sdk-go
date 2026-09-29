@@ -3841,7 +3841,7 @@ func (p *Plugin) NativeRandomUuid() (*NativeRandomUuidResponse, error) {
 	return &result, nil
 }
 
-// NativeReadAppPreference read a preference value for an app domain.
+// NativeReadAppPreference read one setting from another app's settings domain the plugin declared and the user switched on: macOS defaults, GSettings on Linux, the user's registry on Windows.
 func (p *Plugin) NativeReadAppPreference(req NativeReadAppPreferenceRequest) (json.RawMessage, error) {
 	var result json.RawMessage
 	err := p.Call(MethodNativeReadAppPreference, &req, &result)
@@ -5524,13 +5524,9 @@ func (p *Plugin) NativeWorldModel(req NativeWorldModelRequest) (*WorldModel, err
 	return &result, nil
 }
 
-// NativeWriteAppPreference write a preference value for an app domain.
-func (p *Plugin) NativeWriteAppPreference(req NativeWriteAppPreferenceRequest) (bool, error) {
-	var result struct {
-		Ok bool `json:"ok"`
-	}
-	err := p.Call(MethodNativeWriteAppPreference, &req, &result)
-	return result.Ok, err
+// NativeWriteAppPreference change (or, with null, reset) one setting in another app's settings domain the plugin declared for writing and the user switched on.
+func (p *Plugin) NativeWriteAppPreference(req NativeWriteAppPreferenceRequest) error {
+	return p.Call(MethodNativeWriteAppPreference, &req, nil)
 }
 
 // NativeWriteFile write string contents to a file.
