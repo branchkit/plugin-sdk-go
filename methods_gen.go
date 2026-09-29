@@ -4414,7 +4414,7 @@ func (p *Plugin) NativeSetDockSize(req NativeSetDockSizeRequest) (bool, error) {
 	return result.Ok, err
 }
 
-// NativeSetDwellClick turn the system's dwell click on or off (holding the pointer still clicks). Exists only on macOS and Linux; elsewhere it is refused with platform_no_analogue.
+// NativeSetDwellClick turn the system's dwell click on or off (holding the pointer still clicks). Exists only on Linux; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeSetDwellClick(req NativeSetDwellClickRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
@@ -4513,7 +4513,7 @@ func (p *Plugin) NativeSetKeyRepeatRate(req NativeSetKeyRepeatRateRequest) (bool
 	return result.Ok, err
 }
 
-// NativeSetMagnifierEnabled turn the screen magnifier on or off; false when it did not change.
+// NativeSetMagnifierEnabled turn the screen magnifier on or off; false when it did not change. Exists only on Linux and Windows; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeSetMagnifierEnabled(req NativeSetMagnifierEnabledRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
@@ -4540,7 +4540,7 @@ func (p *Plugin) NativeSetMonoAudio(req NativeSetMonoAudioRequest) (bool, error)
 	return result.Ok, err
 }
 
-// NativeSetMouseKeys turn Mouse Keys on or off (the numeric keypad moves the pointer).
+// NativeSetMouseKeys turn Mouse Keys on or off (the numeric keypad moves the pointer). Exists only on Linux and Windows; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeSetMouseKeys(req NativeSetMouseKeysRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
@@ -4563,7 +4563,7 @@ func (p *Plugin) NativeSetNightShift(req NativeSetNightShiftRequest) error {
 	return p.Call(MethodNativeSetNightShift, &req, nil)
 }
 
-// NativeSetOnScreenKeyboardEnabled show or hide the on-screen keyboard; false when it did not change.
+// NativeSetOnScreenKeyboardEnabled show or hide the on-screen keyboard; false when it did not change. Exists only on Linux and Windows; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeSetOnScreenKeyboardEnabled(req NativeSetOnScreenKeyboardEnabledRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
@@ -4572,7 +4572,7 @@ func (p *Plugin) NativeSetOnScreenKeyboardEnabled(req NativeSetOnScreenKeyboardE
 	return result.Ok, err
 }
 
-// NativeSetPowerMode set the power mode (power-saver, balanced or performance); false when refused or not offered.
+// NativeSetPowerMode set the power mode (power-saver, balanced or performance); false when refused or not offered. Exists only on Linux and Windows; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeSetPowerMode(req NativeSetPowerModeRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
@@ -4581,7 +4581,7 @@ func (p *Plugin) NativeSetPowerMode(req NativeSetPowerModeRequest) (bool, error)
 	return result.Ok, err
 }
 
-// NativeSetScreenReaderEnabled turn the screen reader on or off (VoiceOver, Orca, Narrator); false when it did not change.
+// NativeSetScreenReaderEnabled turn the screen reader on or off (VoiceOver, Orca, Narrator); false when it did not change. Exists only on Linux and Windows; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeSetScreenReaderEnabled(req NativeSetScreenReaderEnabledRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
@@ -4635,7 +4635,7 @@ func (p *Plugin) NativeSetSidebarIconSize(req NativeSetSidebarIconSizeRequest) (
 	return result.Ok, err
 }
 
-// NativeSetSlowKeys turn Slow Keys on or off (a key registers only after it is held).
+// NativeSetSlowKeys turn Slow Keys on or off (a key registers only after it is held). Exists only on Linux and Windows; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeSetSlowKeys(req NativeSetSlowKeysRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
@@ -4653,7 +4653,7 @@ func (p *Plugin) NativeSetStageManager(req NativeSetStageManagerRequest) (bool, 
 	return result.Ok, err
 }
 
-// NativeSetStickyKeys turn Sticky Keys on or off (modifiers latch, so shortcuts need one key at a time).
+// NativeSetStickyKeys turn Sticky Keys on or off (modifiers latch, so shortcuts need one key at a time). Exists only on Linux and Windows; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeSetStickyKeys(req NativeSetStickyKeysRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
@@ -4671,7 +4671,7 @@ func (p *Plugin) NativeSetTapToClick(req NativeSetTapToClickRequest) (bool, erro
 	return result.Ok, err
 }
 
-// NativeSetTextScale set the system text size as a factor of the default (1.0); false when refused.
+// NativeSetTextScale set the system text size as a factor of the default (1.0); false when refused. Exists only on Linux and Windows; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeSetTextScale(req NativeSetTextScaleRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
@@ -4698,7 +4698,7 @@ func (p *Plugin) NativeSetURLSchemeHandler(req NativeSetURLSchemeHandlerRequest)
 	return result.Ok, err
 }
 
-// NativeSetVisualAlertsEnabled turn screen flashing on alert sounds on or off; false when it did not change.
+// NativeSetVisualAlertsEnabled turn screen flashing on alert sounds on or off; false when it did not change. Exists only on Linux and Windows; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeSetVisualAlertsEnabled(req NativeSetVisualAlertsEnabledRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
