@@ -1689,6 +1689,22 @@ type ScreenshotRegion struct {
 	Y int `json:"y"`
 }
 
+// SecurityFact is auto-generated from the OpenRPC spec.
+// One security mechanism and its state (`native.app_verification`,
+// `native.system_integrity`): a fact about the machine, never a verdict on
+// it. Mechanisms differ per OS and none is the equal of another's, so no
+// list of them adds up to "secure".
+type SecurityFact struct {
+	// What the OS said, where it says more than the state.
+	Detail *string `json:"detail,omitempty"`
+	// `gatekeeper`, `sip`, `smartscreen`, `smart_app_control`,
+	// `secure_boot`, `memory_integrity`, `apparmor`, `selinux`.
+	Mechanism string `json:"mechanism"`
+	// `on`, `off`; `warn` / `block` (SmartScreen), `evaluation` (Smart
+	// App Control), `enforcing` / `permissive` (SELinux).
+	State string `json:"state"`
+}
+
 // SettingsListSchemaInfo is auto-generated from the OpenRPC spec.
 // List schema info sent to plugins in render_settings (enriched with entry count + source).
 type SettingsListSchemaInfo struct {
@@ -3259,6 +3275,11 @@ type NativeAppSupportDirectoryResponse struct {
 	Path string `json:"path"`
 }
 
+// NativeAppVerificationResponse is the response type for native.app_verification.
+type NativeAppVerificationResponse struct {
+	Mechanisms []SecurityFact `json:"mechanisms"`
+}
+
 // NativeAppVersionRequest is the request type for native.app_version.
 type NativeAppVersionRequest struct {
 	BundleID string `json:"bundle_id"`
@@ -4466,11 +4487,6 @@ type NativeFunctionKeysStandardResponse struct {
 	Standard bool `json:"standard"`
 }
 
-// NativeGatekeeperStatusResponse is the response type for native.gatekeeper_status.
-type NativeGatekeeperStatusResponse struct {
-	Enabled bool `json:"enabled"`
-}
-
 // NativeGatewayAddressResponse is the response type for native.gateway_address.
 type NativeGatewayAddressResponse struct {
 	Address string `json:"address"`
@@ -5347,11 +5363,6 @@ type NativePublicIPResponse struct {
 	IP string `json:"ip"`
 }
 
-// NativePurgeMemoryResponse is the response type for native.purge_memory.
-type NativePurgeMemoryResponse struct {
-	Ok bool `json:"ok"`
-}
-
 // NativeQuickLookRequest is the request type for native.quick_look.
 type NativeQuickLookRequest struct {
 	Path string `json:"path"`
@@ -5771,16 +5782,6 @@ type NativeSetBrightnessRequest struct {
 	Brightness float64 `json:"brightness"`
 	// wire uint32 · default null · min 0
 	DisplayID *int `json:"display_id,omitempty"`
-}
-
-// NativeSetComputerNameRequest is the request type for native.set_computer_name.
-type NativeSetComputerNameRequest struct {
-	Name string `json:"name"`
-}
-
-// NativeSetComputerNameResponse is the response type for native.set_computer_name.
-type NativeSetComputerNameResponse struct {
-	Ok bool `json:"ok"`
 }
 
 // NativeSetDarkModeRequest is the request type for native.set_dark_mode.
@@ -6271,11 +6272,6 @@ type NativeSidebarIconSizeResponse struct {
 	Value string `json:"value"`
 }
 
-// NativeSipStatusResponse is the response type for native.sip_status.
-type NativeSipStatusResponse struct {
-	Enabled bool `json:"enabled"`
-}
-
 // NativeSiriEnabledResponse is the response type for native.siri_enabled.
 type NativeSiriEnabledResponse struct {
 	Enabled bool `json:"enabled"`
@@ -6417,9 +6413,9 @@ type NativeSystemInfoResponse struct {
 	SerialNumber    *string `json:"serial_number,omitempty"`
 }
 
-// NativeSystemIntegrityInfoResponse is the response type for native.system_integrity_info.
-type NativeSystemIntegrityInfoResponse struct {
-	Value string `json:"value"`
+// NativeSystemIntegrityResponse is the response type for native.system_integrity.
+type NativeSystemIntegrityResponse struct {
+	Mechanisms []SecurityFact `json:"mechanisms"`
 }
 
 // NativeSystemLanguageResponse is the response type for native.system_language.

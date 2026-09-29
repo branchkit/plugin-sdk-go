@@ -100,6 +100,7 @@ const (
 	MethodNativeAppPath                       = "native.app_path"                          // since 0.1.0
 	MethodNativeAppPid                        = "native.app_pid"                           // since 0.1.0
 	MethodNativeAppSupportDirectory           = "native.app_support_directory"             // since 0.1.0
+	MethodNativeAppVerification               = "native.app_verification"                  // since 0.2.0
 	MethodNativeAppVersion                    = "native.app_version"                       // since 0.1.0
 	MethodNativeAppVolumes                    = "native.app_volumes"                       // since 0.2.0
 	MethodNativeAppWindows                    = "native.app_windows"                       // since 0.1.0
@@ -262,7 +263,6 @@ const (
 	MethodNativeFrontmostApp                  = "native.frontmost_app"                     // since 0.1.0
 	MethodNativeFullDiskAccess                = "native.full_disk_access"                  // since 0.1.0
 	MethodNativeFunctionKeysStandard          = "native.function_keys_standard"            // since 0.1.0
-	MethodNativeGatekeeperStatus              = "native.gatekeeper_status"                 // since 0.1.0
 	MethodNativeGatewayAddress                = "native.gateway_address"                   // since 0.1.0
 	MethodNativeGeneratePdf                   = "native.generate_pdf"                      // since 0.1.0
 	MethodNativeGetWindowInfo                 = "native.get_window_info"                   // since 0.1.0
@@ -404,7 +404,6 @@ const (
 	MethodNativeProcessStartTime              = "native.process_start_time"                // since 0.1.0
 	MethodNativeProxySettings                 = "native.proxy_settings"                    // since 0.1.0
 	MethodNativePublicIp                      = "native.public_ip"                         // since 0.1.0
-	MethodNativePurgeMemory                   = "native.purge_memory"                      // since 0.1.0
 	MethodNativePurgeableSpace                = "native.purgeable_space"                   // since 0.1.0
 	MethodNativeQuickLook                     = "native.quick_look"                        // since 0.1.0
 	MethodNativeQuitApp                       = "native.quit_app"                          // since 0.1.0
@@ -464,7 +463,6 @@ const (
 	MethodNativeSetBluetoothPower             = "native.set_bluetooth_power"               // since 0.1.0
 	MethodNativeSetBounceKeys                 = "native.set_bounce_keys"                   // since 0.2.0
 	MethodNativeSetBrightness                 = "native.set_brightness"                    // since 0.1.0
-	MethodNativeSetComputerName               = "native.set_computer_name"                 // since 0.1.0
 	MethodNativeSetDarkMode                   = "native.set_dark_mode"                     // since 0.1.0
 	MethodNativeSetDnd                        = "native.set_dnd"                           // since 0.1.0
 	MethodNativeSetDockAutoHide               = "native.set_dock_auto_hide"                // since 0.1.0
@@ -517,7 +515,6 @@ const (
 	MethodNativeSharingName                   = "native.sharing_name"                      // since 0.1.0
 	MethodNativeShowScrollBars                = "native.show_scroll_bars"                  // since 0.1.0
 	MethodNativeSidebarIconSize               = "native.sidebar_icon_size"                 // since 0.1.0
-	MethodNativeSipStatus                     = "native.sip_status"                        // since 0.1.0
 	MethodNativeSiriEnabled                   = "native.siri_enabled"                      // since 0.1.0
 	MethodNativeSleepNow                      = "native.sleep_now"                         // since 0.1.0
 	MethodNativeSlowKeys                      = "native.slow_keys"                         // since 0.1.0
@@ -542,7 +539,7 @@ const (
 	MethodNativeSymlink                       = "native.symlink"                           // since 0.1.0
 	MethodNativeSystemAppearance              = "native.system_appearance"                 // since 0.1.0
 	MethodNativeSystemInfo                    = "native.system_info"                       // since 0.1.0
-	MethodNativeSystemIntegrityInfo           = "native.system_integrity_info"             // since 0.1.0
+	MethodNativeSystemIntegrity               = "native.system_integrity"                  // since 0.2.0
 	MethodNativeSystemLanguage                = "native.system_language"                   // since 0.1.0
 	MethodNativeSystemRegion                  = "native.system_region"                     // since 0.1.0
 	MethodNativeSystemSounds                  = "native.system_sounds"                     // since 0.1.0

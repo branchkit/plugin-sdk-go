@@ -813,6 +813,18 @@ func (p *Plugin) NativeAppSupportDirectory() (*NativeAppSupportDirectoryResponse
 	return &result, nil
 }
 
+// NativeAppVerification the mechanisms that check apps before they run, and their states: Gatekeeper on macOS; SmartScreen and Smart App Control on Windows; none on Linux (an empty list). Facts, not a verdict.
+func (p *Plugin) NativeAppVerification() ([]SecurityFact, error) {
+	var result struct {
+		Mechanisms []SecurityFact `json:"mechanisms"`
+	}
+	err := p.Call(MethodNativeAppVerification, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Mechanisms, nil
+}
+
 // NativeAppVersion get an app version by bundle ID.
 func (p *Plugin) NativeAppVersion(req NativeAppVersionRequest) (string, error) {
 	var result string
@@ -2451,16 +2463,6 @@ func (p *Plugin) NativeFunctionKeysStandard() (*NativeFunctionKeysStandardRespon
 	return &result, nil
 }
 
-// NativeGatekeeperStatus check if Gatekeeper is enabled.
-func (p *Plugin) NativeGatekeeperStatus() (*NativeGatekeeperStatusResponse, error) {
-	var result NativeGatekeeperStatusResponse
-	err := p.Call(MethodNativeGatekeeperStatus, nil, &result)
-	if err != nil {
-		return nil, err
-	}
-	return &result, nil
-}
-
 // NativeGatewayAddress get the default gateway IP address.
 func (p *Plugin) NativeGatewayAddress() (*NativeGatewayAddressResponse, error) {
 	var result NativeGatewayAddressResponse
@@ -3807,15 +3809,6 @@ func (p *Plugin) NativePublicIP() (*NativePublicIPResponse, error) {
 	return &result, nil
 }
 
-// NativePurgeMemory purge inactive memory.
-func (p *Plugin) NativePurgeMemory() (bool, error) {
-	var result struct {
-		Ok bool `json:"ok"`
-	}
-	err := p.Call(MethodNativePurgeMemory, nil, &result)
-	return result.Ok, err
-}
-
 // NativePurgeableSpace get purgeable disk space in bytes. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativePurgeableSpace() (int, error) {
 	var result int
@@ -4369,15 +4362,6 @@ func (p *Plugin) NativeSetBrightness(req NativeSetBrightnessRequest) error {
 	return p.Call(MethodNativeSetBrightness, &req, nil)
 }
 
-// NativeSetComputerName set the computer name.
-func (p *Plugin) NativeSetComputerName(req NativeSetComputerNameRequest) (bool, error) {
-	var result struct {
-		Ok bool `json:"ok"`
-	}
-	err := p.Call(MethodNativeSetComputerName, &req, &result)
-	return result.Ok, err
-}
-
 // NativeSetDarkMode set dark or light mode.
 func (p *Plugin) NativeSetDarkMode(req NativeSetDarkModeRequest) error {
 	return p.Call(MethodNativeSetDarkMode, &req, nil)
@@ -4813,16 +4797,6 @@ func (p *Plugin) NativeSidebarIconSize() (*NativeSidebarIconSizeResponse, error)
 	return &result, nil
 }
 
-// NativeSipStatus check if System Integrity Protection is enabled.
-func (p *Plugin) NativeSipStatus() (*NativeSipStatusResponse, error) {
-	var result NativeSipStatusResponse
-	err := p.Call(MethodNativeSipStatus, nil, &result)
-	if err != nil {
-		return nil, err
-	}
-	return &result, nil
-}
-
 // NativeSiriEnabled check if Siri is enabled. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeSiriEnabled() (*NativeSiriEnabledResponse, error) {
 	var result NativeSiriEnabledResponse
@@ -5051,14 +5025,16 @@ func (p *Plugin) NativeSystemInfo() (*NativeSystemInfoResponse, error) {
 	return &result, nil
 }
 
-// NativeSystemIntegrityInfo get SIP and security policy details.
-func (p *Plugin) NativeSystemIntegrityInfo() (*NativeSystemIntegrityInfoResponse, error) {
-	var result NativeSystemIntegrityInfoResponse
-	err := p.Call(MethodNativeSystemIntegrityInfo, nil, &result)
+// NativeSystemIntegrity the mechanisms that protect the system itself, and their states: SIP on macOS; Secure Boot and memory integrity on Windows; Secure Boot and AppArmor or SELinux on Linux. Facts, not a verdict.
+func (p *Plugin) NativeSystemIntegrity() ([]SecurityFact, error) {
+	var result struct {
+		Mechanisms []SecurityFact `json:"mechanisms"`
+	}
+	err := p.Call(MethodNativeSystemIntegrity, nil, &result)
 	if err != nil {
 		return nil, err
 	}
-	return &result, nil
+	return result.Mechanisms, nil
 }
 
 // NativeSystemLanguage get the system language code (e.g. en).
