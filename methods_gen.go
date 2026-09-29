@@ -2473,13 +2473,9 @@ func (p *Plugin) NativeGatewayAddress() (*NativeGatewayAddressResponse, error) {
 	return &result, nil
 }
 
-// NativeGeneratePdf generate a PDF from HTML content.
-func (p *Plugin) NativeGeneratePdf(req NativeGeneratePdfRequest) (bool, error) {
-	var result struct {
-		Ok bool `json:"ok"`
-	}
-	err := p.Call(MethodNativeGeneratePdf, &req, &result)
-	return result.Ok, err
+// NativeGeneratePdf render HTML to a PDF file through a Chromium-family browser (Chromium, Chrome, Edge or Brave) run headless and cut off from the network. Refused, naming what to install, when none is.
+func (p *Plugin) NativeGeneratePdf(req NativeGeneratePdfRequest) error {
+	return p.Call(MethodNativeGeneratePdf, &req, nil)
 }
 
 // NativeGetWindowInfo get detailed info for a single window.

@@ -4655,15 +4655,12 @@ type NativeGatewayAddressResponse struct {
 
 // NativeGeneratePdfRequest is the request type for native.generate_pdf.
 type NativeGeneratePdfRequest struct {
+	// The page, as HTML. Nothing it links to on the network is fetched.
 	// non-empty
 	HTML string `json:"html"`
+	// Where to write the PDF; replaced if it exists.
 	// non-empty
 	OutputPath string `json:"output_path"`
-}
-
-// NativeGeneratePdfResponse is the response type for native.generate_pdf.
-type NativeGeneratePdfResponse struct {
-	Ok bool `json:"ok"`
 }
 
 // NativeGetWindowInfoRequest is the request type for native.get_window_info.
