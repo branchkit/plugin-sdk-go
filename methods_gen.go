@@ -1116,7 +1116,7 @@ func (p *Plugin) NativeBatteryCycleCount() (int, error) {
 	return result, nil
 }
 
-// NativeBatteryHealth get battery health status.
+// NativeBatteryHealth get battery health status. Exists only on macOS and Linux; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeBatteryHealth() (*NativeBatteryHealthResponse, error) {
 	var result NativeBatteryHealthResponse
 	err := p.Call(MethodNativeBatteryHealth, nil, &result)
@@ -1311,7 +1311,7 @@ func (p *Plugin) NativeCalendarEventsToday() ([]CalendarEvent, error) {
 	return result.Events, nil
 }
 
-// NativeCalendarPermission check if calendar access is available.
+// NativeCalendarPermission check if calendar access is available. Exists only on macOS and Windows; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeCalendarPermission() (*NativeCalendarPermissionResponse, error) {
 	var result NativeCalendarPermissionResponse
 	err := p.Call(MethodNativeCalendarPermission, nil, &result)
@@ -1473,7 +1473,7 @@ func (p *Plugin) NativeComputerSleepTime() (int, error) {
 	return result, nil
 }
 
-// NativeContactsPermission check if contacts access is available.
+// NativeContactsPermission check if contacts access is available. Exists only on macOS and Windows; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeContactsPermission() (*NativeContactsPermissionResponse, error) {
 	var result NativeContactsPermissionResponse
 	err := p.Call(MethodNativeContactsPermission, nil, &result)
@@ -1899,7 +1899,7 @@ func (p *Plugin) NativeDisplays() ([]DisplayMetadata, error) {
 	return result.Displays, nil
 }
 
-// NativeDnd get Do Not Disturb / Focus state (via the BranchKit Focus helper shortcut).
+// NativeDnd get Do Not Disturb / Focus state (macOS: via the BranchKit Focus helper shortcut). Exists only on macOS and Linux; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeDnd() (*NativeDndResponse, error) {
 	var result NativeDndResponse
 	err := p.Call(MethodNativeDnd, nil, &result)
@@ -4397,7 +4397,7 @@ func (p *Plugin) NativeSetDarkMode(req NativeSetDarkModeRequest) error {
 	return p.Call(MethodNativeSetDarkMode, &req, nil)
 }
 
-// NativeSetDnd set Do Not Disturb on or off (idempotent; via the BranchKit Focus helper shortcut).
+// NativeSetDnd set Do Not Disturb on or off (idempotent; macOS: via the BranchKit Focus helper shortcut). Exists only on macOS and Linux; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeSetDnd(req NativeSetDndRequest) error {
 	return p.Call(MethodNativeSetDnd, &req, nil)
 }
@@ -4713,7 +4713,7 @@ func (p *Plugin) NativeSetTapToClick(req NativeSetTapToClickRequest) (bool, erro
 	return result.Ok, err
 }
 
-// NativeSetTextScale set the system text size as a factor of the default (1.0); false when refused. Exists only on Linux and Windows; elsewhere it is refused with platform_no_analogue.
+// NativeSetTextScale set the system text size as a factor of the default (1.0); false when refused. Exists only on Linux; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeSetTextScale(req NativeSetTextScaleRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
