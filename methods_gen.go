@@ -2362,7 +2362,7 @@ func (p *Plugin) NativeFnKeyFunction() (*NativeFnKeyFunctionResponse, error) {
 	return &result, nil
 }
 
-// NativeFocusModes get configured Focus modes as the raw `com.apple.ncprefs` preference value — macOS plist text, NOT JSON.
+// NativeFocusModes get configured Focus modes as the raw `com.apple.ncprefs` preference value — macOS plist text, NOT JSON. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeFocusModes() (*NativeFocusModesResponse, error) {
 	var result NativeFocusModesResponse
 	err := p.Call(MethodNativeFocusModes, nil, &result)
@@ -4231,7 +4231,7 @@ func (p *Plugin) NativeSearchContacts(req NativeSearchContactsRequest) ([]Contac
 	return result.Contacts, nil
 }
 
-// NativeSecureInputEnabled check if Secure Input is currently enabled (blocks key events).
+// NativeSecureInputEnabled check if Secure Input is currently enabled (blocks key events). Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeSecureInputEnabled() (*NativeSecureInputEnabledResponse, error) {
 	var result NativeSecureInputEnabledResponse
 	err := p.Call(MethodNativeSecureInputEnabled, nil, &result)
@@ -4925,7 +4925,7 @@ func (p *Plugin) NativeSpeechRecognizeFile(req NativeSpeechRecognizeFileRequest)
 	return result, nil
 }
 
-// NativeSpellingLanguage get current spelling language.
+// NativeSpellingLanguage get current spelling language. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeSpellingLanguage() (*NativeSpellingLanguageResponse, error) {
 	var result NativeSpellingLanguageResponse
 	err := p.Call(MethodNativeSpellingLanguage, nil, &result)
