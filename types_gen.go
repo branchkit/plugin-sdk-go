@@ -4090,6 +4090,11 @@ type NativeDownloadsDirectoryResponse struct {
 	Path string `json:"path"`
 }
 
+// NativeDwellClickResponse is the response type for native.dwell_click.
+type NativeDwellClickResponse struct {
+	Enabled bool `json:"enabled"`
+}
+
 // NativeEjectDiskRequest is the request type for native.eject_disk.
 type NativeEjectDiskRequest struct {
 	MountPoint string `json:"mount_point"`
@@ -5771,6 +5776,16 @@ type NativeSetDockSizeRequest struct {
 
 // NativeSetDockSizeResponse is the response type for native.set_dock_size.
 type NativeSetDockSizeResponse struct {
+	Ok bool `json:"ok"`
+}
+
+// NativeSetDwellClickRequest is the request type for native.set_dwell_click.
+type NativeSetDwellClickRequest struct {
+	Enabled bool `json:"enabled"`
+}
+
+// NativeSetDwellClickResponse is the response type for native.set_dwell_click.
+type NativeSetDwellClickResponse struct {
 	Ok bool `json:"ok"`
 }
 

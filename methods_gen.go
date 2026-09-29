@@ -1965,6 +1965,16 @@ func (p *Plugin) NativeDownloadsDirectory() (*NativeDownloadsDirectoryResponse, 
 	return &result, nil
 }
 
+// NativeDwellClick check if the system's dwell click is on (holding the pointer still clicks). Exists only on macOS and Linux; elsewhere it is refused with platform_no_analogue.
+func (p *Plugin) NativeDwellClick() (*NativeDwellClickResponse, error) {
+	var result NativeDwellClickResponse
+	err := p.Call(MethodNativeDwellClick, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // NativeEjectDisk eject a mounted volume by path.
 func (p *Plugin) NativeEjectDisk(req NativeEjectDiskRequest) (bool, error) {
 	var result struct {
@@ -4421,6 +4431,15 @@ func (p *Plugin) NativeSetDockSize(req NativeSetDockSizeRequest) (bool, error) {
 		Ok bool `json:"ok"`
 	}
 	err := p.Call(MethodNativeSetDockSize, &req, &result)
+	return result.Ok, err
+}
+
+// NativeSetDwellClick turn the system's dwell click on or off (holding the pointer still clicks). Exists only on macOS and Linux; elsewhere it is refused with platform_no_analogue.
+func (p *Plugin) NativeSetDwellClick(req NativeSetDwellClickRequest) (bool, error) {
+	var result struct {
+		Ok bool `json:"ok"`
+	}
+	err := p.Call(MethodNativeSetDwellClick, &req, &result)
 	return result.Ok, err
 }
 

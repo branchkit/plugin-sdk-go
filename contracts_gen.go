@@ -214,6 +214,7 @@ const (
 	MethodNativeDockSize                      = "native.dock_size"                         // since 0.1.0
 	MethodNativeDocumentsDirectory            = "native.documents_directory"               // since 0.1.0
 	MethodNativeDownloadsDirectory            = "native.downloads_directory"               // since 0.1.0
+	MethodNativeDwellClick                    = "native.dwell_click"                       // since 0.2.0
 	MethodNativeEjectDisk                     = "native.eject_disk"                        // since 0.1.0
 	MethodNativeEmptyTrash                    = "native.empty_trash"                       // since 0.1.0
 	MethodNativeEnvVar                        = "native.env_var"                           // since 0.1.0
@@ -471,6 +472,7 @@ const (
 	MethodNativeSetDockPosition               = "native.set_dock_position"                 // since 0.1.0
 	MethodNativeSetDockShowRecents            = "native.set_dock_show_recents"             // since 0.1.0
 	MethodNativeSetDockSize                   = "native.set_dock_size"                     // since 0.1.0
+	MethodNativeSetDwellClick                 = "native.set_dwell_click"                   // since 0.2.0
 	MethodNativeSetExtendedAttribute          = "native.set_extended_attribute"            // since 0.1.0
 	MethodNativeSetFileHidden                 = "native.set_file_hidden"                   // since 0.1.0
 	MethodNativeSetFilePermissions            = "native.set_file_permissions"              // since 0.1.0
