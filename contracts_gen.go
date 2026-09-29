@@ -123,6 +123,7 @@ const (
 	MethodNativeAxReadAttributes              = "native.ax_read_attributes"                // since 0.1.0
 	MethodNativeAxSetAttribute                = "native.ax_set_attribute"                  // since 0.1.0
 	MethodNativeAxUnobserve                   = "native.ax_unobserve"                      // since 0.1.0
+	MethodNativeBackgroundItems               = "native.background_items"                  // since 0.2.0
 	MethodNativeBatchIsTileable               = "native.batch_is_tileable"                 // since 0.1.0
 	MethodNativeBatchSetFrames                = "native.batch_set_frames"                  // since 0.1.0
 	MethodNativeBattery                       = "native.battery"                           // since 0.1.0
@@ -305,8 +306,6 @@ const (
 	MethodNativeKillProcess                   = "native.kill_process"                      // since 0.1.0
 	MethodNativeLastReboot                    = "native.last_reboot"                       // since 0.1.0
 	MethodNativeLaunchApp                     = "native.launch_app"                        // since 0.1.0
-	MethodNativeLaunchdAgents                 = "native.launchd_agents"                    // since 0.1.0
-	MethodNativeLaunchdDaemons                = "native.launchd_daemons"                   // since 0.1.0
 	MethodNativeListAudioInputDevices         = "native.list_audio_input_devices"          // since 0.1.0
 	MethodNativeListAudioOutputDevices        = "native.list_audio_output_devices"         // since 0.1.0
 	MethodNativeListNotifications             = "native.list_notifications"                // since 0.1.0

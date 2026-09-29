@@ -1048,6 +1048,18 @@ func (p *Plugin) NativeAxUnobserve(req NativeAxUnobserveRequest) (bool, error) {
 	return result.Result, err
 }
 
+// NativeBackgroundItems list the programs that run in the background or start at login: launchd jobs on macOS, systemd services and autostart entries on Linux, services, Run keys and Startup folders on Windows.
+func (p *Plugin) NativeBackgroundItems() ([]BackgroundItem, error) {
+	var result struct {
+		Items []BackgroundItem `json:"items"`
+	}
+	err := p.Call(MethodNativeBackgroundItems, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Items, nil
+}
+
 // NativeBatchIsTileable check which windows can be tiled.
 func (p *Plugin) NativeBatchIsTileable(req NativeBatchIsTileableRequest) ([]TileableEntry, error) {
 	var result struct {
@@ -2866,30 +2878,6 @@ func (p *Plugin) NativeLastReboot() (*NativeLastRebootResponse, error) {
 // NativeLaunchApp launch an application by bundle ID.
 func (p *Plugin) NativeLaunchApp(req NativeLaunchAppRequest) error {
 	return p.Call(MethodNativeLaunchApp, &req, nil)
-}
-
-// NativeLaunchdAgents list user launch agents.
-func (p *Plugin) NativeLaunchdAgents() ([]string, error) {
-	var result struct {
-		Agents []string `json:"agents"`
-	}
-	err := p.Call(MethodNativeLaunchdAgents, nil, &result)
-	if err != nil {
-		return nil, err
-	}
-	return result.Agents, nil
-}
-
-// NativeLaunchdDaemons list system launch daemons.
-func (p *Plugin) NativeLaunchdDaemons() ([]string, error) {
-	var result struct {
-		Daemons []string `json:"daemons"`
-	}
-	err := p.Call(MethodNativeLaunchdDaemons, nil, &result)
-	if err != nil {
-		return nil, err
-	}
-	return result.Daemons, nil
 }
 
 // NativeListAudioInputDevices list available audio input device names.

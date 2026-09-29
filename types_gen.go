@@ -240,6 +240,31 @@ type AudioDevice struct {
 	UID             string `json:"uid"`
 }
 
+// BackgroundItem is auto-generated from the OpenRPC spec.
+// A program that runs in the background or starts at login
+// (`native.background_items`).
+type BackgroundItem struct {
+	// A human name where the mechanism keeps one (a systemd Description, a
+	// Windows service's display name, an autostart entry's Name).
+	DisplayName *string `json:"display_name,omitempty"`
+	// What keeps it: `launchd`, `systemd`, `autostart`, `service`,
+	// `run_key` or `startup_folder`.
+	Mechanism string `json:"mechanism"`
+	// Its identifier in its mechanism: a launchd label, a systemd unit, a
+	// Windows service name, a Run value or a Startup-folder file.
+	Name string `json:"name"`
+	// The program it runs, with its arguments where the mechanism records
+	// them as one command line.
+	Program *string `json:"program,omitempty"`
+	// Whether it is running now; None where the mechanism does not say
+	// (a Run key or autostart entry is a launch, not a process).
+	Running *bool `json:"running,omitempty"`
+	// `user` (runs for the signed-in user) or `system` (for the machine).
+	Scope string `json:"scope"`
+	// Whether it starts on its own, at login or at boot.
+	StartsAutomatically bool `json:"starts_automatically"`
+}
+
 // BarcodeResult is auto-generated from the OpenRPC spec.
 type BarcodeResult struct {
 	// wire double
@@ -3441,6 +3466,11 @@ type NativeAxUnobserveResponse struct {
 	Result bool `json:"result"`
 }
 
+// NativeBackgroundItemsResponse is the response type for native.background_items.
+type NativeBackgroundItemsResponse struct {
+	Items []BackgroundItem `json:"items"`
+}
+
 // NativeBatchIsTileableRequest is the request type for native.batch_is_tileable.
 type NativeBatchIsTileableRequest struct {
 	// default []
@@ -4733,16 +4763,6 @@ type NativeLaunchAppRequest struct {
 	BundleID string `json:"bundle_id"`
 	// default false
 	NewInstance *bool `json:"new_instance,omitempty"`
-}
-
-// NativeLaunchdAgentsResponse is the response type for native.launchd_agents.
-type NativeLaunchdAgentsResponse struct {
-	Agents []string `json:"agents"`
-}
-
-// NativeLaunchdDaemonsResponse is the response type for native.launchd_daemons.
-type NativeLaunchdDaemonsResponse struct {
-	Daemons []string `json:"daemons"`
 }
 
 // NativeListAudioInputDevicesResponse is the response type for native.list_audio_input_devices.
