@@ -4507,11 +4507,6 @@ type NativeFinderNewWindowTargetResponse struct {
 	Value string `json:"value"`
 }
 
-// NativeFinderSelectionResponse is the response type for native.finder_selection.
-type NativeFinderSelectionResponse struct {
-	Paths []string `json:"paths"`
-}
-
 // NativeFinderShowExtensionsResponse is the response type for native.finder_show_extensions.
 type NativeFinderShowExtensionsResponse struct {
 	Enabled bool `json:"enabled"`
@@ -5233,17 +5228,6 @@ type NativeNowPlayingResponse struct {
 // NativeNumberFormatDecimalResponse is the response type for native.number_format_decimal.
 type NativeNumberFormatDecimalResponse struct {
 	Value string `json:"value"`
-}
-
-// NativeObserveWindowsRequest is the request type for native.observe_windows.
-type NativeObserveWindowsRequest struct {
-	// wire int32
-	Pid int `json:"pid"`
-}
-
-// NativeObserveWindowsResponse is the response type for native.observe_windows.
-type NativeObserveWindowsResponse struct {
-	SubscriptionID string `json:"subscription_id"`
 }
 
 // NativeOcrClipboardResponse is the response type for native.ocr_clipboard.
@@ -6514,16 +6498,6 @@ type NativeSpacesSpanDisplaysResponse struct {
 	Enabled bool `json:"enabled"`
 }
 
-// NativeSpeakRequest is the request type for native.speak.
-type NativeSpeakRequest struct {
-	// wire double · default null
-	Rate *float64 `json:"rate,omitempty"`
-	// non-empty
-	Text string `json:"text"`
-	// default null
-	Voice *string `json:"voice,omitempty"`
-}
-
 // NativeSpeechLocalesResponse is the response type for native.speech_locales.
 type NativeSpeechLocalesResponse struct {
 	Locales []SpeechLocale `json:"locales"`
@@ -6817,17 +6791,6 @@ type NativeUnhideAppRequest struct {
 type NativeUnminimizeWindowRequest struct {
 	// non-empty
 	WindowID string `json:"window_id"`
-}
-
-// NativeUnobserveWindowsRequest is the request type for native.unobserve_windows.
-type NativeUnobserveWindowsRequest struct {
-	// non-empty
-	SubscriptionID string `json:"subscription_id"`
-}
-
-// NativeUnobserveWindowsResponse is the response type for native.unobserve_windows.
-type NativeUnobserveWindowsResponse struct {
-	Result bool `json:"result"`
 }
 
 // NativeUnzipRequest is the request type for native.unzip.

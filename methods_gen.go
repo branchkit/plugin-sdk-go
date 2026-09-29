@@ -419,7 +419,7 @@ func (p *Plugin) InputClipboardAction(req InputClipboardActionRequest) error {
 	return p.Call(MethodInputClipboardAction, &req, nil)
 }
 
-// InputClipboardHistory get recent clipboard entries (if available).
+// InputClipboardHistory get recent clipboard entries (if available). Exists only on Linux and Windows; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) InputClipboardHistory() ([]string, error) {
 	var result struct {
 		Entries []string `json:"entries"`
@@ -1136,6 +1136,16 @@ func (p *Plugin) NativeBatteryMaxCapacity() (float64, error) {
 	return result, nil
 }
 
+// NativeBatteryTimeRemaining minutes of battery left at the current rate; absent on AC power or when the OS has no estimate.
+func (p *Plugin) NativeBatteryTimeRemaining() (int, error) {
+	var result int
+	err := p.Call(MethodNativeBatteryTimeRemaining, nil, &result)
+	if err != nil {
+		return 0, err
+	}
+	return result, nil
+}
+
 // NativeBleDiscoverServices discover GATT services and characteristics on a paired BLE device.
 func (p *Plugin) NativeBleDiscoverServices(req NativeBleDiscoverServicesRequest) ([]BleService, error) {
 	var result struct {
@@ -1225,7 +1235,7 @@ func (p *Plugin) NativeBorders(req NativeBordersRequest) error {
 	return p.Call(MethodNativeBorders, &req, nil)
 }
 
-// NativeBounceKeys check if Bounce Keys is on (repeated presses of one key are ignored).
+// NativeBounceKeys check if Bounce Keys is on (repeated presses of one key are ignored). Exists only on Linux and Windows; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeBounceKeys() (*NativeBounceKeysResponse, error) {
 	var result NativeBounceKeysResponse
 	err := p.Call(MethodNativeBounceKeys, nil, &result)
@@ -1364,7 +1374,7 @@ func (p *Plugin) NativeClearFileQuarantine(req NativeClearFileQuarantineRequest)
 	return result.Ok, err
 }
 
-// NativeClearNotifications clear all delivered notifications for an app.
+// NativeClearNotifications clear all delivered notifications for an app. Exists only on Windows; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeClearNotifications(req NativeClearNotificationsRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
@@ -1470,7 +1480,7 @@ func (p *Plugin) NativeCpuInfo() (*NativeCpuInfoResponse, error) {
 	return &result, nil
 }
 
-// NativeCpuTemperature get CPU temperature in Celsius. Requires the third-party `osx-cpu-temp`; a reading without an explicit scale marker is rejected rather than assumed.
+// NativeCpuTemperature get CPU temperature in Celsius. Requires the third-party `osx-cpu-temp`; a reading without an explicit scale marker is rejected rather than assumed. Exists only on macOS and Linux; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeCpuTemperature() (float64, error) {
 	var result float64
 	err := p.Call(MethodNativeCpuTemperature, nil, &result)
@@ -1704,7 +1714,7 @@ func (p *Plugin) NativeDetectBarcodesFile(req NativeDetectBarcodesFileRequest) (
 	return result.Barcodes, nil
 }
 
-// NativeDictationEnabled check if Dictation is enabled.
+// NativeDictationEnabled check if Dictation is enabled. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeDictationEnabled() (*NativeDictationEnabledResponse, error) {
 	var result NativeDictationEnabledResponse
 	err := p.Call(MethodNativeDictationEnabled, nil, &result)
@@ -1756,7 +1766,7 @@ func (p *Plugin) NativeDiskUsage(req NativeDiskUsageRequest) (*NativeDiskUsageRe
 	return &result, nil
 }
 
-// NativeDismissNotification dismiss a delivered notification (partial — no-op).
+// NativeDismissNotification dismiss a delivered notification (partial — no-op). Exists only on Windows; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeDismissNotification(req NativeDismissNotificationRequest) error {
 	return p.Call(MethodNativeDismissNotification, &req, nil)
 }
@@ -2253,7 +2263,7 @@ func (p *Plugin) NativeFilevaultStatus() (*NativeFilevaultStatusResponse, error)
 	return &result, nil
 }
 
-// NativeFinderDefaultView get Finder default view style.
+// NativeFinderDefaultView get Finder default view style. Exists only on macOS and Linux; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeFinderDefaultView() (*NativeFinderDefaultViewResponse, error) {
 	var result NativeFinderDefaultViewResponse
 	err := p.Call(MethodNativeFinderDefaultView, nil, &result)
@@ -2271,18 +2281,6 @@ func (p *Plugin) NativeFinderNewWindowTarget() (*NativeFinderNewWindowTargetResp
 		return nil, err
 	}
 	return &result, nil
-}
-
-// NativeFinderSelection get the currently selected files in Finder. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeFinderSelection() ([]string, error) {
-	var result struct {
-		Paths []string `json:"paths"`
-	}
-	err := p.Call(MethodNativeFinderSelection, nil, &result)
-	if err != nil {
-		return nil, err
-	}
-	return result.Paths, nil
 }
 
 // NativeFinderShowExtensions whether the file manager shows file extensions. Exists only on macOS and Windows; elsewhere it is refused with platform_no_analogue.
@@ -2315,7 +2313,7 @@ func (p *Plugin) NativeFinderShowPathBar() (*NativeFinderShowPathBarResponse, er
 	return &result, nil
 }
 
-// NativeFinderShowStatusBar whether the file manager shows a status bar.
+// NativeFinderShowStatusBar whether the file manager shows a status bar. Exists only on macOS and Windows; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeFinderShowStatusBar() (*NativeFinderShowStatusBarResponse, error) {
 	var result NativeFinderShowStatusBarResponse
 	err := p.Call(MethodNativeFinderShowStatusBar, nil, &result)
@@ -2675,7 +2673,7 @@ func (p *Plugin) NativeHostnameResolve(req NativeHostnameResolveRequest) ([]stri
 	return result.Addresses, nil
 }
 
-// NativeHotCorners get hot corner actions as JSON string.
+// NativeHotCorners get hot corner actions as JSON string. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeHotCorners() (*NativeHotCornersResponse, error) {
 	var result NativeHotCornersResponse
 	err := p.Call(MethodNativeHotCorners, nil, &result)
@@ -2828,7 +2826,7 @@ func (p *Plugin) NativeKeyRepeatRate() (float64, error) {
 	return result, nil
 }
 
-// NativeKeyboardBrightness get keyboard backlight brightness (0.0-1.0).
+// NativeKeyboardBrightness get keyboard backlight brightness (0.0-1.0). Exists only on macOS and Linux; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeKeyboardBrightness() (float64, error) {
 	var result float64
 	err := p.Call(MethodNativeKeyboardBrightness, nil, &result)
@@ -2916,7 +2914,7 @@ func (p *Plugin) NativeListAudioOutputDevices() ([]string, error) {
 	return result.Devices, nil
 }
 
-// NativeListNotifications list delivered notifications (partial — returns empty).
+// NativeListNotifications list delivered notifications (partial — returns empty). Exists only on Windows; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeListNotifications() ([]DeliveredNotification, error) {
 	var result struct {
 		Notifications []DeliveredNotification `json:"notifications"`
@@ -3255,7 +3253,7 @@ func (p *Plugin) NativeMoveWindowToDisplay(req NativeMoveWindowToDisplayRequest)
 	return p.Call(MethodNativeMoveWindowToDisplay, &req, nil)
 }
 
-// NativeMoveWindowToSpace dEPRECATED, silent no-op on modern macOS: the private CGS move APIs this calls are dead (verified on Sequoia 2026-07-25) — the window does not move and the call still reports true. Kept for older systems. For a working move, drive the visible path the bundled windows plugin uses: mouse-hold the title bar + Ctrl+N. space_id here is an opaque CGS space id from native.list_spaces, NOT the 1-based ordinal that native.switch_space takes.
+// NativeMoveWindowToSpace dEPRECATED, silent no-op on modern macOS: the private CGS move APIs this calls are dead (verified on Sequoia 2026-07-25) — the window does not move and the call still reports true. Kept for older systems. For a working move, drive the visible path the bundled windows plugin uses: mouse-hold the title bar + Ctrl+N. space_id here is an opaque CGS space id from native.list_spaces, NOT the 1-based ordinal that native.switch_space takes. Exists only on macOS and Linux; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeMoveWindowToSpace(req NativeMoveWindowToSpaceRequest) (bool, error) {
 	var result struct {
 		Result bool `json:"result"`
@@ -3360,7 +3358,7 @@ func (p *Plugin) NativeNewAppWindow(req NativeNewAppWindowRequest) (bool, error)
 	return result.Ok, err
 }
 
-// NativeNightShift check if Night Shift is currently enabled.
+// NativeNightShift check if Night Shift is currently enabled. Exists only on macOS and Linux; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeNightShift() (*NativeNightShiftResponse, error) {
 	var result NativeNightShiftResponse
 	err := p.Call(MethodNativeNightShift, nil, &result)
@@ -3404,16 +3402,6 @@ func (p *Plugin) NativeNowPlaying() (*NativeNowPlayingResponse, error) {
 func (p *Plugin) NativeNumberFormatDecimal() (*NativeNumberFormatDecimalResponse, error) {
 	var result NativeNumberFormatDecimalResponse
 	err := p.Call(MethodNativeNumberFormatDecimal, nil, &result)
-	if err != nil {
-		return nil, err
-	}
-	return &result, nil
-}
-
-// NativeObserveWindows start observing window events for a PID (STUB -- not yet implemented).
-func (p *Plugin) NativeObserveWindows(req NativeObserveWindowsRequest) (*NativeObserveWindowsResponse, error) {
-	var result NativeObserveWindowsResponse
-	err := p.Call(MethodNativeObserveWindows, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3490,7 +3478,7 @@ func (p *Plugin) NativeOnScreenKeyboardEnabled() (*NativeOnScreenKeyboardEnabled
 	return &result, nil
 }
 
-// NativeOpenAppSettings open an app's preferences window.
+// NativeOpenAppSettings open an app's preferences window. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeOpenAppSettings(req NativeOpenAppSettingsRequest) error {
 	return p.Call(MethodNativeOpenAppSettings, &req, nil)
 }
@@ -3520,7 +3508,7 @@ func (p *Plugin) NativeOpenWithApp(req NativeOpenWithAppRequest) error {
 	return p.Call(MethodNativeOpenWithApp, &req, nil)
 }
 
-// NativeOptimizedCharging check if optimized battery charging is enabled.
+// NativeOptimizedCharging check if optimized battery charging is enabled. Exists only on macOS and Linux; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeOptimizedCharging() (*NativeOptimizedChargingResponse, error) {
 	var result NativeOptimizedChargingResponse
 	err := p.Call(MethodNativeOptimizedCharging, nil, &result)
@@ -4234,7 +4222,7 @@ func (p *Plugin) NativeSecureInputEnabled() (*NativeSecureInputEnabledResponse, 
 	return &result, nil
 }
 
-// NativeSelectedFinderItems get Finder selection.
+// NativeSelectedFinderItems get Finder selection. Exists only on macOS and Windows; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeSelectedFinderItems() ([]string, error) {
 	var result struct {
 		Paths []string `json:"paths"`
@@ -4348,7 +4336,7 @@ func (p *Plugin) NativeSetBluetoothPower(req NativeSetBluetoothPowerRequest) (bo
 	return result.Ok, err
 }
 
-// NativeSetBounceKeys turn Bounce Keys on or off (repeated presses of one key are ignored).
+// NativeSetBounceKeys turn Bounce Keys on or off (repeated presses of one key are ignored). Exists only on Linux and Windows; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeSetBounceKeys(req NativeSetBounceKeysRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
@@ -4489,7 +4477,7 @@ func (p *Plugin) NativeSetHighlightColor(req NativeSetHighlightColorRequest) (bo
 	return result.Ok, err
 }
 
-// NativeSetHotCorner set a hot corner action.
+// NativeSetHotCorner set a hot corner action. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeSetHotCorner(req NativeSetHotCornerRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
@@ -4570,7 +4558,7 @@ func (p *Plugin) NativeSetMouseSpeed(req NativeSetMouseSpeedRequest) (bool, erro
 	return result.Ok, err
 }
 
-// NativeSetNightShift enable or disable Night Shift.
+// NativeSetNightShift enable or disable Night Shift. Exists only on macOS and Linux; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeSetNightShift(req NativeSetNightShiftRequest) error {
 	return p.Call(MethodNativeSetNightShift, &req, nil)
 }
@@ -4762,7 +4750,7 @@ func (p *Plugin) NativeSetWindowSize(req NativeSetWindowSizeRequest) error {
 	return p.Call(MethodNativeSetWindowSize, &req, nil)
 }
 
-// NativeSetWindowSticky set a window to appear on all spaces (sticky).
+// NativeSetWindowSticky set a window to appear on all spaces (sticky). Exists only on macOS and Linux; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeSetWindowSticky(req NativeSetWindowStickyRequest) error {
 	return p.Call(MethodNativeSetWindowSticky, &req, nil)
 }
@@ -4862,12 +4850,7 @@ func (p *Plugin) NativeSpacesSpanDisplays() (*NativeSpacesSpanDisplaysResponse, 
 	return &result, nil
 }
 
-// NativeSpeak speak text using the system text-to-speech engine.
-func (p *Plugin) NativeSpeak(req NativeSpeakRequest) error {
-	return p.Call(MethodNativeSpeak, &req, nil)
-}
-
-// NativeSpeechLocales list available speech recognition locales.
+// NativeSpeechLocales list available speech recognition locales. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeSpeechLocales() ([]SpeechLocale, error) {
 	var result struct {
 		Locales []SpeechLocale `json:"locales"`
@@ -4879,7 +4862,7 @@ func (p *Plugin) NativeSpeechLocales() ([]SpeechLocale, error) {
 	return result.Locales, nil
 }
 
-// NativeSpeechRecognitionAvailable check if on-device speech recognition is available.
+// NativeSpeechRecognitionAvailable check if on-device speech recognition is available. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeSpeechRecognitionAvailable() (*NativeSpeechRecognitionAvailableResponse, error) {
 	var result NativeSpeechRecognitionAvailableResponse
 	err := p.Call(MethodNativeSpeechRecognitionAvailable, nil, &result)
@@ -4889,7 +4872,7 @@ func (p *Plugin) NativeSpeechRecognitionAvailable() (*NativeSpeechRecognitionAva
 	return &result, nil
 }
 
-// NativeSpeechRecognizeFile recognize speech from an audio file (returns transcript).
+// NativeSpeechRecognizeFile recognize speech from an audio file (returns transcript). Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeSpeechRecognizeFile(req NativeSpeechRecognizeFileRequest) (string, error) {
 	var result string
 	err := p.Call(MethodNativeSpeechRecognizeFile, &req, &result)
@@ -5179,7 +5162,7 @@ func (p *Plugin) NativeTimeFormat() (*NativeTimeFormatResponse, error) {
 	return &result, nil
 }
 
-// NativeTimeMachineLastBackup get the last Time Machine backup date.
+// NativeTimeMachineLastBackup get the last Time Machine backup date. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeTimeMachineLastBackup() (*NativeTimeMachineLastBackupResponse, error) {
 	var result NativeTimeMachineLastBackupResponse
 	err := p.Call(MethodNativeTimeMachineLastBackup, nil, &result)
@@ -5189,7 +5172,7 @@ func (p *Plugin) NativeTimeMachineLastBackup() (*NativeTimeMachineLastBackupResp
 	return &result, nil
 }
 
-// NativeTimeMachineStatus check if Time Machine is enabled and get destination.
+// NativeTimeMachineStatus check if Time Machine is enabled and get destination. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeTimeMachineStatus() (*NativeTimeMachineStatusResponse, error) {
 	var result NativeTimeMachineStatusResponse
 	err := p.Call(MethodNativeTimeMachineStatus, nil, &result)
@@ -5197,16 +5180,6 @@ func (p *Plugin) NativeTimeMachineStatus() (*NativeTimeMachineStatusResponse, er
 		return nil, err
 	}
 	return &result, nil
-}
-
-// NativeTimeOnBattery get time on battery in minutes since last unplug.
-func (p *Plugin) NativeTimeOnBattery() (int, error) {
-	var result int
-	err := p.Call(MethodNativeTimeOnBattery, nil, &result)
-	if err != nil {
-		return 0, err
-	}
-	return result, nil
 }
 
 // NativeTimezone get current system timezone identifier.
@@ -5321,15 +5294,6 @@ func (p *Plugin) NativeUnhideApp(req NativeUnhideAppRequest) error {
 // NativeUnminimizeWindow restore a minimized window by ID.
 func (p *Plugin) NativeUnminimizeWindow(req NativeUnminimizeWindowRequest) error {
 	return p.Call(MethodNativeUnminimizeWindow, &req, nil)
-}
-
-// NativeUnobserveWindows stop observing window events (STUB).
-func (p *Plugin) NativeUnobserveWindows(req NativeUnobserveWindowsRequest) (bool, error) {
-	var result struct {
-		Result bool `json:"result"`
-	}
-	err := p.Call(MethodNativeUnobserveWindows, &req, &result)
-	return result.Result, err
 }
 
 // NativeUnzip extract a zip archive to a directory.
@@ -5500,7 +5464,7 @@ func (p *Plugin) NativeWindowIsMinimized(req NativeWindowIsMinimizedRequest) (bo
 	return result, nil
 }
 
-// NativeWindowLayer get window layer level.
+// NativeWindowLayer get window layer level. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeWindowLayer(req NativeWindowLayerRequest) (int, error) {
 	var result int
 	err := p.Call(MethodNativeWindowLayer, &req, &result)
@@ -5520,7 +5484,7 @@ func (p *Plugin) NativeWindowScreenshot(req NativeWindowScreenshotRequest) (stri
 	return result, nil
 }
 
-// NativeWindowSubrole get window subrole.
+// NativeWindowSubrole get window subrole. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeWindowSubrole(req NativeWindowSubroleRequest) (string, error) {
 	var result string
 	err := p.Call(MethodNativeWindowSubrole, &req, &result)

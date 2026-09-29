@@ -131,6 +131,7 @@ const (
 	MethodNativeBatteryCycleCount             = "native.battery_cycle_count"               // since 0.1.0
 	MethodNativeBatteryHealth                 = "native.battery_health"                    // since 0.1.0
 	MethodNativeBatteryMaxCapacity            = "native.battery_max_capacity"              // since 0.1.0
+	MethodNativeBatteryTimeRemaining          = "native.battery_time_remaining"            // since 0.1.0
 	MethodNativeBleDiscoverServices           = "native.ble_discover_services"             // since 0.1.0
 	MethodNativeBleSubscribe                  = "native.ble_subscribe"                     // since 0.1.0
 	MethodNativeBleSubscribeAllThenWrite      = "native.ble_subscribe_all_then_write"      // since 0.1.0
@@ -244,7 +245,6 @@ const (
 	MethodNativeFilevaultStatus               = "native.filevault_status"                  // since 0.1.0
 	MethodNativeFinderDefaultView             = "native.finder_default_view"               // since 0.1.0
 	MethodNativeFinderNewWindowTarget         = "native.finder_new_window_target"          // since 0.1.0
-	MethodNativeFinderSelection               = "native.finder_selection"                  // since 0.1.0
 	MethodNativeFinderShowExtensions          = "native.finder_show_extensions"            // since 0.1.0
 	MethodNativeFinderShowHidden              = "native.finder_show_hidden"                // since 0.1.0
 	MethodNativeFinderShowPathBar             = "native.finder_show_path_bar"              // since 0.1.0
@@ -361,7 +361,6 @@ const (
 	MethodNativeNotify                        = "native.notify"                            // since 0.1.0
 	MethodNativeNowPlaying                    = "native.now_playing"                       // since 0.1.0
 	MethodNativeNumberFormatDecimal           = "native.number_format_decimal"             // since 0.1.0
-	MethodNativeObserveWindows                = "native.observe_windows"                   // since 0.1.0
 	MethodNativeOcrClipboard                  = "native.ocr_clipboard"                     // since 0.1.0
 	MethodNativeOcrFile                       = "native.ocr_file"                          // since 0.1.0
 	MethodNativeOcrScreen                     = "native.ocr_screen"                        // since 0.1.0
@@ -522,7 +521,6 @@ const (
 	MethodNativeSmartZoom                     = "native.smart_zoom"                        // since 0.1.0
 	MethodNativeSoundEffectsEnabled           = "native.sound_effects_enabled"             // since 0.1.0
 	MethodNativeSpacesSpanDisplays            = "native.spaces_span_displays"              // since 0.1.0
-	MethodNativeSpeak                         = "native.speak"                             // since 0.1.0
 	MethodNativeSpeechLocales                 = "native.speech_locales"                    // since 0.1.0
 	MethodNativeSpeechRecognitionAvailable    = "native.speech_recognition_available"      // since 0.1.0
 	MethodNativeSpeechRecognizeFile           = "native.speech_recognize_file"             // since 0.1.0
@@ -556,7 +554,6 @@ const (
 	MethodNativeTimeFormat                    = "native.time_format"                       // since 0.1.0
 	MethodNativeTimeMachineLastBackup         = "native.time_machine_last_backup"          // since 0.1.0
 	MethodNativeTimeMachineStatus             = "native.time_machine_status"               // since 0.1.0
-	MethodNativeTimeOnBattery                 = "native.time_on_battery"                   // since 0.1.0
 	MethodNativeTimezone                      = "native.timezone"                          // since 0.1.0
 	MethodNativeToggleBluetooth               = "native.toggle_bluetooth"                  // since 0.1.0
 	MethodNativeToggleFullscreen              = "native.toggle_fullscreen"                 // since 0.1.0
@@ -570,7 +567,6 @@ const (
 	MethodNativeTwentyFourHourClock           = "native.twenty_four_hour_clock"            // since 0.1.0
 	MethodNativeUnhideApp                     = "native.unhide_app"                        // since 0.1.0
 	MethodNativeUnminimizeWindow              = "native.unminimize_window"                 // since 0.1.0
-	MethodNativeUnobserveWindows              = "native.unobserve_windows"                 // since 0.1.0
 	MethodNativeUnzip                         = "native.unzip"                             // since 0.1.0
 	MethodNativeUrlSchemeHandler              = "native.url_scheme_handler"                // since 0.1.0
 	MethodNativeUsbDevices                    = "native.usb_devices"                       // since 0.1.0
