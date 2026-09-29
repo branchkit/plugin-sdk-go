@@ -286,6 +286,19 @@ type BleCharacteristic struct {
 	Uuid       string   `json:"uuid"`
 }
 
+// BleDeviceEntry is auto-generated from the OpenRPC spec.
+// A Bluetooth LE device offering the asked-for service.
+type BleDeviceEntry struct {
+	// Whether the user has allowed this device for this service. Until
+	// they do, calls on it are refused, and the first one puts it on the
+	// plugin's card to be allowed.
+	Allowed bool `json:"allowed"`
+	// How the OS names it (an address, or on macOS a CoreBluetooth
+	// identifier): the `device_identifier` every other BLE call takes.
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
 // BleService is auto-generated from the OpenRPC spec.
 // A GATT service with its characteristics.
 type BleService struct {
@@ -934,16 +947,25 @@ type HUDItem struct {
 }
 
 // HidDeviceEntry is auto-generated from the OpenRPC spec.
+// A HID device as its caller may see it: one whose product the plugin
+// declared, never a keyboard, pointer, system control or security key.
 type HidDeviceEntry struct {
+	// Whether the user has this product switched on for the caller. Every
+	// other HID call on it is refused until they do.
+	Allowed bool `json:"allowed"`
 	// wire uint32 · min 0
 	Axes    int     `json:"axes"`
 	BleUuid *string `json:"ble_uuid,omitempty"`
 	// wire uint32 · min 0
-	Buttons int    `json:"buttons"`
-	ID      string `json:"id"`
+	Buttons int `json:"buttons"`
+	// Device ID (`0x046d:0xc52b:…`), the handle every other HID call takes.
+	ID string `json:"id"`
+	// Whether the caller has it open (`native.hid_open`).
+	Open    bool   `json:"open"`
 	Product string `json:"product"`
 	// wire uint32 · min 0
-	ProductID int    `json:"product_id"`
+	ProductID int `json:"product_id"`
+	// Whether some plugin holds it exclusively (`native.hid_claim`).
 	Seized    bool   `json:"seized"`
 	Transport string `json:"transport"`
 	// wire uint32 · min 0
@@ -3654,11 +3676,22 @@ type NativeBatteryHealthResponse struct {
 	Value string `json:"value"`
 }
 
+// NativeBleDevicesRequest is the request type for native.ble_devices.
+type NativeBleDevicesRequest struct {
+	// A GATT service the plugin declares in `requires.devices.ble`
+	// (`fff0`, or 128 bits).
+	// non-empty
+	ServiceUuid string `json:"service_uuid"`
+}
+
+// NativeBleDevicesResponse is the response type for native.ble_devices.
+type NativeBleDevicesResponse struct {
+	Devices []BleDeviceEntry `json:"devices"`
+}
+
 // NativeBleDiscoverServicesRequest is the request type for native.ble_discover_services.
 type NativeBleDiscoverServicesRequest struct {
-	// Identifier for the paired BLE device. Accepts a CoreBluetooth
-	// peripheral UUID (e.g. "12345678-...") or a device name to match
-	// among connected BLE HID peripherals (e.g. "Shortcut Remote").
+	// The device, as `native.ble_devices` names it.
 	// non-empty
 	DeviceIdentifier string `json:"device_identifier"`
 }
@@ -3673,10 +3706,10 @@ type NativeBleSubscribeRequest struct {
 	// GATT characteristic UUID to subscribe to (must support notify).
 	// non-empty
 	CharacteristicUuid string `json:"characteristic_uuid"`
-	// CoreBluetooth peripheral UUID or device name.
+	// The device, as `native.ble_devices` names it.
 	// non-empty
 	DeviceIdentifier string `json:"device_identifier"`
-	// GATT service UUID containing the characteristic.
+	// A declared GATT service containing the characteristic.
 	// non-empty
 	ServiceUuid string `json:"service_uuid"`
 }
@@ -3688,10 +3721,12 @@ type NativeBleSubscribeResponse struct {
 
 // NativeBleSubscribeAllThenWriteRequest is the request type for native.ble_subscribe_all_then_write.
 type NativeBleSubscribeAllThenWriteRequest struct {
-	// CoreBluetooth peripheral UUID or device name.
+	// The device, as `native.ble_devices` names it.
 	// non-empty
 	DeviceIdentifier string `json:"device_identifier"`
-	// GATT service UUIDs to subscribe to all notify characteristics on.
+	// Declared GATT services to subscribe to all notify characteristics
+	// on. Their notifications are the caller's until
+	// `native.ble_unsubscribe` with characteristic `*`.
 	// default []
 	SubscribeServices []string `json:"subscribe_services,omitempty"`
 	// Writes to perform after subscribing. The last `with_response` write
@@ -3704,6 +3739,24 @@ type NativeBleSubscribeAllThenWriteResponse struct {
 	Success bool `json:"success"`
 }
 
+// NativeBleUnsubscribeRequest is the request type for native.ble_unsubscribe.
+type NativeBleUnsubscribeRequest struct {
+	// The characteristic `native.ble_subscribe` subscribed to.
+	// non-empty
+	CharacteristicUuid string `json:"characteristic_uuid"`
+	// The device, as `native.ble_devices` names it.
+	// non-empty
+	DeviceIdentifier string `json:"device_identifier"`
+	// non-empty
+	ServiceUuid string `json:"service_uuid"`
+}
+
+// NativeBleUnsubscribeResponse is the response type for native.ble_unsubscribe.
+type NativeBleUnsubscribeResponse struct {
+	// Whether the caller was subscribed.
+	Unsubscribed bool `json:"unsubscribed"`
+}
+
 // NativeBleWriteRequest is the request type for native.ble_write.
 type NativeBleWriteRequest struct {
 	// GATT characteristic UUID (e.g. "FFF1").
@@ -3712,11 +3765,10 @@ type NativeBleWriteRequest struct {
 	// Bytes to write to the characteristic.
 	// default []
 	Data []int `json:"data,omitempty"`
-	// Identifier for the paired BLE device. Accepts a CoreBluetooth
-	// peripheral UUID or a device name (see ble_discover_services).
+	// The device, as `native.ble_devices` names it.
 	// non-empty
 	DeviceIdentifier string `json:"device_identifier"`
-	// GATT service UUID (e.g. "FFF0").
+	// A declared GATT service (e.g. "fff0").
 	// non-empty
 	ServiceUuid string `json:"service_uuid"`
 	// Write type: "with_response" (default, reliable) or "without_response" (fire-and-forget).
@@ -4739,6 +4791,19 @@ type NativeHidClaimResponse struct {
 	Success bool `json:"success"`
 }
 
+// NativeHidCloseRequest is the request type for native.hid_close.
+type NativeHidCloseRequest struct {
+	// Device ID, as `native.hid_devices` lists it.
+	// non-empty
+	DeviceID string `json:"device_id"`
+}
+
+// NativeHidCloseResponse is the response type for native.hid_close.
+type NativeHidCloseResponse struct {
+	// Whether the caller had it open.
+	Closed bool `json:"closed"`
+}
+
 // NativeHidDevicesResponse is the response type for native.hid_devices.
 type NativeHidDevicesResponse struct {
 	Devices []HidDeviceEntry `json:"devices"`
@@ -4756,6 +4821,18 @@ type NativeHidElementsResponse struct {
 	Elements []HidElementEntry `json:"elements"`
 }
 
+// NativeHidOpenRequest is the request type for native.hid_open.
+type NativeHidOpenRequest struct {
+	// Device ID, as `native.hid_devices` lists it.
+	// non-empty
+	DeviceID string `json:"device_id"`
+}
+
+// NativeHidOpenResponse is the response type for native.hid_open.
+type NativeHidOpenResponse struct {
+	Success bool `json:"success"`
+}
+
 // NativeHidReleaseRequest is the request type for native.hid_release.
 type NativeHidReleaseRequest struct {
 	// Device ID (e.g. "0x28bd:0x0202:0x48f42695").
@@ -4765,6 +4842,7 @@ type NativeHidReleaseRequest struct {
 
 // NativeHidReleaseResponse is the response type for native.hid_release.
 type NativeHidReleaseResponse struct {
+	// Whether the caller held it exclusively.
 	Success bool `json:"success"`
 }
 
@@ -8137,13 +8215,15 @@ type AxNotificationEventParams struct {
 
 // BleNotificationEventParams is the payload of the _platform.ble.notification event.
 type BleNotificationEventParams struct {
-	// GATT characteristic UUID.
+	// GATT characteristic UUID, 128-bit lower case.
 	CharacteristicUuid string `json:"characteristic_uuid"`
 	// Notification payload bytes.
 	Data []int `json:"data"`
-	// CoreBluetooth peripheral UUID.
+	// The device as `native.ble_devices` names it.
 	DeviceIdentifier string `json:"device_identifier"`
-	// GATT service UUID.
+	// The plugin that subscribed; the event reaches it alone.
+	OwnerPlugin string `json:"owner_plugin"`
+	// GATT service UUID, 128-bit lower case.
 	ServiceUuid string `json:"service_uuid"`
 }
 
@@ -8266,7 +8346,9 @@ type HidConnectedEventParams struct {
 	// wire uint32 · min 0
 	Buttons  int    `json:"buttons"`
 	DeviceID string `json:"device_id"`
-	Product  string `json:"product"`
+	// The plugin this copy is for: one that declared the product.
+	OwnerPlugin string `json:"owner_plugin"`
+	Product     string `json:"product"`
 	// wire uint32 · min 0
 	ProductID int    `json:"product_id"`
 	Transport string `json:"transport"`
@@ -8276,21 +8358,25 @@ type HidConnectedEventParams struct {
 
 // HidDisconnectedEventParams is the payload of the _platform.hid.disconnected event.
 type HidDisconnectedEventParams struct {
-	DeviceID  string `json:"device_id"`
-	Product   string `json:"product"`
-	Transport string `json:"transport"`
+	DeviceID string `json:"device_id"`
+	// The plugin this copy is for: one that declared the product.
+	OwnerPlugin string `json:"owner_plugin"`
+	Product     string `json:"product"`
+	Transport   string `json:"transport"`
 }
 
 // HidInputEventParams is the payload of the _platform.hid.input event.
 type HidInputEventParams struct {
 	DeviceID string `json:"device_id"`
-	Product  string `json:"product"`
+	// The plugin that opened the device; the event reaches it alone.
+	OwnerPlugin string `json:"owner_plugin"`
+	Product     string `json:"product"`
 	// wire uint64 (64-bit) · min 0
 	Timestamp int `json:"timestamp"`
 	// HID usage code within the usage page.
 	// wire uint32 · min 0
 	Usage int `json:"usage"`
-	// HID usage page (e.g. 0x09 = Button, 0x07 = Keyboard, 0x01 = Generic Desktop).
+	// HID usage page (e.g. 0x09 = Button, 0x01 = Generic Desktop).
 	// wire uint32 · min 0
 	UsagePage int `json:"usage_page"`
 	// The input value (e.g. 1 = pressed, 0 = released for buttons).
@@ -8300,14 +8386,16 @@ type HidInputEventParams struct {
 
 // HidReportEventParams is the payload of the _platform.hid.report event.
 type HidReportEventParams struct {
-	// Raw report bytes.
+	// Raw report bytes, without the report ID.
 	Data     []int  `json:"data"`
 	DeviceID string `json:"device_id"`
-	Product  string `json:"product"`
-	// HID report ID.
+	// The plugin that opened the device; the event reaches it alone.
+	OwnerPlugin string `json:"owner_plugin"`
+	Product     string `json:"product"`
+	// HID report ID, 0 for a device that numbers none.
 	// wire uint32 · min 0
 	ReportID int `json:"report_id"`
-	// IOHIDReportType (0 = input, 1 = output, 2 = feature).
+	// 0 = input (the only kind a device sends unasked).
 	// wire uint32 · min 0
 	ReportType int `json:"report_type"`
 	// wire uint64 (64-bit) · min 0

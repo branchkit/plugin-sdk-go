@@ -1146,7 +1146,19 @@ func (p *Plugin) NativeBatteryTimeRemaining() (int, error) {
 	return result, nil
 }
 
-// NativeBleDiscoverServices discover GATT services and characteristics on a paired BLE device.
+// NativeBleDevices list the Bluetooth LE devices the OS is connected to or paired with that offer a GATT service the plugin declared.
+func (p *Plugin) NativeBleDevices(req NativeBleDevicesRequest) ([]BleDeviceEntry, error) {
+	var result struct {
+		Devices []BleDeviceEntry `json:"devices"`
+	}
+	err := p.Call(MethodNativeBleDevices, &req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Devices, nil
+}
+
+// NativeBleDiscoverServices discover the declared GATT services and their characteristics on a Bluetooth LE device the user allowed.
 func (p *Plugin) NativeBleDiscoverServices(req NativeBleDiscoverServicesRequest) ([]BleService, error) {
 	var result struct {
 		Services []BleService `json:"services"`
@@ -1158,7 +1170,7 @@ func (p *Plugin) NativeBleDiscoverServices(req NativeBleDiscoverServicesRequest)
 	return result.Services, nil
 }
 
-// NativeBleSubscribe subscribe to GATT notifications on a BLE characteristic.
+// NativeBleSubscribe subscribe to a GATT characteristic's notifications; they arrive as _platform.ble.notification, addressed to the calling plugin alone.
 func (p *Plugin) NativeBleSubscribe(req NativeBleSubscribeRequest) (*NativeBleSubscribeResponse, error) {
 	var result NativeBleSubscribeResponse
 	err := p.Call(MethodNativeBleSubscribe, &req, &result)
@@ -1168,7 +1180,7 @@ func (p *Plugin) NativeBleSubscribe(req NativeBleSubscribeRequest) (*NativeBleSu
 	return &result, nil
 }
 
-// NativeBleSubscribeAllThenWrite subscribe to all notify characteristics on listed services, then write — single GATT cycle.
+// NativeBleSubscribeAllThenWrite subscribe to all notify characteristics on the listed declared services, then write, in one GATT cycle.
 func (p *Plugin) NativeBleSubscribeAllThenWrite(req NativeBleSubscribeAllThenWriteRequest) (*NativeBleSubscribeAllThenWriteResponse, error) {
 	var result NativeBleSubscribeAllThenWriteResponse
 	err := p.Call(MethodNativeBleSubscribeAllThenWrite, &req, &result)
@@ -1178,7 +1190,17 @@ func (p *Plugin) NativeBleSubscribeAllThenWrite(req NativeBleSubscribeAllThenWri
 	return &result, nil
 }
 
-// NativeBleWrite write bytes to a GATT characteristic on a paired BLE device.
+// NativeBleUnsubscribe stop the notifications native.ble_subscribe started on one characteristic.
+func (p *Plugin) NativeBleUnsubscribe(req NativeBleUnsubscribeRequest) (*NativeBleUnsubscribeResponse, error) {
+	var result NativeBleUnsubscribeResponse
+	err := p.Call(MethodNativeBleUnsubscribe, &req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeBleWrite write bytes to a GATT characteristic of a declared service on a Bluetooth LE device the user allowed.
 func (p *Plugin) NativeBleWrite(req NativeBleWriteRequest) (*NativeBleWriteResponse, error) {
 	var result NativeBleWriteResponse
 	err := p.Call(MethodNativeBleWrite, &req, &result)
@@ -2562,7 +2584,7 @@ func (p *Plugin) NativeHardwareUuid() (*NativeHardwareUuidResponse, error) {
 	return &result, nil
 }
 
-// NativeHidClaim seize exclusive access to a HID device, suppressing native macOS events.
+// NativeHidClaim hold a HID device the plugin declared exclusively, so its input reaches the plugin and not the OS. Exists only on macOS and Linux; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeHidClaim(req NativeHidClaimRequest) (*NativeHidClaimResponse, error) {
 	var result NativeHidClaimResponse
 	err := p.Call(MethodNativeHidClaim, &req, &result)
@@ -2572,7 +2594,17 @@ func (p *Plugin) NativeHidClaim(req NativeHidClaimRequest) (*NativeHidClaimRespo
 	return &result, nil
 }
 
-// NativeHidDevices list all connected non-Apple HID devices.
+// NativeHidClose stop receiving a HID device's input (and end the plugin's exclusive hold on it).
+func (p *Plugin) NativeHidClose(req NativeHidCloseRequest) (*NativeHidCloseResponse, error) {
+	var result NativeHidCloseResponse
+	err := p.Call(MethodNativeHidClose, &req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeHidDevices list the connected HID devices whose vendor:product the plugin declared, never a keyboard, pointer or security key.
 func (p *Plugin) NativeHidDevices() ([]HidDeviceEntry, error) {
 	var result struct {
 		Devices []HidDeviceEntry `json:"devices"`
@@ -2584,7 +2616,7 @@ func (p *Plugin) NativeHidDevices() ([]HidDeviceEntry, error) {
 	return result.Devices, nil
 }
 
-// NativeHidElements return the parsed HID element tree (buttons, axes, dials) for a connected device.
+// NativeHidElements return the parsed HID element tree (buttons, axes, dials) of a HID device the plugin declared and the user switched on.
 func (p *Plugin) NativeHidElements(req NativeHidElementsRequest) ([]HidElementEntry, error) {
 	var result struct {
 		Elements []HidElementEntry `json:"elements"`
@@ -2596,7 +2628,17 @@ func (p *Plugin) NativeHidElements(req NativeHidElementsRequest) ([]HidElementEn
 	return result.Elements, nil
 }
 
-// NativeHidRelease release exclusive access to a HID device, restoring native macOS behavior.
+// NativeHidOpen start receiving a HID device's input as _platform.hid.report (and on macOS _platform.hid.input), addressed to the calling plugin alone.
+func (p *Plugin) NativeHidOpen(req NativeHidOpenRequest) (*NativeHidOpenResponse, error) {
+	var result NativeHidOpenResponse
+	err := p.Call(MethodNativeHidOpen, &req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeHidRelease end the plugin's exclusive hold on a HID device, giving its input back to the OS. Exists only on macOS and Linux; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeHidRelease(req NativeHidReleaseRequest) (*NativeHidReleaseResponse, error) {
 	var result NativeHidReleaseResponse
 	err := p.Call(MethodNativeHidRelease, &req, &result)
@@ -2606,7 +2648,7 @@ func (p *Plugin) NativeHidRelease(req NativeHidReleaseRequest) (*NativeHidReleas
 	return &result, nil
 }
 
-// NativeHidSendReport send an output or feature report to a connected HID device.
+// NativeHidSendReport send an output or feature report to a HID device the plugin declared and the user switched on.
 func (p *Plugin) NativeHidSendReport(req NativeHidSendReportRequest) (*NativeHidSendReportResponse, error) {
 	var result NativeHidSendReportResponse
 	err := p.Call(MethodNativeHidSendReport, &req, &result)

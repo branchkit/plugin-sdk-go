@@ -132,9 +132,11 @@ const (
 	MethodNativeBatteryHealth                 = "native.battery_health"                    // since 0.1.0
 	MethodNativeBatteryMaxCapacity            = "native.battery_max_capacity"              // since 0.1.0
 	MethodNativeBatteryTimeRemaining          = "native.battery_time_remaining"            // since 0.1.0
+	MethodNativeBleDevices                    = "native.ble_devices"                       // since 0.2.0
 	MethodNativeBleDiscoverServices           = "native.ble_discover_services"             // since 0.1.0
 	MethodNativeBleSubscribe                  = "native.ble_subscribe"                     // since 0.1.0
 	MethodNativeBleSubscribeAllThenWrite      = "native.ble_subscribe_all_then_write"      // since 0.1.0
+	MethodNativeBleUnsubscribe                = "native.ble_unsubscribe"                   // since 0.2.0
 	MethodNativeBleWrite                      = "native.ble_write"                         // since 0.1.0
 	MethodNativeBluetoothDevices              = "native.bluetooth_devices"                 // since 0.1.0
 	MethodNativeBluetoothPower                = "native.bluetooth_power"                   // since 0.1.0
@@ -274,8 +276,10 @@ const (
 	MethodNativeHardwareModel                 = "native.hardware_model"                    // since 0.1.0
 	MethodNativeHardwareUuid                  = "native.hardware_uuid"                     // since 0.1.0
 	MethodNativeHidClaim                      = "native.hid_claim"                         // since 0.1.0
+	MethodNativeHidClose                      = "native.hid_close"                         // since 0.2.0
 	MethodNativeHidDevices                    = "native.hid_devices"                       // since 0.1.0
 	MethodNativeHidElements                   = "native.hid_elements"                      // since 0.1.0
+	MethodNativeHidOpen                       = "native.hid_open"                          // since 0.2.0
 	MethodNativeHidRelease                    = "native.hid_release"                       // since 0.1.0
 	MethodNativeHidSendReport                 = "native.hid_send_report"                   // since 0.1.0
 	MethodNativeHideApp                       = "native.hide_app"                          // since 0.1.0
