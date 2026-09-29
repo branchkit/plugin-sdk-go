@@ -2081,14 +2081,16 @@ func (p *Plugin) NativeExternalDisplayNames() ([]string, error) {
 	return result.Names, nil
 }
 
-// NativeFanSpeeds get raw SMC fan lines as reported by powermetrics or ioreg — free-form text, NOT JSON, and unavailable unless a fan source can be read.
-func (p *Plugin) NativeFanSpeeds() (*NativeFanSpeedsResponse, error) {
-	var result NativeFanSpeedsResponse
+// NativeFanSpeeds the machine's fans and their speeds in RPM, with each fan's minimum and maximum where the OS reports them. Empty on a machine without fans.
+func (p *Plugin) NativeFanSpeeds() ([]FanSpeed, error) {
+	var result struct {
+		Fans []FanSpeed `json:"fans"`
+	}
 	err := p.Call(MethodNativeFanSpeeds, nil, &result)
 	if err != nil {
 		return nil, err
 	}
-	return &result, nil
+	return result.Fans, nil
 }
 
 // NativeFastUserSwitching check if fast user switching is enabled.
@@ -2502,14 +2504,16 @@ func (p *Plugin) NativeGlobFiles(req NativeGlobFilesRequest) ([]string, error) {
 	return result.Paths, nil
 }
 
-// NativeGpuInfo get GPU name and VRAM info.
-func (p *Plugin) NativeGpuInfo() (*NativeGpuInfoResponse, error) {
-	var result NativeGpuInfoResponse
+// NativeGpuInfo the machine's graphics processors: name, vendor, dedicated memory and driver. A GPU that shares system memory (Apple silicon, most integrated GPUs) reports no dedicated memory.
+func (p *Plugin) NativeGpuInfo() ([]GpuInfo, error) {
+	var result struct {
+		Gpus []GpuInfo `json:"gpus"`
+	}
 	err := p.Call(MethodNativeGpuInfo, nil, &result)
 	if err != nil {
 		return nil, err
 	}
-	return &result, nil
+	return result.Gpus, nil
 }
 
 // NativeGrayscaleEnabled check if grayscale display is enabled.
@@ -5142,14 +5146,16 @@ func (p *Plugin) NativeThreeFingerDrag() (*NativeThreeFingerDragResponse, error)
 	return &result, nil
 }
 
-// NativeThunderboltDevices list connected Thunderbolt devices.
-func (p *Plugin) NativeThunderboltDevices() (*NativeThunderboltDevicesResponse, error) {
-	var result NativeThunderboltDevicesResponse
+// NativeThunderboltDevices devices connected over Thunderbolt or USB4, not the machine's own ports: name, vendor, unique id, and whether the OS has authorized each where it asks.
+func (p *Plugin) NativeThunderboltDevices() ([]ThunderboltDevice, error) {
+	var result struct {
+		Devices []ThunderboltDevice `json:"devices"`
+	}
 	err := p.Call(MethodNativeThunderboltDevices, nil, &result)
 	if err != nil {
 		return nil, err
 	}
-	return &result, nil
+	return result.Devices, nil
 }
 
 // NativeTimeFormat get user time format string.

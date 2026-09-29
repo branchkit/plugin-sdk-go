@@ -835,6 +835,20 @@ type ExternalDisk struct {
 	TotalBytes int `json:"total_bytes"`
 }
 
+// FanSpeed is auto-generated from the OpenRPC spec.
+// One fan (`native.fan_speeds`).
+type FanSpeed struct {
+	// The fan's label where the hardware gives one, else its position
+	// (`Fan 1`).
+	Label string `json:"label"`
+	// wire uint32 · min 0
+	MaxRpm *int `json:"max_rpm,omitempty"`
+	// wire uint32 · min 0
+	MinRpm *int `json:"min_rpm,omitempty"`
+	// wire uint32 · min 0
+	Rpm int `json:"rpm"`
+}
+
 // FieldDisplay is auto-generated from the OpenRPC spec.
 // Where a field appears in generic UI rendering. Each field on a
 // collection declares at most one role; surfaces (discovery HUD,
@@ -893,6 +907,21 @@ type Frame struct {
 	X int `json:"x"`
 	// wire int32
 	Y int `json:"y"`
+}
+
+// GpuInfo is auto-generated from the OpenRPC spec.
+// A graphics processor (`native.gpu_info`).
+type GpuInfo struct {
+	// The driver the OS bound to it (`amdgpu`, `i915`), where it names one.
+	Driver *string `json:"driver,omitempty"`
+	// As the OS names it (`Apple M4`, `NVIDIA GeForce RTX 4070`).
+	Name string `json:"name"`
+	// The maker (`Apple`, `NVIDIA`, `AMD`, `Intel`), when known.
+	Vendor *string `json:"vendor,omitempty"`
+	// Memory of its own, in bytes. None when it shares system memory or
+	// the OS does not say.
+	// wire uint64 (64-bit) · min 0
+	VramBytes *int `json:"vram_bytes,omitempty"`
 }
 
 // HUDItem is auto-generated from the OpenRPC spec.
@@ -1814,6 +1843,19 @@ type SystemAppearance struct {
 	IncreaseContrast   bool    `json:"increase_contrast"`
 	ReduceMotion       bool    `json:"reduce_motion"`
 	ReduceTransparency bool    `json:"reduce_transparency"`
+}
+
+// ThunderboltDevice is auto-generated from the OpenRPC spec.
+// A device connected over Thunderbolt or USB4 (`native.thunderbolt_devices`).
+type ThunderboltDevice struct {
+	// Whether the OS has let the device's PCIe tunnels through. Linux asks
+	// (the `authorized` attribute); macOS authorizes devices itself, so
+	// there it is none.
+	Authorized *bool `json:"authorized,omitempty"`
+	// The device's unique id (its switch UID), stable across connections.
+	ID     *string `json:"id,omitempty"`
+	Name   string  `json:"name"`
+	Vendor *string `json:"vendor,omitempty"`
 }
 
 // TiedCandidate is auto-generated from the OpenRPC spec.
@@ -4346,7 +4388,7 @@ type NativeExternalDisplayNamesResponse struct {
 
 // NativeFanSpeedsResponse is the response type for native.fan_speeds.
 type NativeFanSpeedsResponse struct {
-	Value string `json:"value"`
+	Fans []FanSpeed `json:"fans"`
 }
 
 // NativeFastUserSwitchingResponse is the response type for native.fast_user_switching.
@@ -4660,7 +4702,7 @@ type NativeGlobFilesResponse struct {
 
 // NativeGpuInfoResponse is the response type for native.gpu_info.
 type NativeGpuInfoResponse struct {
-	Info string `json:"info"`
+	Gpus []GpuInfo `json:"gpus"`
 }
 
 // NativeGrayscaleEnabledResponse is the response type for native.grayscale_enabled.
@@ -6677,7 +6719,7 @@ type NativeThreeFingerDragResponse struct {
 
 // NativeThunderboltDevicesResponse is the response type for native.thunderbolt_devices.
 type NativeThunderboltDevicesResponse struct {
-	Value string `json:"value"`
+	Devices []ThunderboltDevice `json:"devices"`
 }
 
 // NativeTimeFormatResponse is the response type for native.time_format.
