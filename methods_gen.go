@@ -3540,7 +3540,7 @@ func (p *Plugin) NativeOpenTarget(req NativeOpenTargetRequest) error {
 	return p.Call(MethodNativeOpenTarget, &req, nil)
 }
 
-// NativeOpenURL open a URL in the default handler.
+// NativeOpenURL open a web (http, https) or email (mailto) link in its default handler; any other scheme is refused.
 func (p *Plugin) NativeOpenURL(req NativeOpenURLRequest) error {
 	return p.Call(MethodNativeOpenUrl, &req, nil)
 }
