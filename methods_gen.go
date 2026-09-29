@@ -5154,7 +5154,7 @@ func (p *Plugin) NativeTextReplacements() (*NativeTextReplacementsResponse, erro
 	return &result, nil
 }
 
-// NativeTextScale get the system text size as a factor of the default (1.0).
+// NativeTextScale get the system text size as a factor of the default (1.0). Exists only on Linux and Windows; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeTextScale() (float64, error) {
 	var result float64
 	err := p.Call(MethodNativeTextScale, nil, &result)
