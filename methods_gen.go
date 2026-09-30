@@ -543,7 +543,7 @@ func (p *Plugin) InputSelectAll() error {
 	return p.Call(MethodInputSelectAll, nil, nil)
 }
 
-// InputSwitchInputSource switch keyboard input source.
+// InputSwitchInputSource switch keyboard input source. On Linux, not available on GNOME (GNOME Shell switches input sources only from its own switcher; it exposes no way to ask).
 func (p *Plugin) InputSwitchInputSource(req InputSwitchInputSourceRequest) (bool, error) {
 	var result struct {
 		Result bool `json:"result"`
@@ -681,7 +681,7 @@ func (p *Plugin) NativeAlertVolume() (float64, error) {
 	return result, nil
 }
 
-// NativeAllWindowIds list all on-screen window IDs.
+// NativeAllWindowIds list all on-screen window IDs. On Linux, not available on GNOME (GNOME exposes no window list; only the focused window is visible).
 func (p *Plugin) NativeAllWindowIds() ([]string, error) {
 	var result struct {
 		WindowIds []string `json:"window_ids"`
@@ -859,7 +859,7 @@ func (p *Plugin) NativeAppWindows(req NativeAppWindowsRequest) ([]WindowDetail, 
 	return result.Windows, nil
 }
 
-// NativeAppWindowsCount count windows for an app by bundle ID.
+// NativeAppWindowsCount count windows for an app by bundle ID. On Linux, not available on GNOME (GNOME exposes no window list; only the focused window is visible).
 func (p *Plugin) NativeAppWindowsCount(req NativeAppWindowsCountRequest) (int, error) {
 	var result int
 	err := p.Call(MethodNativeAppWindowsCount, &req, &result)
@@ -1363,7 +1363,7 @@ func (p *Plugin) NativeCaptureWindow(req NativeCaptureWindowRequest) (*NativeCap
 	return &result, nil
 }
 
-// NativeCascadeWindows cascade all windows for an app.
+// NativeCascadeWindows cascade all windows for an app. On Linux, not available on sway (sway tiles windows; there is no cascade); nor on GNOME (GNOME exposes no window list; only the focused window is visible).
 func (p *Plugin) NativeCascadeWindows(req NativeCascadeWindowsRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
@@ -1593,7 +1593,7 @@ func (p *Plugin) NativeCurrentWallpaper() (*NativeCurrentWallpaperResponse, erro
 	return &result, nil
 }
 
-// NativeCursor get the current cursor position.
+// NativeCursor get the current cursor position. On Linux, not available on sway, GNOME or other Wayland compositors (Wayland gives a client no global pointer position, and XWayland knows it only over its own windows; only X11 sessions can read it).
 func (p *Plugin) NativeCursor() (*NativeCursorResponse, error) {
 	var result NativeCursorResponse
 	err := p.Call(MethodNativeCursor, nil, &result)
@@ -1603,7 +1603,7 @@ func (p *Plugin) NativeCursor() (*NativeCursorResponse, error) {
 	return &result, nil
 }
 
-// NativeCursorInfo get current cursor type and position.
+// NativeCursorInfo get current cursor type and position. On Linux, not available on sway, GNOME or other Wayland compositors (Wayland gives a client no global pointer position, and XWayland knows it only over its own windows; only X11 sessions can read it).
 func (p *Plugin) NativeCursorInfo() (*NativeCursorInfoResponse, error) {
 	var result NativeCursorInfoResponse
 	err := p.Call(MethodNativeCursorInfo, nil, &result)
@@ -2658,7 +2658,7 @@ func (p *Plugin) NativeHidSendReport(req NativeHidSendReportRequest) (*NativeHid
 	return &result, nil
 }
 
-// NativeHideApp hide an app by bundle ID.
+// NativeHideApp hide an app by bundle ID. On Linux, not available on sway (this compositor has no minimize; sway uses the scratchpad); nor on GNOME (GNOME exposes no window IPC to minimize through).
 func (p *Plugin) NativeHideApp(req NativeHideAppRequest) error {
 	return p.Call(MethodNativeHideApp, &req, nil)
 }
@@ -2809,7 +2809,7 @@ func (p *Plugin) NativeIpv6Address() (*NativeIpv6AddressResponse, error) {
 	return &result, nil
 }
 
-// NativeIsAppHidden check if an application is hidden.
+// NativeIsAppHidden check if an application is hidden. On Linux, not available on sway (this compositor has no minimize; sway uses the scratchpad); nor on GNOME (GNOME exposes no window IPC to minimize through).
 func (p *Plugin) NativeIsAppHidden(req NativeIsAppHiddenRequest) (bool, error) {
 	var result struct {
 		Result bool `json:"result"`
@@ -3113,7 +3113,7 @@ func (p *Plugin) NativeMagnifierEnabled() (*NativeMagnifierEnabledResponse, erro
 	return &result, nil
 }
 
-// NativeMaximizeWindow maximize window to fill screen.
+// NativeMaximizeWindow maximize window to fill screen. On Linux, not available on sway (sway tiles rather than maximizing; there is no such window state); nor on GNOME (GNOME exposes no window IPC; use its own tiling keybinds).
 func (p *Plugin) NativeMaximizeWindow(req NativeMaximizeWindowRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
@@ -3219,7 +3219,7 @@ func (p *Plugin) NativeMicrophonePermission() (*NativeMicrophonePermissionRespon
 	return &result, nil
 }
 
-// NativeMinimizeWindow minimize a window by ID.
+// NativeMinimizeWindow minimize a window by ID. On Linux, not available on sway (this compositor has no minimize; sway uses the scratchpad); nor on GNOME (GNOME exposes no window IPC to minimize through).
 func (p *Plugin) NativeMinimizeWindow(req NativeMinimizeWindowRequest) error {
 	return p.Call(MethodNativeMinimizeWindow, &req, nil)
 }
@@ -3290,12 +3290,12 @@ func (p *Plugin) NativeMoveFile(req NativeMoveFileRequest) (bool, error) {
 	return result.Ok, err
 }
 
-// NativeMoveWindowToDisplay move a window to a different display.
+// NativeMoveWindowToDisplay move a window to a different display. On Linux, not available on GNOME (GNOME exposes no window IPC to set window properties through).
 func (p *Plugin) NativeMoveWindowToDisplay(req NativeMoveWindowToDisplayRequest) error {
 	return p.Call(MethodNativeMoveWindowToDisplay, &req, nil)
 }
 
-// NativeMoveWindowToSpace dEPRECATED, silent no-op on modern macOS: the private CGS move APIs this calls are dead (verified on Sequoia 2026-07-25) — the window does not move and the call still reports true. Kept for older systems. For a working move, drive the visible path the bundled windows plugin uses: mouse-hold the title bar + Ctrl+N. space_id here is an opaque CGS space id from native.list_spaces, NOT the 1-based ordinal that native.switch_space takes. Exists only on macOS and Linux; elsewhere it is refused with platform_no_analogue.
+// NativeMoveWindowToSpace dEPRECATED, silent no-op on modern macOS: the private CGS move APIs this calls are dead (verified on Sequoia 2026-07-25) — the window does not move and the call still reports true. Kept for older systems. For a working move, drive the visible path the bundled windows plugin uses: mouse-hold the title bar + Ctrl+N. space_id here is an opaque CGS space id from native.list_spaces, NOT the 1-based ordinal that native.switch_space takes. Exists only on macOS and Linux; elsewhere it is refused with platform_no_analogue. On Linux, not available on GNOME (GNOME moves windows between workspaces only from its own shortcuts; its XWayland windows ignore the EWMH request).
 func (p *Plugin) NativeMoveWindowToSpace(req NativeMoveWindowToSpaceRequest) (bool, error) {
 	var result struct {
 		Result bool `json:"result"`
@@ -3580,7 +3580,7 @@ func (p *Plugin) NativePdfPageCount(req NativePdfPageCountRequest) (int, error) 
 	return result, nil
 }
 
-// NativePinWindowAbove pin or unpin a window above all others.
+// NativePinWindowAbove pin or unpin a window above all others. On Linux, not available on GNOME (GNOME exposes no window IPC to set window properties through); nor on sway (sway has no stacking levels; floating windows are always above tiled ones).
 func (p *Plugin) NativePinWindowAbove(req NativePinWindowAboveRequest) error {
 	return p.Call(MethodNativePinWindowAbove, &req, nil)
 }
@@ -4305,7 +4305,7 @@ func (p *Plugin) NativeSetAirportPower(req NativeSetAirportPowerRequest) (bool, 
 	return result.Ok, err
 }
 
-// NativeSetAppHidden hide or unhide an app.
+// NativeSetAppHidden hide or unhide an app. On Linux, not available on sway (this compositor has no minimize; sway uses the scratchpad); nor on GNOME (GNOME exposes no window IPC to minimize through).
 func (p *Plugin) NativeSetAppHidden(req NativeSetAppHiddenRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
@@ -4528,7 +4528,7 @@ func (p *Plugin) NativeSetHotCorner(req NativeSetHotCornerRequest) (bool, error)
 	return result.Ok, err
 }
 
-// NativeSetInputSource switch to a keyboard input source by ID.
+// NativeSetInputSource switch to a keyboard input source by ID. On Linux, not available on GNOME (GNOME Shell switches input sources only from its own switcher; it exposes no way to ask).
 func (p *Plugin) NativeSetInputSource(req NativeSetInputSourceRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
@@ -4763,12 +4763,12 @@ func (p *Plugin) NativeSetWallpaper(req NativeSetWallpaperRequest) (bool, error)
 	return result.Ok, err
 }
 
-// NativeSetWindowAlpha set window transparency.
+// NativeSetWindowAlpha set window transparency. On Linux, not available on GNOME (GNOME exposes no window IPC to set window properties through).
 func (p *Plugin) NativeSetWindowAlpha(req NativeSetWindowAlphaRequest) error {
 	return p.Call(MethodNativeSetWindowAlpha, &req, nil)
 }
 
-// NativeSetWindowLevel set a window's level (floating, normal, below).
+// NativeSetWindowLevel set a window's level (floating, normal, below). On Linux, not available on GNOME (GNOME exposes no window IPC to set window properties through); nor on sway (sway has no stacking levels; floating windows are always above tiled ones).
 func (p *Plugin) NativeSetWindowLevel(req NativeSetWindowLevelRequest) (bool, error) {
 	var result struct {
 		Result bool `json:"result"`
@@ -4792,7 +4792,7 @@ func (p *Plugin) NativeSetWindowSize(req NativeSetWindowSizeRequest) error {
 	return p.Call(MethodNativeSetWindowSize, &req, nil)
 }
 
-// NativeSetWindowSticky set a window to appear on all spaces (sticky). Exists only on macOS and Linux; elsewhere it is refused with platform_no_analogue.
+// NativeSetWindowSticky set a window to appear on all spaces (sticky). Exists only on macOS and Linux; elsewhere it is refused with platform_no_analogue. On Linux, not available on GNOME (GNOME exposes no window IPC to set window properties through).
 func (p *Plugin) NativeSetWindowSticky(req NativeSetWindowStickyRequest) error {
 	return p.Call(MethodNativeSetWindowSticky, &req, nil)
 }
@@ -5245,7 +5245,7 @@ func (p *Plugin) NativeToggleBluetooth(req NativeToggleBluetoothRequest) (bool, 
 	return result.Ok, err
 }
 
-// NativeToggleFullscreen toggle native fullscreen for a window.
+// NativeToggleFullscreen toggle native fullscreen for a window. On Linux, not available on sway (sway tiles rather than maximizing; there is no such window state); nor on GNOME (GNOME exposes no window IPC; use its own tiling keybinds).
 func (p *Plugin) NativeToggleFullscreen(req NativeToggleFullscreenRequest) error {
 	return p.Call(MethodNativeToggleFullscreen, &req, nil)
 }
@@ -5330,12 +5330,12 @@ func (p *Plugin) NativeTwentyFourHourClock() (*NativeTwentyFourHourClockResponse
 	return &result, nil
 }
 
-// NativeUnhideApp unhide a hidden application.
+// NativeUnhideApp unhide a hidden application. On Linux, not available on sway (this compositor has no minimize; sway uses the scratchpad); nor on GNOME (GNOME exposes no window IPC to minimize through).
 func (p *Plugin) NativeUnhideApp(req NativeUnhideAppRequest) error {
 	return p.Call(MethodNativeUnhideApp, &req, nil)
 }
 
-// NativeUnminimizeWindow restore a minimized window by ID.
+// NativeUnminimizeWindow restore a minimized window by ID. On Linux, not available on sway (this compositor has no minimize; sway uses the scratchpad); nor on GNOME (GNOME exposes no window IPC to minimize through).
 func (p *Plugin) NativeUnminimizeWindow(req NativeUnminimizeWindowRequest) error {
 	return p.Call(MethodNativeUnminimizeWindow, &req, nil)
 }
