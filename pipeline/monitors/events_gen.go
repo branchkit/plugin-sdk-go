@@ -76,8 +76,16 @@ type DisplayChanged struct {
 }
 
 type DisplayInfo struct {
-	DisplayId   uint32  `json:"display_id"`
-	Height      uint32  `json:"height"`
+	DisplayId uint32 `json:"display_id"`
+	Height    uint32 `json:"height"`
+	// The display is connected but asleep (display sleep, not system
+	// sleep): powered down and showing nothing until it wakes. It is still
+	// listed — a sleeping display has not been removed — and its geometry
+	// (size, scale, refresh rate) is its last-known mode, still valid. A
+	// change of this flag arrives as `display_changed`. Absent on the wire
+	// (an older producer) reads as awake; producers that cannot observe
+	// display sleep report `false`.
+	IsAsleep    *bool   `json:"is_asleep,omitempty"`
 	IsBuiltin   bool    `json:"is_builtin"`
 	IsMain      bool    `json:"is_main"`
 	RefreshRate float64 `json:"refresh_rate"`

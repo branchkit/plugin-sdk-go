@@ -3,6 +3,7 @@ package pipeline
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"strings"
@@ -115,6 +116,28 @@ func TestCleanEOFReturnsNilEOF(t *testing.T) {
 	}
 	if err != io.EOF {
 		t.Fatalf("expected io.EOF, got %v", err)
+	}
+}
+
+// Truncation must never read as an orderly close: a stage that saw io.EOF
+// here would finish its session on half its audio.
+func TestTruncatedFramesAreNotCleanEOF(t *testing.T) {
+	cases := map[string]string{
+		"partial header":           `{"type":"audio_ch`,
+		"header missing newline":   `{"type":"ok"}`,
+		"header, no payload bytes": "{\"type\":\"audio_chunk\",\"payload_length\":10}\n",
+		"header, short payload":    "{\"type\":\"audio_chunk\",\"payload_length\":10}\nabcd",
+	}
+	for name, raw := range cases {
+		t.Run(name, func(t *testing.T) {
+			_, err := NewReader(strings.NewReader(raw)).ReadEvent()
+			if err == nil {
+				t.Fatal("expected an error")
+			}
+			if errors.Is(err, io.EOF) {
+				t.Fatalf("truncated frame reported as clean EOF: %v", err)
+			}
+		})
 	}
 }
 

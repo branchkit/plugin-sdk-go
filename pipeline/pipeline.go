@@ -68,7 +68,13 @@ func (r *Reader) ReadEvent() (*Event, error) {
 	if h.PayloadLength > 0 {
 		payload = make([]byte, h.PayloadLength)
 		if _, err := io.ReadFull(r.r, payload); err != nil {
-			return nil, err
+			// ReadFull returns io.EOF when it read nothing at all, which
+			// callers take as an orderly close. A header that promised a
+			// payload and got none is a truncated frame, not a clean end.
+			if err == io.EOF {
+				err = io.ErrUnexpectedEOF
+			}
+			return nil, fmt.Errorf("wire: reading payload: %w", err)
 		}
 	}
 

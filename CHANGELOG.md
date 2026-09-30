@@ -5,6 +5,16 @@ git history.
 
 ## Unreleased
 
+### Pipeline
+
+- `pipeline.Reader.ReadEvent` no longer reports `io.EOF` for a header that
+  promised a payload followed by end of stream with no payload bytes: that is
+  a truncated frame, and it now fails with `io.ErrUnexpectedEOF` (wrapped).
+  Callers that treat `io.EOF` as an orderly close would otherwise finish on
+  half the input.
+- `monitors.DisplayInfo` gains `IsAsleep *bool` (`is_asleep`): the display is
+  connected but in display sleep. Absent means awake.
+
 ### D-Bus calls (Linux)
 
 - `NativeDbusCall(NativeDbusCallRequest)` calls one D-Bus method the plugin
