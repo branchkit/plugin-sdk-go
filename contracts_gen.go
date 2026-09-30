@@ -38,6 +38,7 @@ const (
 	MethodCommandsReset                       = "commands.reset"                           // since 0.1.0
 	MethodCommandsResetOverride               = "commands.reset_override"                  // since 0.1.0
 	MethodCommandsResolve                     = "commands.resolve"                         // since 0.1.0
+	MethodCommandsResolvePhrase               = "commands.resolve_phrase"                  // since 0.1.0
 	MethodCommandsSetOverride                 = "commands.set_override"                    // since 0.1.0
 	MethodControlSignal                       = "control.signal"                           // since 0.1.0
 	MethodDiscoveryClosed                     = "discovery.closed"                         // since 0.1.0

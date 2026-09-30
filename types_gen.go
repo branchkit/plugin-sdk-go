@@ -1509,6 +1509,34 @@ type OwnedCollection struct {
 	Writer string `json:"writer"`
 }
 
+// PhraseStep is auto-generated from the OpenRPC spec.
+// One command a phrase named.
+type PhraseStep struct {
+	// What the command is called: its description, else a summary of its
+	// pattern. What a question about the phrase names it by.
+	Label string `json:"label"`
+	// The resolve that matched these words: the action, its owner, the tags
+	// it sets and clears, and the scoped views at the time.
+	Resolved ResolveResult `json:"resolved"`
+	// Where in the phrase's words this command starts.
+	// wire uint · min 0
+	Start int `json:"start"`
+	// The words it consumed.
+	Words []string `json:"words"`
+}
+
+// PhraseStop is auto-generated from the OpenRPC spec.
+// Where a phrase stopped short of its last word, and why.
+type PhraseStop struct {
+	// Where in the phrase's words the unresolved rest begins.
+	// wire uint · min 0
+	At int `json:"at"`
+	// The resolve of the words from `at`: a tie (`tied_candidates`), the
+	// start of a longer command (`has_completions`), a codeword in progress
+	// (`bridge_active`), or no command at all.
+	Resolved ResolveResult `json:"resolved"`
+}
+
 // PipelineStatusEntry is auto-generated from the OpenRPC spec.
 type PipelineStatusEntry struct {
 	Ephemeral bool   `json:"ephemeral"`
@@ -1690,6 +1718,75 @@ const (
 	// and accumulated zero production callers before its removal.)
 	ReplaceScopeKindGroup ReplaceScopeKind = "group"
 )
+
+// ResolveResult is auto-generated from the OpenRPC spec.
+type ResolveResult struct {
+	// The winning command's action, template-resolved. Typed in the schema
+	// since 2026-09-19 — it is the same `Action` `dispatch` takes, which is
+	// what a consumer does with it.
+	Action *Action `json:"action,omitempty"`
+	// All currently-active gates from `plugin.<X>.*` namespaces other than
+	// the resolving caller's own (`plugin.<caller>.*`). Lets the caller
+	// make session-end cleanup decisions ("is any other plugin's mode
+	// active?") without maintaining a parallel local view of state. Host
+	// callers see all plugin gates.
+	ActivePluginGates []string `json:"active_plugin_gates"`
+	// Named captures, keyed by binding name. Empty when the matched action
+	// is a template the platform has already resolved into the concrete
+	// `action`; populated only when template resolution failed. Opaque by
+	// design: each value is whatever its capture bound (a word, a number, a
+	// collection record), so it stays raw JSON.
+	Args map[string]json.RawMessage `json:"args"`
+	// True when an active `PendingPartial` bridge survived this resolve
+	// (either advanced one token, or rejected the new utterance without
+	// dropping). Tells the voice plugin to leave the discovery HUD as-is
+	// — the bridge's previously-rendered items are still the correct view
+	// of what completes the in-progress capture. Without this flag the
+	// voice plugin would either replace the HUD with empty/AIR content
+	// (because `items` is empty under bridge survival) or close it via
+	// the "no match, no partial" branch. See actuator commit history for
+	// the matching `capture.progress` suppression. False by
+	// default; only true when the bridge survived.
+	BridgeActive bool     `json:"bridge_active"`
+	ClearsTags   []string `json:"clears_tags"`
+	// wire uint · min 0
+	ConsumedCount int `json:"consumed_count"`
+	// The winning command's dictated-argument descriptor, if declared: the
+	HasCompletions bool           `json:"has_completions"`
+	Items          []DiscoverItem `json:"items"`
+	Matched        bool           `json:"matched"`
+	NextWords      []string       `json:"next_words"`
+	OwnerPlugin    *string        `json:"owner_plugin,omitempty"`
+	RequiresTags   []string       `json:"requires_tags"`
+	// Platform-wide list of namespace prefixes that mark a tag as
+	// "scoped." Voice plugin uses this to classify `sets_tags` entries
+	// from a matched command as scoped mode tags without shadowing the
+	// configuration locally.
+	ScopedPrefixes []string `json:"scoped_prefixes"`
+	// Currently active scoped tags at match time.
+	ScopedTags []string         `json:"scoped_tags"`
+	SetsTags   []string         `json:"sets_tags"`
+	Telemetry  ResolveTelemetry `json:"telemetry"`
+	// The genuinely-tied candidate set, populated only when resolution
+	// reduced to 2+ equally-eligible commands the matcher could not
+	// separate (same gating + scope, same winning length). When non-empty,
+	// `matched` is `false`, NO tag writes were applied, and `command_no_match`
+	// was suppressed: rather than arbitrarily pick an iteration-order winner,
+	// the platform hands the consuming plugin the full set to disambiguate.
+	// The signal is generic — any plugin can read it and resolve the tie
+	// however its surface allows. Additive — a non-tie-aware consumer sees an
+	// empty list and a normal single-winner response.
+	TiedCandidates []TiedCandidate `json:"tied_candidates"`
+	Title          string          `json:"title"`
+	// Trace ID generated by the actuator for causal correlation. Links
+	// this resolve result to downstream dispatch, state writes, and HUD
+	// events. Per-match — bridge-driven multi-utterance completions
+	// produce different trace_ids for seed and completion. Cross-
+	// resolve threading for the same push-to-talk hold goes through
+	// the ambient `correlation_id` derived from `session_id`. See
+	// `MatchCommandsResult.trace_id` for the full discussion.
+	TraceID string `json:"trace_id"`
+}
 
 // ResolveTelemetry is auto-generated from the OpenRPC spec.
 // Serializable mirror of `crate::matching::MatchDecisionTelemetry`. The
@@ -2650,7 +2747,9 @@ type CommandsResolveResponse struct {
 	ActivePluginGates []string `json:"active_plugin_gates,omitempty"`
 	// Named captures, keyed by binding name. Empty when the matched action
 	// is a template the platform has already resolved into the concrete
-	// `action`; populated only when template resolution failed.
+	// `action`; populated only when template resolution failed. Opaque by
+	// design: each value is whatever its capture bound (a word, a number, a
+	// collection record), so it stays raw JSON.
 	Args map[string]json.RawMessage `json:"args"`
 	// True when an active `PendingPartial` bridge survived this resolve
 	// (either advanced one token, or rejected the new utterance without
@@ -2701,6 +2800,37 @@ type CommandsResolveResponse struct {
 	// the ambient `correlation_id` derived from `session_id`. See
 	// `MatchCommandsResult.trace_id` for the full discussion.
 	TraceID *string `json:"trace_id,omitempty"`
+}
+
+// CommandsResolvePhraseRequest is the request type for commands.resolve_phrase.
+type CommandsResolvePhraseRequest struct {
+	// Change nothing. Each step resolves against a scratch copy of the full
+	// active tag set, which the step's tag writes then update, so later
+	// steps see the modes earlier ones enter; the live tags are never
+	// written, no codeword in progress is consulted or advanced, and no
+	// match telemetry is emitted. Default false: each step's tag writes are
+	// applied as it matches, exactly as `commands.resolve` applies them.
+	// default false
+	Preview *bool `json:"preview,omitempty"`
+	// Audio session ID, as for `commands.resolve`. Informational.
+	SessionID *string `json:"session_id,omitempty"`
+	// Input source, as for `commands.resolve`: "command_hold", "continuous",
+	// "selection", "api".
+	Source *string `json:"source,omitempty"`
+	// The phrase's words, in order.
+	// default []
+	Words []string `json:"words,omitempty"`
+}
+
+// CommandsResolvePhraseResponse is the response type for commands.resolve_phrase.
+type CommandsResolvePhraseResponse struct {
+	// Positions of words dropped as silence: no command and no completion
+	// while a scoped mode was active.
+	Dropped []int `json:"dropped,omitempty"`
+	// The commands the phrase named, in order.
+	Steps []PhraseStep `json:"steps"`
+	// Present when resolution stopped before the last word.
+	Stopped *PhraseStop `json:"stopped,omitempty"`
 }
 
 // CommandsSetOverrideRequest is the request type for commands.set_override.

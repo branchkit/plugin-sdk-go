@@ -299,6 +299,16 @@ func (p *Plugin) CommandsResolve(req CommandsResolveRequest) (*CommandsResolveRe
 	return &result, nil
 }
 
+// CommandsResolvePhrase resolve a whole phrase into the commands it names, in order ("snap left": the mode entry, then the command it gates) — preview changes nothing, commit applies each step's tag writes.
+func (p *Plugin) CommandsResolvePhrase(req CommandsResolvePhraseRequest) (*CommandsResolvePhraseResponse, error) {
+	var result CommandsResolvePhraseResponse
+	err := p.Call(MethodCommandsResolvePhrase, &req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // CommandsSetOverride set a user command-phrase override (replace a command's spoken form).
 func (p *Plugin) CommandsSetOverride(req CommandsSetOverrideRequest) error {
 	return p.Call(MethodCommandsSetOverride, &req, nil)
