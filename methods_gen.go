@@ -18,7 +18,7 @@ func (p *Plugin) ActionsList() (*ActionsListResponse, error) {
 	return &result, nil
 }
 
-// ArtifactDelete delete an installed model from the caller's own model namespace (ref: <plugin>/<model>).
+// ArtifactDelete delete an installed artifact from the caller's own artifact namespace (ref: <plugin>/<artifact>).
 func (p *Plugin) ArtifactDelete(req ArtifactDeleteRequest) error {
 	return p.Call(MethodArtifactDelete, &req, nil)
 }
