@@ -732,6 +732,10 @@ type DisplayInfo struct {
 	H int `json:"h"`
 	// wire uint32 · min 0
 	ID int `json:"id"`
+	// Connected but asleep (display sleep): still listed, geometry last
+	// known, not drawing until it wakes. Default false.
+	// default false
+	IsAsleep bool `json:"is_asleep"`
 	// wire int32 · default 0
 	VisibleH int `json:"visible_h"`
 	// wire int32 · default 0
@@ -758,6 +762,14 @@ type DisplayMetadata struct {
 	DisplayID int `json:"display_id"`
 	// wire int32
 	H int `json:"h"`
+	// The display is connected but asleep (display sleep, DPMS standby,
+	// the console display turned off). It is still listed — it has not been
+	// removed, and it comes back unchanged on wake — but it is not drawing:
+	// its geometry is the last known, and nothing drawn on it or captured
+	// from it is seen until it wakes. Default false, which is also what an
+	// OS or display server that cannot report display sleep reads as.
+	// default false
+	IsAsleep bool `json:"is_asleep"`
 	// Whether this is a built-in display (laptop screen).
 	IsBuiltin bool `json:"is_builtin"`
 	// Whether this is the primary display.
