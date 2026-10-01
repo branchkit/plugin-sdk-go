@@ -162,6 +162,15 @@ type ActionFieldSchema struct {
 // Schema declaration for a plugin-defined action type.
 // Enables generic UI rendering (structured editor fields) for any plugin's actions.
 type ActionTypeSchema struct {
+	// Whether running this action can be undone. Omitted means
+	// unclassified, which BranchKit treats as risky. Only `reversible`
+	// changes anything: the person may then always-allow a connected AI app
+	// to run it, and while it runs for such an app BranchKit refuses this
+	// plugin every platform call that cannot be undone. Ignored for a
+	// plugin that can act without platform calls (network access, running
+	// other programs, its own pipeline stages), since nothing could hold it
+	// to the claim.
+	Consequence *Consequence `json:"consequence,omitempty"`
 	// Ordered list of fields for this action type.
 	Fields []ActionFieldSchema `json:"fields"`
 	// Human-readable label (e.g. "Click Element", "Snap Window").
@@ -662,6 +671,16 @@ type ConfusabilityFinding struct {
 	Owner  string `json:"owner"`
 	Target string `json:"target"`
 }
+
+// Consequence is auto-generated from the OpenRPC spec.
+// Whether an action type's effect can be undone (`consequence`).
+type Consequence string
+
+const (
+	ConsequenceReversible   Consequence = "reversible"
+	ConsequenceIrreversible Consequence = "irreversible"
+	ConsequenceExternal     Consequence = "external"
+)
 
 // ContactInfo is auto-generated from the OpenRPC spec.
 type ContactInfo struct {
