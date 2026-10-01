@@ -43,6 +43,16 @@ func (p *Plugin) BindingsSet(req BindingsSetRequest) (*BindingsSetResponse, erro
 	return &result, nil
 }
 
+// BindingsSetTriggers publish the triggers the caller's device offers, so Settings can list and bind them.
+func (p *Plugin) BindingsSetTriggers(req BindingsSetTriggersRequest) (*BindingsSetTriggersResponse, error) {
+	var result BindingsSetTriggersResponse
+	err := p.Call(MethodBindingsSetTriggers, &req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // BlobPublish announce that bytes up to `length` are complete on one of this plugin's declared blobs. Carries a length, never bytes.
 func (p *Plugin) BlobPublish(req BlobPublishRequest) (*BlobPublishResponse, error) {
 	var result BlobPublishResponse

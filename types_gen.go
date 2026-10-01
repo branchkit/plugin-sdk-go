@@ -2051,6 +2051,32 @@ type TileableEntry struct {
 	WindowID string `json:"window_id"`
 }
 
+// TriggerDecl is auto-generated from the OpenRPC spec.
+// One trigger a device source offers.
+type TriggerDecl struct {
+	// The heading it is listed under, e.g. the layer: `"Group 2"`. Absent
+	// lists it under the device alone.
+	Group *string `json:"group,omitempty"`
+	// default "button"
+	Kind *TriggerKind `json:"kind,omitempty"`
+	// What a person calls it: `"Button 3"`.
+	// non-empty
+	Label string `json:"label"`
+	// The name the source reports it by (`bindings.report`), without an
+	// event word: `"0x28bd:0x0202/g2/button3"`.
+	// non-empty
+	Name string `json:"name"`
+}
+
+// TriggerKind is auto-generated from the OpenRPC spec.
+// How a device trigger behaves, which decides how it can be bound.
+type TriggerKind string
+
+const (
+	TriggerKindButton    TriggerKind = "button"
+	TriggerKindMomentary TriggerKind = "momentary"
+)
+
 // TtsVoice is auto-generated from the OpenRPC spec.
 type TtsVoice struct {
 	Identifier string `json:"identifier"`
@@ -2298,6 +2324,20 @@ type BindingsSetResponse struct {
 	// Edits dropped (a trigger with no edit counts as nothing).
 	// wire uint · min 0
 	Removed int `json:"removed"`
+}
+
+// BindingsSetTriggersRequest is the request type for bindings.set_triggers.
+type BindingsSetTriggersRequest struct {
+	// Every trigger this plugin offers now, replacing what it published
+	// before. Publish again when a device connects or goes away.
+	Triggers []TriggerDecl `json:"triggers"`
+}
+
+// BindingsSetTriggersResponse is the response type for bindings.set_triggers.
+type BindingsSetTriggersResponse struct {
+	// Triggers published.
+	// wire uint · min 0
+	Count int `json:"count"`
 }
 
 // BlobPublishRequest is the request type for blob.publish.
