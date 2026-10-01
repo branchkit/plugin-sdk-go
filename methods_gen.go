@@ -572,16 +572,6 @@ func (p *Plugin) InputTypeText(req InputTypeTextRequest) error {
 	return p.Call(MethodInputTypeText, &req, nil)
 }
 
-// KeybindsRegister register keybind snapshot with the platform (caches and sends to Swift shell).
-func (p *Plugin) KeybindsRegister(req KeybindsRegisterRequest) (*KeybindsRegisterResponse, error) {
-	var result KeybindsRegisterResponse
-	err := p.Call(MethodKeybindsRegister, &req, &result)
-	if err != nil {
-		return nil, err
-	}
-	return &result, nil
-}
-
 // NativeAccentColor get the system accent color name.
 func (p *Plugin) NativeAccentColor() (*NativeAccentColorResponse, error) {
 	var result NativeAccentColorResponse

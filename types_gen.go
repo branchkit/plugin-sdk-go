@@ -1675,27 +1675,6 @@ type RedecodeNoise struct {
 	SnrDb float64 `json:"snr_db"`
 }
 
-// RegistryEntry is auto-generated from the OpenRPC spec.
-type RegistryEntry struct {
-	Action string `json:"action"`
-	Combo  string `json:"combo"`
-	// Params for the dispatch; absent means `{}`. Every fired bind
-	// executes `Action::Plugin { action_type, params, phase }` through the
-	// shared executor — the string-routing dialect is gone (2026-08-28).
-	//
-	// Open by design, and the only open field in this shape: it is the
-	// receiving plugin's params, typed per-plugin by `branchkit-gen` from
-	// that plugin's `action_types`, exactly like `Action::Plugin.params`.
-	Params json.RawMessage `json:"params,omitempty"`
-	Source string          `json:"source"`
-}
-
-// RegistrySnapshot is auto-generated from the OpenRPC spec.
-type RegistrySnapshot struct {
-	Entries  []RegistryEntry `json:"entries"`
-	ListenUp []string        `json:"listen_up"`
-}
-
 // ReminderItem is auto-generated from the OpenRPC spec.
 type ReminderItem struct {
 	DueDate     *string `json:"due_date,omitempty"`
@@ -3373,25 +3352,6 @@ type InputTripleClickRequest struct {
 type InputTypeTextRequest struct {
 	// Text to type into the active application.
 	Text string `json:"text"`
-}
-
-// KeybindsRegisterRequest is the request type for keybinds.register.
-type KeybindsRegisterRequest struct {
-	// The full keybind registry to install, replacing what is there.
-	//
-	// Declared 2026-09-19 (census). The handler already deserialized
-	// exactly `RegistrySnapshot` and refused anything else; the doc
-	// comment was transcribing the shape by hand, and had gone stale —
-	// an entry is `{ combo, action, source, params? }`.
-	Snapshot RegistrySnapshot `json:"snapshot"`
-}
-
-// KeybindsRegisterResponse is the response type for keybinds.register.
-type KeybindsRegisterResponse struct {
-	// Number of entries cached after the registration.
-	// wire uint · min 0
-	Count int  `json:"count"`
-	Ok    bool `json:"ok"`
 }
 
 // NativeAccentColorResponse is the response type for native.accent_color.

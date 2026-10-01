@@ -76,7 +76,6 @@ const (
 	MethodInputSwitchInputSource              = "input.switch_input_source"                // since 0.1.0
 	MethodInputTripleClick                    = "input.triple_click"                       // since 0.1.0
 	MethodInputTypeText                       = "input.type_text"                          // since 0.1.0
-	MethodKeybindsRegister                    = "keybinds.register"                        // since 0.1.0
 	MethodNativeAccentColor                   = "native.accent_color"                      // since 0.1.0
 	MethodNativeAccessibilityDisplayInvert    = "native.accessibility_display_invert"      // since 0.1.0
 	MethodNativeAccessibilityEnabled          = "native.accessibility_enabled"             // since 0.1.0
