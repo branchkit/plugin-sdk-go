@@ -10,6 +10,7 @@ const APIVersion = "0.2.0"
 const (
 	MethodActionsList                         = "actions.list"                             // since 0.1.0
 	MethodArtifactDelete                      = "artifact.delete"                          // since 0.1.0
+	MethodBindingsPropose                     = "bindings.propose"                         // since 0.1.0
 	MethodBindingsReport                      = "bindings.report"                          // since 0.1.0
 	MethodBindingsSet                         = "bindings.set"                             // since 0.1.0
 	MethodBindingsSetTriggers                 = "bindings.set_triggers"                    // since 0.1.0

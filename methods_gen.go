@@ -23,6 +23,16 @@ func (p *Plugin) ArtifactDelete(req ArtifactDeleteRequest) error {
 	return p.Call(MethodArtifactDelete, &req, nil)
 }
 
+// BindingsPropose propose settings for the caller's own device triggers; the user answers in BranchKit's own window, and the settings become theirs.
+func (p *Plugin) BindingsPropose(req BindingsProposeRequest) (*BindingsProposeResponse, error) {
+	var result BindingsProposeResponse
+	err := p.Call(MethodBindingsPropose, &req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // BindingsReport report a press of one of the caller's own device triggers; the platform runs what it is bound to.
 func (p *Plugin) BindingsReport(req BindingsReportRequest) (*BindingsReportResponse, error) {
 	var result BindingsReportResponse
