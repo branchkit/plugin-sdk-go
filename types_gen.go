@@ -288,6 +288,36 @@ type BarcodeResult struct {
 	Y float64 `json:"y"`
 }
 
+// BindingEdge is auto-generated from the OpenRPC spec.
+// The edge a source reports.
+type BindingEdge string
+
+const (
+	BindingEdgeDown  BindingEdge = "down"
+	BindingEdgeUp    BindingEdge = "up"
+	BindingEdgePress BindingEdge = "press"
+)
+
+// BindingEdit is auto-generated from the OpenRPC spec.
+// One edit to one of the caller's own triggers.
+type BindingEdit struct {
+	// The exact dotted action type to run. Empty unbinds the trigger, even
+	// over a plugin's contributed binding.
+	Action string `json:"action"`
+	// Params for the action; absent means `{}`.
+	//
+	// Open by design: the receiving plugin's shape, typed per-plugin by
+	// `branchkit-gen` from that plugin's `action_types`, exactly like a
+	// dispatched action's params.
+	// default null
+	Params json.RawMessage `json:"params,omitempty"`
+	// The trigger with its event word, if any: `"g2/button3"` fires on a
+	// press, `"g2/button3 down"` / `"g2/button3 up"` are a hold's two
+	// halves, `"g2/button3 toggle"` alternates start/stop, and
+	// `"g2/button3 repeat"` fires phase `repeat` on down and `stop` on up.
+	Trigger string `json:"trigger"`
+}
+
 // BleCharacteristic is auto-generated from the OpenRPC spec.
 // A GATT characteristic.
 type BleCharacteristic struct {
@@ -2223,6 +2253,51 @@ type ActionsListResponse struct {
 type ArtifactDeleteRequest struct {
 	// non-empty
 	Ref string `json:"ref"`
+}
+
+// BindingsReportRequest is the request type for bindings.report.
+type BindingsReportRequest struct {
+	// Which edge happened.
+	Event BindingEdge `json:"event"`
+	// The trigger's name as this plugin spells it, without an event word:
+	// `"g2/button3"`, `"m1/dial1 cw"`. Report a hold's up with the same name
+	// as its down, even if a layer changed in between.
+	// non-empty
+	Trigger string `json:"trigger"`
+}
+
+// BindingsReportResponse is the response type for bindings.report.
+type BindingsReportResponse struct {
+	// The bound trigger that matched, with its event word
+	// (`"g2/button3 down"`). Absent when nothing fired.
+	Binding *string `json:"binding,omitempty"`
+	// Whether a binding matched and its action ran. `false` for a trigger
+	// nothing is bound to; the press is dropped and recorded nowhere.
+	Fired bool `json:"fired"`
+	// The executor's status for the action: `"ok"`, `"denied"`, `"not_handled"` or `"error"`. Absent
+	// when nothing fired.
+	Status *string `json:"status,omitempty"`
+}
+
+// BindingsSetRequest is the request type for bindings.set.
+type BindingsSetRequest struct {
+	// Edits to write. Each takes its trigger's edit slot, replacing an
+	// earlier edit there — the user's from Settings included.
+	Put []BindingEdit `json:"put,omitempty"`
+	// Triggers (with event words) whose edit to drop, so any contributed
+	// binding shows through again.
+	// default []
+	Remove []string `json:"remove,omitempty"`
+}
+
+// BindingsSetResponse is the response type for bindings.set.
+type BindingsSetResponse struct {
+	// Edits written.
+	// wire uint · min 0
+	Put int `json:"put"`
+	// Edits dropped (a trigger with no edit counts as nothing).
+	// wire uint · min 0
+	Removed int `json:"removed"`
 }
 
 // BlobPublishRequest is the request type for blob.publish.

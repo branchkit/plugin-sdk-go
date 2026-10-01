@@ -23,6 +23,26 @@ func (p *Plugin) ArtifactDelete(req ArtifactDeleteRequest) error {
 	return p.Call(MethodArtifactDelete, &req, nil)
 }
 
+// BindingsReport report a press of one of the caller's own device triggers; the platform runs what it is bound to.
+func (p *Plugin) BindingsReport(req BindingsReportRequest) (*BindingsReportResponse, error) {
+	var result BindingsReportResponse
+	err := p.Call(MethodBindingsReport, &req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// BindingsSet set what the caller's own device triggers are bound to; the edits fire on the caller's authority.
+func (p *Plugin) BindingsSet(req BindingsSetRequest) (*BindingsSetResponse, error) {
+	var result BindingsSetResponse
+	err := p.Call(MethodBindingsSet, &req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // BlobPublish announce that bytes up to `length` are complete on one of this plugin's declared blobs. Carries a length, never bytes.
 func (p *Plugin) BlobPublish(req BlobPublishRequest) (*BlobPublishResponse, error) {
 	var result BlobPublishResponse
