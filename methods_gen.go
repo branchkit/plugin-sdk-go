@@ -3325,7 +3325,7 @@ func (p *Plugin) NativeMoveWindowToDisplay(req NativeMoveWindowToDisplayRequest)
 	return p.Call(MethodNativeMoveWindowToDisplay, &req, nil)
 }
 
-// NativeMoveWindowToSpace dEPRECATED, silent no-op on modern macOS: the private CGS move APIs this calls are dead (verified on Sequoia 2026-07-25) — the window does not move and the call still reports true. Kept for older systems. For a working move, drive the visible path the bundled windows plugin uses: mouse-hold the title bar + Ctrl+N. space_id here is an opaque CGS space id from native.list_spaces, NOT the 1-based ordinal that native.switch_space takes. Exists only on macOS and Linux; elsewhere it is refused with platform_no_analogue. On Linux, not available on GNOME (GNOME moves windows between workspaces only from its own shortcuts; its XWayland windows ignore the EWMH request).
+// NativeMoveWindowToSpace dEPRECATED, silent no-op on modern macOS: the private CGS move APIs this calls are dead (verified on Sequoia 2026-07-25) — the window does not move, and the call re-reads the window's spaces and reports false. Kept for older systems. For a working move, drive the visible path the bundled placement plugin uses: mouse-hold the title bar + Ctrl+N. space_id here is an opaque CGS space id from native.list_spaces, NOT the 1-based ordinal that native.switch_space takes. Exists only on macOS and Linux; elsewhere it is refused with platform_no_analogue. On Linux, not available on GNOME (GNOME moves windows between workspaces only from its own shortcuts; its XWayland windows ignore the EWMH request).
 func (p *Plugin) NativeMoveWindowToSpace(req NativeMoveWindowToSpaceRequest) (bool, error) {
 	var result struct {
 		Result bool `json:"result"`
