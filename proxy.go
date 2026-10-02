@@ -23,6 +23,10 @@ import (
 //	unix:///path/to/endpoint.sock  — UNIX socket (Linux; bind-mounted into
 //	                                 the sandbox at the same path)
 //	http://127.0.0.1:<port>        — localhost TCP (legacy Windows path)
+//	fd://<n>                       — an inherited channel the actuator hands
+//	                                 each connection over (Linux): the plugin
+//	                                 opens no socket of its own, so the
+//	                                 sandbox can forbid creating them
 //	npipe://\\.\pipe\name        — named pipe ACL'd to the plugin's
 //	                                 container SID (Windows; reached with no
 //	                                 loopback exemption)
@@ -84,6 +88,8 @@ func proxyDialContext(proxyURL string) (func(ctx context.Context, network, addr 
 		pnet, paddr = "unix", strings.TrimPrefix(proxyURL, "unix://")
 	case strings.HasPrefix(proxyURL, "http://"):
 		pnet, paddr = "tcp", strings.TrimPrefix(proxyURL, "http://")
+	case strings.HasPrefix(proxyURL, "fd://"):
+		pnet, paddr = "fd", strings.TrimPrefix(proxyURL, "fd://")
 	case strings.HasPrefix(proxyURL, "npipe://"):
 		// Windows: the actuator ACLs the pipe to this plugin's container
 		// SID, so the AppContainer reaches it with no loopback exemption
@@ -91,7 +97,7 @@ func proxyDialContext(proxyURL string) (func(ctx context.Context, network, addr 
 		// port on the machine).
 		pnet, paddr = "npipe", strings.TrimPrefix(proxyURL, "npipe://")
 	default:
-		return nil, fmt.Errorf("unsupported proxy url %q (want unix://, http:// or npipe://)", proxyURL)
+		return nil, fmt.Errorf("unsupported proxy url %q (want fd://, unix://, http:// or npipe://)", proxyURL)
 	}
 	if paddr == "" {
 		return nil, fmt.Errorf("empty proxy address in %q", proxyURL)

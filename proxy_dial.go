@@ -12,6 +12,8 @@ func dialProxyEndpoint(ctx context.Context, pnet, paddr string) (net.Conn, error
 	switch pnet {
 	case "npipe":
 		return dialNamedPipe(ctx, paddr)
+	case "fd":
+		return dialHandoff(ctx, paddr)
 	default:
 		var d net.Dialer
 		return d.DialContext(ctx, pnet, paddr)
