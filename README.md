@@ -141,6 +141,7 @@ too new to have a generated wrapper. Prefer the wrapper whenever one exists.
 | Append-only logs | `Append`, `AppendKeyed`, `ListLog`, `GetLogEntry`, `DeleteLogEntry` |
 | Keep a live copy | `MirrorCollection(name)`, `Settings[T](plugin, name)` |
 | Contribute commands | `Command(Word("open"), Capture("app", "apps"))…Build()`, `PushCommandSpecs`, `PushCommandGroup` |
+| Bind keys and device buttons | manifest `collection_data["_platform.bindings"]`; a device plugin lists its triggers with `BindingsSetTriggers`, reports presses with `BindingsReport` and proposes settings from its own screen with `BindingsPropose` (guides: *Triggers and authority*, *Make a device a binding source*) |
 | A settings tab | `SettingsTab(key, fn)` + `implements.settings_tabs` in the manifest; buttons in package `ui` |
 | Show something | `OutputState(OutputStateRequest{…})` with `SayAction` / `DispatchAction`, `HUDPush` |
 | Hold a system effect | `AssertEffect`, `RetractEffect`, `IsEffectActive`, `OnEffectDisplaced` |
