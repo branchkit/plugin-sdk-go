@@ -5811,6 +5811,11 @@ func (p *Plugin) PluginReportHealth(req PluginReportHealthRequest) error {
 	return p.Call(MethodPluginReportHealth, &req, nil)
 }
 
+// PluginReportSetup report where one of this plugin's Setup steps stands — done, needs the person, or in progress — with one line of summary shown while it is folded. Only steps the plugin declared in implements.setup_steps..
+func (p *Plugin) PluginReportSetup(req PluginReportSetupRequest) error {
+	return p.Call(MethodPluginReportSetup, &req, nil)
+}
+
 // PrivacyGetRecording read the effective recording flag for a log-kind collection (privacy control plane).
 func (p *Plugin) PrivacyGetRecording(req PrivacyGetRecordingRequest) (*PrivacyGetRecordingResponse, error) {
 	var result PrivacyGetRecordingResponse

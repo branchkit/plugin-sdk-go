@@ -1910,6 +1910,16 @@ type SettingsTagSchemaInfo struct {
 	SourcePlugin string `json:"source_plugin"`
 }
 
+// SetupStepState is auto-generated from the OpenRPC spec.
+// Where one Setup step stands, as its plugin reports it.
+type SetupStepState string
+
+const (
+	SetupStepStateDone       SetupStepState = "done"
+	SetupStepStateNeedsYou   SetupStepState = "needs_you"
+	SetupStepStateInProgress SetupStepState = "in_progress"
+)
+
 // Shape is auto-generated from the OpenRPC spec.
 // One shape.
 //
@@ -7748,6 +7758,23 @@ type PluginReportHealthRequest struct {
 	// `plugin.debug`) and rendered as data, never markup.
 	// default null
 	Reason *string `json:"reason,omitempty"`
+}
+
+// PluginReportSetupRequest is the request type for plugin.report_setup.
+type PluginReportSetupRequest struct {
+	// Where the step stands now. A step never reported reads as
+	// `needs_you` when it is required, and as optional otherwise.
+	State SetupStepState `json:"state"`
+	// The step being reported: the `key` of one of this plugin's
+	// `implements.setup_steps`. A key the plugin did not declare is refused.
+	// non-empty
+	Step string `json:"step"`
+	// One user-facing line shown beside the step while it is folded —
+	// "Large · 1.5 GB · commands on". The plugin owns this text. Trimmed,
+	// cut to 120 characters, and rendered as data, never markup. Omitted or
+	// empty clears it.
+	// default null
+	Summary *string `json:"summary,omitempty"`
 }
 
 // PrivacyGetRecordingRequest is the request type for privacy.get_recording.

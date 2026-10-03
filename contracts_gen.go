@@ -620,6 +620,7 @@ const (
 	MethodPluginDataExport                    = "plugin.data.export"                       // since 0.1.0
 	MethodPluginDebug                         = "plugin.debug"                             // since 0.1.0
 	MethodPluginReportHealth                  = "plugin.report_health"                     // since 0.1.0
+	MethodPluginReportSetup                   = "plugin.report_setup"                      // since 0.1.0
 	MethodPrivacyGetRecording                 = "privacy.get_recording"                    // stable, since 0.1.0
 	MethodPrivacySetRecording                 = "privacy.set_recording"                    // stable, since 0.1.0
 	MethodPrivilegesList                      = "privileges.list"                          // since 0.1.0
