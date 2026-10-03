@@ -27,6 +27,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"slices"
 	"sync"
 	"sync/atomic"
@@ -389,8 +390,15 @@ func lookupHarnessBinary() string {
 		if err != nil {
 			continue
 		}
+		// Cargo writes branchkit-test-harness.exe on Windows; without the
+		// suffix every candidate misses there and harness tests skip.
 		if _, err := os.Stat(abs); err == nil {
 			return abs
+		}
+		if runtime.GOOS == "windows" {
+			if _, err := os.Stat(abs + ".exe"); err == nil {
+				return abs + ".exe"
+			}
 		}
 	}
 
