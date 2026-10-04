@@ -7580,6 +7580,33 @@ type OverridesListResponse struct {
 	Overlays []OverlayRow `json:"overlays"`
 }
 
+// PipelinesAudioLevelRequest is the request type for pipelines.audio_level.
+type PipelinesAudioLevelRequest struct {
+	// A moment in Unix milliseconds (the wall clock). When given, the
+	// result's `peak_db` is the loudest audio captured since then, looking
+	// back at most 30 seconds.
+	// wire uint64 (64-bit) · default null · min 0
+	SinceMs *int `json:"since_ms,omitempty"`
+}
+
+// PipelinesAudioLevelResponse is the response type for pipelines.audio_level.
+type PipelinesAudioLevelResponse struct {
+	// The quietest level reported, in dBFS. Audio at the floor is digital
+	// silence — no signal at all, which a quiet room never produces: the
+	// system is recording from the wrong or a muted input, or is not
+	// letting BranchKit hear the microphone.
+	// wire double
+	FloorDb float64 `json:"floor_db"`
+	// How loud the audio crossing the pipelines is now, in dBFS. Absent
+	// when nothing is being captured.
+	// wire double
+	LevelDb *float64 `json:"level_db,omitempty"`
+	// The loudest level since `since_ms`, in dBFS. Absent when no audio was
+	// captured in that time, or `since_ms` was not given.
+	// wire double
+	PeakDb *float64 `json:"peak_db,omitempty"`
+}
+
 // PipelinesGrammarRequest is the request type for pipelines.grammar.
 type PipelinesGrammarRequest struct {
 	// When true, also return the full `vocabulary_update` payload a starting

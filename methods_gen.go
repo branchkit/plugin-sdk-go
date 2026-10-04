@@ -5721,6 +5721,16 @@ func (p *Plugin) OverridesList() ([]OverlayRow, error) {
 	return result.Overlays, nil
 }
 
+// PipelinesAudioLevel how loud the captured audio is, now and at its loudest since a moment you name (dBFS) — tells a working microphone from a silent one.
+func (p *Plugin) PipelinesAudioLevel(req PipelinesAudioLevelRequest) (*PipelinesAudioLevelResponse, error) {
+	var result PipelinesAudioLevelResponse
+	err := p.Call(MethodPipelinesAudioLevel, &req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // PipelinesGrammar get the current command grammar word list — or, with full=true, the complete vocabulary_update seed payload (words, narrow_to, weights, DAG).
 func (p *Plugin) PipelinesGrammar(req PipelinesGrammarRequest) (*PipelinesGrammarResponse, error) {
 	var result PipelinesGrammarResponse

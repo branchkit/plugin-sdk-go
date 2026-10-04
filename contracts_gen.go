@@ -610,6 +610,7 @@ const (
 	MethodOverlayShow                         = "overlay.show"                             // since 0.2.0
 	MethodOverridesApply                      = "overrides.apply"                          // stable, since 0.1.0
 	MethodOverridesList                       = "overrides.list"                           // since 0.1.0
+	MethodPipelinesAudioLevel                 = "pipelines.audio_level"                    // since 0.1.0
 	MethodPipelinesGrammar                    = "pipelines.grammar"                        // since 0.1.0
 	MethodPipelinesInject                     = "pipelines.inject"                         // since 0.1.0
 	MethodPipelinesRun                        = "pipelines.run"                            // since 0.1.0
