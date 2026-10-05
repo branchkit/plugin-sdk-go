@@ -7522,6 +7522,14 @@ type OutputClearResponse struct {
 
 // OutputStateRequest is the request type for output.state.
 type OutputStateRequest struct {
+	// The calling plugin draws this channel's window itself (with
+	// `hud.push`), and publishes the state only so the meaning reaches every
+	// other renderer: speech, the window's accessibility element, any
+	// plugin that renders states. The platform then holds and broadcasts
+	// the state as usual but draws nothing into the window, so the plugin's
+	// own drawing stays. Default `false`: the platform draws the window.
+	// default false
+	DrawsOwnWindow *bool `json:"draws_own_window,omitempty"`
 	// The document that becomes the channel's current state. Its `channel`
 	// must be owned by the calling plugin.
 	State OutputState `json:"state"`

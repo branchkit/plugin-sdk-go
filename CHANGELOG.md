@@ -5,6 +5,12 @@ git history.
 
 ## Unreleased
 
+### Output
+
+- `OutputStateRequest.DrawsOwnWindow`: publish a state for every other
+  renderer (speech, the window's accessibility element) while the plugin
+  keeps drawing its own window with `hud.push`; the platform draws nothing.
+
 ### Request stages (stage runtime)
 
 - Added `pipeline.ServeRequests` / `ServeRequestsOn` with the `RequestHandler`
