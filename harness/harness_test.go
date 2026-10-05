@@ -47,7 +47,7 @@ func TestSimulateCommandTie(t *testing.T) {
 	h := startHelloworld(t)
 
 	// Seed the consumed `apps` vocabulary so the capture branch is live —
-	// helloworld only consumes it; in production the system plugin
+	// helloworld only consumes it; in production the apps plugin
 	// provides it (the stub carries the same schema, and the writer must
 	// be the introducer because named_entities pins introducer_only).
 	// With "branchkit" in the vocabulary, "hello branchkit" completes
@@ -58,7 +58,7 @@ func TestSimulateCommandTie(t *testing.T) {
 	// disambiguation rather than guessing.
 	h.LoadManifest("testdata/apps-provider")
 	h.WriteCollection("apps", map[string]any{
-		"spoken": "branchkit", "bundle_id": "com.test.branchkit",
+		"spoken": "branchkit", "app_id": "com.test.branchkit",
 	}, "apps-provider-stub")
 
 	result := h.SimulateCommand("hello branchkit")
@@ -92,7 +92,7 @@ func TestParameterizedCommand(t *testing.T) {
 	// action's "{apps}" placeholder carries the bundle id.
 	h.LoadManifest("testdata/apps-provider")
 	h.WriteCollection("apps", map[string]any{
-		"spoken": "finder", "bundle_id": "com.apple.finder",
+		"spoken": "finder", "app_id": "com.apple.finder",
 	}, "apps-provider-stub")
 
 	result := h.MustSimulateCommand("hello finder")
