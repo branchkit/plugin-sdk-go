@@ -647,6 +647,8 @@ const (
 	MethodSettingsRulesCreate                 = "settings.rules_create"                    // since 0.1.0
 	MethodSettingsRulesUpdate                 = "settings.rules_update"                    // since 0.1.0
 	MethodSpeechAnnounce                      = "speech.announce"                          // since 0.1.0
+	MethodSpeechEngines                       = "speech.engines"                           // since 0.2.0
+	MethodSpeechRestartEngine                 = "speech.restart_engine"                    // since 0.2.0
 	MethodSpeechSay                           = "speech.say"                               // since 0.1.0
 	MethodSpeechStop                          = "speech.stop"                              // since 0.1.0
 	MethodSystemLaunchApp                     = "system.launch_app"                        // since 0.1.0
@@ -710,6 +712,8 @@ const (
 	EventPowerChanged           = "_platform.power.changed"
 	EventPrivilegeGranted       = "_platform.privilege.granted"
 	EventSelectionPicked        = "_platform.selection.picked"
+	EventSpeechFinished         = "_platform.speech.finished"
+	EventSpeechStarted          = "_platform.speech.started"
 	EventSystemDidWake          = "_platform.system.did_wake"
 	EventSystemWillSleep        = "_platform.system.will_sleep"
 	EventThermalChanged         = "_platform.thermal.changed"

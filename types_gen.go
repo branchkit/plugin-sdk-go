@@ -1994,11 +1994,36 @@ type SpaceInfo struct {
 	SpaceType string `json:"space_type"`
 }
 
+// SpeechEngineInfo is auto-generated from the OpenRPC spec.
+// One engine in `speech.engines`.
+type SpeechEngineInfo struct {
+	// What `speech.say` names it by: `system`, or a stage's qualified name.
+	Engine string `json:"engine"`
+	// Why the engine asked for could not start (a model not downloaded).
+	Error *string `json:"error,omitempty"`
+	// Running now (the OS voice always is).
+	Running bool `json:"running"`
+	// The voices it declared when it last started; empty for an engine
+	// not yet started, and for the OS voice today.
+	Voices []SpeechVoice `json:"voices"`
+}
+
 // SpeechLocale is auto-generated from the OpenRPC spec.
 type SpeechLocale struct {
 	Identifier  string `json:"identifier"`
 	IsAvailable bool   `json:"is_available"`
 	Language    string `json:"language"`
+}
+
+// SpeechVoice is auto-generated from the OpenRPC spec.
+// One voice an engine declared.
+type SpeechVoice struct {
+	// What `speech.say`'s `voice` names it by.
+	ID string `json:"id"`
+	// BCP 47 tag of the language it speaks.
+	Locale string `json:"locale"`
+	// The voice as a person would choose it.
+	Name string `json:"name"`
 }
 
 // SpotlightResult is auto-generated from the OpenRPC spec.
@@ -8204,15 +8229,60 @@ type SpeechAnnounceRequest struct {
 	Text string `json:"text"`
 }
 
+// SpeechEnginesRequest is the request type for speech.engines.
+type SpeechEnginesRequest struct {
+	// Start this engine if it is not running and wait (up to 30 s) for its
+	// voices. Omitted: list every engine as it is, starting none — an
+	// engine holds its model in memory once started.
+	// default null
+	Engine *string `json:"engine,omitempty"`
+}
+
+// SpeechEnginesResponse is the response type for speech.engines.
+type SpeechEnginesResponse struct {
+	Engines []SpeechEngineInfo `json:"engines"`
+}
+
+// SpeechRestartEngineRequest is the request type for speech.restart_engine.
+type SpeechRestartEngineRequest struct {
+	// A speech engine stage the calling plugin ships.
+	// non-empty
+	Engine string `json:"engine"`
+}
+
 // SpeechSayRequest is the request type for speech.say.
 type SpeechSayRequest struct {
+	// What speaks it: `"system"` (the default) is the operating system's
+	// own voice; otherwise the qualified name of a speech engine stage a
+	// plugin ships (`stage_type` `tts`), started with its first utterance
+	// and kept running.
+	// default null
+	Engine *string `json:"engine,omitempty"`
+	// BCP 47 tag of the language the words are in, when known.
+	// default null
+	Locale *string `json:"locale,omitempty"`
 	// `"normal"` queues behind whatever is playing; `"high"` cuts it off
 	// and speaks now. Defaults to normal.
 	// default null
 	Priority *string `json:"priority,omitempty"`
+	// Pace relative to the voice's normal one: 1.0 is normal, 2.0 twice as
+	// fast. Speech engines only, today.
+	// wire float · default null
+	Rate *float64 `json:"rate,omitempty"`
 	// The words. Plain language, no markup; the system voice reads it as is.
 	// non-empty
 	Text string `json:"text"`
+	// A voice the engine declared (its capability's `voices`); absent or
+	// unknown means the engine's default. Speech engines only, today.
+	// default null
+	Voice *string `json:"voice,omitempty"`
+}
+
+// SpeechSayResponse is the response type for speech.say.
+type SpeechSayResponse struct {
+	// The utterance: `_platform.speech.started` / `finished` carry it.
+	ID string `json:"id"`
+	Ok bool   `json:"ok"`
 }
 
 // SystemLaunchAppRequest is the request type for system.launch_app.
@@ -8937,6 +9007,26 @@ type SelectionPickedEventParams struct {
 	ItemID string `json:"item_id"`
 	// Phonetic tag used to select the item.
 	Tag string `json:"tag"`
+}
+
+// SpeechFinishedEventParams is the payload of the _platform.speech.finished event.
+type SpeechFinishedEventParams struct {
+	// What spoke it, as in `_platform.speech.started`.
+	Engine string `json:"engine"`
+	// The utterance, as `speech.say` returned it.
+	ID string `json:"id"`
+	// True when it was stopped, superseded or failed before its end.
+	// default false
+	Interrupted *bool `json:"interrupted,omitempty"`
+}
+
+// SpeechStartedEventParams is the payload of the _platform.speech.started event.
+type SpeechStartedEventParams struct {
+	// What spoke it: `system` for the OS voice, otherwise the speech
+	// engine stage's qualified name.
+	Engine string `json:"engine"`
+	// The utterance, as `speech.say` returned it.
+	ID string `json:"id"`
 }
 
 // ThermalChangedEventParams is the payload of the _platform.thermal.changed event.

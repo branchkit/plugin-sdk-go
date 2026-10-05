@@ -6043,9 +6043,31 @@ func (p *Plugin) SpeechAnnounce(req SpeechAnnounceRequest) error {
 	return p.Call(MethodSpeechAnnounce, &req, nil)
 }
 
-// SpeechSay speak words through the system voice (a primitive: the platform makes the sound and reports the span for echo suppression; what to say is the caller's policy).
-func (p *Plugin) SpeechSay(req SpeechSayRequest) error {
-	return p.Call(MethodSpeechSay, &req, nil)
+// SpeechEngines list the speech engines `speech.say` can speak through, and the voices each offers; naming one starts it and waits for its voices.
+func (p *Plugin) SpeechEngines(req SpeechEnginesRequest) ([]SpeechEngineInfo, error) {
+	var result struct {
+		Engines []SpeechEngineInfo `json:"engines"`
+	}
+	err := p.Call(MethodSpeechEngines, &req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Engines, nil
+}
+
+// SpeechRestartEngine stop a speech engine the caller ships so its next utterance starts it afresh (a new model chosen).
+func (p *Plugin) SpeechRestartEngine(req SpeechRestartEngineRequest) error {
+	return p.Call(MethodSpeechRestartEngine, &req, nil)
+}
+
+// SpeechSay speak words through the system voice or a speech engine stage (a primitive: the platform makes the sound and reports the span for echo suppression; what to say is the caller's policy).
+func (p *Plugin) SpeechSay(req SpeechSayRequest) (*SpeechSayResponse, error) {
+	var result SpeechSayResponse
+	err := p.Call(MethodSpeechSay, &req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
 }
 
 // SpeechStop stop the system voice now and drop anything queued behind it.
