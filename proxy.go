@@ -20,9 +20,9 @@ import (
 // that enforces the declared hostname allowlist. The actuator advertises the
 // endpoint in BRANCHKIT_PROXY:
 //
-//	unix:///path/to/endpoint.sock  — UNIX socket (Linux; bind-mounted into
-//	                                 the sandbox at the same path)
-//	http://127.0.0.1:<port>        — localhost TCP (legacy Windows path)
+//	unix:///path/to/endpoint.sock  — UNIX socket (macOS: the one socket path
+//	                                 the plugin's sandbox allows)
+//	http://127.0.0.1:<port>        — localhost TCP (test harnesses only)
 //	fd://<n>                       — an inherited channel the actuator hands
 //	                                 each connection over (Linux): the plugin
 //	                                 opens no socket of its own, so the
