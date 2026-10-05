@@ -393,6 +393,18 @@ type CameraDevice struct {
 	UniqueID    string `json:"unique_id"`
 }
 
+// CaretContext is auto-generated from the OpenRPC spec.
+// The text on either side of the caret in the focused text field: up to 64
+// characters before the selection's start and after its end (with nothing
+// selected, both sides of the caret). What a plugin
+// typing into the field needs to fit its text into what is already there: a
+// leading space, a capital at a sentence start. Never read from a password
+// field: the capability answers nothing there.
+type CaretContext struct {
+	After  string `json:"after"`
+	Before string `json:"before"`
+}
+
 // ClipboardContents is auto-generated from the OpenRPC spec.
 // Clipboard contents read from the OS.
 type ClipboardContents struct {
@@ -4159,6 +4171,11 @@ type NativeCaptureWindowResponse struct {
 	Format string `json:"format"`
 	// Base64-encoded PNG bytes.
 	ImageBase64 string `json:"image_base64"`
+}
+
+// NativeCaretContextResponse is the response type for native.caret_context.
+type NativeCaretContextResponse struct {
+	Context *CaretContext `json:"context,omitempty"`
 }
 
 // NativeCascadeWindowsRequest is the request type for native.cascade_windows.

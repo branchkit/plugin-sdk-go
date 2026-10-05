@@ -607,7 +607,7 @@ func (p *Plugin) InputTripleClick(req InputTripleClickRequest) error {
 	return p.Call(MethodInputTripleClick, &req, nil)
 }
 
-// InputTypeText type text into the active application via clipboard paste.
+// InputTypeText type text into the focused application as synthesized key events (the clipboard is not used).
 func (p *Plugin) InputTypeText(req InputTypeTextRequest) error {
 	return p.Call(MethodInputTypeText, &req, nil)
 }
@@ -1397,6 +1397,16 @@ func (p *Plugin) NativeCapsLockState() (*NativeCapsLockStateResponse, error) {
 func (p *Plugin) NativeCaptureWindow(req NativeCaptureWindowRequest) (*NativeCaptureWindowResponse, error) {
 	var result NativeCaptureWindowResponse
 	err := p.Call(MethodNativeCaptureWindow, &req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// NativeCaretContext get the text on either side of the caret in the focused text field: up to 64 characters before the selection's start and after its end. For fitting typed text into what is already there (spacing, a capital at a sentence start). Answers nothing for a password field, a control with no text, or when the field cannot be read..
+func (p *Plugin) NativeCaretContext() (*NativeCaretContextResponse, error) {
+	var result NativeCaretContextResponse
+	err := p.Call(MethodNativeCaretContext, nil, &result)
 	if err != nil {
 		return nil, err
 	}
