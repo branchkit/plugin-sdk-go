@@ -1487,8 +1487,9 @@ type OutputState struct {
 	// A trailing line — "say a command, or wait".
 	Footer *string `json:"footer,omitempty"`
 	// One of the closed [`OutputKind`] vocabulary: `choices`, `mode`,
-	// `outcome`, `problem`, `progress`. Carried as a string so a kind this
-	// platform does not know degrades to `outcome` instead of failing.
+	// `outcome`, `problem`, `progress`, `notice`. Carried as a string so a
+	// kind this platform does not know degrades to `outcome` instead of
+	// failing.
 	Kind string `json:"kind"`
 	// BCP 47 language tag of every phrase in this document — "en", "pt-BR".
 	Locale string `json:"locale"`
