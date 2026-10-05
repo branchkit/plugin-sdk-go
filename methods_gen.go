@@ -2743,7 +2743,7 @@ func (p *Plugin) NativeHostname() (*NativeHostnameResponse, error) {
 	return &result, nil
 }
 
-// NativeHostnameResolve resolve a hostname to IP addresses.
+// NativeHostnameResolve resolve a hostname to IP addresses. A plugin may resolve only a host it declares in requires.network that the user has switched on.
 func (p *Plugin) NativeHostnameResolve(req NativeHostnameResolveRequest) ([]string, error) {
 	var result struct {
 		Addresses []string `json:"addresses"`
@@ -3391,7 +3391,7 @@ func (p *Plugin) NativeNetworkProxyEnabled() (*NativeNetworkProxyEnabledResponse
 	return &result, nil
 }
 
-// NativeNetworkQuality run a quick network quality test (upload/download Mbps). Exists only on macOS; elsewhere it is refused with platform_no_analogue.
+// NativeNetworkQuality run a quick network quality test (upload/download Mbps). The test contacts Apple, so a plugin declares mensura.cdn-apple.com in requires.network. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
 func (p *Plugin) NativeNetworkQuality() (*NativeNetworkQualityResponse, error) {
 	var result NativeNetworkQualityResponse
 	err := p.Call(MethodNativeNetworkQuality, nil, &result)
@@ -3401,7 +3401,7 @@ func (p *Plugin) NativeNetworkQuality() (*NativeNetworkQualityResponse, error) {
 	return &result, nil
 }
 
-// NativeNetworkReachable check if a host is reachable via network.
+// NativeNetworkReachable check if a host is reachable via network. A plugin may check only a host it declares in requires.network that the user has switched on.
 func (p *Plugin) NativeNetworkReachable(req NativeNetworkReachableRequest) (*NativeNetworkReachableResponse, error) {
 	var result NativeNetworkReachableResponse
 	err := p.Call(MethodNativeNetworkReachable, &req, &result)
@@ -3635,7 +3635,7 @@ func (p *Plugin) NativePinchToZoom() (*NativePinchToZoomResponse, error) {
 	return &result, nil
 }
 
-// NativePing ping a host and return latency in milliseconds.
+// NativePing ping a host and return latency in milliseconds. A plugin may ping only a host it declares in requires.network that the user has switched on.
 func (p *Plugin) NativePing(req NativePingRequest) (float64, error) {
 	var result float64
 	err := p.Call(MethodNativePing, &req, &result)
@@ -3869,7 +3869,7 @@ func (p *Plugin) NativeProxySettings() (*NativeProxySettingsResponse, error) {
 	return &result, nil
 }
 
-// NativePublicIP get the external/public IP address via a DNS lookup (no HTTP).
+// NativePublicIP get the external/public IP address via a DNS lookup (no HTTP). The lookup asks OpenDNS, so a plugin declares resolver1.opendns.com in requires.network.
 func (p *Plugin) NativePublicIP() (*NativePublicIPResponse, error) {
 	var result NativePublicIPResponse
 	err := p.Call(MethodNativePublicIp, nil, &result)
