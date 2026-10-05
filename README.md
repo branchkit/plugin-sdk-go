@@ -9,7 +9,8 @@ program becomes one of those plugins. MIT licensed.
 **Status:** BranchKit is pre-launch; the application is in private
 development, and this SDK is published and usable today. Versions are 0.x, so a
 minor release can break callers — [CHANGELOG.md](CHANGELOG.md) says what
-changed and how to migrate.
+changed and how to migrate. You can write, build and unit-test a plugin today;
+loading it needs a BranchKit install, which is not yet publicly available.
 
 ## Install
 
@@ -90,6 +91,13 @@ func main() {
 Say "hello branchkit" and the plugin types `Hello, BranchKit!` at the cursor.
 Typing needs the `input` privilege, which is why the manifest asks for it.
 
+`actions_gen.go` comes from
+[branchkit-gen](https://github.com/branchkit/branchkit-gen)
+(`go install github.com/branchkit/branchkit-gen@latest`). It writes a params
+struct and a `Handle<Action>` registrar for each entry in `action_types`, so
+the action string is never spelled by hand; re-run `branchkit-gen --plugin .`
+after editing the manifest.
+
 ## Calling the platform
 
 Every platform method has a generated Go method on `*Plugin` that takes the
@@ -111,12 +119,6 @@ is and a wrong name fails the build. Leave an optional field out to mean
 [types_gen.go](types_gen.go), with the platform's own description on every
 field.
 
-**The manifest is the permission.** A call that needs a privilege the manifest
-did not declare is refused before it runs, with an error of kind `forbidden`
-naming the operation. Some privileges also ask the user the first time. Network
-access works the same way: a host not listed under `requires.network` is
-refused with a `*HostRefusedError`.
-
 **Errors** from the platform are `*branchkit.RPCError` (`Code`, `Message`,
 `Kind`, `Data`). Test for the common kinds with `errors.Is`:
 
@@ -125,10 +127,32 @@ if errors.Is(err, branchkit.ErrForbidden) { /* declare the privilege */ }
 ```
 
 `ErrNotFound`, `ErrNotPermitted`, `ErrRecordingDisabled` and `ErrUnsupported`
-(a method this OS does not provide) work the same way.
+(a method this OS does not provide) work the same way. A call that gets no
+answer in time returns `*branchkit.CallTimeoutError` instead; it is not a
+refusal, since the platform may have carried the call out, so re-read before
+retrying a write.
 
 `plugin.Call(method, params, &out)` is the untyped escape hatch, for a method
 too new to have a generated wrapper. Prefer the wrapper whenever one exists.
+
+## Permissions and the sandbox
+
+Every plugin runs confined to what its manifest declares, and the platform,
+not the SDK, enforces it. A plugin that cannot be sandboxed on the machine
+does not start.
+
+- **Privileges.** A call that needs a privilege not listed under
+  `requires.privileges` is refused before it runs, with an error of kind
+  `forbidden` naming the operation. Some privileges also ask the user the
+  first time, and the user can switch any grant off later.
+- **Files.** The plugin reads its own directory (`branchkit.PluginDir()`) and
+  reads and writes its own data directory (`branchkit.PluginDataDir()`). The
+  home directory and other plugins' data are out of reach.
+- **Network.** None unless `requires.network` asks for it: `"localhost"`, or
+  `{"hosts": ["api.example.com"]}`. Connections go through a per-plugin proxy
+  that checks each host, and the SDK routes `net/http` and `Dial` through it
+  for you. A host the manifest does not list, or one the user has switched
+  off, is refused with a `*branchkit.HostRefusedError`.
 
 ## What the SDK covers
 
@@ -136,16 +160,18 @@ too new to have a generated wrapper. Prefer the wrapper whenever one exists.
 |---|---|
 | Handle an action | generated `Handle<Action>` (from `action_types`), `HandleAction`, `HandleActionTyped[T]` |
 | Serve your own method | `Handle`, `HandleTyped[Req]`, `HandleCommand[Req]` |
-| React to events | `On(event, fn)`, `OnPattern("ext.acme.**", fn)`, `CurrentEventOrigin()`; emit with `EventsEmit` |
+| React to events | `On(event, fn)`, `OnPattern("ext.acme.**", fn)`, `plugin.CurrentEventOrigin()`; emit with `EventsEmit` |
 | Store state | `Get` / `List` / `ListPage` / `Count` / `Put` / `PutMany` / `Patch` / `Delete` / `Replace`, `Subscribe` |
 | Append-only logs | `Append`, `AppendKeyed`, `ListLog`, `GetLogEntry`, `DeleteLogEntry` |
 | Keep a live copy | `MirrorCollection(name)`, `Settings[T](plugin, name)` |
-| Contribute commands | `Command(Word("open"), Capture("app", "apps"))…Build()`, `PushCommandSpecs`, `PushCommandGroup` |
+| Contribute commands | `Command(Word("open"), Capture("app", "apps")).Action(…).Build()`, `PushCommandSpecs`, `PushCommandGroup` |
 | Bind keys and device buttons | manifest `collection_data["_platform.bindings"]`; a device plugin lists its triggers with `BindingsSetTriggers`, reports presses with `BindingsReport` and proposes settings from its own screen with `BindingsPropose` (guides: *Triggers and authority*, *Make a device a binding source*) |
 | A settings tab | `SettingsTab(key, fn)` + `implements.settings_tabs` in the manifest; buttons in package `ui` |
 | Show something | `OutputState(OutputStateRequest{…})` with `SayAction` / `DispatchAction`, `HUDPush` |
 | Hold a system effect | `AssertEffect`, `RetractEffect`, `IsEffectActive`, `OnEffectDisplaced` |
-| Trace a request | `CurrentCorrelation()`, `RunWithCorrelation(id, fn)` |
+| Trace a request | `plugin.CurrentCorrelation()`, `RunWithCorrelation(id, fn)` |
+| Label calls made for something you host (a script, an extension) | `defer branchkit.ActOnBehalfOf(actor)()` |
+| Find your files | `PluginDir()`, `PluginDataDir()`, `GetAPIVersion()` |
 | Log | `Info` / `Warn` / `Error` / `Debug` / `Trace(tag, data)` to your plugin's log (Debug and Trace are off by default) |
 | Outbound HTTP | plain `net/http` (the default transport goes through the platform's proxy), `NewUpstreamClient(baseURL)` |
 | Raw TCP (MQTT, a local daemon) | `Dial(host, port)`, `DialContext` |
@@ -170,14 +196,15 @@ func TestGreetMatches(t *testing.T) {
 }
 ```
 
-It runs the `branchkit-test-harness` binary that ships inside BranchKit.app;
-set `BRANCHKIT_TEST_HARNESS` to its path anywhere else. Without the binary the
-harness tests skip; set `BRANCHKIT_REQUIRE_HARNESS=1` (in CI, say) to make that a
-failure instead. `go test ./...` runs your
-tests; `branchkit-cli dev test .` checks the manifest and runs the platform's
-own conformance checks against the plugin.
+It runs the `branchkit-test-harness` binary, which ships with the BranchKit app
+(on macOS, inside `BranchKit.app/Contents/Resources`); set
+`BRANCHKIT_TEST_HARNESS` to its path anywhere else. Because the app is not yet
+publicly available, outside a BranchKit install the harness tests skip; set
+`BRANCHKIT_REQUIRE_HARNESS=1` (in CI, say) to make a missing binary a failure
+instead. `go test ./...` runs your tests; `branchkit-cli dev test .` checks the
+manifest and runs the platform's own conformance checks against the plugin.
 
-Against the running app:
+Against a running BranchKit:
 
 ```sh
 branchkit-cli plugin install . --build            # install it
@@ -192,18 +219,29 @@ branchkit-cli dev plog my-plugin --since 30s       # read its log
 - **Local docs:** `branchkit-cli docs path` prints the documentation bundled
   with your installed BranchKit, for reading or grepping offline.
 - **Worked examples:** [helloworld-go](https://github.com/branchkit/branchkit-plugin-helloworld-go)
-  (the scaffold), and real plugins built on this SDK:
+  (exactly what `dev init` writes);
+  [snippets](https://github.com/branchkit/branchkit-plugin-snippets), the
+  teaching plugin; and real plugins built on this SDK:
   [keyboard](https://github.com/branchkit/branchkit-plugin-keyboard),
   [system](https://github.com/branchkit/branchkit-plugin-system),
   [placement](https://github.com/branchkit/branchkit-plugin-placement).
+- **Tools:** [branchkit-cli](https://github.com/branchkit/branchkit-cli)
+  (scaffold, install, test, inspect) and
+  [branchkit-gen](https://github.com/branchkit/branchkit-gen) (typed action
+  params, manifest validation).
 
 ## Versioning
 
 Tags follow semver, 0.x for now: a minor release may break callers, and
-CHANGELOG.md names every break with its migration. The Go, TypeScript
-([plugin-sdk-ts](https://github.com/branchkit/plugin-sdk-ts)) and Python
-([plugin-sdk-py](https://github.com/branchkit/plugin-sdk-py)) SDKs implement the
-same surface and are held to it by one cross-language conformance suite.
+CHANGELOG.md names every break with its migration. The SDK version is separate
+from the platform contract version: the platform refuses to load a plugin whose
+manifest `min_api_version` is newer than the contract it speaks, and
+`GetAPIVersion()` reports that contract version at run time. The contract
+itself changes without deprecation cycles until the first release. The Go,
+TypeScript ([plugin-sdk-ts](https://github.com/branchkit/plugin-sdk-ts)) and
+Python ([plugin-sdk-py](https://github.com/branchkit/plugin-sdk-py)) SDKs
+implement the same surface and are held to it by one cross-language conformance
+suite.
 
 ## Contributing
 
