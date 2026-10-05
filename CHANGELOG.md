@@ -5,6 +5,8 @@ git history.
 
 ## Unreleased
 
+## 0.15.0 — 2026-10-05
+
 ### Speech engines (stage runtime)
 
 - Added `pipeline.ServeSpeechEngine` / `ServeSpeechEngineOn` with the
