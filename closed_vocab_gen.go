@@ -141,6 +141,7 @@ const (
 	OutputKindOutcome  = "outcome"
 	OutputKindProblem  = "problem"
 	OutputKindProgress = "progress"
+	OutputKindNotice   = "notice"
 )
 
 // KnownOutputKinds lists the full closed-vocabulary set, in the
@@ -151,6 +152,7 @@ var KnownOutputKinds = []string{
 	"outcome",
 	"problem",
 	"progress",
+	"notice",
 }
 
 // OutputUrgency* are the closed-vocabulary `urgency` values of a
