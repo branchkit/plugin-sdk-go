@@ -146,6 +146,15 @@ type Capability struct {
 	// The field is optional on the wire in both directions — a platform that
 	// predates it ignores it and delivers every event.
 	Streams []StreamDecl `json:"streams,omitempty"`
+	// The voices a speech engine (`stage_type` `tts`) can speak in, so the
+	// person can be offered a choice without the platform knowing anything
+	// about the engine. The first is the engine's default: a `speak` request
+	// that names no voice, or a voice not listed here, is spoken in it.
+	//
+	// Empty = the stage is not a speech engine, which is every other stage.
+	// A speech engine declares at least one; the conformance harness holds
+	// it to that.
+	Voices []VoiceInfo `json:"voices,omitempty"`
 }
 
 // How the platform delivers one declared stream to its subscribers.
@@ -192,6 +201,17 @@ type StreamDecl struct {
 	// least 1. Declare the sensor's real ceiling (a 250 Hz tracker declares
 	// 250): the platform warns when a stream runs well past its declaration.
 	RateHz uint32 `json:"rate_hz"`
+}
+
+// One voice a speech engine declares in Capability.voices: the id a speak request names it by, a name a person can choose it by, and the language it speaks.
+type VoiceInfo struct {
+	// What a `speak` request names this voice by. Stable across releases
+	// of the engine: a person's stored choice refers to it.
+	Id string `json:"id"`
+	// BCP 47 tag of the language it speaks — "en-US", "pt-BR".
+	Locale string `json:"locale"`
+	// The voice as a person would choose it — "Heart (American English)".
+	Name string `json:"name"`
 }
 
 // The serialized header line — one JSON object per event, newline-terminated,

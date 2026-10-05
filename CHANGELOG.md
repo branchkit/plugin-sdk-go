@@ -5,6 +5,23 @@ git history.
 
 ## Unreleased
 
+### Speech engines (stage runtime)
+
+- Added `pipeline.ServeSpeechEngine` / `ServeSpeechEngineOn` with the
+  `SpeechEngine` interface and `SpeakCtx`: the third stage shape, a
+  text-to-speech engine. Each `speak` request becomes an audio session the
+  stage streams back (`Start`, then `Audio` per piece); the runtime keeps
+  requests in order, cancels the one in progress the moment the platform
+  sends its `audio_stop` (`Cancelled`, `Done`, `Context`), closes a queued one
+  that is cancelled before it starts, and ends every utterance with exactly
+  one `audio_stop`, after an `error` when `Speak` fails.
+- Added `pipeline.SharedClockMs`, the clock the platform stamps microphone
+  audio with (`CLOCK_UPTIME_RAW` on macOS, `CLOCK_MONOTONIC` on other unixes,
+  wall time on Windows). An audio sink stamps `playback_started` /
+  `playback_ended` with it. `golang.org/x/sys` is now a direct dependency.
+- Generated: `audio.Speak`, `audio.PlaybackStarted`, `audio.PlaybackEnded`
+  and their event tags; `Capability.Voices` with `VoiceInfo`.
+
 ### Device triggers
 
 - Added `BindingsSetTriggers` (`TriggerDecl`, `TriggerKind`): a device plugin publishes
