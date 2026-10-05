@@ -8285,6 +8285,36 @@ type SpeechSayResponse struct {
 	Ok bool   `json:"ok"`
 }
 
+// StagesRequestRequest is the request type for stages.request.
+type StagesRequestRequest struct {
+	// What to ask. Opaque to the platform by design: carried to the stage
+	// unread, its shape the stage's own contract with the plugin.
+	// default null
+	Body json.RawMessage `json:"body,omitempty"`
+	// Arguments the stage is started with, as `--key value` pairs, the way a
+	// pipeline passes a stage's params. `model` names one of the caller's
+	// artifacts and grants the stage read access to it. One warm process is
+	// kept per stage and set of arguments.
+	// default {}
+	Params map[string]string `json:"params,omitempty"`
+	// A request stage the caller ships (`stage_type: "request"` in its
+	// manifest's `provides.stages`), by its name there.
+	// non-empty
+	Stage string `json:"stage"`
+	// How long to wait for the answer, in milliseconds. Default 30000, at
+	// most 120000. A stage that does not answer in time is stopped.
+	// wire uint64 (64-bit) · default null · min 0
+	TimeoutMs *int `json:"timeout_ms,omitempty"`
+}
+
+// StagesRequestResponse is the response type for stages.request.
+type StagesRequestResponse struct {
+	// The stage's answer, as it sent it. Opaque to the platform by design:
+	// its shape is the contract between the stage and the plugin that ships
+	// it, as the request's `body` is.
+	Body json.RawMessage `json:"body"`
+}
+
 // SystemLaunchAppRequest is the request type for system.launch_app.
 type SystemLaunchAppRequest struct {
 	// Bundle ID of the application to launch (e.g. "com.apple.Safari").

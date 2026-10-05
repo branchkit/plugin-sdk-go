@@ -26,6 +26,8 @@ const (
 	EventCapability = "capability"
 	EventError      = "error"
 	EventFlowCredit = "flow_credit"
+	EventReply      = "reply"
+	EventRequest    = "request"
 )
 
 // ExtEventPrefix reserves the open namespace a stage emits custom events
@@ -188,6 +190,24 @@ type ErrorEvent struct {
 type FlowCredit struct {
 	Frames    uint32 `json:"frames"`
 	SessionId string `json:"session_id"`
+}
+
+// `reply`: a request stage's answer to one `request`. Exactly one of `body`
+// (the answer) and `error` (why there is none) is set.
+type Reply struct {
+	Body      json.RawMessage `json:"body,omitempty"`
+	Error     *string         `json:"error,omitempty"`
+	RequestId string          `json:"request_id"`
+}
+
+// `request`: the host asks a request stage (`stage_type: "request"`) for one
+// answer. The stage answers every request with exactly one `reply` carrying
+// the same `request_id`, in the order the requests arrived. What `body`
+// holds is between the stage and the plugin that ships it: the platform
+// carries it and never reads it.
+type Request struct {
+	Body      json.RawMessage `json:"body,omitempty"`
+	RequestId string          `json:"request_id"`
 }
 
 // One steady `ext.*` stream a stage declares in Capability.streams: its exact type, the most events per second it will emit, and how subscribers receive it.

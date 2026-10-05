@@ -5,6 +5,15 @@ git history.
 
 ## Unreleased
 
+### Request stages (stage runtime)
+
+- Added `pipeline.ServeRequests` / `ServeRequestsOn` with the `RequestHandler`
+  interface: the fourth stage shape, one answer per request (a language model,
+  a translator, a classifier). The capability declares `stage_type: "request"`;
+  each `request {request_id, body}` gets exactly one `reply` with the same id,
+  in arrival order, carrying the handler's answer as `body` or its error as
+  `error`. A request with no id gets a non-fatal `bad_request` error event.
+
 ## 0.15.0 — 2026-10-05
 
 ### Speech engines (stage runtime)

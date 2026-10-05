@@ -6075,6 +6075,16 @@ func (p *Plugin) SpeechStop() error {
 	return p.Call(MethodSpeechStop, nil, nil)
 }
 
+// StagesRequest ask a request stage the caller ships for one answer.
+func (p *Plugin) StagesRequest(req StagesRequestRequest) (*StagesRequestResponse, error) {
+	var result StagesRequestResponse
+	err := p.Call(MethodStagesRequest, &req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // SystemLaunchApp launch an app and post a 'Launching' notification to the HUD.
 func (p *Plugin) SystemLaunchApp(req SystemLaunchAppRequest) error {
 	return p.Call(MethodSystemLaunchApp, &req, nil)

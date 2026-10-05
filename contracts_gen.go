@@ -651,6 +651,7 @@ const (
 	MethodSpeechRestartEngine                 = "speech.restart_engine"                    // since 0.2.0
 	MethodSpeechSay                           = "speech.say"                               // since 0.1.0
 	MethodSpeechStop                          = "speech.stop"                              // since 0.1.0
+	MethodStagesRequest                       = "stages.request"                           // since 0.2.0
 	MethodSystemLaunchApp                     = "system.launch_app"                        // since 0.1.0
 	MethodSystemNotify                        = "system.notify"                            // since 0.1.0
 	MethodSystemRunShell                      = "system.run_shell"                         // since 0.1.0
