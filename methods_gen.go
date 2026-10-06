@@ -4326,7 +4326,7 @@ func (p *Plugin) NativeSelectedFinderItems() ([]string, error) {
 	return result.Paths, nil
 }
 
-// NativeSelectedText get the currently selected text from the frontmost app.
+// NativeSelectedText get the text selected in the focused app, never from a password field. Read through the OS accessibility interface; on macOS, an app that offers no selection through it is asked to copy, and the clipboard is put back..
 func (p *Plugin) NativeSelectedText() (*NativeSelectedTextResponse, error) {
 	var result NativeSelectedTextResponse
 	err := p.Call(MethodNativeSelectedText, nil, &result)
