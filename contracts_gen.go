@@ -707,6 +707,7 @@ const (
 	EventPipelineStopped        = "_platform.pipeline.stopped"
 	EventPipelineTranscript     = "_platform.pipeline.transcript"
 	EventPipelineWarmed         = "_platform.pipeline.warmed"
+	EventPipelineWarming        = "_platform.pipeline.warming"
 	EventPluginDegraded         = "_platform.plugin.degraded"
 	EventPluginDisabled         = "_platform.plugin.disabled"
 	EventPluginEnabled          = "_platform.plugin.enabled"

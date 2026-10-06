@@ -8989,6 +8989,13 @@ type PipelineWarmedEventParams struct {
 	Pipeline string `json:"pipeline"`
 }
 
+// PipelineWarmingEventParams is the payload of the _platform.pipeline.warming event.
+type PipelineWarmingEventParams struct {
+	Pipeline string `json:"pipeline"`
+	// The consumer stages being started, by qualified name.
+	Stages []string `json:"stages"`
+}
+
 // PluginDegradedEventParams is the payload of the _platform.plugin.degraded event.
 type PluginDegradedEventParams struct {
 	// How many consecutive RPC timeouts drove this. `0` when the plugin
