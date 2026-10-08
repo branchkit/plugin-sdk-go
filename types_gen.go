@@ -212,6 +212,7 @@ type Anchor string
 const (
 	AnchorTopLeft      Anchor = "top-left"
 	AnchorTopRight     Anchor = "top-right"
+	AnchorTopCenter    Anchor = "top-center"
 	AnchorBottomLeft   Anchor = "bottom-left"
 	AnchorBottomRight  Anchor = "bottom-right"
 	AnchorBottomCenter Anchor = "bottom-center"
