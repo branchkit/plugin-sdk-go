@@ -15,6 +15,12 @@ import (
 // them and pumps bytes both ways. The same wire the actuator's
 // listener_relay.rs speaks.
 func fakeRelay(t *testing.T, token string) (rendezvous, public string, stop func()) {
+	return fakeRelayAnswering(t, token, true)
+}
+
+// fakeRelayAnswering is fakeRelay with the answer chosen: "OK <peer>\n" (the
+// current protocol) when withPeer, else the bare "OK\n" of version 1.
+func fakeRelayAnswering(t *testing.T, token string, withPeer bool) (rendezvous, public string, stop func()) {
 	t.Helper()
 	rv, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
@@ -50,7 +56,11 @@ func fakeRelay(t *testing.T, token string) (rendezvous, public string, stop func
 			go func() {
 				select {
 				case plugin := <-parked:
-					plugin.Write([]byte("OK\n"))
+					if withPeer {
+						plugin.Write([]byte("OK " + client.RemoteAddr().String() + "\n"))
+					} else {
+						plugin.Write([]byte("OK\n"))
+					}
 					go func() { io.Copy(plugin, client); plugin.Close() }()
 					io.Copy(client, plugin)
 					client.Close()
@@ -166,6 +176,80 @@ func TestRelayEndpointHonoursTheNamedPipeScheme(t *testing.T) {
 		n, a := relayEndpoint(c.in)
 		if n != c.net || a != c.addr {
 			t.Errorf("relayEndpoint(%q) = (%q, %q), want (%q, %q)", c.in, n, a, c.net, c.addr)
+		}
+	}
+}
+
+// The relayed connection's RemoteAddr is the client's own address, carried
+// in the actuator's answer: a plugin looking up which app is on the other end
+// of a loopback connection (by the client's port) needs it, and the
+// rendezvous connection it actually holds says nothing about the client.
+func TestRelayedRequestCarriesTheClientsAddress(t *testing.T) {
+	for _, withPeer := range []bool{true, false} {
+		const token = "abcdefabcdefabcdefabcdefabcdefab"
+		rendezvous, public, stop := fakeRelayAnswering(t, token, withPeer)
+		_, port, _ := net.SplitHostPort(public)
+		t.Setenv("BRANCHKIT_LISTEN_RELAY", rendezvous)
+		t.Setenv("BRANCHKIT_LISTEN_RELAY_TOKEN", token)
+		t.Setenv("BRANCHKIT_LISTEN_PORTS", "trial="+port)
+		t.Setenv("LISTEN_FDS", "")
+
+		ln, err := relayListenerFromEnv(0)
+		if err != nil || ln == nil {
+			t.Fatalf("relay listener: %v, %v", ln, err)
+		}
+		srv := &http.Server{Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			io.WriteString(w, r.RemoteAddr)
+		})}
+		go srv.Serve(ln)
+
+		c, err := net.Dial("tcp", public)
+		if err != nil {
+			t.Fatal(err)
+		}
+		io.WriteString(c, "GET / HTTP/1.1\r\nHost: x\r\nConnection: close\r\n\r\n")
+		resp, err := http.ReadResponse(bufio.NewReader(c), nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		body, _ := io.ReadAll(resp.Body)
+		resp.Body.Close()
+		c.Close()
+		if withPeer {
+			if string(body) != c.LocalAddr().String() {
+				t.Errorf("RemoteAddr = %q, want the client's %q", body, c.LocalAddr())
+			}
+		} else if string(body) == c.LocalAddr().String() || string(body) == "" {
+			t.Errorf("version-1 answer: RemoteAddr = %q, want the rendezvous connection's own", body)
+		}
+		srv.Close()
+		ln.Close()
+		stop()
+	}
+}
+
+func TestParseRelayAnswer(t *testing.T) {
+	cases := []struct {
+		in   string
+		addr string
+		ok   bool
+	}{
+		{"OK 127.0.0.1:50741", "127.0.0.1:50741", true},
+		{"OK [::1]:50741", "[::1]:50741", true},
+		{"OK", "", true},
+		{"OK ", "", false},
+		{"OK nonsense", "", false},
+		{"NO 127.0.0.1:1", "", false},
+		{"", "", false},
+	}
+	for _, c := range cases {
+		addr, ok := parseRelayAnswer(c.in)
+		got := ""
+		if addr != nil {
+			got = addr.String()
+		}
+		if ok != c.ok || got != c.addr {
+			t.Errorf("parseRelayAnswer(%q) = (%q, %v), want (%q, %v)", c.in, got, ok, c.addr, c.ok)
 		}
 	}
 }

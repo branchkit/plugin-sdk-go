@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"net/netip"
 	"os"
 	"strconv"
 	"strings"
@@ -20,19 +21,30 @@ import (
 // sandbox and relays each inbound connection over a connection the plugin
 // opened outward. The plugin parks a few such connections at the actuator's
 // per-spawn rendezvous (BRANCHKIT_LISTEN_RELAY, with BRANCHKIT_LISTEN_RELAY_TOKEN
-// on the first line); when a client arrives the actuator writes "OK\n" on one
-// of them and pumps bytes both ways. From here up nothing changes: the
-// result is a net.Listener whose Accept yields those paired connections, so
-// the HTTP server above it is the same one that serves an inherited fd.
+// on the first line); when a client arrives the actuator writes "OK <peer>\n"
+// on one of them and pumps bytes both ways. From here up nothing changes:
+// the result is a net.Listener whose Accept yields those paired connections,
+// so the HTTP server above it is the same one that serves an inherited fd.
+//
+// <peer> is the client's address as the actuator's public listener accepted
+// it. The connection the plugin holds is the rendezvous pipe, whose own peer
+// says nothing about the client, so the paired connection reports <peer> as
+// its RemoteAddr — and http.Request.RemoteAddr is the client's, exactly as on
+// an inherited fd. A plugin that asks the platform which app owns the other
+// end of a loopback connection needs that port. The header's version 2 asks
+// for the peer; an actuator answering a bare "OK\n" (version 1) is still
+// accepted, and then RemoteAddr stays the rendezvous connection's.
 //
 // The branch is chosen by the ENVIRONMENT, not by GOOS: the actuator decides
 // per spawn, and a test on any OS can play the actuator.
 
 const (
-	relayHeaderPrefix = "BKRELAY/1 "
-	relayPoolSize     = 4
-	relayRetryMin     = 200 * time.Millisecond
-	relayRetryMax     = 2 * time.Second
+	relayHeaderPrefix = "BKRELAY/2 "
+	// relayAnswerMax bounds the answer line: "OK " plus an address.
+	relayAnswerMax = 128
+	relayPoolSize  = 4
+	relayRetryMin  = 200 * time.Millisecond
+	relayRetryMax  = 2 * time.Second
 )
 
 // relayEnv reads the relay variables. ok is false when the actuator did not
@@ -159,9 +171,9 @@ func (l *relayListener) park() {
 		l.mu.Lock()
 		l.parked[conn] = struct{}{}
 		l.mu.Unlock()
-		// Byte at a time: the client's first bytes may follow "OK\n" in the
-		// same segment and must stay in the connection for the server.
-		ok := readOK(conn)
+		// Byte at a time: the client's first bytes may follow the answer in
+		// the same segment and must stay in the connection for the server.
+		peer, ok := readOK(conn)
 		l.mu.Lock()
 		delete(l.parked, conn)
 		l.mu.Unlock()
@@ -169,9 +181,13 @@ func (l *relayListener) park() {
 			conn.Close()
 			continue
 		}
+		var paired net.Conn = conn
+		if peer != nil {
+			paired = &relayConn{Conn: conn, peer: peer}
+		}
 		go l.park()
 		select {
-		case l.accepted <- conn:
+		case l.accepted <- paired:
 		case <-l.done:
 			conn.Close()
 		}
@@ -179,17 +195,50 @@ func (l *relayListener) park() {
 	}
 }
 
-func readOK(conn net.Conn) bool {
+// readOK reads the actuator's answer line: "OK <peer>\n", or "OK\n" from a
+// version-1 actuator (peer nil). Anything else is not a pairing.
+func readOK(conn net.Conn) (peer net.Addr, ok bool) {
 	var b [1]byte
-	got := make([]byte, 0, 3)
-	for len(got) < 3 {
+	got := make([]byte, 0, 32)
+	for {
 		if _, err := conn.Read(b[:]); err != nil {
-			return false
+			return nil, false
+		}
+		if b[0] == '\n' {
+			break
 		}
 		got = append(got, b[0])
+		if len(got) > relayAnswerMax {
+			return nil, false
+		}
 	}
-	return string(got) == "OK\n"
+	return parseRelayAnswer(string(got))
 }
+
+// parseRelayAnswer parses an answer line without its newline.
+func parseRelayAnswer(line string) (net.Addr, bool) {
+	if line == "OK" {
+		return nil, true
+	}
+	rest, found := strings.CutPrefix(line, "OK ")
+	if !found {
+		return nil, false
+	}
+	ap, err := netip.ParseAddrPort(rest)
+	if err != nil {
+		return nil, false
+	}
+	return net.TCPAddrFromAddrPort(ap), true
+}
+
+// relayConn is a paired relay connection that reports the client's address,
+// as the actuator saw it, as its RemoteAddr.
+type relayConn struct {
+	net.Conn
+	peer net.Addr
+}
+
+func (c *relayConn) RemoteAddr() net.Addr { return c.peer }
 
 func (l *relayListener) Accept() (net.Conn, error) {
 	select {
