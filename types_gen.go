@@ -911,7 +911,7 @@ type EnumeratedCommand struct {
 }
 
 // ExecutedActionReport is auto-generated from the OpenRPC spec.
-// One action's result in a [`PipelineExecutedEventParams`]. Carries the
+// One action's result in a `_platform.pipeline.executed` event. Carries the
 // action's type, never its params: those can hold what the person said.
 type ExecutedActionReport struct {
 	// Dotted action type (`tiling.snap`); `sequence` for a sequence.
