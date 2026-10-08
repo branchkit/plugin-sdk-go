@@ -703,6 +703,7 @@ const (
 	EventOutputState            = "_platform.output.state"
 	EventPermissionChanged      = "_platform.permission.changed"
 	EventPipelineError          = "_platform.pipeline.error"
+	EventPipelineExecuted       = "_platform.pipeline.executed"
 	EventPipelineStarted        = "_platform.pipeline.started"
 	EventPipelineStopped        = "_platform.pipeline.stopped"
 	EventPipelineTranscript     = "_platform.pipeline.transcript"

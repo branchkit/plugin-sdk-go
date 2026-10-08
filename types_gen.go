@@ -910,6 +910,20 @@ type EnumeratedCommand struct {
 	SetsTags     []string `json:"sets_tags"`
 }
 
+// ExecutedActionReport is auto-generated from the OpenRPC spec.
+// One action's result in a [`PipelineExecutedEventParams`]. Carries the
+// action's type, never its params: those can hold what the person said.
+type ExecutedActionReport struct {
+	// Dotted action type (`tiling.snap`); `sequence` for a sequence.
+	ActionType string `json:"action_type"`
+	// Why it was refused, when `status` is `denied` and the platform knows.
+	Denial *string `json:"denial,omitempty"`
+	// Plugin that handled it, when it routed to one.
+	Handler *string `json:"handler,omitempty"`
+	// `ok`, `error`, `not_handled`, `denied` or `simulated`.
+	Status string `json:"status"`
+}
+
 // ExternalDisk is auto-generated from the OpenRPC spec.
 type ExternalDisk struct {
 	FileSystem *string `json:"file_system,omitempty"`
@@ -8938,6 +8952,24 @@ type PermissionChangedEventParams struct {
 type PipelineErrorEventParams struct {
 	Error    string `json:"error"`
 	Pipeline string `json:"pipeline"`
+}
+
+// PipelineExecutedEventParams is the payload of the _platform.pipeline.executed event.
+type PipelineExecutedEventParams struct {
+	// One entry per action, in the order they ran.
+	// default []
+	Actions []ExecutedActionReport `json:"actions,omitempty"`
+	// `"ran"`: every action in `actions` was executed (each with its own
+	// status). `"dropped"`: the owner's `on_transcript` call failed (it
+	// timed out, returned an error, was not running, or answered with
+	// actions that could not be read) and nothing ran; a late answer is
+	// discarded. `reason` says which.
+	Outcome string `json:"outcome"`
+	// The pipeline's owner, the plugin that introduced it.
+	OwnerPlugin string `json:"owner_plugin"`
+	Pipeline    string `json:"pipeline"`
+	// Why the turn was dropped. Absent when it ran.
+	Reason *string `json:"reason,omitempty"`
 }
 
 // PipelineStartedEventParams is the payload of the _platform.pipeline.started event.
