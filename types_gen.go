@@ -1764,6 +1764,7 @@ const (
 	RelativeToDisplay       RelativeTo = "display"
 	RelativeToFocusedWindow RelativeTo = "focused_window"
 	RelativeToPointer       RelativeTo = "pointer"
+	RelativeToCaret         RelativeTo = "caret"
 )
 
 // ReminderItem is auto-generated from the OpenRPC spec.
@@ -4253,6 +4254,11 @@ type NativeCaptureWindowResponse struct {
 	Format string `json:"format"`
 	// Base64-encoded PNG bytes.
 	ImageBase64 string `json:"image_base64"`
+}
+
+// NativeCaretBoundsResponse is the response type for native.caret_bounds.
+type NativeCaretBoundsResponse struct {
+	Bounds *AccessibleBounds `json:"bounds,omitempty"`
 }
 
 // NativeCaretContextResponse is the response type for native.caret_context.

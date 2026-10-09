@@ -1403,6 +1403,16 @@ func (p *Plugin) NativeCaptureWindow(req NativeCaptureWindowRequest) (*NativeCap
 	return &result, nil
 }
 
+// NativeCaretBounds get where the caret is on screen: the rectangle of the selection's start in the focused text field (a thin one at a bare caret), in the coordinates window frames use. For putting something beside where the person is typing. Answers nothing for a password field, a control with no text, or when the field cannot say..
+func (p *Plugin) NativeCaretBounds() (*NativeCaretBoundsResponse, error) {
+	var result NativeCaretBoundsResponse
+	err := p.Call(MethodNativeCaretBounds, nil, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // NativeCaretContext get the text on either side of the caret in the focused text field: up to 64 characters before the selection's start and after its end. For fitting typed text into what is already there (spacing, a capital at a sentence start). Answers nothing for a password field, a control with no text, or when the field cannot be read..
 func (p *Plugin) NativeCaretContext() (*NativeCaretContextResponse, error) {
 	var result NativeCaretContextResponse

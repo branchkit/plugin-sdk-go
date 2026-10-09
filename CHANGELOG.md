@@ -11,8 +11,18 @@ git history.
   menu bar's on macOS, the primary monitor on Windows, RandR's primary
   output on X11). False for every display where the system cannot say.
 
+### Native
+
+- `NativeCaretBounds`: where the caret is on screen in the focused text
+  field (`text.caret`). Nothing for a password field or a field that
+  cannot say; on Linux, X11 only.
+
 ### HUD
 
+- `RelativeToCaret`: a window above or below the line being typed, lined
+  up with the text caret where it was when the window opened. Needs the
+  `text.caret` privilege; otherwise, or where the caret cannot be read, on
+  the display.
 - Anchors cover the whole three-by-three grid: `AnchorCenterLeft` and
   `AnchorCenterRight` join the seven there were.
 - `HUDCreateChannelRequest.RelativeTo` places a window against the display

@@ -157,6 +157,7 @@ const (
 	MethodNativeCameras                       = "native.cameras"                           // since 0.1.0
 	MethodNativeCapsLockState                 = "native.caps_lock_state"                   // since 0.1.0
 	MethodNativeCaptureWindow                 = "native.capture_window"                    // since 0.1.0
+	MethodNativeCaretBounds                   = "native.caret_bounds"                      // since 0.2.0
 	MethodNativeCaretContext                  = "native.caret_context"                     // since 0.2.0
 	MethodNativeCascadeWindows                = "native.cascade_windows"                   // since 0.1.0
 	MethodNativeCenterWindow                  = "native.center_window"                     // since 0.1.0
