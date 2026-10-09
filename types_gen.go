@@ -1853,6 +1853,10 @@ type ResolveResult struct {
 	ClearsTags   []string `json:"clears_tags"`
 	// wire uint · min 0
 	ConsumedCount int `json:"consumed_count"`
+	// The required tag is a select mode's: the platform draws its list as
+	// a palette card itself, so a renderer of its own (voice's Discovery
+	// window) leaves it to that card.
+	DrawnByPlatform bool `json:"drawn_by_platform"`
 	// The winning command's dictated-argument descriptor, if declared: the
 	HasCompletions bool           `json:"has_completions"`
 	Items          []DiscoverItem `json:"items"`
@@ -3013,6 +3017,10 @@ type CommandsResolveResponse struct {
 	ClearsTags   []string `json:"clears_tags"`
 	// wire uint · min 0
 	ConsumedCount int `json:"consumed_count"`
+	// The required tag is a select mode's: the platform draws its list as
+	// a palette card itself, so a renderer of its own (voice's Discovery
+	// window) leaves it to that card.
+	DrawnByPlatform *bool `json:"drawn_by_platform,omitempty"`
 	// The winning command's dictated-argument descriptor, if declared: the
 	HasCompletions bool           `json:"has_completions"`
 	Items          []DiscoverItem `json:"items"`
