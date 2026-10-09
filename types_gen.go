@@ -803,6 +803,11 @@ type DisplayInfo struct {
 	// known, not drawing until it wakes. Default false.
 	// default false
 	IsAsleep bool `json:"is_asleep"`
+	// The system's main display: where the menu bar is (macOS), the
+	// primary monitor (Windows), RandR's primary output (X11). Default
+	// false; a source that cannot say leaves every display false.
+	// default false
+	IsPrimary bool `json:"is_primary"`
 	// wire int32 · default 0
 	VisibleH int `json:"visible_h"`
 	// wire int32 · default 0
