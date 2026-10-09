@@ -5,6 +5,17 @@ git history.
 
 ## Unreleased
 
+### HUD
+
+- Anchors cover the whole three-by-three grid: `AnchorCenterLeft` and
+  `AnchorCenterRight` join the seven there were.
+- `HUDCreateChannelRequest.RelativeTo` places a window against the display
+  (`RelativeToDisplay`, the default), inside the focused window
+  (`RelativeToFocusedWindow`) or beside the pointer (`RelativeToPointer`);
+  `HUDCreateChannelRequest.Offset` nudges it from its anchored place, in
+  pixels. The manifest's `hud_windows` take the same `relative_to` and
+  `offset`. Needs an actuator that knows them.
+
 ### Listen
 
 - A connection served through the actuator's listener relay (Windows)

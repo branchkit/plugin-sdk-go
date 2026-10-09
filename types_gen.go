@@ -206,7 +206,10 @@ type ActiveSpace struct {
 }
 
 // Anchor is auto-generated from the OpenRPC spec.
-// Anchor position for a HUD window on screen.
+// Where a HUD window sits against what it is placed relative to: one of the
+// nine points of a three-by-three grid, a vertical position (top, centre,
+// bottom) and a horizontal one (left, centre, right). The grid is complete,
+// so the list never grows.
 type Anchor string
 
 const (
@@ -217,6 +220,8 @@ const (
 	AnchorBottomRight  Anchor = "bottom-right"
 	AnchorBottomCenter Anchor = "bottom-center"
 	AnchorCenter       Anchor = "center"
+	AnchorCenterLeft   Anchor = "center-left"
+	AnchorCenterRight  Anchor = "center-right"
 )
 
 // AppVolume is auto-generated from the OpenRPC spec.
@@ -1405,6 +1410,17 @@ type OcrRegion struct {
 	Y float64 `json:"y"`
 }
 
+// Offset is auto-generated from the OpenRPC spec.
+// A nudge from where the anchor puts a window, in pixels: `x` to the right,
+// `y` down. With `relative_to: display` and `anchor: top-left`, the
+// window's exact place on the display.
+type Offset struct {
+	// wire int32 · default 0
+	X *int `json:"x,omitempty"`
+	// wire int32 · default 0
+	Y *int `json:"y,omitempty"`
+}
+
 // OnActionStatus is auto-generated from the OpenRPC spec.
 type OnActionStatus string
 
@@ -1731,6 +1747,16 @@ type RedecodeNoise struct {
 	// wire double
 	SnrDb float64 `json:"snr_db"`
 }
+
+// RelativeTo is auto-generated from the OpenRPC spec.
+// What a HUD window is placed against.
+type RelativeTo string
+
+const (
+	RelativeToDisplay       RelativeTo = "display"
+	RelativeToFocusedWindow RelativeTo = "focused_window"
+	RelativeToPointer       RelativeTo = "pointer"
+)
 
 // ReminderItem is auto-generated from the OpenRPC spec.
 type ReminderItem struct {
@@ -3259,10 +3285,17 @@ type HUDCreateChannelRequest struct {
 	// Minimum window height in points. Defaults to 100.
 	// wire uint32 · default 100 · min 0
 	MinHeight *int `json:"min_height,omitempty"`
+	// A nudge from the anchored place, in pixels: `x` right, `y` down.
+	// default {"x":0,"y":0}
+	Offset *Offset `json:"offset,omitempty"`
 	// Pointer-dodge behavior: "none" (default) or "fade" (dodge the mouse —
 	// fade to near-transparent while the pointer is inside the frame).
 	// default "none"
 	OnPointer *OnPointer `json:"on_pointer,omitempty"`
+	// What the window is placed against: `display` (the default),
+	// `focused_window` or `pointer`.
+	// default "display"
+	RelativeTo *RelativeTo `json:"relative_to,omitempty"`
 	// Stack position among windows sharing this anchor: offsets ascend from the
 	// anchor edge, so the lowest pins at the corner (a persistent status window)
 	// and higher values stack away (transient toasts). Ties broken by channel
