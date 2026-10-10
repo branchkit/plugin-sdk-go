@@ -1655,6 +1655,18 @@ type PipelineStatusEntry struct {
 	Name      string `json:"name"`
 }
 
+// PipelineStopReason is auto-generated from the OpenRPC spec.
+// Why a pipeline stopped. Only `requested` is a stop someone asked for; the
+// others end a run its owner may want to start again.
+type PipelineStopReason string
+
+const (
+	PipelineStopReasonRequested PipelineStopReason = "requested"
+	PipelineStopReasonEnded     PipelineStopReason = "ended"
+	PipelineStopReasonError     PipelineStopReason = "error"
+	PipelineStopReasonReload    PipelineStopReason = "reload"
+)
+
 // PluginLogLevel is auto-generated from the OpenRPC spec.
 type PluginLogLevel string
 
@@ -9036,7 +9048,13 @@ type PipelineStartedEventParams struct {
 
 // PipelineStoppedEventParams is the payload of the _platform.pipeline.stopped event.
 type PipelineStoppedEventParams struct {
-	Pipeline string `json:"pipeline"`
+	// What went wrong, when `reason` is `error`. The same text
+	// `_platform.pipeline.error` carried just before.
+	Error    *string            `json:"error,omitempty"`
+	Pipeline string             `json:"pipeline"`
+	Reason   PipelineStopReason `json:"reason"`
+	// `keybind` when the pipeline's own keybind trigger stopped it.
+	Trigger *string `json:"trigger,omitempty"`
 }
 
 // PipelineTranscriptEventParams is the payload of the _platform.pipeline.transcript event.
