@@ -197,8 +197,10 @@ func TestGreetMatches(t *testing.T) {
 ```
 
 It runs the `branchkit-test-harness` binary, which ships with the BranchKit app
-(on macOS, inside `BranchKit.app/Contents/Resources`); set
-`BRANCHKIT_TEST_HARNESS` to its path anywhere else. Because the app is not yet
+beside `branchkit-cli`: inside `BranchKit.app/Contents/Resources` on macOS,
+in `/usr/bin` with the Linux packages, and in the install folder
+(`%LOCALAPPDATA%\Programs\BranchKit`) on Windows. Set
+`BRANCHKIT_TEST_HARNESS` to its path anywhere else, the AppImage included. Because the app is not yet
 publicly available, outside a BranchKit install the harness tests skip; set
 `BRANCHKIT_REQUIRE_HARNESS=1` (in CI, say) to make a missing binary a failure
 instead. `go test ./...` runs your tests; `branchkit-cli dev test .` checks the

@@ -345,8 +345,10 @@ func (h *Harness) TryCallPlugin(method string, params any, result any) error {
 
 // harnessMissing is the one message every SDK gives when the binary is
 // absent: where it ships and how to build it.
-const harnessMissing = "harness: branchkit-test-harness binary not found. It ships inside " +
-	"BranchKit.app (Contents/Resources); install the app, or set " +
+const harnessMissing = "harness: branchkit-test-harness binary not found. It ships with " +
+	"the BranchKit app beside branchkit-cli (macOS: BranchKit.app/Contents/Resources; " +
+	"Linux packages: /usr/bin; Windows: %LOCALAPPDATA%\\Programs\\BranchKit); " +
+	"install the app, or set " +
 	"BRANCHKIT_TEST_HARNESS to a harness binary. In an app-repo checkout, " +
 	"build it with `cargo build -p branchkit-test-harness` (it lands in " +
 	"target/debug/branchkit-test-harness)."
@@ -366,9 +368,10 @@ func Required() bool {
 
 // lookupHarnessBinary returns the harness binary's path, or "" when none is
 // found. BRANCHKIT_TEST_HARNESS wins; then a Cargo target directory walking up
-// from the working directory (app-repo checkouts), then the installed app, then
-// PATH. A freshly built binary is searched before the installed app's so a
-// stale installed harness never shadows the one just built.
+// from the working directory (app-repo checkouts), then the installed app
+// (macOS bundle, Windows install folder), then PATH (the Linux packages). A
+// freshly built binary is searched before the installed app's so a stale
+// installed harness never shadows the one just built.
 func lookupHarnessBinary() string {
 	if env := os.Getenv("BRANCHKIT_TEST_HARNESS"); env != "" {
 		return env
@@ -383,6 +386,11 @@ func lookupHarnessBinary() string {
 		"../../target/release/branchkit-test-harness",
 		"/Applications/BranchKit.app/Contents/Resources/branchkit-test-harness",
 		filepath.Join(os.Getenv("HOME"), "Applications/BranchKit.app/Contents/Resources/branchkit-test-harness"),
+	}
+	// The Windows install folder, which is not on PATH. (The Linux packages
+	// put the harness in /usr/bin, so PATH below finds it.)
+	if dir := os.Getenv("LOCALAPPDATA"); dir != "" {
+		candidates = append(candidates, filepath.Join(dir, "Programs", "BranchKit", "branchkit-test-harness"))
 	}
 
 	for _, c := range candidates {
