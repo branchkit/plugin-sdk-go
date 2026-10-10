@@ -390,7 +390,7 @@ func lookupHarnessBinary() string {
 	// The Windows install folder, which is not on PATH. (The Linux packages
 	// put the harness in /usr/bin, so PATH below finds it.)
 	if dir := os.Getenv("LOCALAPPDATA"); dir != "" {
-		candidates = append(candidates, filepath.Join(dir, "Programs", "BranchKit", "branchkit-test-harness"))
+		candidates = append(candidates, filepath.Join(dir, "Programs", "BranchKit", "branchkit-test-harness")) // build-identity: allow — the Windows install folder, not app data
 	}
 
 	for _, c := range candidates {
