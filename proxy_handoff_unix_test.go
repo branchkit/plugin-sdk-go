@@ -39,10 +39,25 @@ func TestProxyOverHandoffChannel(t *testing.T) {
 	broker := brokerConn.(*net.UnixConn)
 	t.Cleanup(func() { broker.Close() })
 	go func() {
+		// The broker keeps its copy of the last passed socket until the
+		// client asks again (so it has received that one) or the channel
+		// closes. Closing it straight after the send leaves the message the
+		// socket's only reference while it waits in the channel, and macOS
+		// then sometimes delivers the socket already shut for reading.
+		var held *os.File
+		defer func() {
+			if held != nil {
+				held.Close()
+			}
+		}()
 		ask := make([]byte, 1)
 		for {
 			if _, err := broker.Read(ask); err != nil {
 				return
+			}
+			if held != nil {
+				held.Close()
+				held = nil
 			}
 			up, err := net.Dial("unix", sock)
 			if err != nil {
@@ -51,7 +66,7 @@ func TestProxyOverHandoffChannel(t *testing.T) {
 			f, _ := up.(*net.UnixConn).File()
 			up.Close()
 			broker.WriteMsgUnix([]byte{'c'}, syscall.UnixRights(int(f.Fd())), nil)
-			f.Close()
+			held = f
 		}
 	}()
 
