@@ -37,6 +37,7 @@ const (
 	LogEventNativeWindowSkipped      = "native.window_skipped"
 	LogEventNativeWorldPollerEvent   = "native.world_poller_event"
 	LogEventOperationCompleted       = "operation.completed"
+	LogEventOperationLatency         = "operation.latency"
 	LogEventPluginAppPreference      = "plugin.app_preference"
 	LogEventPluginDbusCall           = "plugin.dbus_call"
 	LogEventPluginDegraded           = "plugin.degraded"
@@ -61,6 +62,7 @@ const (
 	LogEventRpcOutboundNotify        = "rpc.outbound_notify"
 	LogEventSessionControlMessage    = "session.control_message"
 	LogEventStageDiagnostic          = "stage.diagnostic"
+	LogEventStageRequestCompleted    = "stage.request_completed"
 	LogEventStateRetentionSwept      = "state.retention_swept"
 	LogEventStateTagCleared          = "state.tag_cleared"
 	LogEventStateTagLifecycleClear   = "state.tag_lifecycle_clear"
@@ -115,6 +117,7 @@ var LogEventRegistry = map[string]LogEventMeta{
 	"native.window_skipped":       {Name: "native.window_skipped", Summary: "World poller skipped a non-standard window (debug-level).", Since: "0.1.0", Source: "native", Severity: "debug", Redaction: "none"},
 	"native.world_poller_event":   {Name: "native.world_poller_event", Summary: "World poller lifecycle event (started, seeded, batch processed, idle).", Since: "0.1.0", Source: "native", Severity: "debug", Redaction: "none"},
 	"operation.completed":         {Name: "operation.completed", Summary: "An operation handler completed execution.", Since: "0.1.0", Source: "dispatch", Severity: "debug", Redaction: "none"},
+	"operation.latency":           {Name: "operation.latency", Summary: "An operation on the latency path (typing text, reading the caret, resolving a phrase) completed; its duration at Info, correlated to the caller's chain.", Since: "0.2.0", Source: "dispatch", Severity: "info", Redaction: "none"},
 	"plugin.app_preference":       {Name: "plugin.app_preference", Summary: "A plugin read or changed (or was refused) a setting in another app's settings domain through native.read_app_preference / native.write_app_preference: allowed, failed, denied (not declared, or declared for reading only), off (switched off by the user) or forbidden (no grant can reach it). The domain and key only, never the value. Audit-eligible.", Since: "0.2.0", Source: "plugins", Severity: "info", Redaction: "full"},
 	"plugin.dbus_call":            {Name: "plugin.dbus_call", Summary: "A plugin called (or was refused) a D-Bus method through native.dbus_call: allowed, failed, denied (not declared), off (switched off by the user) or forbidden (no grant can reach it). The method and argument signature only. Audit-eligible.", Since: "0.2.0", Source: "plugins", Severity: "info", Redaction: "full"},
 	"plugin.degraded":             {Name: "plugin.degraded", Summary: "A plugin is running but not fully working — its RPC channel hit the consecutive-timeout threshold (reason absent), it stopped reading its stdin (the platform's reason), or it reported the fault itself via plugin.report_health (its own reason).", Since: "0.1.0", Source: "plugins", Severity: "warn", Redaction: "full"},
@@ -139,6 +142,7 @@ var LogEventRegistry = map[string]LogEventMeta{
 	"rpc.outbound_notify":         {Name: "rpc.outbound_notify", Summary: "An actuator-to-plugin RPC notification (fire-and-forget) was sent.", Since: "0.1.0", Source: "plugins", Severity: "debug", Redaction: "none"},
 	"session.control_message":     {Name: "session.control_message", Summary: "A control message was forwarded to the Swift host (HUD show, mode reset, etc.).", Since: "0.1.0", Source: "dispatch", Severity: "info", Redaction: "full"},
 	"stage.diagnostic":            {Name: "stage.diagnostic", Summary: "A pipeline stage emitted a diagnostic line (e.g. a [PERF] latency measurement); correlated to the command via tr_ derived from the stage's session id.", Since: "0.2.0", Source: "generic", Severity: "info", Redaction: "full"},
+	"stage.request_completed":     {Name: "stage.request_completed", Summary: "A `stages.request` round trip completed: which stage, how long, whether it failed or timed out. Correlated to the caller's chain.", Since: "0.2.0", Source: "dispatch", Severity: "info", Redaction: "none"},
 	"state.retention_swept":       {Name: "state.retention_swept", Summary: "Retention sweep removed expired records from a collection.", Since: "0.1.0", Source: "state", Severity: "info", Redaction: "none"},
 	"state.tag_cleared":           {Name: "state.tag_cleared", Summary: "One or more tags were cleared via a gate-shape collection mutation.", Since: "0.1.0", Source: "state", Severity: "info", Redaction: "none"},
 	"state.tag_lifecycle_clear":   {Name: "state.tag_lifecycle_clear", Summary: "Lifecycle policy cleared transient tags after a triggering event.", Since: "0.1.0", Source: "state", Severity: "debug", Redaction: "none"},
