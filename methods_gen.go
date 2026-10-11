@@ -1091,6 +1091,16 @@ func (p *Plugin) NativeAxSetAttribute(req NativeAxSetAttributeRequest) (bool, er
 	return result.Result, err
 }
 
+// NativeAxTargets get the controls a person can act on in an application's focused window: role, name, action and bounds of each, without field values (a password field's name is withheld). For choosing a control to act on by voice, gaze or switch.
+func (p *Plugin) NativeAxTargets(req NativeAxTargetsRequest) (*NativeAxTargetsResponse, error) {
+	var result NativeAxTargetsResponse
+	err := p.Call(MethodNativeAxTargets, &req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // NativeAxUnobserve stop observing accessibility changes. A plugin can end only its own subscriptions.
 func (p *Plugin) NativeAxUnobserve(req NativeAxUnobserveRequest) (bool, error) {
 	var result struct {

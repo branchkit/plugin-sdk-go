@@ -127,6 +127,7 @@ const (
 	MethodNativeAxPerformAction               = "native.ax_perform_action"                 // since 0.1.0
 	MethodNativeAxReadAttributes              = "native.ax_read_attributes"                // since 0.1.0
 	MethodNativeAxSetAttribute                = "native.ax_set_attribute"                  // since 0.1.0
+	MethodNativeAxTargets                     = "native.ax_targets"                        // since 0.2.0
 	MethodNativeAxUnobserve                   = "native.ax_unobserve"                      // since 0.1.0
 	MethodNativeBackgroundItems               = "native.background_items"                  // since 0.2.0
 	MethodNativeBatchIsTileable               = "native.batch_is_tileable"                 // since 0.1.0

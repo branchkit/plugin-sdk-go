@@ -255,6 +255,25 @@ type AudioDevice struct {
 	UID             string `json:"uid"`
 }
 
+// AxTarget is auto-generated from the OpenRPC spec.
+// One control a person can act on.
+type AxTarget struct {
+	// The action that acts on it: `press`, `toggle`, `focus`, `expand` or
+	// `show_menu`.
+	Action string `json:"action"`
+	// Where it is on screen, in the coordinates window frames use.
+	Bounds AccessibleBounds `json:"bounds"`
+	// The element's handle, for `native.ax_perform_action`.
+	ID string `json:"id"`
+	// What it is called: its name, else its description. Absent when it
+	// has neither, and always absent for a protected (password) field.
+	Name *string `json:"name,omitempty"`
+	// A password field: its name is withheld.
+	Protected bool `json:"protected"`
+	// Its ARIA role (`button`, `link`, `checkbox`, `textbox`, ...).
+	Role string `json:"role"`
+}
+
 // BackgroundItem is auto-generated from the OpenRPC spec.
 // A program that runs in the background or starts at login
 // (`native.background_items`).
@@ -3958,6 +3977,37 @@ type NativeAxSetAttributeRequest struct {
 // NativeAxSetAttributeResponse is the response type for native.ax_set_attribute.
 type NativeAxSetAttributeResponse struct {
 	Result bool `json:"result"`
+}
+
+// NativeAxTargetsRequest is the request type for native.ax_targets.
+type NativeAxTargetsRequest struct {
+	// The most elements to read (default 1500, at most 3000).
+	// wire uint32 · default null · min 0
+	Budget *int `json:"budget,omitempty"`
+	// The most targets to return (default 200).
+	// wire uint32 · default null · min 0
+	Limit *int `json:"limit,omitempty"`
+	// The application to read; the one in front when absent.
+	// wire int32 · default null
+	Pid *int `json:"pid,omitempty"`
+	// Only controls whose centre lies inside this rectangle (a gaze point
+	// and its surroundings); the whole focused window when absent.
+	Region *AccessibleBounds `json:"region,omitempty"`
+}
+
+// NativeAxTargetsResponse is the response type for native.ax_targets.
+type NativeAxTargetsResponse struct {
+	// The application whose window was read.
+	// wire int32
+	Pid int `json:"pid"`
+	// The controls, in walk order: the window's own controls breadth
+	// first, web content (a browser page, an Electron app's document)
+	// after them.
+	Targets []AxTarget `json:"targets"`
+	// A limit stopped the walk: the list is not the whole window.
+	Truncated bool `json:"truncated"`
+	// The window's own bounds, when it reports them.
+	Window *AccessibleBounds `json:"window,omitempty"`
 }
 
 // NativeAxUnobserveRequest is the request type for native.ax_unobserve.
