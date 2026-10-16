@@ -18,6 +18,16 @@ func (p *Plugin) ActionsList() (*ActionsListResponse, error) {
 	return &result, nil
 }
 
+// ActionsPush declare action types at run time, beside the manifest's: replaces what this plugin pushed (all of it, or one group).
+func (p *Plugin) ActionsPush(req ActionsPushRequest) (*ActionsPushResponse, error) {
+	var result ActionsPushResponse
+	err := p.Call(MethodActionsPush, &req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // ArtifactDelete delete an installed artifact from the caller's own artifact namespace (ref: <plugin>/<artifact>).
 func (p *Plugin) ArtifactDelete(req ArtifactDeleteRequest) error {
 	return p.Call(MethodArtifactDelete, &req, nil)

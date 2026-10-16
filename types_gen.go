@@ -117,7 +117,7 @@ type ActionFieldSchema struct {
 	// ("Auto-correct when Whisper outputs entirely in UPPERCASE"), and a
 	// field described here is described identically in every surface that
 	// renders it, including your own.
-	Description string `json:"description"`
+	Description *string `json:"description,omitempty"`
 	// Optional display role for generic UI rendering. See `FieldDisplay`.
 	// Currently consumed by the Collections tab's log-kind timeline view
 	// to pick which fields appear in the row summary.
@@ -133,13 +133,13 @@ type ActionFieldSchema struct {
 	// warning for every unknown role it degraded.
 	Display *FieldDisplay `json:"display,omitempty"`
 	// Allowed string values for `field_type: "enum"`. Ignored otherwise.
-	EnumValues []string `json:"enum_values"`
+	EnumValues []string `json:"enum_values,omitempty"`
 	// Declared type for this field. See `FieldType`.
 	// default "string"
-	FieldType FieldType `json:"field_type"`
+	FieldType *FieldType `json:"field_type,omitempty"`
 	// Nested field list for `field_type: "object"` (recursive). Ignored
 	// for other field types.
-	Fields []ActionFieldSchema `json:"fields"`
+	Fields []ActionFieldSchema `json:"fields,omitempty"`
 	// `secret_ref` only: the ONE host the stored credential may be sent
 	// to. A credential saved from Settings is bound to this, and the binding
 	// comes from here — from the manifest the user consented to — never
@@ -150,12 +150,12 @@ type ActionFieldSchema struct {
 	Key string `json:"key"`
 	// Human-readable label for UI rendering.
 	// default ""
-	Label string `json:"label"`
+	Label *string `json:"label,omitempty"`
 	// Placeholder text for input fields.
 	Placeholder *string `json:"placeholder,omitempty"`
 	// Whether this field is required.
 	// default false
-	Required bool `json:"required"`
+	Required *bool `json:"required,omitempty"`
 }
 
 // ActionTypeSchema is auto-generated from the OpenRPC spec.
@@ -172,17 +172,17 @@ type ActionTypeSchema struct {
 	// to the claim.
 	Consequence *Consequence `json:"consequence,omitempty"`
 	// Ordered list of fields for this action type.
-	Fields []ActionFieldSchema `json:"fields"`
+	Fields []ActionFieldSchema `json:"fields,omitempty"`
 	// Human-readable label (e.g. "Click Element", "Snap Window").
 	// default ""
-	Label string `json:"label"`
+	Label *string `json:"label,omitempty"`
 	// Supported interaction modes: "tap" (single press), "hold" (start/stop via phase),
 	// and/or "toggle" (start/stop cycle). Defaults to ["tap"] if omitted.
 	// Modes are declared, not inferred (modelled on QMK keycode types and
 	// Stream Deck action manifests): a "hold" action handles press/release
 	// itself via `phase`, so a peripheral UI should not ask the user to pick
 	// a separate release action for it.
-	Modes []string `json:"modes"`
+	Modes []string `json:"modes,omitempty"`
 	// Platform operations this action cannot work without (e.g.
 	// `["native.toggle_fullscreen"]`). Where the machine refuses any of
 	// them — the OS, the desktop session or the host cannot provide it —
@@ -191,7 +191,7 @@ type ActionTypeSchema struct {
 	// grammar so the utterance cannot land on a different command. List
 	// only what the action has no way around; an operation it merely
 	// prefers belongs in the handler's own `Supports` check.
-	Uses []string `json:"uses"`
+	Uses []string `json:"uses,omitempty"`
 }
 
 // ActiveSpace is auto-generated from the OpenRPC spec.
@@ -2375,6 +2375,31 @@ type WorldModel struct {
 // ActionsListResponse is the response type for actions.list.
 type ActionsListResponse struct {
 	Actions map[string]ActionTypeSchema `json:"actions"`
+}
+
+// ActionsPushRequest is the request type for actions.push.
+type ActionsPushRequest struct {
+	// Action types by name, without the plugin's `action_prefix`
+	// (`linear.update_issue` becomes `<prefix>.linear.update_issue`). The
+	// same shape as the manifest's `action_types`. Replaces what this
+	// plugin pushed before: all of it, or one `group`. An empty map clears.
+	// A name the manifest declares is refused: a pushed action cannot
+	// redefine one the person consented to at install.
+	Actions map[string]ActionTypeSchema `json:"actions"`
+	// Replace only this group of your pushed actions (one per connected
+	// server, say), leaving the others. Omit to replace the whole set.
+	Group *string `json:"group,omitempty"`
+}
+
+// ActionsPushResponse is the response type for actions.push.
+type ActionsPushResponse struct {
+	// How many action types this plugin now holds from pushes, all groups.
+	// wire uint · min 0
+	Count int `json:"count"`
+	// Problems that do not refuse the push, worded as manifest load
+	// words them (an operation in `uses` missing from
+	// `requires.capabilities.uses`, for instance).
+	Warnings []string `json:"warnings,omitempty"`
 }
 
 // ArtifactDeleteRequest is the request type for artifact.delete.

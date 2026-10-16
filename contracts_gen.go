@@ -9,6 +9,7 @@ const APIVersion = "0.2.0"
 // RPC method names: plugin → platform (use with plugin.Call()).
 const (
 	MethodActionsList                         = "actions.list"                             // since 0.1.0
+	MethodActionsPush                         = "actions.push"                             // since 0.2.0
 	MethodArtifactDelete                      = "artifact.delete"                          // since 0.1.0
 	MethodBindingsPropose                     = "bindings.propose"                         // since 0.1.0
 	MethodBindingsReport                      = "bindings.report"                          // since 0.1.0
