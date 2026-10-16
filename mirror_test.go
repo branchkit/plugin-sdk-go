@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-// notify writes an unsolicited actuator→plugin notification into the
+// notify writes an unsolicited platform→plugin notification into the
 // plugin's stdin stream.
 func notify(t *testing.T, w io.Writer, method string, params any) {
 	t.Helper()
@@ -282,7 +282,7 @@ func TestMirrorEventDrivenRefresh(t *testing.T) {
 	})
 
 	go p.Run()
-	mockActuator(t, w, r, responder)
+	mockPlatform(t, w, r, responder)
 
 	snapshot := func() string {
 		var out map[string]string

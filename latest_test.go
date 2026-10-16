@@ -81,7 +81,7 @@ func TestNotifyQueueKeepsEveryNotificationAndSeparatesSenders(t *testing.T) {
 	}
 }
 
-// The envelope field decodes from the wire the actuator writes.
+// The envelope field decodes from the wire the platform writes.
 func TestDeliveryDecodesFromTheEnvelope(t *testing.T) {
 	var m rpcMessage
 	line := `{"jsonrpc":"2.0","method":"ext.acme.gaze_point","params":{},"source":"acme.gaze","delivery":"latest"}`

@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// The one route the actuator serves for settings-UI → plugin method calls.
+// The one route the platform serves for settings-UI → plugin method calls.
 // Registered in branchkit/src/api/router.rs as
 // `/v1/plugins/{plugin_id}/methods/{*method_path}`. Hand-writing this shape in
 // a templ literal is how four plugins ended up with dead settings tabs: two
@@ -16,10 +16,10 @@ import (
 const methodRoutePrefix = "/v1/plugins/"
 
 // MethodURL returns the settings-UI route that invokes `method` on this
-// plugin. The plugin id comes from BRANCHKIT_PLUGIN_ID (set by the actuator
+// plugin. The plugin id comes from BRANCHKIT_PLUGIN_ID (set by the platform
 // when it spawns the process), so a renamed plugin cannot desync its own URLs.
 //
-// The actuator normalizes `-` and `/` to `_` before dispatch, so
+// The platform normalizes `-` and `/` to `_` before dispatch, so
 // MethodURL("set-gap") and MethodURL("set_gap") both reach the handler
 // registered as `set_gap`.
 func MethodURL(method string) string {

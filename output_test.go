@@ -14,7 +14,7 @@ func mustJSON(t *testing.T, v any) string {
 	return string(b)
 }
 
-// The helpers must marshal to exactly the wire shape the actuator validates
+// The helpers must marshal to exactly the wire shape the platform validates
 // as one-of-say/dispatch, with `params` absent (not null) when not given.
 func TestSayActionShape(t *testing.T) {
 	if got := mustJSON(t, SayAction("snap left")); got != `{"say":"snap left"}` {
@@ -43,7 +43,7 @@ func TestItemWithoutActionOmitsTheField(t *testing.T) {
 }
 
 // The generated wrapper carries a whole document untouched and decodes the
-// actuator's {ok, generation} answer.
+// platform's {ok, generation} answer.
 func TestOutputStateWrapperCarriesTheDocument(t *testing.T) {
 	runPluginCall(t,
 		func(method string, params json.RawMessage) (any, string) {

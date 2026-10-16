@@ -16,7 +16,7 @@ func TestMatchesTopic(t *testing.T) {
 		{"scripts.*.charged", "scripts.headphones.charged", true},
 		{"*.headphones.charged", "scripts.headphones.charged", true},
 		// `*` is ONE segment. A pattern that swallowed trailing segments
-		// would route events the actuator's own gate never delivered.
+		// would route events the platform's own gate never delivered.
 		{"scripts.*", "scripts.headphones.charged", false},
 		{"scripts.*.*", "scripts.headphones", false},
 		{"scripts.*.*", "browser.tab.opened", false},

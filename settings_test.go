@@ -43,7 +43,7 @@ func settingsResponder(t *testing.T, store map[string]any, sawApply *bool) func(
 }
 
 // TestSetUserObservableToImmediateGet is the race this API exists to close:
-// after SetUser returns, the very next Get (e.g. the re-render the actuator
+// after SetUser returns, the very next Get (e.g. the re-render the platform
 // triggers on method return) must see the write without waiting for
 // collection.updated.
 func TestSetUserObservableToImmediateGet(t *testing.T) {

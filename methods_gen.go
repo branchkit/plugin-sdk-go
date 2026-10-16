@@ -5933,7 +5933,7 @@ func (p *Plugin) RecognitionBiasSet(req RecognitionBiasSetRequest) (*Recognition
 	return &result, nil
 }
 
-// RecognitionRedecode re-decode the caller's own captured audio through a registered recognizer stage against the LIVE grammar (the fragility ladder) — the actuator runs it because the grammar is platform state and plugins cannot exec.
+// RecognitionRedecode re-decode the caller's own captured audio through a registered recognizer stage against the LIVE grammar (the fragility ladder) — the platform runs it because the grammar is platform state and plugins cannot exec.
 func (p *Plugin) RecognitionRedecode(req RecognitionRedecodeRequest) (*RecognitionRedecodeResponse, error) {
 	var result RecognitionRedecodeResponse
 	err := p.Call(MethodRecognitionRedecode, &req, &result)
@@ -6115,7 +6115,7 @@ func (p *Plugin) SystemNotify(req SystemNotifyRequest) error {
 	return p.Call(MethodSystemNotify, &req, nil)
 }
 
-// SystemRunShell start a shell command via /bin/bash -c, run by the actuator outside any plugin sandbox (security-sensitive; not on Windows).
+// SystemRunShell start a shell command via /bin/bash -c, run by the platform outside any plugin sandbox (security-sensitive; not on Windows).
 func (p *Plugin) SystemRunShell(req SystemRunShellRequest) error {
 	return p.Call(MethodSystemRunShell, &req, nil)
 }

@@ -7,7 +7,7 @@ import (
 )
 
 // marshalSpec normalizes + marshals a spec the way PushCommandSpecs does, so
-// the test asserts the exact wire bytes the actuator receives.
+// the test asserts the exact wire bytes the platform receives.
 func marshalSpec(t *testing.T, spec CommandSpec) map[string]any {
 	t.Helper()
 	b, err := json.Marshal(spec)
@@ -98,10 +98,10 @@ func TestCaptureDefaultNameAndText(t *testing.T) {
 
 func TestUnsetTagFieldsAreOmittedNeverNull(t *testing.T) {
 	// A spec built without tags must not put `null` on the wire for its
-	// slice fields — the actuator's parser rejects null. The generated
+	// slice fields — the platform's parser rejects null. The generated
 	// CommandSpec carries `omitempty` on every field the schema marks
 	// optional (fidelity layer 2), so a nil slice is simply absent and the
-	// actuator applies its default. The SDK used to force `[]` by hand.
+	// platform applies its default. The SDK used to force `[]` by hand.
 	spec := Command(Word("ping")).Action("noop").Build()
 	b, _ := json.Marshal(spec)
 	s := string(b)

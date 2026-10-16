@@ -28,7 +28,7 @@ func TestListenersReadTheEventOrigin(t *testing.T) {
 		OnBehalfOf: "headphones.lua",
 	})
 	// A later event from another sender, and one carrying no origin at all
-	// (an older actuator, or a notification that is not a bus event): each
+	// (an older platform, or a notification that is not a bus event): each
 	// listener sees ITS delivery's origin, never a previous one's.
 	p.handleNotification(rpcMessage{Method: "scripts.headphones.charged", Source: "impostor"})
 	p.handleNotification(rpcMessage{Method: "scripts.headphones.charged"})
@@ -76,14 +76,14 @@ func TestEventOriginDoesNotCrossAGoroutine(t *testing.T) {
 	}
 }
 
-// End to end through the read loop: the envelope field the actuator writes is
+// End to end through the read loop: the envelope field the platform writes is
 // the one the listener reads.
 func TestEventOriginArrivesOffTheWire(t *testing.T) {
-	p, actuatorW, actuatorR := newTestPluginT(t)
+	p, platformW, platformR := newTestPluginT(t)
 	// Drain what the plugin writes (plugin.initialized): the pipe is
 	// unbuffered, so an undrained write would stall Run.
 	go func() {
-		for actuatorR.Scan() {
+		for platformR.Scan() {
 		}
 	}()
 
@@ -96,13 +96,13 @@ func TestEventOriginArrivesOffTheWire(t *testing.T) {
 	wg.Add(1)
 	go func() { defer wg.Done(); p.Run() }()
 
-	actuatorW.Write([]byte(`{"jsonrpc":"2.0","method":"emitter.thing","params":{},` +
+	platformW.Write([]byte(`{"jsonrpc":"2.0","method":"emitter.thing","params":{},` +
 		`"source":"emitter","on_behalf_of":"lamp.py"}` + "\n"))
 
 	if got := <-seen; got != (EventOrigin{Source: "emitter", OnBehalfOf: "lamp.py"}) {
 		t.Fatalf("CurrentEventOrigin() = %+v", got)
 	}
 
-	actuatorW.(io.Closer).Close()
+	platformW.(io.Closer).Close()
 	wg.Wait()
 }

@@ -13,7 +13,7 @@ import (
 // GetCompacted for the folded current state.
 //
 // The generated CollectionFetchResponse.Record is *CollectionRecord — the
-// actuator declares it Option<CollectionRecord>, and since fidelity layer 1
+// platform declares it Option<CollectionRecord>, and since fidelity layer 1
 // (2026-09-18) a nullable ref keeps its type. Absent and null both arrive
 // as nil; this wrapper exists for the (name, id) argument order and the
 // (nil, nil) contract, not to decode anything.

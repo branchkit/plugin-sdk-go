@@ -33,7 +33,7 @@ func sendAction(t *testing.T, w io.Writer, r *bufio.Scanner, action string, para
 }
 
 func TestHandleActionDispatchesByAction(t *testing.T) {
-	p, actuatorW, actuatorR := newTestPluginT(t)
+	p, platformW, platformR := newTestPluginT(t)
 
 	var snapCalls atomic.Int32
 	var focusCalls atomic.Int32
@@ -57,7 +57,7 @@ func TestHandleActionDispatchesByAction(t *testing.T) {
 
 	go p.Run()
 
-	resp := sendAction(t, actuatorW, actuatorR, "foo.snap", map[string]any{"position": "left"}, nil)
+	resp := sendAction(t, platformW, platformR, "foo.snap", map[string]any{"position": "left"}, nil)
 	if resp.Error != nil {
 		t.Fatalf("unexpected error: %v", resp.Error)
 	}
@@ -78,11 +78,11 @@ func TestHandleActionDispatchesByAction(t *testing.T) {
 		t.Fatalf("expected focus not called, got %d", focusCalls.Load())
 	}
 
-	actuatorW.(io.Closer).Close()
+	platformW.(io.Closer).Close()
 }
 
 func TestHandleActionReturnsNotHandledForUnknown(t *testing.T) {
-	p, actuatorW, actuatorR := newTestPluginT(t)
+	p, platformW, platformR := newTestPluginT(t)
 
 	p.HandleAction("foo.snap", func(req *OnActionRequest) (any, error) {
 		return nil, nil
@@ -90,7 +90,7 @@ func TestHandleActionReturnsNotHandledForUnknown(t *testing.T) {
 
 	go p.Run()
 
-	resp := sendAction(t, actuatorW, actuatorR, "foo.unknown", nil, nil)
+	resp := sendAction(t, platformW, platformR, "foo.unknown", nil, nil)
 	if resp.Error != nil {
 		t.Fatalf("unexpected error: %v", resp.Error)
 	}
@@ -102,7 +102,7 @@ func TestHandleActionReturnsNotHandledForUnknown(t *testing.T) {
 		t.Fatalf("expected not_handled, got %s", got.Status)
 	}
 
-	actuatorW.(io.Closer).Close()
+	platformW.(io.Closer).Close()
 }
 
 // Mutual exclusion is enforced regardless of registration order — both Handle
@@ -140,7 +140,7 @@ func TestHandleOnActionPanicsAfterHandleAction(t *testing.T) {
 }
 
 func TestHandleActionTypedHelper(t *testing.T) {
-	p, actuatorW, actuatorR := newTestPluginT(t)
+	p, platformW, platformR := newTestPluginT(t)
 
 	type SnapParams struct {
 		Position string `json:"position"`
@@ -154,7 +154,7 @@ func TestHandleActionTypedHelper(t *testing.T) {
 
 	go p.Run()
 
-	resp := sendAction(t, actuatorW, actuatorR, "foo.snap", map[string]any{"position": "right"}, nil)
+	resp := sendAction(t, platformW, platformR, "foo.snap", map[string]any{"position": "right"}, nil)
 	if resp.Error != nil {
 		t.Fatalf("unexpected error: %v", resp.Error)
 	}
@@ -162,11 +162,11 @@ func TestHandleActionTypedHelper(t *testing.T) {
 		t.Fatalf("expected position=right, got %q", got)
 	}
 
-	actuatorW.(io.Closer).Close()
+	platformW.(io.Closer).Close()
 }
 
 func TestHandleActionPropagatesActiveAppContext(t *testing.T) {
-	p, actuatorW, actuatorR := newTestPluginT(t)
+	p, platformW, platformR := newTestPluginT(t)
 
 	var seenApp *string
 	p.HandleAction("foo.snap", func(req *OnActionRequest) (any, error) {
@@ -177,12 +177,12 @@ func TestHandleActionPropagatesActiveAppContext(t *testing.T) {
 	go p.Run()
 
 	app := "com.apple.Safari"
-	sendAction(t, actuatorW, actuatorR, "foo.snap", nil, &app)
+	sendAction(t, platformW, platformR, "foo.snap", nil, &app)
 	if seenApp == nil || *seenApp != "com.apple.Safari" {
 		t.Fatalf("expected active_app=com.apple.Safari, got %v", seenApp)
 	}
 
-	actuatorW.(io.Closer).Close()
+	platformW.(io.Closer).Close()
 }
 
 func TestRegisteredActionTypes(t *testing.T) {

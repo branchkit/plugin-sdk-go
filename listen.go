@@ -16,14 +16,14 @@ import (
 )
 
 // Listener accepts inbound HTTP connections from an external service
-// and provides access to the Plugin for forwarding data to the actuator.
+// and provides access to the Plugin for forwarding data to the platform.
 //
 // Usage:
 //
 //	plugin := branchkit.NewPlugin()
 //	listener := branchkit.ListenLocal(plugin)
 //	listener.HandleFunc("POST /push", func(w http.ResponseWriter, r *http.Request) {
-//	    // use plugin.Call() to forward data to actuator
+//	    // use plugin.Call() to forward data to platform
 //	})
 //	go listener.Serve()
 //	plugin.Run()
@@ -39,7 +39,7 @@ type Listener struct {
 // It generates a pairing token and writes a connect.json discovery file to
 // BRANCHKIT_PLUGIN_DIR so the external service can find the port and token.
 //
-// When the actuator granted listener sockets (manifest `sockets.listen`,
+// When the platform granted listener sockets (manifest `sockets.listen`,
 // delivered per the LISTEN_FDS convention at fds 3+), the FIRST granted
 // listener is used instead of self-binding. This is not an optimization:
 // inside the Linux sandbox the plugin runs in an empty network namespace,
@@ -54,7 +54,7 @@ func ListenLocal(plugin *Plugin) (*Listener, error) {
 		return nil, fmt.Errorf("inherited listener: %w", err)
 	}
 	if ln == nil {
-		// No fd (Windows): the actuator may instead have bound the listener
+		// No fd (Windows): the platform may instead have bound the listener
 		// outside the sandbox and be relaying to us — see relay.go.
 		ln, err = relayListenerFromEnv(0)
 		if err != nil {
@@ -116,9 +116,9 @@ func (l *Listener) HandleFunc(pattern string, handler http.HandlerFunc) {
 	l.mux.HandleFunc(pattern, handler)
 }
 
-// InheritedListenerCount reports how many loopback listeners the actuator
+// InheritedListenerCount reports how many loopback listeners the platform
 // granted (manifest `sockets.listen`, delivered per the LISTEN_FDS convention
-// at fds 3+). 0 when none were granted — old actuators, unsandboxed dev runs,
+// at fds 3+). 0 when none were granted — old platforms, unsandboxed dev runs,
 // or no manifest declaration.
 //
 // Cheap and side-effect-free: unlike InheritedListeners it opens nothing, so
@@ -133,16 +133,16 @@ func InheritedListenerCount() int {
 	return n
 }
 
-// InheritedListeners returns every actuator-granted loopback listener
+// InheritedListeners returns every platform-granted loopback listener
 // declared in the manifest's `sockets.listen`, in declaration order
 // (fd 3 = first entry). Returns an empty slice when none were granted —
-// e.g. old actuators, unsandboxed dev runs, or no manifest declaration.
+// e.g. old platforms, unsandboxed dev runs, or no manifest declaration.
 // Resolved ports are also published in BRANCHKIT_LISTEN_PORTS as
 // comma-separated `id=port` pairs, but Addr() on the returned listeners
 // is the simpler source of truth.
 //
 // Unlike systemd's convention, LISTEN_PID is deliberately NOT set or
-// checked: the actuator cannot know the child pid before spawn, and
+// checked: the platform cannot know the child pid before spawn, and
 // plugin identity is already established by fd ownership.
 func InheritedListeners() ([]net.Listener, error) {
 	n, err := strconv.Atoi(os.Getenv("LISTEN_FDS"))
@@ -166,8 +166,8 @@ func InheritedListeners() ([]net.Listener, error) {
 	return listeners, nil
 }
 
-// GrantedListeners returns every listener the actuator granted for the
-// manifest's `sockets.listen`, in declaration order, however the actuator
+// GrantedListeners returns every listener the platform granted for the
+// manifest's `sockets.listen`, in declaration order, however the platform
 // delivered them: as inherited fds (Linux, macOS — InheritedListeners) or
 // through its relay (Windows — relay.go, when BRANCHKIT_LISTEN_RELAY is
 // set). Empty when none were granted. This is what a plugin that runs its
@@ -202,7 +202,7 @@ func GrantedListeners() ([]net.Listener, error) {
 }
 
 // inheritedListener returns the i-th granted listener, or (nil, nil) when
-// the actuator granted none (callers then self-bind).
+// the platform granted none (callers then self-bind).
 func inheritedListener(i int) (net.Listener, error) {
 	listeners, err := InheritedListeners()
 	if err != nil {

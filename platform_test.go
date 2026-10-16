@@ -20,7 +20,7 @@ func TestOnReadyPlatformIsKeptAndAnswersSupports(t *testing.T) {
 	}
 }
 
-func TestAnOldActuatorsBareOnReadyLeavesNoProfile(t *testing.T) {
+func TestAnOldPlatformsBareOnReadyLeavesNoProfile(t *testing.T) {
 	p := NewDetachedPlugin()
 	p.takePlatform([]byte(`{}`))
 	p.takePlatform([]byte(`not json`))

@@ -19,8 +19,8 @@ func (p *Plugin) Trace(tag string, data any) { p.logAtLevel("trace", tag, data) 
 // chatter. Levels exist so Debug keeps meaning verbose-only.
 //
 // Use branchkit.Logf instead for lines that describe coordination with the
-// actuator or other plugins — those benefit from interleaving with the
-// actuator's own match/dispatch/route lines in branchkit.log.
+// platform or other plugins — those benefit from interleaving with the
+// platform's own match/dispatch/route lines in branchkit.log.
 //
 // Best-effort. Returns no error: if the call fails the line is dropped,
 // matching how stdio stderr writes from a plugin are handled. tag may
@@ -35,7 +35,7 @@ func (p *Plugin) Info(tag string, data any) { p.logAtLevel("info", tag, data) }
 
 // Warn writes a warning line. Goes to BOTH the per-plugin log and
 // branchkit.log (cross-posted via the `plugin.diagnostic` event) so
-// plugin-level warnings interleave with the actuator's view of dispatch
+// plugin-level warnings interleave with the platform's view of dispatch
 // and coordination. Use for recoverable problems: "fingerprint stale,
 // falling back to selector", "element-id mismatch, re-scanning".
 func (p *Plugin) Warn(tag string, data any) { p.logAtLevel("warn", tag, data) }

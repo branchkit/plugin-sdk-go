@@ -2,7 +2,7 @@
 // Run: just contracts
 //
 // BranchKit observability bus — closed log-event vocabulary.
-// Registered in actuator code; extended only by a platform release.
+// Registered in platform code; extended only by a platform release.
 
 package branchkit
 
@@ -122,7 +122,7 @@ var LogEventRegistry = map[string]LogEventMeta{
 	"plugin.dbus_call":            {Name: "plugin.dbus_call", Summary: "A plugin called (or was refused) a D-Bus method through native.dbus_call: allowed, failed, denied (not declared), off (switched off by the user) or forbidden (no grant can reach it). The method and argument signature only. Audit-eligible.", Since: "0.2.0", Source: "plugins", Severity: "info", Redaction: "full"},
 	"plugin.degraded":             {Name: "plugin.degraded", Summary: "A plugin is running but not fully working — its RPC channel hit the consecutive-timeout threshold (reason absent), it stopped reading its stdin (the platform's reason), or it reported the fault itself via plugin.report_health (its own reason).", Since: "0.1.0", Source: "plugins", Severity: "warn", Redaction: "full"},
 	"plugin.device_access":        {Name: "plugin.device_access", Summary: "A plugin drove (or was refused) a HID or Bluetooth LE device through native.hid_* / native.ble_*: allowed, failed, denied (not declared), off (switched off by the user, or not yet allowed) or forbidden (a keyboard, pointer, system control or security key, which no grant can reach). Which device and operation, never the bytes. Audit-eligible.", Since: "0.2.0", Source: "plugins", Severity: "info", Redaction: "full"},
-	"plugin.diagnostic":           {Name: "plugin.diagnostic", Summary: "A plugin emitted a warn- or error-level diagnostic via plugin.debug; cross-posted to branchkit.log so plugin-level failures interleave with the actuator's view of dispatch / coordination.", Since: "0.2.0", Source: "plugins", Severity: "warn", Redaction: "full"},
+	"plugin.diagnostic":           {Name: "plugin.diagnostic", Summary: "A plugin emitted a warn- or error-level diagnostic via plugin.debug; cross-posted to branchkit.log so plugin-level failures interleave with the platform's view of dispatch / coordination.", Since: "0.2.0", Source: "plugins", Severity: "warn", Redaction: "full"},
 	"plugin.exited":               {Name: "plugin.exited", Summary: "A managed plugin process exited (clean or crashed).", Since: "0.1.0", Source: "plugins", Severity: "info", Redaction: "none"},
 	"plugin.lifecycle_op":         {Name: "plugin.lifecycle_op", Summary: "A plugin lifecycle operation (install, uninstall, update, reload, hot-reload, enable, disable).", Since: "0.1.0", Source: "plugins", Severity: "info", Redaction: "none"},
 	"plugin.loaded":               {Name: "plugin.loaded", Summary: "A plugin manifest was discovered and parsed.", Since: "0.1.0", Source: "plugins", Severity: "info", Redaction: "none"},
@@ -134,9 +134,9 @@ var LogEventRegistry = map[string]LogEventMeta{
 	"plugin.spawned":              {Name: "plugin.spawned", Summary: "A managed plugin process was spawned.", Since: "0.1.0", Source: "plugins", Severity: "info", Redaction: "none"},
 	"plugin.stderr_line":          {Name: "plugin.stderr_line", Summary: "A managed plugin emitted a stdout/stderr line.", Since: "0.1.0", Source: "plugins", Severity: "info", Redaction: "full"},
 	"plugin.wmi_query":            {Name: "plugin.wmi_query", Summary: "A plugin read (or was refused) a WMI class through native.wmi_query: allowed, failed, denied (not declared), off (switched off by the user) or forbidden (no grant can reach it). The namespace and class only. Audit-eligible.", Since: "0.2.0", Source: "plugins", Severity: "info", Redaction: "full"},
-	"rpc.call_completed":          {Name: "rpc.call_completed", Summary: "A plugin-to-actuator RPC call completed.", Since: "0.1.0", Source: "plugins", Severity: "debug", Redaction: "none"},
-	"rpc.call_received":           {Name: "rpc.call_received", Summary: "A plugin-to-actuator RPC call was received.", Since: "0.1.0", Source: "plugins", Severity: "debug", Redaction: "none"},
-	"rpc.notify_received":         {Name: "rpc.notify_received", Summary: "A plugin-to-actuator RPC notification (fire-and-forget) was received.", Since: "0.1.0", Source: "plugins", Severity: "debug", Redaction: "none"},
+	"rpc.call_completed":          {Name: "rpc.call_completed", Summary: "A plugin-to-platform RPC call completed.", Since: "0.1.0", Source: "plugins", Severity: "debug", Redaction: "none"},
+	"rpc.call_received":           {Name: "rpc.call_received", Summary: "A plugin-to-platform RPC call was received.", Since: "0.1.0", Source: "plugins", Severity: "debug", Redaction: "none"},
+	"rpc.notify_received":         {Name: "rpc.notify_received", Summary: "A plugin-to-platform RPC notification (fire-and-forget) was received.", Since: "0.1.0", Source: "plugins", Severity: "debug", Redaction: "none"},
 	"rpc.outbound_call_completed": {Name: "rpc.outbound_call_completed", Summary: "An platform-to-plugin RPC call completed (response received or timed out).", Since: "0.1.0", Source: "plugins", Severity: "debug", Redaction: "none"},
 	"rpc.outbound_call_sent":      {Name: "rpc.outbound_call_sent", Summary: "An platform-to-plugin RPC call was sent (awaiting response).", Since: "0.1.0", Source: "plugins", Severity: "debug", Redaction: "none"},
 	"rpc.outbound_notify":         {Name: "rpc.outbound_notify", Summary: "An platform-to-plugin RPC notification (fire-and-forget) was sent.", Since: "0.1.0", Source: "plugins", Severity: "debug", Redaction: "none"},

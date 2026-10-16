@@ -13,7 +13,7 @@ import (
 
 // pumpBothWays serves the plugin's outbound calls through `responder` and
 // hands every response to a request WE sent back on the returned channel.
-// mockActuator alone cannot be used here: it reads the same stdout the
+// mockPlatform alone cannot be used here: it reads the same stdout the
 // render_settings responses arrive on.
 func pumpBothWays(t *testing.T, w io.Writer, r interface {
 	Scan() bool

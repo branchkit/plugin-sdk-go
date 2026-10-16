@@ -14,7 +14,7 @@ import (
 	"time"
 )
 
-// miniProxy is a test-side CONNECT proxy mirroring the actuator's
+// miniProxy is a test-side CONNECT proxy mirroring the platform's
 // host_proxy: allow → tunnel, deny → 403. Listens on ln until closed.
 func miniProxy(t *testing.T, ln net.Listener, allowed string) {
 	t.Helper()

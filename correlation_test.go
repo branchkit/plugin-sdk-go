@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-// scanForMethod drains messages from the actuator-side reader until one with
+// scanForMethod drains messages from the platform-side reader until one with
 // the given method appears (skipping plugin.initialized and any others).
 func scanForMethod(t *testing.T, r *bufio.Scanner, method string) rpcMessage {
 	t.Helper()
@@ -91,7 +91,7 @@ func TestSetAmbientCorrelationIgnoresEmpty(t *testing.T) {
 // a handler reads the inbound envelope id via CurrentCorrelation(), and an
 // outbound Notify it makes carries the same id on the envelope.
 func TestHandlerReadsInboundCorrelationAndStampsOutbound(t *testing.T) {
-	p, actuatorW, actuatorR := newTestPluginT(t)
+	p, platformW, platformR := newTestPluginT(t)
 
 	seen := make(chan string, 1)
 	p.Handle("do_thing", func(_ json.RawMessage) (any, error) {
@@ -113,25 +113,25 @@ func TestHandlerReadsInboundCorrelationAndStampsOutbound(t *testing.T) {
 		CorrelationID: "tr_inbound99",
 	}
 	data, _ := json.Marshal(req)
-	actuatorW.Write(append(data, '\n'))
+	platformW.Write(append(data, '\n'))
 
 	if got := <-seen; got != "tr_inbound99" {
 		t.Fatalf("CurrentCorrelation() = %q, want tr_inbound99", got)
 	}
 
-	notify := scanForMethod(t, actuatorR, "plugin.side_effect")
+	notify := scanForMethod(t, platformR, "plugin.side_effect")
 	if notify.CorrelationID != "tr_inbound99" {
 		t.Fatalf("outbound notify correlation = %q, want tr_inbound99", notify.CorrelationID)
 	}
 
-	actuatorW.(io.Closer).Close()
+	platformW.(io.Closer).Close()
 	wg.Wait()
 }
 
 // TestNoInboundCorrelationLeavesOutboundUnstamped verifies that with no inbound
 // id, the handler sees "" and outbound messages carry no correlation.
 func TestNoInboundCorrelationLeavesOutboundUnstamped(t *testing.T) {
-	p, actuatorW, actuatorR := newTestPluginT(t)
+	p, platformW, platformR := newTestPluginT(t)
 
 	p.Handle("do_thing", func(_ json.RawMessage) (any, error) {
 		if got := p.CurrentCorrelation(); got != "" {
@@ -148,14 +148,14 @@ func TestNoInboundCorrelationLeavesOutboundUnstamped(t *testing.T) {
 	id := uint64(1)
 	req := rpcMessage{JSONRPC: "2.0", ID: &id, Method: "do_thing"}
 	data, _ := json.Marshal(req)
-	actuatorW.Write(append(data, '\n'))
+	platformW.Write(append(data, '\n'))
 
-	notify := scanForMethod(t, actuatorR, "plugin.side_effect")
+	notify := scanForMethod(t, platformR, "plugin.side_effect")
 	if notify.CorrelationID != "" {
 		t.Fatalf("outbound notify correlation = %q, want empty", notify.CorrelationID)
 	}
 
-	actuatorW.(io.Closer).Close()
+	platformW.(io.Closer).Close()
 	wg.Wait()
 }
 

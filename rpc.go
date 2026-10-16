@@ -28,7 +28,7 @@ type rpcMessage struct {
 	Result  json.RawMessage `json:"result,omitempty"`
 	Error   *rpcError       `json:"error,omitempty"`
 	// CorrelationID lives at the envelope level (not inside Params) so
-	// both methods and notifies carry it uniformly. The actuator stamps
+	// both methods and notifies carry it uniformly. The platform stamps
 	// outbound calls from its current scope; inbound calls preserve the
 	// id from the wire for handlers that want to thread it forward.
 	CorrelationID string `json:"correlation_id,omitempty"`
@@ -41,7 +41,7 @@ type rpcMessage struct {
 	// carried from the event beside Source. See origin.go.
 	OnBehalfOf string `json:"on_behalf_of,omitempty"`
 	// Source is the sender of an inbound event notification, as the
-	// platform authenticated it. The actuator sets it on the notifications
+	// platform authenticated it. The platform sets it on the notifications
 	// it delivers from the event bus; nothing the plugin sends carries it.
 	Source string `json:"source,omitempty"`
 	// Delivery is "latest" on an inbound event notification from a STATE
@@ -64,10 +64,10 @@ type rpcError struct {
 
 // --- Handler types ---
 
-// HandlerFunc handles an actuator→plugin request and returns a result or error.
+// HandlerFunc handles a platform→plugin request and returns a result or error.
 type HandlerFunc func(params json.RawMessage) (any, error)
 
-// ListenerFunc handles an actuator→plugin notification (fire-and-forget).
+// ListenerFunc handles a platform→plugin notification (fire-and-forget).
 type ListenerFunc func(params json.RawMessage)
 
 // --- Pending call tracking ---
@@ -184,7 +184,7 @@ func (q *notifyQueue) close() {
 //
 // Both inbound lanes are held until Run(): requests block in handleRequest,
 // notifications queue in notifyQ. So a listener registered before Run() sees
-// every notification the actuator sent since spawn — the forwarder starts
+// every notification the platform sent since spawn — the forwarder starts
 // writing as soon as the RPC session exists, well before `plugin.initialized`.
 // Registering after Run() is safe (the bookkeeping maps are mutex-guarded) but
 // may miss notifications already drained.
@@ -192,13 +192,13 @@ type Plugin struct {
 	pluginID string
 
 	// stdin/stdout are from the plugin's perspective:
-	// - we READ from os.Stdin (actuator writes to our stdin)
-	// - we WRITE to os.Stdout (actuator reads from our stdout)
+	// - we READ from os.Stdin (platform writes to our stdin)
+	// - we WRITE to os.Stdout (platform reads from our stdout)
 	writer *json.Encoder
 	// reader over stdin. Deliberately NOT a bufio.Scanner: a Scanner has a
 	// maximum token size, and exceeding it is a TERMINAL error that ends the
 	// read loop — so one oversized frame killed the plugin outright. The
-	// actuator decides how big a frame is (a settings render carries every
+	// platform decides how big a frame is (a settings render carries every
 	// command row), and a plugin cannot negotiate that, so the reader must
 	// not have an opinion about it. See `reader.ReadBytes` in readLoop.
 	reader *bufio.Reader
@@ -231,7 +231,7 @@ type Plugin struct {
 	// writeMu serializes p.writer.Encode (json.Encoder isn't safe for
 	// concurrent use). Held ONLY around the Encode call, never during
 	// pending-map mutation. This split is load-bearing: io.Pipe and
-	// the real actuator's stdin can both back-pressure a write, and
+	// the real platform's stdin can both back-pressure a write, and
 	// before the split, a blocked Encode held mu and deadlocked
 	// dispatch (which needs mu to look up the pending entry that
 	// would let the in-flight Call return).
@@ -256,8 +256,8 @@ type Plugin struct {
 	platformMu sync.Mutex
 }
 
-// ID returns this plugin's own id, as the actuator assigned it
-// (BRANCHKIT_PLUGIN_ID), or "unknown" when running outside the actuator.
+// ID returns this plugin's own id, as the platform assigned it
+// (BRANCHKIT_PLUGIN_ID), or "unknown" when running outside the platform.
 //
 // Exposed because a plugin routinely needs to name itself to the platform —
 // most directly to ask for its OWN records:
@@ -277,7 +277,7 @@ var ErrDetached = errors.New("detached plugin: no platform")
 // notifications go nowhere, mirrors never fetch, and Run returns
 // immediately. A host built on it exercises the plugin's own logic — the
 // handlers, the state, the rendering — without a nil handle to guard
-// against and without a live actuator. Swap a seam or a mirror for the
+// against and without a live platform. Swap a seam or a mirror for the
 // platform behaviour a test needs.
 func NewDetachedPlugin() *Plugin {
 	p := &Plugin{
@@ -336,7 +336,7 @@ func NewPlugin() *Plugin {
 		signal.Stop(sigCh)
 	}()
 
-	// Built-in introspection: the actuator calls list_action_types after the
+	// Built-in introspection: the platform calls list_action_types after the
 	// plugin reaches readiness to validate that handlers match the manifest's
 	// `action_types` block. Registering here keeps plugins from having to
 	// wire it themselves.
@@ -345,7 +345,7 @@ func NewPlugin() *Plugin {
 	}
 
 	// Built-in introspection: registered RPC method names, fetched by the
-	// actuator at readiness so the settings-HTML validator can flag @post
+	// platform at readiness so the settings-HTML validator can flag @post
 	// URLs that name no handler — otherwise a typo'd method is a dead
 	// button with no error anywhere.
 	p.handlers["list_methods"] = func(_ json.RawMessage) (any, error) {
@@ -373,7 +373,7 @@ func NewPlugin() *Plugin {
 // serializing here cannot deadlock.
 func (p *Plugin) notifyWorker() {
 	// Hold delivery until Run() signals that listeners are registered — the
-	// same gate handleRequest applies to inbound requests. The actuator's
+	// same gate handleRequest applies to inbound requests. The platform's
 	// forwarder starts writing as soon as the RPC session exists (it gates on
 	// subscription + interaction, never on `plugin.initialized`), so without
 	// this a notification arriving during plugin setup was dropped on the
@@ -395,7 +395,7 @@ func (p *Plugin) notifyWorker() {
 	}
 }
 
-// Handle registers a handler for actuator→plugin requests.
+// Handle registers a handler for platform→plugin requests.
 // The handler receives the params and returns a result (serialized as JSON) or an error.
 //
 // Handle("on_action", ...) and HandleAction(...) are mutually exclusive — both
@@ -466,7 +466,7 @@ func HandleTyped[Req any](p *Plugin, method string, fn func(*Req) (any, error)) 
 	})
 }
 
-// On registers a listener for actuator→plugin notifications (fire-and-forget).
+// On registers a listener for platform→plugin notifications (fire-and-forget).
 // Multiple listeners can be registered for the same method.
 func (p *Plugin) On(method string, fn ListenerFunc) {
 	p.mu.Lock()
@@ -506,7 +506,7 @@ func (p *Plugin) OnPattern(pattern string, fn PatternListenerFunc) {
 }
 
 // OnReady registers a callback that fires when all plugins are ready.
-// The actuator sends on_ready after every plugin has called Run().
+// The platform sends on_ready after every plugin has called Run().
 // This is the safe place to read other plugins' collections.
 // Must be called before Run().
 func (p *Plugin) OnReady(fn func()) {
@@ -515,17 +515,17 @@ func (p *Plugin) OnReady(fn func()) {
 	})
 }
 
-// Call sends a request to the actuator and blocks until a response arrives or timeout.
+// Call sends a request to the platform and blocks until a response arrives or timeout.
 // The result is unmarshaled into the provided result pointer (pass nil to discard).
 //
 // WIRE-FORMAT GOTCHA — nil slices and maps marshal to JSON null, which the
-// actuator's strongly-typed deserializer historically rejected with
-// "invalid type: null, expected a sequence/map". The actuator now tolerates
+// platform's strongly-typed deserializer historically rejected with
+// "invalid type: null, expected a sequence/map". The platform now tolerates
 // null on collection fields (Phase 2-wire-tolerance), but you should still
 // pre-initialize collections explicitly to avoid surprises and to keep
 // payloads readable on the wire:
 //
-//	// BAD: nil slice marshals to null, count(items) on the actuator
+//	// BAD: nil slice marshals to null, count(items) on the platform
 //	// side may report 0 from null instead of from [].
 //	var items []string
 //	plugin.Call("foo.bar", map[string]any{"items": items}, nil)
@@ -546,7 +546,7 @@ func (p *Plugin) Call(method string, params any, result any) error {
 }
 
 // CallTimeoutError is what Call and CallWithTimeout return when no answer
-// arrives in time. It is not a failure: the actuator may have carried the
+// arrives in time. It is not a failure: the platform may have carried the
 // call out and only the answer is missing, so a write that timed out may
 // have been committed. Tell it apart from a definite refusal (*RPCError)
 // with errors.As, and for a write, re-read or re-assert rather than assume
@@ -579,7 +579,7 @@ func (p *Plugin) CallWithTimeout(method string, params any, result any, timeout 
 	pc := &pendingCall{ch: make(chan callResult, 1)}
 
 	// Register pending BEFORE writing so the response (which can
-	// arrive arbitrarily fast once the actuator sees the request)
+	// arrive arbitrarily fast once the platform sees the request)
 	// always finds the channel. Two locks, not one: mu for the map,
 	// writeMu for the encoder. See the writeMu doc comment for why.
 	p.mu.Lock()
@@ -632,7 +632,7 @@ func (p *Plugin) CallWithTimeout(method string, params any, result any, timeout 
 	}
 }
 
-// Notify sends a fire-and-forget notification to the actuator (no response expected).
+// Notify sends a fire-and-forget notification to the platform (no response expected).
 func (p *Plugin) Notify(method string, params any) error {
 	var paramsRaw json.RawMessage
 	if params != nil {
@@ -691,7 +691,7 @@ func (p *Plugin) readLoop() {
 			}
 		}
 		if err != nil {
-			// io.EOF is the ordinary shutdown path: the actuator closed our
+			// io.EOF is the ordinary shutdown path: the platform closed our
 			// stdin. Anything else is worth a line before we go.
 			if err != io.EOF {
 				Logf(p.pluginID, "stdin read error: %v", err)
@@ -734,14 +734,14 @@ func (p *Plugin) dispatch(msg rpcMessage) {
 		return
 	}
 
-	// Request from actuator — has id + method
+	// Request from platform — has id + method
 	// Run in goroutine so handlers can call plugin.Call() without blocking the read loop (C1).
 	if msg.ID != nil && msg.Method != "" {
 		go p.handleRequest(msg)
 		return
 	}
 
-	// Notification from actuator — has method, no id.
+	// Notification from platform — has method, no id.
 	// Enqueue for the single notification worker so listeners run in wire
 	// order. push never blocks, so the
 	// read loop stays free to deliver responses to a listener mid-Call().
@@ -751,7 +751,7 @@ func (p *Plugin) dispatch(msg rpcMessage) {
 	}
 }
 
-// handleRequest processes an actuator→plugin request and sends a response.
+// handleRequest processes a platform→plugin request and sends a response.
 // Blocks until Run() is called to ensure all handlers are registered.
 func (p *Plugin) handleRequest(msg rpcMessage) {
 	// Wait for handlers to be registered (Run() called) or shutdown.
@@ -811,7 +811,7 @@ func (p *Plugin) handleRequest(msg rpcMessage) {
 	}()
 }
 
-// handleNotification processes an actuator→plugin notification.
+// handleNotification processes a platform→plugin notification.
 func (p *Plugin) handleNotification(msg rpcMessage) {
 	setAmbientCorrelation(msg.CorrelationID)
 	defer clearAmbientCorrelation()

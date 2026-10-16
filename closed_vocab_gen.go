@@ -4,7 +4,7 @@
 package branchkit
 
 // InputDirective* are the closed-vocabulary keys plugins may write
-// into `_platform.input.directives`. The actuator's state put path
+// into `_platform.input.directives`. The platform's state put path
 // rejects writes with any other key. Source of truth:
 // `core/src/state/input.rs::InputDirectives::KNOWN_KEYS`.
 const (
@@ -12,7 +12,7 @@ const (
 )
 
 // Effect* are the registered effect names plugins may declare in
-// `consumes.effects`. The actuator's manifest validator rejects
+// `consumes.effects`. The platform's manifest validator rejects
 // any other name. Source of truth:
 // `core/src/effects.rs::EffectDef` inventory entries.
 const (
@@ -28,7 +28,7 @@ const (
 
 // KnownInputDirectives lists the full closed-vocabulary set of
 // `_platform.input.directives` keys. Iterate at startup to
-// validate plugin-side constants against the actuator's view.
+// validate plugin-side constants against the platform's view.
 var KnownInputDirectives = []string{
 	"lift_keys_on_dispatch",
 }
@@ -46,12 +46,12 @@ var KnownEffects = []string{
 	"suppress_voice_commands",
 }
 
-// ErrorKind* are the closed-vocabulary `kind` values the actuator puts
+// ErrorKind* are the closed-vocabulary `kind` values the platform puts
 // in a JSON-RPC error's `data.kind`. Branch on RPCError.Kind rather
 // than matching the message prose. Source of truth:
 // `core/src/fault.rs::ErrorKind`.
 //
-// An actuator newer than this SDK may send a kind that is not listed
+// A platform newer than this SDK may send a kind that is not listed
 // here; treat an unrecognized value as ErrorKindInternal rather than
 // failing to parse.
 const (
@@ -67,8 +67,8 @@ const (
 	ErrorKindInternal          ErrorKind = "internal"
 )
 
-// ErrorCodeFor maps a kind to the JSON-RPC error code the actuator
-// sends with it. Derived from the kind actuator-side, so the two can
+// ErrorCodeFor maps a kind to the JSON-RPC error code the platform
+// sends with it. Derived from the kind platform-side, so the two can
 // never disagree on the wire.
 var ErrorCodeFor = map[ErrorKind]int{
 	ErrorKindNotPermitted:      -32002,
@@ -131,7 +131,7 @@ var KnownUnsupportedReasons = []string{
 
 // OutputKind* are the closed-vocabulary `kind` values of a semantic
 // output document (`output.state`): what a person needs in order to
-// act. A plugin never invents a kind — the actuator renders an
+// act. A plugin never invents a kind — the platform renders an
 // unknown one as OutputKindOutcome. Untyped so they assign straight
 // into OutputState.Kind. Source of truth:
 // `core/src/output_state.rs::OutputKind`.

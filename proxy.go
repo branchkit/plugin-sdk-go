@@ -10,20 +10,20 @@ import (
 	"strings"
 )
 
-// Transparent outbound proxy (the actuator's per-host network enforcement:
-// the sandbox denies all other egress and the actuator's per-plugin filtering
+// Transparent outbound proxy (the platform's per-host network enforcement:
+// the sandbox denies all other egress and the platform's per-plugin filtering
 // proxy enforces the declared hosts).
 //
 // When a plugin declares `"network": {"hosts": [...]}`, platforms without an
 // in-kernel per-host primitive (all three: Linux, macOS, Windows) run the plugin in a
-// no-network sandbox whose only egress is an actuator-run HTTP CONNECT proxy
-// that enforces the declared hostname allowlist. The actuator advertises the
+// no-network sandbox whose only egress is a platform-run HTTP CONNECT proxy
+// that enforces the declared hostname allowlist. The platform advertises the
 // endpoint in BRANCHKIT_PROXY:
 //
 //	unix:///path/to/endpoint.sock  — UNIX socket (macOS: the one socket path
 //	                                 the plugin's sandbox allows)
 //	http://127.0.0.1:<port>        — localhost TCP (test harnesses only)
-//	fd://<n>                       — an inherited channel the actuator hands
+//	fd://<n>                       — an inherited channel the platform hands
 //	                                 each connection over (Linux): the plugin
 //	                                 opens no socket of its own, so the
 //	                                 sandbox can forbid creating them
@@ -91,7 +91,7 @@ func proxyDialContext(proxyURL string) (func(ctx context.Context, network, addr 
 	case strings.HasPrefix(proxyURL, "fd://"):
 		pnet, paddr = "fd", strings.TrimPrefix(proxyURL, "fd://")
 	case strings.HasPrefix(proxyURL, "npipe://"):
-		// Windows: the actuator ACLs the pipe to this plugin's container
+		// Windows: the platform ACLs the pipe to this plugin's container
 		// SID, so the AppContainer reaches it with no loopback exemption
 		// (the exemption is all-or-nothing: it would open every loopback
 		// port on the machine).

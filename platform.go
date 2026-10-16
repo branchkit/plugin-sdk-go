@@ -4,7 +4,7 @@ import "encoding/json"
 
 // Platform is what this machine can do: the OS, the Linux desktop session,
 // the host, every operation a call to which would be refused here (with the
-// refusal's own reason), and the host events that never fire. The actuator
+// refusal's own reason), and the host events that never fire. The platform
 // sends it with on_ready, so it is set by the time an OnReady callback runs;
 // nil before, unless Supports has already fetched it.
 func (p *Plugin) Platform() *PlatformProfileResponse {
@@ -44,7 +44,7 @@ func (p *Plugin) Supports(method string) bool {
 	return true
 }
 
-// takePlatform keeps on_ready's `platform` param. An actuator older than the
+// takePlatform keeps on_ready's `platform` param. A platform older than the
 // profile sends none; Supports then fetches it on first use.
 func (p *Plugin) takePlatform(params json.RawMessage) {
 	var ready struct {

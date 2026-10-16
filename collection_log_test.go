@@ -11,13 +11,13 @@ import (
 	"time"
 )
 
-// mockActuator runs in a goroutine, reads JSON-RPC requests off the
+// mockPlatform runs in a goroutine, reads JSON-RPC requests off the
 // scanner, and replies with `responder(method, params)`. Returns when the
 // pipe closes or `done` fires.
 //
 // The responder may return `(result, "")` to send a success reply or
 // `(nil, "error string")` to send an error reply.
-func mockActuator(
+func mockPlatform(
 	t *testing.T,
 	w io.Writer,
 	r *bufio.Scanner,
@@ -29,7 +29,7 @@ func mockActuator(
 		for r.Scan() {
 			var req rpcMessage
 			if err := json.Unmarshal(r.Bytes(), &req); err != nil {
-				t.Errorf("mockActuator: bad request: %v", err)
+				t.Errorf("mockPlatform: bad request: %v", err)
 				return
 			}
 			result, errMsg := responder(req.Method, req.Params)
@@ -50,9 +50,9 @@ func mockActuator(
 	return done
 }
 
-// runPluginCall wires up newTestPlugin + mockActuator and returns once
+// runPluginCall wires up newTestPlugin + mockPlatform and returns once
 // `call` has finished (or the harness times out). Cleans up the writer.
-// runPluginCallWireErr drives one plugin call against a mock actuator that
+// runPluginCallWireErr drives one plugin call against a mock platform that
 // answers with an exact wire error, structured `data` included. The
 // (any, string) responder used by runPluginCall can only express a message,
 // which is not enough to exercise error classification.
@@ -65,7 +65,7 @@ func runPluginCallWireErr(t *testing.T, wireErr *rpcError, call func(p *Plugin))
 		for r.Scan() {
 			var req rpcMessage
 			if err := json.Unmarshal(r.Bytes(), &req); err != nil {
-				t.Errorf("mockActuator: bad request: %v", err)
+				t.Errorf("mockPlatform: bad request: %v", err)
 				return
 			}
 			resp := rpcMessage{JSONRPC: "2.0", ID: req.ID, Error: wireErr}
@@ -97,7 +97,7 @@ func runPluginCall(
 	t.Helper()
 	p, w, r := newTestPluginT(t)
 	go p.Run()
-	mockActuator(t, w, r, responder)
+	mockPlatform(t, w, r, responder)
 
 	callDone := make(chan struct{})
 	go func() {
@@ -119,7 +119,7 @@ type wireCall struct {
 	Params json.RawMessage
 }
 
-// captureCalls runs `call` against a mock actuator that answers every
+// captureCalls runs `call` against a mock platform that answers every
 // request with reply(method) and records each request verbatim (bar Run's
 // plugin.initialized notification), so a test
 // can assert the exact wire shape rather than only what the responder
@@ -148,7 +148,7 @@ func captureCalls(t *testing.T, reply func(method string) any, call func(p *Plug
 
 // assertWire fails unless got is exactly one call to `method` whose params
 // are JSON-equal to want (a JSON literal; key order is irrelevant). A
-// top-level null in the sent params is treated as absent: the actuator reads
+// top-level null in the sent params is treated as absent: the platform reads
 // those fields as Option, where null and missing are the same, and some
 // generated request fields (`roles`) lack omitempty.
 func assertWire(t *testing.T, got []wireCall, method, want string) {
@@ -220,7 +220,7 @@ func TestAppendReturnsEntryID(t *testing.T) {
 }
 
 // The sentinel is matched off the wire's structured `data.kind`. It used to be
-// a substring match on the message, which meant any actuator whose prose
+// a substring match on the message, which meant any platform whose prose
 // changed silently stopped being detectable.
 func TestAppendSurfacesRecordingDisabledFromKind(t *testing.T) {
 	runPluginCallWireErr(t,
@@ -310,7 +310,7 @@ func TestUnsupportedReasonOfIgnoresOtherKinds(t *testing.T) {
 	}
 }
 
-// An actuator predating structured errors sends no `data`. The call must still
+// A platform predating structured errors sends no `data`. The call must still
 // produce a usable error rather than failing to parse — but it cannot be
 // classified, so kind-based matching correctly does not fire.
 func TestErrorWithoutDataDegradesInsteadOfThrowing(t *testing.T) {

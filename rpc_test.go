@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-// scanRPC reads from the actuator-side scanner, skipping notifications
+// scanRPC reads from the platform-side scanner, skipping notifications
 // (id == nil) until it sees a request or response with an id. Run()
 // emits `plugin.initialized` as its first outbound notification; tests
 // that wait for a specific response/request must drain it (and any
@@ -60,16 +60,16 @@ func scanRPC(t testing.TB, scanner *bufio.Scanner) rpcMessage {
 }
 
 // newTestPluginT creates a Plugin wired to in-memory pipes for testing.
-// Returns (plugin, actuatorWriter, actuatorReader).
-// actuatorWriter: write JSON-RPC messages as if you're the actuator sending to the plugin's stdin.
-// actuatorReader: read JSON-RPC messages that the plugin writes to its stdout.
+// Returns (plugin, platformWriter, platformReader).
+// platformWriter: write JSON-RPC messages as if you're the platform sending to the plugin's stdin.
+// platformReader: read JSON-RPC messages that the plugin writes to its stdout.
 //
 // Registers a `t.Cleanup` that closes both pipe ends so leaked
 // drain/scanner goroutines exit when the test ends.
 func newTestPluginT(t testing.TB) (*Plugin, io.Writer, *bufio.Scanner) {
-	// plugin reads from stdinR, actuator writes to stdinW
+	// plugin reads from stdinR, platform writes to stdinW
 	stdinR, stdinW := io.Pipe()
-	// plugin writes to stdoutW, actuator reads from stdoutR
+	// plugin writes to stdoutW, platform reads from stdoutR
 	stdoutR, stdoutW := io.Pipe()
 
 	p := &Plugin{
@@ -84,8 +84,8 @@ func newTestPluginT(t testing.TB) (*Plugin, io.Writer, *bufio.Scanner) {
 		notifyQ:   newNotifyQueue(),
 	}
 
-	actuatorScanner := bufio.NewScanner(stdoutR)
-	actuatorScanner.Buffer(make([]byte, 0, 64*1024), 1024*1024)
+	platformScanner := bufio.NewScanner(stdoutR)
+	platformScanner.Buffer(make([]byte, 0, 64*1024), 1024*1024)
 
 	// Start the notification worker + read loop (matches NewPlugin behavior)
 	go p.notifyWorker()
@@ -94,7 +94,7 @@ func newTestPluginT(t testing.TB) (*Plugin, io.Writer, *bufio.Scanner) {
 	t.Cleanup(func() {
 		// Closing both pipe ends unblocks any leaked
 		// scanner/drain goroutines (e.g. TestCallTimeout's
-		// `for actuatorR.Scan()`). Without this, goroutine
+		// `for platformR.Scan()`). Without this, goroutine
 		// scheduling between leaked drains and the next test's
 		// Plugin.Run() can deadlock TestCallRPCError below. Every
 		// test takes this constructor for that reason — there is
@@ -103,7 +103,7 @@ func newTestPluginT(t testing.TB) (*Plugin, io.Writer, *bufio.Scanner) {
 		_ = stdoutW.Close()
 	})
 
-	return p, stdinW, actuatorScanner
+	return p, stdinW, platformScanner
 }
 
 // TestNotificationsDeliveredInOrder pins the ordering contract: a plugin's
@@ -112,7 +112,7 @@ func newTestPluginT(t testing.TB) (*Plugin, io.Writer, *bufio.Scanner) {
 // sleeps; under the old goroutine-per-notification dispatch the later
 // notifications would record while it slept, producing out-of-order results.
 // TestNotificationsBeforeRunAreQueuedNotDropped pins the readiness gate on the
-// notification path. The actuator's forwarder gates delivery on subscription +
+// notification path. The platform's forwarder gates delivery on subscription +
 // interaction only — never on `plugin.initialized` — so events genuinely land
 // on stdin while the plugin body is still calling On(). Before the gate that
 // window did two bad things: the notification was dropped (no listener
@@ -121,15 +121,15 @@ func newTestPluginT(t testing.TB) (*Plugin, io.Writer, *bufio.Scanner) {
 //
 // Run under -race: the interleaving below is what reproduced the throw.
 func TestNotificationsBeforeRunAreQueuedNotDropped(t *testing.T) {
-	p, actuatorW, _ := newTestPluginT(t)
+	p, platformW, _ := newTestPluginT(t)
 
 	const n = 50
 	received := make(chan int, n)
 
-	// The actuator pushes the moment the session exists — before Run().
+	// The platform pushes the moment the session exists — before Run().
 	go func() {
 		for i := range n {
-			fmt.Fprintf(actuatorW, `{"jsonrpc":"2.0","method":"early.tick","params":{"seq":%d}}`+"\n", i)
+			fmt.Fprintf(platformW, `{"jsonrpc":"2.0","method":"early.tick","params":{"seq":%d}}`+"\n", i)
 		}
 	}()
 
@@ -171,7 +171,7 @@ func TestNotificationsBeforeRunAreQueuedNotDropped(t *testing.T) {
 }
 
 func TestNotificationsDeliveredInOrder(t *testing.T) {
-	p, actuatorW, _ := newTestPluginT(t)
+	p, platformW, _ := newTestPluginT(t)
 
 	const n = 20
 	var mu sync.Mutex
@@ -205,7 +205,7 @@ func TestNotificationsDeliveredInOrder(t *testing.T) {
 			Method:  "seq.tick",
 			Params:  json.RawMessage(fmt.Sprintf(`{"seq":%d}`, i)),
 		})
-		actuatorW.Write(append(data, '\n'))
+		platformW.Write(append(data, '\n'))
 	}
 
 	select {
@@ -226,7 +226,7 @@ func TestNotificationsDeliveredInOrder(t *testing.T) {
 }
 
 func TestHandleRequest(t *testing.T) {
-	p, actuatorW, actuatorR := newTestPluginT(t)
+	p, platformW, platformR := newTestPluginT(t)
 
 	p.Handle("describe_tab", func(params json.RawMessage) (any, error) {
 		var req struct {
@@ -243,7 +243,7 @@ func TestHandleRequest(t *testing.T) {
 		p.Run()
 	}()
 
-	// Send a request from the "actuator"
+	// Send a request from the "platform"
 	id := uint64(1)
 	msg := rpcMessage{
 		JSONRPC: "2.0",
@@ -252,10 +252,10 @@ func TestHandleRequest(t *testing.T) {
 		Params:  json.RawMessage(`{"tab":"keybinds"}`),
 	}
 	data, _ := json.Marshal(msg)
-	actuatorW.Write(append(data, '\n'))
+	platformW.Write(append(data, '\n'))
 
 	// Read the response (skipping plugin.initialized + any other notifications)
-	resp := scanRPC(t, actuatorR)
+	resp := scanRPC(t, platformR)
 
 	if resp.ID == nil || *resp.ID != 1 {
 		t.Fatalf("expected id=1, got %v", resp.ID)
@@ -271,15 +271,15 @@ func TestHandleRequest(t *testing.T) {
 	}
 
 	// Close stdin to stop Run()
-	actuatorW.(io.Closer).Close()
+	platformW.(io.Closer).Close()
 	wg.Wait()
 }
 
 // TestReadyGateHoldsRequestsBeforeRun verifies that requests arriving before
 // Run() is called are held (not rejected with -32601). This prevents a race
-// where the actuator sends a request before the plugin has registered handlers.
+// where the platform sends a request before the plugin has registered handlers.
 func TestReadyGateHoldsRequestsBeforeRun(t *testing.T) {
-	p, actuatorW, actuatorR := newTestPluginT(t)
+	p, platformW, platformR := newTestPluginT(t)
 
 	// Register handler AFTER creating plugin (mimics real init sequence)
 	p.Handle("on_commands_changed", func(params json.RawMessage) (any, error) {
@@ -295,7 +295,7 @@ func TestReadyGateHoldsRequestsBeforeRun(t *testing.T) {
 		Params:  json.RawMessage(`{}`),
 	}
 	data, _ := json.Marshal(msg)
-	actuatorW.Write(append(data, '\n'))
+	platformW.Write(append(data, '\n'))
 
 	// Small delay to ensure the request is received by readLoop
 	time.Sleep(50 * time.Millisecond)
@@ -309,7 +309,7 @@ func TestReadyGateHoldsRequestsBeforeRun(t *testing.T) {
 	}()
 
 	// Read the response (skipping plugin.initialized + any other notifications)
-	resp := scanRPC(t, actuatorR)
+	resp := scanRPC(t, platformR)
 
 	if resp.Error != nil {
 		t.Fatalf("request before Run() should succeed, got error: %d %s",
@@ -325,14 +325,14 @@ func TestReadyGateHoldsRequestsBeforeRun(t *testing.T) {
 		t.Fatalf("expected status=ok, got %v", result)
 	}
 
-	actuatorW.(io.Closer).Close()
+	platformW.(io.Closer).Close()
 	wg.Wait()
 }
 
 // TestReadyGateRejectsUnknownAfterRun verifies that unknown methods still get
 // -32601 after Run() is called (the gate doesn't suppress legitimate errors).
 func TestReadyGateRejectsUnknownAfterRun(t *testing.T) {
-	p, actuatorW, actuatorR := newTestPluginT(t)
+	p, platformW, platformR := newTestPluginT(t)
 
 	var wg sync.WaitGroup
 	wg.Add(1)
@@ -352,9 +352,9 @@ func TestReadyGateRejectsUnknownAfterRun(t *testing.T) {
 		Params:  json.RawMessage(`{}`),
 	}
 	data, _ := json.Marshal(msg)
-	actuatorW.Write(append(data, '\n'))
+	platformW.Write(append(data, '\n'))
 
-	resp := scanRPC(t, actuatorR)
+	resp := scanRPC(t, platformR)
 
 	if resp.Error == nil {
 		t.Fatal("expected -32601 error for unknown method after Run()")
@@ -363,12 +363,12 @@ func TestReadyGateRejectsUnknownAfterRun(t *testing.T) {
 		t.Fatalf("expected code -32601, got %d", resp.Error.Code)
 	}
 
-	actuatorW.(io.Closer).Close()
+	platformW.(io.Closer).Close()
 	wg.Wait()
 }
 
 func TestHandleNotification(t *testing.T) {
-	p, actuatorW, _ := newTestPluginT(t)
+	p, platformW, _ := newTestPluginT(t)
 
 	var received string
 	var mu sync.Mutex
@@ -394,7 +394,7 @@ func TestHandleNotification(t *testing.T) {
 		Params:  json.RawMessage(`{"store":"keybinds"}`),
 	}
 	data, _ := json.Marshal(msg)
-	actuatorW.Write(append(data, '\n'))
+	platformW.Write(append(data, '\n'))
 
 	select {
 	case <-done:
@@ -408,15 +408,15 @@ func TestHandleNotification(t *testing.T) {
 		t.Fatalf("expected store=keybinds, got %q", received)
 	}
 
-	actuatorW.(io.Closer).Close()
+	platformW.(io.Closer).Close()
 }
 
 func TestCallSuccess(t *testing.T) {
-	p, actuatorW, actuatorR := newTestPluginT(t)
+	p, platformW, platformR := newTestPluginT(t)
 
 	go p.Run()
 
-	// Plugin calls actuator in a goroutine
+	// Plugin calls platform in a goroutine
 	var callErr error
 	var result struct {
 		Data map[string]uint16 `json:"data"`
@@ -427,8 +427,8 @@ func TestCallSuccess(t *testing.T) {
 		close(callDone)
 	}()
 
-	// Actuator reads the request (skipping plugin.initialized + any other notifications)
-	req := scanRPC(t, actuatorR)
+	// Platform reads the request (skipping plugin.initialized + any other notifications)
+	req := scanRPC(t, platformR)
 
 	if req.Method != "collection.get" {
 		t.Fatalf("expected method=collection.get, got %q", req.Method)
@@ -444,7 +444,7 @@ func TestCallSuccess(t *testing.T) {
 		Result:  json.RawMessage(`{"data":{"a":0,"b":1}}`),
 	}
 	data, _ := json.Marshal(resp)
-	actuatorW.Write(append(data, '\n'))
+	platformW.Write(append(data, '\n'))
 
 	select {
 	case <-callDone:
@@ -459,17 +459,17 @@ func TestCallSuccess(t *testing.T) {
 		t.Fatalf("unexpected result: %+v", result)
 	}
 
-	actuatorW.(io.Closer).Close()
+	platformW.(io.Closer).Close()
 }
 
 func TestCallTimeout(t *testing.T) {
-	p, actuatorW, actuatorR := newTestPluginT(t)
+	p, platformW, platformR := newTestPluginT(t)
 
 	go p.Run()
 
-	// Drain actuator side so the write doesn't block, but never respond
+	// Drain platform side so the write doesn't block, but never respond
 	go func() {
-		for actuatorR.Scan() {
+		for platformR.Scan() {
 			// read and discard — no response sent
 		}
 	}()
@@ -495,11 +495,11 @@ func TestCallTimeout(t *testing.T) {
 		t.Fatal("a timeout is not an RPCError: nothing refused the call")
 	}
 
-	actuatorW.(io.Closer).Close()
+	platformW.(io.Closer).Close()
 }
 
 func TestCallRPCError(t *testing.T) {
-	p, actuatorW, actuatorR := newTestPluginT(t)
+	p, platformW, platformR := newTestPluginT(t)
 
 	go p.Run()
 
@@ -509,7 +509,7 @@ func TestCallRPCError(t *testing.T) {
 	}()
 
 	// Read request (skipping plugin.initialized + any other notifications)
-	req := scanRPC(t, actuatorR)
+	req := scanRPC(t, platformR)
 
 	// Send error response
 	resp := rpcMessage{
@@ -518,7 +518,7 @@ func TestCallRPCError(t *testing.T) {
 		Error:   &rpcError{Code: -1, Message: "store not found"},
 	}
 	data, _ := json.Marshal(resp)
-	actuatorW.Write(append(data, '\n'))
+	platformW.Write(append(data, '\n'))
 
 	err := <-callDone
 	if err == nil {
@@ -528,11 +528,11 @@ func TestCallRPCError(t *testing.T) {
 		t.Fatalf("expected 'store not found' error, got: %v", err)
 	}
 
-	actuatorW.(io.Closer).Close()
+	platformW.(io.Closer).Close()
 }
 
 func TestMethodNotFound(t *testing.T) {
-	p, actuatorW, actuatorR := newTestPluginT(t)
+	p, platformW, platformR := newTestPluginT(t)
 
 	go p.Run()
 
@@ -544,10 +544,10 @@ func TestMethodNotFound(t *testing.T) {
 		Method:  "nonexistent",
 	}
 	data, _ := json.Marshal(msg)
-	actuatorW.Write(append(data, '\n'))
+	platformW.Write(append(data, '\n'))
 
 	// Read error response (skipping plugin.initialized + any other notifications)
-	resp := scanRPC(t, actuatorR)
+	resp := scanRPC(t, platformR)
 
 	if resp.Error == nil {
 		t.Fatal("expected error in response")
@@ -556,11 +556,11 @@ func TestMethodNotFound(t *testing.T) {
 		t.Fatalf("expected code -32601, got %d", resp.Error.Code)
 	}
 
-	actuatorW.(io.Closer).Close()
+	platformW.(io.Closer).Close()
 }
 
 func TestNotify(t *testing.T) {
-	p, actuatorW, actuatorR := newTestPluginT(t)
+	p, platformW, platformR := newTestPluginT(t)
 
 	go p.Run()
 
@@ -569,9 +569,9 @@ func TestNotify(t *testing.T) {
 	// "events.emit" frame the test cares about.
 	msgCh := make(chan rpcMessage, 4)
 	go func() {
-		for actuatorR.Scan() {
+		for platformR.Scan() {
 			var msg rpcMessage
-			if err := json.Unmarshal(actuatorR.Bytes(), &msg); err != nil {
+			if err := json.Unmarshal(platformR.Bytes(), &msg); err != nil {
 				continue
 			}
 			select {
@@ -596,7 +596,7 @@ func TestNotify(t *testing.T) {
 			if msg.ID != nil {
 				t.Fatal("notification should not have id")
 			}
-			actuatorW.(io.Closer).Close()
+			platformW.(io.Closer).Close()
 			return
 		case <-deadline:
 			t.Fatal("timed out waiting for events.emit notification")
@@ -605,7 +605,7 @@ func TestNotify(t *testing.T) {
 }
 
 func TestHandlerPanicRecovery(t *testing.T) {
-	p, actuatorW, actuatorR := newTestPluginT(t)
+	p, platformW, platformR := newTestPluginT(t)
 
 	p.Handle("panic_method", func(params json.RawMessage) (any, error) {
 		panic("test panic")
@@ -620,10 +620,10 @@ func TestHandlerPanicRecovery(t *testing.T) {
 		Method:  "panic_method",
 	}
 	data, _ := json.Marshal(msg)
-	actuatorW.Write(append(data, '\n'))
+	platformW.Write(append(data, '\n'))
 
 	// scanRPC drains plugin.initialized + any other notifications.
-	resp := scanRPC(t, actuatorR)
+	resp := scanRPC(t, platformR)
 
 	if resp.Error == nil {
 		t.Fatal("expected error response")
@@ -632,7 +632,7 @@ func TestHandlerPanicRecovery(t *testing.T) {
 		t.Fatalf("expected panic error, got: %s", resp.Error.Message)
 	}
 
-	actuatorW.(io.Closer).Close()
+	platformW.(io.Closer).Close()
 }
 
 // TestNewPluginUsesEnv verifies NewPlugin reads BRANCHKIT_PLUGIN_ID.
@@ -650,7 +650,7 @@ func TestNewPluginUsesEnv(t *testing.T) {
 // render_settings payload crossed 1 MB, the plugin logged "token too long" and
 // exited, and the settings tab showed "plugin process exited" with no clue why.
 //
-// The actuator decides how big a frame is; a plugin cannot negotiate it, so
+// The platform decides how big a frame is; a plugin cannot negotiate it, so
 // the reader must not have an opinion about it.
 func TestOversizedFrameIsDispatchedNotFatal(t *testing.T) {
 	p, stdin, _ := newTestPluginT(t)
@@ -694,13 +694,13 @@ func TestOversizedFrameIsDispatchedNotFatal(t *testing.T) {
 
 // TestCallUnblocksOnStdinClose verifies in-flight Call() returns error when stdin closes.
 func TestCallUnblocksOnStdinClose(t *testing.T) {
-	p, actuatorW, actuatorR := newTestPluginT(t)
+	p, platformW, platformR := newTestPluginT(t)
 
 	go p.Run()
 
 	// Drain stdout so Call() write doesn't block
 	go func() {
-		for actuatorR.Scan() {
+		for platformR.Scan() {
 		}
 	}()
 
@@ -714,7 +714,7 @@ func TestCallUnblocksOnStdinClose(t *testing.T) {
 	time.Sleep(50 * time.Millisecond)
 
 	// Close stdin — this should cause Run() to exit and unblock the Call
-	actuatorW.(io.Closer).Close()
+	platformW.(io.Closer).Close()
 
 	select {
 	case err := <-callDone:
@@ -732,7 +732,7 @@ func TestCallUnblocksOnStdinClose(t *testing.T) {
 
 // TestMultipleListeners verifies multiple On() listeners for the same method all fire.
 func TestMultipleListeners(t *testing.T) {
-	p, actuatorW, _ := newTestPluginT(t)
+	p, platformW, _ := newTestPluginT(t)
 
 	var count atomic.Int32
 	done := make(chan struct{})
@@ -749,7 +749,7 @@ func TestMultipleListeners(t *testing.T) {
 
 	msg := rpcMessage{JSONRPC: "2.0", Method: "test.event", Params: json.RawMessage(`{}`)}
 	data, _ := json.Marshal(msg)
-	actuatorW.Write(append(data, '\n'))
+	platformW.Write(append(data, '\n'))
 
 	select {
 	case <-done:
@@ -761,22 +761,22 @@ func TestMultipleListeners(t *testing.T) {
 		t.Fatalf("expected 2 listener calls, got %d", c)
 	}
 
-	actuatorW.(io.Closer).Close()
+	platformW.(io.Closer).Close()
 }
 
 // TestConcurrentCalls verifies multiple goroutines can Call() simultaneously.
 func TestConcurrentCalls(t *testing.T) {
-	p, actuatorW, actuatorR := newTestPluginT(t)
+	p, platformW, platformR := newTestPluginT(t)
 
 	go p.Run()
 
-	// Spawn a fake actuator: read requests, write responses in a separate goroutine
+	// Spawn a fake platform: read requests, write responses in a separate goroutine
 	// to avoid pipe deadlock (read and write pipes can block each other).
 	responseCh := make(chan []byte, 20)
 	go func() {
-		for actuatorR.Scan() {
+		for platformR.Scan() {
 			var msg rpcMessage
-			if err := json.Unmarshal(actuatorR.Bytes(), &msg); err != nil {
+			if err := json.Unmarshal(platformR.Bytes(), &msg); err != nil {
 				continue
 			}
 			if msg.ID != nil && msg.Method != "" {
@@ -789,7 +789,7 @@ func TestConcurrentCalls(t *testing.T) {
 	}()
 	go func() {
 		for data := range responseCh {
-			actuatorW.Write(data)
+			platformW.Write(data)
 		}
 	}()
 
@@ -816,7 +816,7 @@ func TestConcurrentCalls(t *testing.T) {
 		t.Fatalf("concurrent call failed: %v", err)
 	}
 
-	actuatorW.(io.Closer).Close()
+	platformW.(io.Closer).Close()
 }
 
 // TestWriterLockDoesNotBlockDispatch is the regression test for the
@@ -834,11 +834,11 @@ func TestConcurrentCalls(t *testing.T) {
 // and delivers to pc.ch — observable by the entry's disappearance
 // from the pending map.
 func TestWriterLockDoesNotBlockDispatch(t *testing.T) {
-	p, actuatorW, actuatorR := newTestPluginT(t)
+	p, platformW, platformR := newTestPluginT(t)
 
 	// Background pump so Run()'s plugin.initialized completes.
 	go func() {
-		for actuatorR.Scan() {
+		for platformR.Scan() {
 		}
 	}()
 
@@ -866,7 +866,7 @@ func TestWriterLockDoesNotBlockDispatch(t *testing.T) {
 		Result:  json.RawMessage(`{}`),
 	}
 	data, _ := json.Marshal(resp)
-	if _, err := actuatorW.Write(append(data, '\n')); err != nil {
+	if _, err := platformW.Write(append(data, '\n')); err != nil {
 		t.Fatalf("write response: %v", err)
 	}
 
@@ -882,7 +882,7 @@ func TestWriterLockDoesNotBlockDispatch(t *testing.T) {
 
 // TestResponseWithUnknownID verifies unknown response IDs are silently dropped.
 func TestResponseWithUnknownID(t *testing.T) {
-	p, actuatorW, actuatorR := newTestPluginT(t)
+	p, platformW, platformR := newTestPluginT(t)
 	p.Handle("ping", func(json.RawMessage) (any, error) {
 		return map[string]bool{"pong": true}, nil
 	})
@@ -892,9 +892,9 @@ func TestResponseWithUnknownID(t *testing.T) {
 	// that carries an id (its outbound requests and its responses).
 	msgs := make(chan rpcMessage, 8)
 	go func() {
-		for actuatorR.Scan() {
+		for platformR.Scan() {
 			var m rpcMessage
-			if json.Unmarshal(actuatorR.Bytes(), &m) == nil && m.ID != nil {
+			if json.Unmarshal(platformR.Bytes(), &m) == nil && m.ID != nil {
 				msgs <- m
 			}
 		}
@@ -911,7 +911,7 @@ func TestResponseWithUnknownID(t *testing.T) {
 	}
 	send := func(m rpcMessage) {
 		data, _ := json.Marshal(m)
-		actuatorW.Write(append(data, '\n'))
+		platformW.Write(append(data, '\n'))
 	}
 
 	// A call is in flight while an orphan response arrives.
@@ -954,7 +954,7 @@ func TestResponseWithUnknownID(t *testing.T) {
 		t.Fatalf("ping after orphan = %+v (result %s)", resp, resp.Result)
 	}
 
-	actuatorW.(io.Closer).Close()
+	platformW.(io.Closer).Close()
 }
 
 // TestDetachedPlugin pins the no-platform contract tests build hosts on:
@@ -985,7 +985,7 @@ func TestDetachedPlugin(t *testing.T) {
 // however the handler is written, because the signature admits no value.
 // The proxy refuses anything else with 422; this is the SDK's half.
 func TestHandleCommandAnswersNull(t *testing.T) {
-	p, actuatorW, actuatorR := newTestPluginT(t)
+	p, platformW, platformR := newTestPluginT(t)
 	got := make(chan int, 1)
 	HandleCommand(p, "set_volume", func(req *struct {
 		Volume int `json:"volume"`
@@ -998,9 +998,9 @@ func TestHandleCommandAnswersNull(t *testing.T) {
 	id := uint64(7)
 	msg := rpcMessage{JSONRPC: "2.0", ID: &id, Method: "set_volume", Params: json.RawMessage(`{"volume":3}`)}
 	data, _ := json.Marshal(msg)
-	actuatorW.Write(append(data, '\n'))
+	platformW.Write(append(data, '\n'))
 
-	resp := scanRPC(t, actuatorR)
+	resp := scanRPC(t, platformR)
 	if resp.ID == nil || *resp.ID != 7 {
 		t.Fatalf("expected id=7, got %v", resp.ID)
 	}

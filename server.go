@@ -29,7 +29,7 @@ func ReadJSON(r *http.Request, v any) error {
 	return json.NewDecoder(r.Body).Decode(v)
 }
 
-// GetAPIVersion returns the BranchKit API version from the actuator (env var),
+// GetAPIVersion returns the BranchKit API version from the platform (env var),
 // falling back to the version this SDK was compiled against.
 func GetAPIVersion() string {
 	if v := os.Getenv("BRANCHKIT_API_VERSION"); v != "" {
@@ -39,17 +39,17 @@ func GetAPIVersion() string {
 }
 
 // PluginDir returns the plugin's installation directory, as handed to the
-// process by the actuator via BRANCHKIT_PLUGIN_DIR. Falls back to "." when
-// unset, which is what a plugin run by hand outside the actuator sees.
+// process by the platform via BRANCHKIT_PLUGIN_DIR. Falls back to "." when
+// unset, which is what a plugin run by hand outside the platform sees.
 //
-// This is launch-contract surface, not convenience: the actuator sets the
+// This is launch-contract surface, not convenience: the platform sets the
 // variable, every plugin that reads a file next to its manifest needs it, and
 // resolving it costs no dependency beyond the standard library. Same class as
 // GetAPIVersion.
 //
 // The command loaders (PushCommands, LoadCommands) deliberately do NOT route
 // through this. They distinguish unset from any directory — an unset variable
-// means "not launched by the actuator, load nothing", and a "." fallback would
+// means "not launched by the platform, load nothing", and a "." fallback would
 // have them scan the working directory for commands.json instead.
 func PluginDir() string {
 	if dir := os.Getenv("BRANCHKIT_PLUGIN_DIR"); dir != "" {
@@ -59,8 +59,8 @@ func PluginDir() string {
 }
 
 // PluginDataDir returns the directory this plugin may read and write freely,
-// as handed to the process by the actuator via BRANCHKIT_PLUGIN_DATA. Returns
-// "" when unset, which means the plugin was not launched by the actuator.
+// as handed to the process by the platform via BRANCHKIT_PLUGIN_DATA. Returns
+// "" when unset, which means the plugin was not launched by the platform.
 //
 // This is the plugin's OWN data namespace, and it is the answer to "where do I
 // keep the files I own?" The sandbox grants read/write here and denies the rest
@@ -84,8 +84,8 @@ func PluginDataDir() string {
 // ArtifactsDir returns the plugin's own artifact namespace — where the CLI
 // provisions the artifacts this plugin declares in `provides.artifacts` (named
 // bundles of large run-time files: ML weights, a font pack, a dictionary) — as
-// handed to the process by the actuator via BRANCHKIT_ARTIFACTS_DIR. Returns
-// "" when unset, meaning the plugin was not launched by the actuator.
+// handed to the process by the platform via BRANCHKIT_ARTIFACTS_DIR. Returns
+// "" when unset, meaning the plugin was not launched by the platform.
 //
 // READ-ONLY. A plugin that ships an engine needs this to answer "which of my
 // artifacts are installed?" for its own UI, which is a question it should not

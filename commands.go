@@ -25,7 +25,7 @@ type contextFile struct {
 }
 
 // PushCommands loads commands.json and any context files from commands/,
-// then pushes them all to the actuator via commands.push.
+// then pushes them all to the platform via commands.push.
 //
 // File layout:
 //

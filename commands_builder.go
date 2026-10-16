@@ -15,7 +15,7 @@ import (
 // `Action` fields (the same quirk the `ListOpts` builder smooths over), so
 // constructing a command by hand means writing JSON literals inline. This
 // builder produces a `CommandSpec` with first-class pattern slots — and
-// exposes the actuator's alternatives capability (`OneOf`) that no authoring
+// exposes the platform's alternatives capability (`OneOf`) that no authoring
 // surface reached before.
 //
 //	branchkit.Command(branchkit.OneOf("refresh", "reload")).
@@ -47,7 +47,7 @@ func Word(w string) PatternSlot {
 
 // OneOf is an alternatives slot: any of the given words matches this
 // position, sharing one action. e.g. OneOf("refresh", "reload"). This is the
-// actuator's `[["refresh","reload"]]` pattern form.
+// platform's `[["refresh","reload"]]` pattern form.
 func OneOf(alts ...string) PatternSlot {
 	b, _ := json.Marshal(alts)
 	return PatternSlot{raw: b}
@@ -183,7 +183,7 @@ const (
 
 // Discovery declares the command's prefix-discovery affordance (see
 // DiscoveryMode). Valid only on a pattern that is literal word(s) followed by a
-// single tail capture; the actuator rejects other shapes at load.
+// single tail capture; the platform rejects other shapes at load.
 func (b *CommandBuilder) Discovery(mode DiscoveryMode) *CommandBuilder {
 	b.spec.Discovery = &mode
 	return b
@@ -255,7 +255,7 @@ func LoadCommands() ([]CommandSpec, error) {
 	return specs, nil
 }
 
-// PushCommandSpecs registers a built/loaded set of commands with the actuator
+// PushCommandSpecs registers a built/loaded set of commands with the platform
 // via commands.push (replace-per-plugin semantics). Sibling to PushCommands,
 // which loads and pushes files in one step; this takes an already-assembled
 // (LoadCommands + built) slice. Returns the number of command variants

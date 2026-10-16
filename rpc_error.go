@@ -6,11 +6,11 @@ import (
 	"fmt"
 )
 
-// ErrorKind is the closed-vocabulary classification the actuator attaches to
+// ErrorKind is the closed-vocabulary classification the platform attaches to
 // an RPC error. The values are generated into `closed_vocab_gen.go` from
 // `core/src/fault.rs::ErrorKind`.
 //
-// Deliberately a plain string, not an enum with validation: an actuator newer
+// Deliberately a plain string, not an enum with validation: a platform newer
 // than this SDK may send a kind that has no constant here, and that must
 // fall through a switch rather than fail to parse.
 type ErrorKind string
@@ -18,7 +18,7 @@ type ErrorKind string
 // FaultData (the structured payload from a JSON-RPC error's `data` member)
 // is generated into closed_vocab_gen.go alongside the ErrorKind values.
 
-// RPCError is an error returned by the actuator in response to a plugin call.
+// RPCError is an error returned by the platform in response to a plugin call.
 //
 // Recover it with errors.As:
 //
@@ -31,16 +31,16 @@ type ErrorKind string
 // Branch on Kind, never on Message. Message is human-readable prose whose
 // wording is not part of the contract.
 //
-// Version skew: an actuator that predates structured errors sends no `data`,
+// Version skew: a platform that predates structured errors sends no `data`,
 // in which case Kind is empty and only Code and Message are meaningful. Treat
 // an unrecognized Kind the same as ErrorKindInternal.
 type RPCError struct {
-	// Code is the JSON-RPC error code. Derived from Kind actuator-side, so
+	// Code is the JSON-RPC error code. Derived from Kind platform-side, so
 	// the two never disagree; prefer Kind for branching.
 	Code int
 	// Message is human-readable and may change between releases.
 	Message string
-	// Kind is the machine-readable classification. Empty when the actuator
+	// Kind is the machine-readable classification. Empty when the platform
 	// sent no structured data.
 	Kind ErrorKind
 	// Data is the full structured payload. Nil when absent from the wire.
@@ -108,7 +108,7 @@ func ErrorKindOf(err error) (ErrorKind, bool) {
 // UnsupportedReasonOf returns the reason carried by an ErrUnsupported error
 // (one of the UnsupportedReason* constants, or a newer value this SDK has no
 // constant for). The bool is false when err is not an unsupported error or
-// the actuator sent no reason.
+// the platform sent no reason.
 //
 //	if reason, ok := branchkit.UnsupportedReasonOf(err); ok &&
 //	    reason == branchkit.UnsupportedReasonPlatformNoAnalogue {

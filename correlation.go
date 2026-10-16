@@ -9,10 +9,10 @@ import (
 
 // Ambient inbound-correlation tracking.
 //
-// The actuator carries correlation in a thread-local read via
+// The platform carries correlation in a thread-local read via
 // `correlation::current()` and stamps every event it emits from the live
 // scope. The Go SDK mirrors that so a handler can thread the inbound id
-// forward without any signature change: each actuator→plugin request and
+// forward without any signature change: each platform→plugin request and
 // notification runs in its own goroutine (see `dispatch`), so the inbound
 // envelope `correlation_id` is stashed keyed by goroutine id for the duration
 // of the call and read back by `CurrentCorrelation()` / outbound stamping.
@@ -45,7 +45,7 @@ func currentCorrelation() string {
 	return ""
 }
 
-// CurrentCorrelation returns the inbound correlation id for the actuator→plugin
+// CurrentCorrelation returns the inbound correlation id for the platform→plugin
 // request or notification currently being handled on this goroutine, or "" if
 // none is in flight. Handlers use it to tie their own work (logs, plugin-side
 // transports) back to the upstream causal chain; outbound calls inherit it
@@ -85,7 +85,7 @@ func goroutineID() int64 {
 //
 // An empty id runs fn with no ambient rather than installing a blank one, so
 // the emits carry nothing instead of carrying something meaningless — the
-// same posture as the actuator's `correlation::current()`.
+// same posture as the platform's `correlation::current()`.
 //
 // Named to match the TS SDK's runWithCorrelation, which is the same idea
 // expressed through AsyncLocalStorage.

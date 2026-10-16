@@ -12,31 +12,31 @@ import (
 	"time"
 )
 
-// The actuator's listener relay. Hand-over of a pre-bound socket was ruled
+// The platform's listener relay. Hand-over of a pre-bound socket was ruled
 // out because Go's net.FileListener does not support sockets on Windows.
 //
 // On Windows a plugin runs in an AppContainer whose loopback exemption is
 // outbound-only: a listener the plugin binds itself is unreachable from
-// outside. So there the actuator binds the declared listeners OUTSIDE the
+// outside. So there the platform binds the declared listeners OUTSIDE the
 // sandbox and relays each inbound connection over a connection the plugin
-// opened outward. The plugin parks a few such connections at the actuator's
+// opened outward. The plugin parks a few such connections at the platform's
 // per-spawn rendezvous (BRANCHKIT_LISTEN_RELAY, with BRANCHKIT_LISTEN_RELAY_TOKEN
-// on the first line); when a client arrives the actuator writes "OK <peer>\n"
+// on the first line); when a client arrives the platform writes "OK <peer>\n"
 // on one of them and pumps bytes both ways. From here up nothing changes:
 // the result is a net.Listener whose Accept yields those paired connections,
 // so the HTTP server above it is the same one that serves an inherited fd.
 //
-// <peer> is the client's address as the actuator's public listener accepted
+// <peer> is the client's address as the platform's public listener accepted
 // it. The connection the plugin holds is the rendezvous pipe, whose own peer
 // says nothing about the client, so the paired connection reports <peer> as
 // its RemoteAddr — and http.Request.RemoteAddr is the client's, exactly as on
 // an inherited fd. A plugin that asks the platform which app owns the other
 // end of a loopback connection needs that port. The header's version 2 asks
-// for the peer; an actuator answering a bare "OK\n" (version 1) is still
+// for the peer; a platform answering a bare "OK\n" (version 1) is still
 // accepted, and then RemoteAddr stays the rendezvous connection's.
 //
-// The branch is chosen by the ENVIRONMENT, not by GOOS: the actuator decides
-// per spawn, and a test on any OS can play the actuator.
+// The branch is chosen by the ENVIRONMENT, not by GOOS: the platform decides
+// per spawn, and a test on any OS can play the platform.
 
 const (
 	relayHeaderPrefix = "BKRELAY/2 "
@@ -47,7 +47,7 @@ const (
 	relayRetryMax  = 2 * time.Second
 )
 
-// relayEnv reads the relay variables. ok is false when the actuator did not
+// relayEnv reads the relay variables. ok is false when the platform did not
 // set up a relay for this spawn.
 func relayEnv() (rendezvous, token string, ok bool) {
 	rendezvous = os.Getenv("BRANCHKIT_LISTEN_RELAY")
@@ -102,7 +102,7 @@ func grantedPorts() []struct {
 	return out
 }
 
-// relayListener is a net.Listener fed by the actuator's relay.
+// relayListener is a net.Listener fed by the platform's relay.
 type relayListener struct {
 	addr       net.Addr
 	rendezvous string
@@ -142,7 +142,7 @@ func relayListenerFromEnv(i int) (net.Listener, error) {
 }
 
 // park opens one outward connection, presents the header, and waits for
-// the actuator's OK; then hands the connection to Accept and immediately
+// the platform's OK; then hands the connection to Accept and immediately
 // starts a replacement so the pool stays full. Dial failures retry with
 // backoff until the listener is closed.
 func (l *relayListener) park() {
@@ -195,8 +195,8 @@ func (l *relayListener) park() {
 	}
 }
 
-// readOK reads the actuator's answer line: "OK <peer>\n", or "OK\n" from a
-// version-1 actuator (peer nil). Anything else is not a pairing.
+// readOK reads the platform's answer line: "OK <peer>\n", or "OK\n" from a
+// version-1 platform (peer nil). Anything else is not a pairing.
 func readOK(conn net.Conn) (peer net.Addr, ok bool) {
 	var b [1]byte
 	got := make([]byte, 0, 32)
@@ -232,7 +232,7 @@ func parseRelayAnswer(line string) (net.Addr, bool) {
 }
 
 // relayConn is a paired relay connection that reports the client's address,
-// as the actuator saw it, as its RemoteAddr.
+// as the platform saw it, as its RemoteAddr.
 type relayConn struct {
 	net.Conn
 	peer net.Addr

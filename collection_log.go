@@ -13,7 +13,7 @@ import (
 // SDK spec section 4.6 surface: Append, ListLog, GetLogEntry, DeleteLogEntry,
 // SetCollectionRecording, GetCollectionRecording.
 
-// Append adds an entry to a log-kind collection. The actuator generates a
+// Append adds an entry to a log-kind collection. The platform generates a
 // ULID and timestamp and validates the payload against the collection's
 // declared `fields`. Returns the assigned entry id.
 //
@@ -35,7 +35,7 @@ func (p *Plugin) Append(name string, payload any) (string, error) {
 		return "", err
 	}
 	if entry == nil {
-		return "", fmt.Errorf("collection.append: actuator returned nil entry")
+		return "", fmt.Errorf("collection.append: platform returned nil entry")
 	}
 	return entry.ID, nil
 }
@@ -55,7 +55,7 @@ func (p *Plugin) AppendEntry(name string, payload any) (*LogEntry, error) {
 	// well-formed response carrying no entry yields (nil, nil) — which the
 	// caller then dereferences. Append guards this; AppendEntry did not.
 	if entry == nil {
-		return nil, fmt.Errorf("collection.append: actuator returned nil entry")
+		return nil, fmt.Errorf("collection.append: platform returned nil entry")
 	}
 	return entry, nil
 }

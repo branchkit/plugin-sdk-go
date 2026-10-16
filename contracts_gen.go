@@ -6,7 +6,7 @@ package branchkit
 // APIVersion is the BranchKit API version (from contracts/api-version.json).
 const APIVersion = "0.2.0"
 
-// RPC method names: plugin → actuator (use with plugin.Call()).
+// RPC method names: plugin → platform (use with plugin.Call()).
 const (
 	MethodActionsList                         = "actions.list"                             // since 0.1.0
 	MethodArtifactDelete                      = "artifact.delete"                          // since 0.1.0
@@ -666,7 +666,7 @@ const (
 	MethodWiringDescribe                      = "wiring.describe"                          // since 0.1.0
 )
 
-// RPC method names: actuator → plugin (use with plugin.Handle()).
+// RPC method names: platform → plugin (use with plugin.Handle()).
 const (
 	HookOnAction            = "on_action"             // since 0.1.0
 	HookOnCommandsChanged   = "on_commands_changed"   // since 0.1.0

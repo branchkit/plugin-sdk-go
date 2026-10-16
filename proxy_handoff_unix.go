@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-// The proxy handoff (BRANCHKIT_PROXY=fd://N): the actuator hands each
+// The proxy handoff (BRANCHKIT_PROXY=fd://N): the platform hands each
 // connection to the plugin's filtering proxy over an inherited channel, so
 // the plugin never opens a socket or names a path (a sandbox may forbid
 // both). Ask with one byte; the reply is one byte carrying a connected

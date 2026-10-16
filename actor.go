@@ -20,7 +20,7 @@ import "sync"
 // (unbuilt) feature.
 //
 // Scoped per goroutine, exactly like the ambient inbound correlation id
-// above it — each actuator→plugin request and notification runs on its own
+// above it — each platform→plugin request and notification runs on its own
 // goroutine, so a host that wraps its per-hosted-thing dispatch gets the
 // label on every call that dispatch makes. A handler that spawns its own
 // goroutines does not propagate it.

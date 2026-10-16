@@ -15,7 +15,7 @@ func derefOr[T any](p *T) T {
 }
 
 // The OnEffectDisplaced payload is the generated EffectDisplacedEventParams
-// (types_gen.go) — one wire shape, emitted from the actuator's inventoried
+// (types_gen.go) — one wire shape, emitted from the platform's inventoried
 // params struct, regenerated on change.
 
 // EffectAssertOutcome is the result of AssertEffect.
@@ -125,10 +125,10 @@ func (p *Plugin) OnEffectDisplaced(handler func(evt EffectDisplacedEventParams))
 		var evt EffectDisplacedEventParams
 		if err := json.Unmarshal(params, &evt); err != nil {
 			// Malformed payload — drop silently rather than crashing the
-			// listener thread. The actuator's emit shape is fixed at
+			// listener thread. The platform's emit shape is fixed at
 			// the source and any change goes through codegen, so a
 			// shape mismatch here means the SDK is older than the
-			// actuator and the plugin should be rebuilt.
+			// platform and the plugin should be rebuilt.
 			return
 		}
 		if evt.DisplacedOwner != p.pluginID {

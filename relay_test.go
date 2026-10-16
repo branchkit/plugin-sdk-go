@@ -10,9 +10,9 @@ import (
 	"time"
 )
 
-// A stand-in for the actuator's relay: accepts parked plugin connections on a
+// A stand-in for the platform's relay: accepts parked plugin connections on a
 // rendezvous, and for each client on the public port writes OK on one of
-// them and pumps bytes both ways. The same wire the actuator's
+// them and pumps bytes both ways. The same wire the platform's
 // listener_relay.rs speaks.
 func fakeRelay(t *testing.T, token string) (rendezvous, public string, stop func()) {
 	return fakeRelayAnswering(t, token, true)
@@ -73,7 +73,7 @@ func fakeRelayAnswering(t *testing.T, token string, withPeer bool) (rendezvous, 
 	return rv.Addr().String(), pub.Addr().String(), func() { rv.Close(); pub.Close() }
 }
 
-func TestRelayListenerServesHTTPThroughTheActuatorsRelay(t *testing.T) {
+func TestRelayListenerServesHTTPThroughThePlatformsRelay(t *testing.T) {
 	const token = "0123456789abcdef0123456789abcdef"
 	rendezvous, public, stop := fakeRelay(t, token)
 	defer stop()
@@ -181,7 +181,7 @@ func TestRelayEndpointHonoursTheNamedPipeScheme(t *testing.T) {
 }
 
 // The relayed connection's RemoteAddr is the client's own address, carried
-// in the actuator's answer: a plugin looking up which app is on the other end
+// in the platform's answer: a plugin looking up which app is on the other end
 // of a loopback connection (by the client's port) needs it, and the
 // rendezvous connection it actually holds says nothing about the client.
 func TestRelayedRequestCarriesTheClientsAddress(t *testing.T) {

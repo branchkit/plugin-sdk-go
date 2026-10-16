@@ -39,16 +39,16 @@ git history.
   (`RelativeToFocusedWindow`) or beside the pointer (`RelativeToPointer`);
   `HUDCreateChannelRequest.Offset` nudges it from its anchored place, in
   pixels. The manifest's `hud_windows` take the same `relative_to` and
-  `offset`. Needs an actuator that knows them.
+  `offset`. Needs a platform that knows them.
 
 ### Listen
 
-- A connection served through the actuator's listener relay (Windows)
+- A connection served through the platform's listener relay (Windows)
   now reports the client's address as its `RemoteAddr`, so
   `http.Request.RemoteAddr` is the client's, as it is on an inherited
   listener. The relay header is now `BKRELAY/2`, whose answer carries the
-  peer (`OK <addr>`); a bare `OK` from an older actuator is still accepted.
-  Needs an actuator that speaks version 2.
+  peer (`OK <addr>`); a bare `OK` from an older platform is still accepted.
+  Needs a platform that speaks version 2.
 
 ### Output
 
@@ -169,7 +169,7 @@ git history.
   `_platform`, or a stage's name) and can be trusted; `OnBehalfOf` is that
   emitter's own actor label, a claim by `Source`. Same ambient shape as
   `CurrentCorrelation()`; empty in a request handler and in a goroutine the
-  listener spawns, so read it first and pass the value. An actuator that
+  listener spawns, so read it first and pass the value. A platform that
   does not send the sender leaves it empty.
 
 ## 0.11.0 — 2026-09-24
