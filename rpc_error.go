@@ -8,7 +8,7 @@ import (
 
 // ErrorKind is the closed-vocabulary classification the actuator attaches to
 // an RPC error. The values are generated into `closed_vocab_gen.go` from
-// `actuator/src/fault.rs::ErrorKind`.
+// `core/src/fault.rs::ErrorKind`.
 //
 // Deliberately a plain string, not an enum with validation: an actuator newer
 // than this SDK may send a kind that has no constant here, and that must

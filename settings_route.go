@@ -7,7 +7,7 @@ import (
 )
 
 // The one route the actuator serves for settings-UI → plugin method calls.
-// Registered in actuator/src/api/router.rs as
+// Registered in branchkit/src/api/router.rs as
 // `/v1/plugins/{plugin_id}/methods/{*method_path}`. Hand-writing this shape in
 // a templ literal is how four plugins ended up with dead settings tabs: two
 // invented a `/hooks/` segment that no route matches, one omitted `/methods/`
