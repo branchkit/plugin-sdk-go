@@ -1906,7 +1906,7 @@ type ResolveResult struct {
 	// When nothing matched because the command the words name is switched
 	// off by the platform itself (an operation this machine refuses, a
 	// pushed action gone or changed), which command and why, so the caller
-	// can say so instead of nothing (bug fdd14d7). Never set for a mode or
+	// can say so instead of nothing. Never set for a mode or
 	// context the person has not entered: only platform gates are lifted to
 	// find it.
 	Blocked *BlockedCommand `json:"blocked,omitempty"`
@@ -3089,7 +3089,7 @@ type CommandsResolveResponse struct {
 	// When nothing matched because the command the words name is switched
 	// off by the platform itself (an operation this machine refuses, a
 	// pushed action gone or changed), which command and why, so the caller
-	// can say so instead of nothing (bug fdd14d7). Never set for a mode or
+	// can say so instead of nothing. Never set for a mode or
 	// context the person has not entered: only platform gates are lifted to
 	// find it.
 	Blocked *BlockedCommand `json:"blocked,omitempty"`
