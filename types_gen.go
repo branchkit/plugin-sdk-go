@@ -626,7 +626,9 @@ type CommandRowData struct {
 	// Why the platform has this command switched off, one sentence per
 	// reason (an operation this machine refuses; a pushed action gone or
 	// changed); empty when it is live. A changed action needs the person to
-	// open the command and save it again.
+	// open the command and save it again. Always sent, empty or not, as the
+	// schema says.
+	// default []
 	BlockedReasons []string `json:"blocked_reasons"`
 	Canonical      string   `json:"canonical"`
 	Category       string   `json:"category"`
