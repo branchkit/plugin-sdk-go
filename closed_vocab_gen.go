@@ -6,7 +6,7 @@ package branchkit
 // InputDirective* are the closed-vocabulary keys plugins may write
 // into `_platform.input.directives`. The actuator's state put path
 // rejects writes with any other key. Source of truth:
-// `actuator/src/state.rs::InputDirectives::KNOWN_KEYS`.
+// `actuator-core/src/state/input.rs::InputDirectives::KNOWN_KEYS`.
 const (
 	InputDirectiveLiftKeysOnDispatch = "lift_keys_on_dispatch"
 )
@@ -14,7 +14,7 @@ const (
 // Effect* are the registered effect names plugins may declare in
 // `consumes.effects`. The actuator's manifest validator rejects
 // any other name. Source of truth:
-// `actuator/src/effects.rs::EffectDef` inventory entries.
+// `actuator-core/src/effects.rs::EffectDef` inventory entries.
 const (
 	EffectDisableScreenDim      = "disable_screen_dim"
 	EffectPreventSystemSleep    = "prevent_system_sleep"
@@ -49,7 +49,7 @@ var KnownEffects = []string{
 // ErrorKind* are the closed-vocabulary `kind` values the actuator puts
 // in a JSON-RPC error's `data.kind`. Branch on RPCError.Kind rather
 // than matching the message prose. Source of truth:
-// `actuator/src/fault.rs::ErrorKind`.
+// `actuator-core/src/fault.rs::ErrorKind`.
 //
 // An actuator newer than this SDK may send a kind that is not listed
 // here; treat an unrecognized value as ErrorKindInternal rather than
@@ -99,7 +99,7 @@ var KnownErrorKinds = []ErrorKind{
 
 // FaultData is the structured payload of a JSON-RPC error's `data`
 // member. Only Kind is guaranteed; the rest are populated when they
-// apply. Source of truth: `actuator/src/fault.rs::FaultData`.
+// apply. Source of truth: `actuator-core/src/fault.rs::FaultData`.
 type FaultData struct {
 	Kind       ErrorKind `json:"kind"`
 	Collection string    `json:"collection,omitempty"`
@@ -115,7 +115,7 @@ type FaultData struct {
 // of an ErrorKindUnsupported error: why this platform or session
 // cannot run the op. Read one with UnsupportedReasonOf. Untyped so
 // they compare straight against FaultData.Reason. Source of truth:
-// `actuator/src/fault.rs::UnsupportedReason`.
+// `actuator-core/src/fault.rs::UnsupportedReason`.
 const (
 	UnsupportedReasonPlatformNoAnalogue = "platform_no_analogue"
 	UnsupportedReasonPlatformUnported   = "platform_unported"
@@ -134,7 +134,7 @@ var KnownUnsupportedReasons = []string{
 // act. A plugin never invents a kind — the actuator renders an
 // unknown one as OutputKindOutcome. Untyped so they assign straight
 // into OutputState.Kind. Source of truth:
-// `actuator/src/output_state.rs::OutputKind`.
+// `actuator-core/src/output_state.rs::OutputKind`.
 const (
 	OutputKindChoices  = "choices"
 	OutputKindMode     = "mode"
@@ -158,7 +158,7 @@ var KnownOutputKinds = []string{
 // OutputUrgency* are the closed-vocabulary `urgency` values of a
 // semantic output document — the producer's claim; what it means is
 // each renderer's policy. Unknown degrades to OutputUrgencyAmbient.
-// Source of truth: `actuator/src/output_state.rs::OutputUrgency`.
+// Source of truth: `actuator-core/src/output_state.rs::OutputUrgency`.
 const (
 	OutputUrgencyAmbient   = "ambient"
 	OutputUrgencyNotable   = "notable"
