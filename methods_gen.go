@@ -5841,7 +5841,7 @@ func (p *Plugin) PluginDataExport(req PluginDataExportRequest) (*PluginDataExpor
 	return &result, nil
 }
 
-// PluginDebug write a diagnostic line to this plugin's per-plugin log file. Use shared.Logf instead for cross-cutting coordination lines that belong in actuator.log..
+// PluginDebug write a diagnostic line to this plugin's per-plugin log file. Use shared.Logf instead for cross-cutting coordination lines that belong in branchkit.log..
 func (p *Plugin) PluginDebug(req PluginDebugRequest) error {
 	return p.Call(MethodPluginDebug, &req, nil)
 }
