@@ -117,7 +117,7 @@ type ActionFieldSchema struct {
 	// ("Auto-correct when Whisper outputs entirely in UPPERCASE"), and a
 	// field described here is described identically in every surface that
 	// renders it, including your own.
-	Description *string `json:"description,omitempty"`
+	Description string `json:"description"`
 	// Optional display role for generic UI rendering. See `FieldDisplay`.
 	// Currently consumed by the Collections tab's log-kind timeline view
 	// to pick which fields appear in the row summary.
@@ -133,13 +133,13 @@ type ActionFieldSchema struct {
 	// warning for every unknown role it degraded.
 	Display *FieldDisplay `json:"display,omitempty"`
 	// Allowed string values for `field_type: "enum"`. Ignored otherwise.
-	EnumValues []string `json:"enum_values,omitempty"`
+	EnumValues []string `json:"enum_values"`
 	// Declared type for this field. See `FieldType`.
 	// default "string"
-	FieldType *FieldType `json:"field_type,omitempty"`
+	FieldType FieldType `json:"field_type"`
 	// Nested field list for `field_type: "object"` (recursive). Ignored
 	// for other field types.
-	Fields []ActionFieldSchema `json:"fields,omitempty"`
+	Fields []ActionFieldSchema `json:"fields"`
 	// `secret_ref` only: the ONE host the stored credential may be sent
 	// to. A credential saved from Settings is bound to this, and the binding
 	// comes from here — from the manifest the user consented to — never
@@ -150,12 +150,12 @@ type ActionFieldSchema struct {
 	Key string `json:"key"`
 	// Human-readable label for UI rendering.
 	// default ""
-	Label *string `json:"label,omitempty"`
+	Label string `json:"label"`
 	// Placeholder text for input fields.
 	Placeholder *string `json:"placeholder,omitempty"`
 	// Whether this field is required.
 	// default false
-	Required *bool `json:"required,omitempty"`
+	Required bool `json:"required"`
 }
 
 // ActionTypeSchema is auto-generated from the OpenRPC spec.
@@ -172,17 +172,17 @@ type ActionTypeSchema struct {
 	// to the claim.
 	Consequence *Consequence `json:"consequence,omitempty"`
 	// Ordered list of fields for this action type.
-	Fields []ActionFieldSchema `json:"fields,omitempty"`
+	Fields []ActionFieldSchema `json:"fields"`
 	// Human-readable label (e.g. "Click Element", "Snap Window").
 	// default ""
-	Label *string `json:"label,omitempty"`
+	Label string `json:"label"`
 	// Supported interaction modes: "tap" (single press), "hold" (start/stop via phase),
 	// and/or "toggle" (start/stop cycle). Defaults to ["tap"] if omitted.
 	// Modes are declared, not inferred (modelled on QMK keycode types and
 	// Stream Deck action manifests): a "hold" action handles press/release
 	// itself via `phase`, so a peripheral UI should not ask the user to pick
 	// a separate release action for it.
-	Modes []string `json:"modes,omitempty"`
+	Modes []string `json:"modes"`
 	// Platform operations this action cannot work without (e.g.
 	// `["native.toggle_fullscreen"]`). Where the machine refuses any of
 	// them — the OS, the desktop session or the host cannot provide it —
@@ -191,7 +191,7 @@ type ActionTypeSchema struct {
 	// grammar so the utterance cannot land on a different command. List
 	// only what the action has no way around; an operation it merely
 	// prefers belongs in the handler's own `Supports` check.
-	Uses []string `json:"uses,omitempty"`
+	Uses []string `json:"uses"`
 }
 
 // ActiveSpace is auto-generated from the OpenRPC spec.
@@ -1719,6 +1719,48 @@ type ProcessInfo struct {
 	User *string `json:"user,omitempty"`
 }
 
+// PushedActionField is auto-generated from the OpenRPC spec.
+// One input of a pushed action type: the manifest's `ActionFieldSchema`,
+// request-side. No `default`: it would be untyped JSON, and a pushed
+// action's caller fills every input it needs.
+type PushedActionField struct {
+	Description *string       `json:"description,omitempty"`
+	Display     *FieldDisplay `json:"display,omitempty"`
+	EnumValues  []string      `json:"enum_values,omitempty"`
+	FieldType   *FieldType    `json:"field_type,omitempty"`
+	// Nested inputs of an `object` field.
+	Fields  []PushedActionField `json:"fields,omitempty"`
+	ForHost *string             `json:"for_host,omitempty"`
+	// JSON key name.
+	Key         string  `json:"key"`
+	Label       *string `json:"label,omitempty"`
+	Placeholder *string `json:"placeholder,omitempty"`
+	Required    *bool   `json:"required,omitempty"`
+}
+
+// PushedActionType is auto-generated from the OpenRPC spec.
+// One action type as `actions.push` takes it: the manifest's
+// `ActionTypeSchema` with the inputs a plugin may leave out optional, and a
+// `label` it must give (a pushed action is read by a person in the builder).
+// Its own type, not `ActionTypeSchema`, because a request-side type's
+// defaulted fields are generated optional: sharing it would turn the
+// fields every plugin READS (`actions.list`, `render_settings`) into
+// pointers. Same field names, so it converts to the manifest shape as is;
+// `pushed_types_track_the_manifest_shape` fails if the two drift.
+type PushedActionType struct {
+	// Whether running it can be undone; omitted means unclassified,
+	// treated as risky.
+	Consequence *Consequence `json:"consequence,omitempty"`
+	// Its inputs, in order.
+	Fields []PushedActionField `json:"fields,omitempty"`
+	// What the person sees in the builder ("Update an issue").
+	Label string `json:"label"`
+	// `tap`, `hold` and/or `toggle`; `["tap"]` when omitted.
+	Modes []string `json:"modes,omitempty"`
+	// Platform operations it cannot work without, by method name.
+	Uses []string `json:"uses,omitempty"`
+}
+
 // RedecodeItem is auto-generated from the OpenRPC spec.
 type RedecodeItem struct {
 	// When set, the platform stamps the live never-standalone Lever E penalty
@@ -2385,7 +2427,7 @@ type ActionsPushRequest struct {
 	// plugin pushed before: all of it, or one `group`. An empty map clears.
 	// A name the manifest declares is refused: a pushed action cannot
 	// redefine one the person consented to at install.
-	Actions map[string]ActionTypeSchema `json:"actions"`
+	Actions map[string]PushedActionType `json:"actions"`
 	// Replace only this group of your pushed actions (one per connected
 	// server, say), leaving the others. Omit to replace the whole set.
 	Group *string `json:"group,omitempty"`
