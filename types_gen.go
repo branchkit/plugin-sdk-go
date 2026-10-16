@@ -385,6 +385,18 @@ type BleWriteEntry struct {
 	WriteType *string `json:"write_type,omitempty"`
 }
 
+// BlockedCommand is auto-generated from the OpenRPC spec.
+// A command the words name that the platform has switched off.
+type BlockedCommand struct {
+	// The command's name.
+	Command string `json:"command"`
+	// The gate tags themselves (`_platform.unavailable:<op>`,
+	// `_platform.action_absent:<type>`, `_platform.action_changed:<type>`).
+	Gates []string `json:"gates"`
+	// Why, one sentence per gate, in the person's words.
+	Reasons []string `json:"reasons"`
+}
+
 // BluetoothDevice is auto-generated from the OpenRPC spec.
 // A paired or connected Bluetooth device.
 type BluetoothDevice struct {
@@ -611,9 +623,14 @@ type CommandRowData struct {
 	// `action` string), in the authored dialect a command's `action` is
 	// written in.
 	ActionJson json.RawMessage `json:"action_json,omitempty"`
-	Canonical  string          `json:"canonical"`
-	Category   string          `json:"category"`
-	ClearsTags []string        `json:"clears_tags"`
+	// Why the platform has this command switched off, one sentence per
+	// reason (an operation this machine refuses; a pushed action gone or
+	// changed); empty when it is live. A changed action needs the person to
+	// open the command and save it again.
+	BlockedReasons []string `json:"blocked_reasons"`
+	Canonical      string   `json:"canonical"`
+	Category       string   `json:"category"`
+	ClearsTags     []string `json:"clears_tags"`
 	// Optional "what it does / use case" text from the command definition —
 	// the same field used as the HUD subtitle, shown in the command editor row.
 	Description  *string  `json:"description,omitempty"`
@@ -1884,6 +1901,13 @@ type ResolveResult struct {
 	// design: each value is whatever its capture bound (a word, a number, a
 	// collection record), so it stays raw JSON.
 	Args map[string]json.RawMessage `json:"args"`
+	// When nothing matched because the command the words name is switched
+	// off by the platform itself (an operation this machine refuses, a
+	// pushed action gone or changed), which command and why, so the caller
+	// can say so instead of nothing (bug fdd14d7). Never set for a mode or
+	// context the person has not entered: only platform gates are lifted to
+	// find it.
+	Blocked *BlockedCommand `json:"blocked,omitempty"`
 	// True when an active `PendingPartial` bridge survived this resolve
 	// (either advanced one token, or rejected the new utterance without
 	// dropping). Tells the voice plugin to leave the discovery HUD as-is
@@ -3060,6 +3084,13 @@ type CommandsResolveResponse struct {
 	// design: each value is whatever its capture bound (a word, a number, a
 	// collection record), so it stays raw JSON.
 	Args map[string]json.RawMessage `json:"args"`
+	// When nothing matched because the command the words name is switched
+	// off by the platform itself (an operation this machine refuses, a
+	// pushed action gone or changed), which command and why, so the caller
+	// can say so instead of nothing (bug fdd14d7). Never set for a mode or
+	// context the person has not entered: only platform gates are lifted to
+	// find it.
+	Blocked *BlockedCommand `json:"blocked,omitempty"`
 	// True when an active `PendingPartial` bridge survived this resolve
 	// (either advanced one token, or rejected the new utterance without
 	// dropping). Tells the voice plugin to leave the discovery HUD as-is
