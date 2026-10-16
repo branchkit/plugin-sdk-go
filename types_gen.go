@@ -2427,7 +2427,8 @@ type ActionsPushRequest struct {
 	// plugin pushed before: all of it, or one `group`. An empty map clears.
 	// A name the manifest declares is refused: a pushed action cannot
 	// redefine one the person consented to at install.
-	Actions map[string]PushedActionType `json:"actions"`
+	// default {}
+	Actions map[string]PushedActionType `json:"actions,omitempty"`
 	// Replace only this group of your pushed actions (one per connected
 	// server, say), leaving the others. Omit to replace the whole set.
 	Group *string `json:"group,omitempty"`
