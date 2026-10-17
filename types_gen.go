@@ -7725,16 +7725,24 @@ type OauthConnectRequest struct {
 	// declares or has requested.
 	// non-empty
 	APIHost string `json:"api_host"`
-	// The service's authorization endpoint (https). The person's browser
-	// goes here.
-	// non-empty
-	AuthorizationEndpoint string `json:"authorization_endpoint"`
+	// The service's authorization endpoint (https), when no `issuer` is
+	// given. The person's browser goes here.
+	// default null
+	AuthorizationEndpoint *string `json:"authorization_endpoint,omitempty"`
 	// Your client ID with this service: one you registered as the plugin's
 	// author, one you obtained by dynamic client registration, or the
 	// person's own. A public client: no secret is sent, PKCE protects the
 	// exchange.
 	// non-empty
 	ClientID string `json:"client_id"`
+	// The service's issuer (https), for a service that publishes its
+	// endpoints (RFC 8414 authorization server metadata, or OpenID Connect
+	// discovery): BranchKit reads the authorization and token endpoints
+	// from it, as this plugin, and they must name the same issuer. Give
+	// this or both endpoints. Must be a host this plugin declares or has
+	// requested.
+	// default null
+	Issuer *string `json:"issuer,omitempty"`
 	// Your name for the service, used again in `oauth.status`,
 	// `oauth.disconnect` and the token's secret name (`oauth.<provider>`):
 	// 1-64 of `a-z 0-9 _ -`.
@@ -7751,11 +7759,13 @@ type OauthConnectRequest struct {
 	// before they sign in.
 	// default []
 	Scopes []string `json:"scopes,omitempty"`
-	// The service's token endpoint (https). Must be a host this plugin
-	// declares or has requested with `network.request_host`; the exchange
-	// goes out through this plugin's network grants.
-	// non-empty
-	TokenEndpoint string `json:"token_endpoint"`
+	// The service's token endpoint (https), when no `issuer` is given. It
+	// must be on the authorization endpoint's host or one of its
+	// subdomains: the place the person signs in vouches for where the code
+	// is redeemed. Must be a host this plugin declares or has requested;
+	// the exchange goes out through this plugin's network grants.
+	// default null
+	TokenEndpoint *string `json:"token_endpoint,omitempty"`
 }
 
 // OauthConnectResponse is the response type for oauth.connect.
