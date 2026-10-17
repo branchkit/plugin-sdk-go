@@ -608,6 +608,9 @@ const (
 	MethodNativeXcodeVersion                  = "native.xcode_version"                     // since 0.1.0
 	MethodNativeZip                           = "native.zip"                               // since 0.1.0
 	MethodNetworkRequestHost                  = "network.request_host"                     // since 0.2.0
+	MethodOauthConnect                        = "oauth.connect"                            // since 0.2.0
+	MethodOauthDisconnect                     = "oauth.disconnect"                         // since 0.2.0
+	MethodOauthStatus                         = "oauth.status"                             // since 0.2.0
 	MethodOutputClear                         = "output.clear"                             // since 0.1.0
 	MethodOutputState                         = "output.state"                             // since 0.1.0
 	MethodOverlayClear                        = "overlay.clear"                            // since 0.2.0
@@ -702,6 +705,7 @@ const (
 	EventKeyboardLayoutChanged  = "_platform.keyboard.layout_changed"
 	EventMemoryPressureChanged  = "_platform.memory_pressure.changed"
 	EventNetworkChanged         = "_platform.network.changed"
+	EventOauthChanged           = "_platform.oauth.changed"
 	EventOutputCleared          = "_platform.output.cleared"
 	EventOutputState            = "_platform.output.state"
 	EventPermissionChanged      = "_platform.permission.changed"

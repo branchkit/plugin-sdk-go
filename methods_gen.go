@@ -5701,6 +5701,36 @@ func (p *Plugin) NetworkRequestHost(req NetworkRequestHostRequest) (*NetworkRequ
 	return &result, nil
 }
 
+// OauthConnect ask the person to sign in to an outside service for this plugin. BranchKit runs the sign-in and keeps the tokens; the plugin spends the access token by naming oauth.<provider> in http.request.
+func (p *Plugin) OauthConnect(req OauthConnectRequest) (*OauthConnectResponse, error) {
+	var result OauthConnectResponse
+	err := p.Call(MethodOauthConnect, &req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// OauthDisconnect forget this plugin's sign-in to a service: both tokens and the record.
+func (p *Plugin) OauthDisconnect(req OauthDisconnectRequest) (*OauthDisconnectResponse, error) {
+	var result OauthDisconnectResponse
+	err := p.Call(MethodOauthDisconnect, &req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// OauthStatus whether this plugin is signed in to a service, what the service granted, and where the token goes. Never the token.
+func (p *Plugin) OauthStatus(req OauthStatusRequest) (*OauthStatusResponse, error) {
+	var result OauthStatusResponse
+	err := p.Call(MethodOauthStatus, &req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 // OutputClear nothing is true on one of your HUD channels now: clears its semantic state so every renderer stops conveying it; visibility stays yours (hud.hide).
 func (p *Plugin) OutputClear(req OutputClearRequest) (*OutputClearResponse, error) {
 	var result OutputClearResponse

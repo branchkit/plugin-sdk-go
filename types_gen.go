@@ -1834,6 +1834,16 @@ type RedecodeNoise struct {
 	SnrDb float64 `json:"snr_db"`
 }
 
+// RedirectHost is auto-generated from the OpenRPC spec.
+// Which loopback name the service accepts in a redirect address. Some
+// accept only `localhost`, some only `127.0.0.1`.
+type RedirectHost string
+
+const (
+	RedirectHostLoopback  RedirectHost = "loopback"
+	RedirectHostLocalhost RedirectHost = "localhost"
+)
+
 // RelativeTo is auto-generated from the OpenRPC spec.
 // What a HUD window is placed against.
 type RelativeTo string
@@ -7708,6 +7718,88 @@ type NetworkRequestHostResponse struct {
 	Status string `json:"status"`
 }
 
+// OauthConnectRequest is the request type for oauth.connect.
+type OauthConnectRequest struct {
+	// The host the access token is sent to (often the API host, which can
+	// differ from the token endpoint's). Must be a host this plugin
+	// declares or has requested.
+	// non-empty
+	APIHost string `json:"api_host"`
+	// The service's authorization endpoint (https). The person's browser
+	// goes here.
+	// non-empty
+	AuthorizationEndpoint string `json:"authorization_endpoint"`
+	// Your client ID with this service: one you registered as the plugin's
+	// author, one you obtained by dynamic client registration, or the
+	// person's own. A public client: no secret is sent, PKCE protects the
+	// exchange.
+	// non-empty
+	ClientID string `json:"client_id"`
+	// Your name for the service, used again in `oauth.status`,
+	// `oauth.disconnect` and the token's secret name (`oauth.<provider>`):
+	// 1-64 of `a-z 0-9 _ -`.
+	// non-empty
+	Provider string `json:"provider"`
+	// The loopback name the service accepts in its redirect address.
+	// Default `loopback` (`127.0.0.1`).
+	RedirectHost *RedirectHost `json:"redirect_host,omitempty"`
+	// A resource indicator (RFC 8707) sent with both requests, when the
+	// service wants one: an MCP server's own URL, for instance.
+	// default null
+	Resource *string `json:"resource,omitempty"`
+	// The scopes to ask for, as the service names them. Shown to the person
+	// before they sign in.
+	// default []
+	Scopes []string `json:"scopes,omitempty"`
+	// The service's token endpoint (https). Must be a host this plugin
+	// declares or has requested with `network.request_host`; the exchange
+	// goes out through this plugin's network grants.
+	// non-empty
+	TokenEndpoint string `json:"token_endpoint"`
+}
+
+// OauthConnectResponse is the response type for oauth.connect.
+type OauthConnectResponse struct {
+	// `asking`: the person is being asked. `_platform.oauth.changed` says
+	// how it ends.
+	Status string `json:"status"`
+}
+
+// OauthDisconnectRequest is the request type for oauth.disconnect.
+type OauthDisconnectRequest struct {
+	// The provider name given to `oauth.connect`.
+	// non-empty
+	Provider string `json:"provider"`
+}
+
+// OauthDisconnectResponse is the response type for oauth.disconnect.
+type OauthDisconnectResponse struct {
+	// Whether there was a sign-in to forget.
+	Removed bool `json:"removed"`
+}
+
+// OauthStatusRequest is the request type for oauth.status.
+type OauthStatusRequest struct {
+	// The provider name given to `oauth.connect`.
+	// non-empty
+	Provider string `json:"provider"`
+}
+
+// OauthStatusResponse is the response type for oauth.status.
+type OauthStatusResponse struct {
+	// Where the token is sent, when signed in.
+	APIHost *string `json:"api_host,omitempty"`
+	// Signed in: a request naming `oauth.<provider>` to the API host
+	// carries the token.
+	Connected bool `json:"connected"`
+	// When the access token stops working (milliseconds since the Unix
+	// epoch), if the service said.
+	// wire uint64 (64-bit) · min 0
+	ExpiresAtMs *int `json:"expires_at_ms,omitempty"`
+	// What the service granted, when signed in.
+	Scopes []string `json:"scopes"`
+}
+
 // OutputClearRequest is the request type for output.clear.
 type OutputClearRequest struct {
 	// The channel on which nothing is true now. Must be owned by the
@@ -9092,6 +9184,19 @@ type NetworkChangedEventParams struct {
 	Interface string `json:"interface"`
 	// Whether a usable network path exists right now.
 	Reachable bool `json:"reachable"`
+}
+
+// OauthChangedEventParams is the payload of the _platform.oauth.changed event.
+type OauthChangedEventParams struct {
+	// Signed in now: requests naming the provider's token will carry it.
+	Connected bool `json:"connected"`
+	// The plugin the sign-in is for.
+	Plugin string `json:"plugin"`
+	// The provider name the plugin gave `oauth.connect`.
+	Provider string `json:"provider"`
+	// Why not, when `connected` is false: the person chose not now, the
+	// service refused, the exchange failed, or the person signed out.
+	Reason *string `json:"reason,omitempty"`
 }
 
 // OutputClearedEventParams is the payload of the _platform.output.cleared event.
