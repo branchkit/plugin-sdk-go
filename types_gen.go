@@ -3231,10 +3231,7 @@ type DispatchResponse struct {
 	Result json.RawMessage `json:"result,omitempty"`
 	// `"ok"` for success, `"denied"` if the caller lacks dispatch
 	// permission, `"error"` for an internal panic captured by
-	// `std::panic::catch_unwind`. `"asking"`: the action cannot be undone
-	// and the person asked to be checked with before such a spoken command,
-	// so it runs only once they say go ahead; nothing reports back when it
-	// does.
+	// `std::panic::catch_unwind`.
 	Status string `json:"status"`
 }
 
