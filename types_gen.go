@@ -9388,9 +9388,19 @@ type PipelineTranscriptEventParams struct {
 	// means no active mode declared one, and the engine owner's default
 	// (prose) stands.
 	DictationProfile *string `json:"dictation_profile,omitempty"`
-	IsFinal          bool    `json:"is_final"`
-	Pipeline         string  `json:"pipeline"`
-	Text             string  `json:"text"`
+	// The application focused when this utterance ended: for a held
+	// pipeline, at the stop (the app the words were meant for); for one
+	// never stopped, now. Reported, never interpreted.
+	FocusedApp *string `json:"focused_app,omitempty"`
+	// The application focused as this transcript is emitted. Differs from
+	// `focused_app` when focus moved while a held pipeline transcribed.
+	FocusedAppNow *string `json:"focused_app_now,omitempty"`
+	IsFinal       bool    `json:"is_final"`
+	// The engine's own "this text may still change" mark, as it sent it.
+	// default false
+	Partial  *bool  `json:"partial,omitempty"`
+	Pipeline string `json:"pipeline"`
+	Text     string `json:"text"`
 	// Shared-clock onset (ms, the audio chunk timebase) of each word of
 	// `text`, aligned 1:1 with its whitespace-split words. Emitted by
 	// engines with time alignment (sherpa's CTC path); converts a word
