@@ -327,7 +327,7 @@ func NewPlugin() *Plugin {
 
 	// Keep the platform profile on_ready carries. Registered before any
 	// plugin listener, so a plugin's own OnReady already sees Platform().
-	p.On("on_ready", p.takePlatform)
+	p.On(HookOnReady, p.takePlatform)
 
 	// Handle SIGTERM gracefully
 	sigCh := make(chan os.Signal, 1)
@@ -346,7 +346,7 @@ func NewPlugin() *Plugin {
 	// plugin reaches readiness to validate that handlers match the manifest's
 	// `action_types` block. Registering here keeps plugins from having to
 	// wire it themselves.
-	p.handlers["list_action_types"] = func(_ json.RawMessage) (any, error) {
+	p.handlers[HookListActionTypes] = func(_ json.RawMessage) (any, error) {
 		return map[string]any{"action_types": p.RegisteredActionTypes()}, nil
 	}
 
@@ -354,7 +354,7 @@ func NewPlugin() *Plugin {
 	// platform at readiness so the settings-HTML validator can flag @post
 	// URLs that name no handler — otherwise a typo'd method is a dead
 	// button with no error anywhere.
-	p.handlers["list_methods"] = func(_ json.RawMessage) (any, error) {
+	p.handlers[HookListMethods] = func(_ json.RawMessage) (any, error) {
 		p.mu.Lock()
 		names := make([]string, 0, len(p.handlers))
 		for name := range p.handlers {
@@ -516,7 +516,7 @@ func (p *Plugin) OnPattern(pattern string, fn PatternListenerFunc) {
 // This is the safe place to read other plugins' collections.
 // Must be called before Run().
 func (p *Plugin) OnReady(fn func()) {
-	p.On("on_ready", func(_ json.RawMessage) {
+	p.On(HookOnReady, func(_ json.RawMessage) {
 		fn()
 	})
 }

@@ -1467,6 +1467,13 @@ const (
 	OnActionStatusNotHandled OnActionStatus = "not_handled"
 )
 
+// OnCommandsChangedResponse is auto-generated from the OpenRPC spec.
+// The result of `on_commands_changed`, and its SCHEMA, as the request is.
+type OnCommandsChangedResponse struct {
+	// wire uint · min 0
+	ProcessedCount int `json:"processed_count"`
+}
+
 // OnPointer is auto-generated from the OpenRPC spec.
 // What a HUD window does when the pointer moves into its frame.
 type OnPointer string
@@ -1696,6 +1703,30 @@ const (
 	PipelineStopReasonError     PipelineStopReason = "error"
 	PipelineStopReasonReload    PipelineStopReason = "reload"
 )
+
+// PlatformProfileResponse is auto-generated from the OpenRPC spec.
+// What this machine can do, asked before calling rather than learned from a
+// refusal.
+//
+// Titled `PlatformProfileResponse`, the name every SDK already gives
+// `platform.profile`'s result: `on_ready` carries the same struct, and one
+// title makes the two one SDK type (emit-sdk lifts it as a shared
+// component) rather than two with the same fields.
+type PlatformProfileResponse struct {
+	// The host process serving host-dependent operations and events.
+	Host string `json:"host"`
+	// `macos`, `linux` or `windows`.
+	OS string `json:"os"`
+	// On Linux, the desktop session the window tools drive: `x11`, `sway`,
+	// `gnome` or `other_wayland`. Absent on other systems.
+	Session *string `json:"session,omitempty"`
+	// Every operation a plugin can call that would be refused here, with
+	// the reason and detail the refusal itself carries. An operation not
+	// listed runs here.
+	Unavailable []UnavailableOperation `json:"unavailable"`
+	// Host events (`_platform.*`) that are never delivered here.
+	UnobservableEvents []string `json:"unobservable_events"`
+}
 
 // PluginLogLevel is auto-generated from the OpenRPC spec.
 type PluginLogLevel string
@@ -8105,23 +8136,6 @@ type PipelinesWarmResponse struct {
 	Warmed bool `json:"warmed"`
 }
 
-// PlatformProfileResponse is the response type for platform.profile.
-type PlatformProfileResponse struct {
-	// The host process serving host-dependent operations and events.
-	Host string `json:"host"`
-	// `macos`, `linux` or `windows`.
-	OS string `json:"os"`
-	// On Linux, the desktop session the window tools drive: `x11`, `sway`,
-	// `gnome` or `other_wayland`. Absent on other systems.
-	Session *string `json:"session,omitempty"`
-	// Every operation a plugin can call that would be refused here, with
-	// the reason and detail the refusal itself carries. An operation not
-	// listed runs here.
-	Unavailable []UnavailableOperation `json:"unavailable"`
-	// Host events (`_platform.*`) that are never delivered here.
-	UnobservableEvents []string `json:"unobservable_events"`
-}
-
 // PluginDataExportRequest is the request type for plugin.data.export.
 type PluginDataExportRequest struct {
 	// Name to save it under. Defaults to the source file's name. A path
@@ -8786,6 +8800,21 @@ type WiringDescribeResponse struct {
 
 // ===== Platform → Plugin request/response types =====
 
+// ListActionTypesResponse is the response type for list_action_types.
+type ListActionTypesResponse struct {
+	// A plugin that dispatches dynamically registers none and may answer
+	// `null`.
+	// default null
+	ActionTypes []string `json:"action_types,omitempty"`
+}
+
+// ListMethodsResponse is the response type for list_methods.
+type ListMethodsResponse struct {
+	// `null` or absent means "cannot tell", not "none".
+	// default null
+	Methods []string `json:"methods,omitempty"`
+}
+
 // OnActionRequest is the request type for on_action.
 type OnActionRequest struct {
 	// Fully qualified action type (e.g., 'voice.dictation', 'placement.snap').
@@ -8830,10 +8859,11 @@ type OnCommandsChangedRequest struct {
 	UserCommands []CommandSnapshot `json:"user_commands,omitempty"`
 }
 
-// OnCommandsChangedResponse is the response type for on_commands_changed.
-type OnCommandsChangedResponse struct {
-	// wire int64 (64-bit)
-	ProcessedCount int `json:"processed_count"`
+// OnReadyRequest is the request type for on_ready.
+type OnReadyRequest struct {
+	// What this machine can do: `platform.profile`'s answer, kept by the SDK
+	// so a plugin can ask before it calls.
+	Platform PlatformProfileResponse `json:"platform"`
 }
 
 // OnTranscriptRequest is the request type for on_transcript.
