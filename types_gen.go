@@ -693,8 +693,9 @@ type CommandSpec struct {
 	// multi-word pattern is part-way through (a held partial match).
 	// Default false: a one-word gated command that does not continue
 	// the held match is suppressed until it completes. A command of two
-	// or more words wins without the flag. Set true on one-word cancel
-	// words (`over`) that should be able to abort the held match.
+	// or more words that opens with a literal word wins without the flag.
+	// Set true on one-word cancel words (`over`) that should be able to
+	// abort the held match.
 	CancelsBridge *bool `json:"cancels_bridge,omitempty"`
 	// Category shown in Settings UI command lists.
 	Category *string `json:"category,omitempty"`
