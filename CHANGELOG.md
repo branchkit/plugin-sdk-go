@@ -5,6 +5,20 @@ git history.
 
 ## Unreleased
 
+### Typed event subscription
+
+- One generated helper per platform event, beside the call wrappers:
+  `p.OnAppFocused(func(evt AppFocusedEventParams) { … })`. It ties the
+  event's name to its generated payload type, so a renamed event or field
+  is a build error, where a `p.On("_platform.app.focused", …)` listener
+  compiled and heard nothing. An event with no payload, or a signal (its
+  payload is advisory: re-read the state it announces), takes `func()`.
+  `OnEffectDisplaced` stays the hand-written helper for its event.
+- A payload that does not decode skips the listener and logs one line with
+  the event's name and the payload's size, never the payload.
+- `On` and `OnPattern` are unchanged, for other plugins' events and
+  patterns.
+
 ## 0.17.0 — 2026-10-17
 
 0.16.0 was tagged 2026-10-10 without a section of its own; the changes

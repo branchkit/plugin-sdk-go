@@ -160,7 +160,7 @@ does not start.
 |---|---|
 | Handle an action | generated `Handle<Action>` (from `action_types`), `HandleAction`, `HandleActionTyped[T]` |
 | Serve your own method | `Handle`, `HandleTyped[Req]`, `HandleCommand[Req]` |
-| React to events | `On(event, fn)`, `OnPattern("ext.acme.**", fn)`, `plugin.CurrentEventOrigin()`; emit with `EventsEmit` |
+| React to events | generated `On<Event>(fn)` per platform event (`OnAppFocused(func(AppFocusedEventParams))`; a signal takes `func()`), `On(event, fn)` for other plugins' events, `OnPattern("ext.acme.**", fn)`, `plugin.CurrentEventOrigin()`; emit with `EventsEmit` |
 | Store state | `Get` / `List` / `ListPage` / `Count` / `Put` / `PutMany` / `Patch` / `Delete` / `Replace`, `Subscribe` |
 | Append-only logs | `Append`, `AppendKeyed`, `ListLog`, `GetLogEntry`, `DeleteLogEntry` |
 | Keep a live copy | `MirrorCollection(name)`, `Settings[T](plugin, name)` |
