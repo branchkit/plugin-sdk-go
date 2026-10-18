@@ -5,6 +5,11 @@ git history.
 
 ## Unreleased
 
+## 0.17.0 — 2026-10-17
+
+0.16.0 was tagged 2026-10-10 without a section of its own; the changes
+it carried are among these.
+
 ### Typed wrappers
 
 - The generated wrappers are methods of a generated `Methods` type over a
