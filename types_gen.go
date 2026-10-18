@@ -451,6 +451,15 @@ type CaretContext struct {
 	Before string `json:"before"`
 }
 
+// ClientAuth is auto-generated from the OpenRPC spec.
+// How a client secret reaches the token endpoint (RFC 6749 section 2.3.1).
+type ClientAuth string
+
+const (
+	ClientAuthBasic ClientAuth = "basic"
+	ClientAuthPost  ClientAuth = "post"
+)
+
 // ClipboardContents is auto-generated from the OpenRPC spec.
 // Clipboard contents read from the OS.
 type ClipboardContents struct {
@@ -7738,12 +7747,23 @@ type OauthConnectRequest struct {
 	// given. The person's browser goes here.
 	// default null
 	AuthorizationEndpoint *string `json:"authorization_endpoint,omitempty"`
+	// How the client secret is sent: `basic` (default, HTTP Basic) or
+	// `post` (in the form body), as the service requires.
+	ClientAuth *ClientAuth `json:"client_auth,omitempty"`
 	// Your client ID with this service: one you registered as the plugin's
 	// author, one you obtained by dynamic client registration, or the
 	// person's own. A public client: no secret is sent, PKCE protects the
 	// exchange.
 	// non-empty
 	ClientID string `json:"client_id"`
+	// For a service that insists on a client secret: the name of a secret
+	// in this plugin's drawer, bound to the token endpoint's host. Ask the
+	// person for it with `secrets.request_slot` (their own app's secret),
+	// or store one the service publishes as not secret with `secrets.set`.
+	// BranchKit sends it to the token endpoint and nowhere else; the plugin
+	// never reads it back.
+	// default null
+	ClientSecret *string `json:"client_secret,omitempty"`
 	// The device flow's device authorization endpoint (https), when no
 	// `issuer` is given. The token endpoint must be on its host or a
 	// subdomain.
