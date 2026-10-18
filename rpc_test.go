@@ -83,6 +83,7 @@ func newTestPluginT(t testing.TB) (*Plugin, io.Writer, *bufio.Scanner) {
 		ready:     make(chan struct{}),
 		notifyQ:   newNotifyQueue(),
 	}
+	p.Methods = NewMethods(p)
 
 	platformScanner := bufio.NewScanner(stdoutR)
 	platformScanner.Buffer(make([]byte, 0, 64*1024), 1024*1024)

@@ -8,10 +8,19 @@ import "encoding/json"
 // Ensure json import is used.
 var _ json.RawMessage
 
+// Methods holds one typed wrapper per platform RPC method, over a Caller.
+// Plugin embeds it, so every wrapper is called as a Plugin method; NewMethods
+// gives the same wrappers over any other Caller (a test's fake, or
+// Plugin.WithTimeout).
+type Methods struct{ c Caller }
+
+// NewMethods returns the typed wrappers over c.
+func NewMethods(c Caller) Methods { return Methods{c: c} }
+
 // ActionsList return all action type schemas keyed by fully-qualified name.
-func (p *Plugin) ActionsList() (*ActionsListResponse, error) {
+func (m Methods) ActionsList() (*ActionsListResponse, error) {
 	var result ActionsListResponse
-	err := p.Call(MethodActionsList, nil, &result)
+	err := m.c.Call(MethodActionsList, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -19,9 +28,9 @@ func (p *Plugin) ActionsList() (*ActionsListResponse, error) {
 }
 
 // ActionsPush declare action types at run time, beside the manifest's: replaces what this plugin pushed (all of it, or one group).
-func (p *Plugin) ActionsPush(req ActionsPushRequest) (*ActionsPushResponse, error) {
+func (m Methods) ActionsPush(req ActionsPushRequest) (*ActionsPushResponse, error) {
 	var result ActionsPushResponse
-	err := p.Call(MethodActionsPush, &req, &result)
+	err := m.c.Call(MethodActionsPush, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -29,14 +38,14 @@ func (p *Plugin) ActionsPush(req ActionsPushRequest) (*ActionsPushResponse, erro
 }
 
 // ArtifactDelete delete an installed artifact from the caller's own artifact namespace (ref: <plugin>/<artifact>).
-func (p *Plugin) ArtifactDelete(req ArtifactDeleteRequest) error {
-	return p.Call(MethodArtifactDelete, &req, nil)
+func (m Methods) ArtifactDelete(req ArtifactDeleteRequest) error {
+	return m.c.Call(MethodArtifactDelete, &req, nil)
 }
 
 // BindingsPropose propose settings for the caller's own device triggers; the user answers in BranchKit's own window, and the settings become theirs.
-func (p *Plugin) BindingsPropose(req BindingsProposeRequest) (*BindingsProposeResponse, error) {
+func (m Methods) BindingsPropose(req BindingsProposeRequest) (*BindingsProposeResponse, error) {
 	var result BindingsProposeResponse
-	err := p.Call(MethodBindingsPropose, &req, &result)
+	err := m.c.Call(MethodBindingsPropose, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -44,9 +53,9 @@ func (p *Plugin) BindingsPropose(req BindingsProposeRequest) (*BindingsProposeRe
 }
 
 // BindingsReport report a press of one of the caller's own device triggers; the platform runs what it is bound to.
-func (p *Plugin) BindingsReport(req BindingsReportRequest) (*BindingsReportResponse, error) {
+func (m Methods) BindingsReport(req BindingsReportRequest) (*BindingsReportResponse, error) {
 	var result BindingsReportResponse
-	err := p.Call(MethodBindingsReport, &req, &result)
+	err := m.c.Call(MethodBindingsReport, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -54,9 +63,9 @@ func (p *Plugin) BindingsReport(req BindingsReportRequest) (*BindingsReportRespo
 }
 
 // BindingsSet set what the caller's own device triggers are bound to; the edits fire on the caller's authority.
-func (p *Plugin) BindingsSet(req BindingsSetRequest) (*BindingsSetResponse, error) {
+func (m Methods) BindingsSet(req BindingsSetRequest) (*BindingsSetResponse, error) {
 	var result BindingsSetResponse
-	err := p.Call(MethodBindingsSet, &req, &result)
+	err := m.c.Call(MethodBindingsSet, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -64,9 +73,9 @@ func (p *Plugin) BindingsSet(req BindingsSetRequest) (*BindingsSetResponse, erro
 }
 
 // BindingsSetTriggers publish the triggers the caller's device offers, so Settings can list and bind them.
-func (p *Plugin) BindingsSetTriggers(req BindingsSetTriggersRequest) (*BindingsSetTriggersResponse, error) {
+func (m Methods) BindingsSetTriggers(req BindingsSetTriggersRequest) (*BindingsSetTriggersResponse, error) {
 	var result BindingsSetTriggersResponse
-	err := p.Call(MethodBindingsSetTriggers, &req, &result)
+	err := m.c.Call(MethodBindingsSetTriggers, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -74,9 +83,9 @@ func (p *Plugin) BindingsSetTriggers(req BindingsSetTriggersRequest) (*BindingsS
 }
 
 // BlobPublish announce that bytes up to `length` are complete on one of this plugin's declared blobs. Carries a length, never bytes.
-func (p *Plugin) BlobPublish(req BlobPublishRequest) (*BlobPublishResponse, error) {
+func (m Methods) BlobPublish(req BlobPublishRequest) (*BlobPublishResponse, error) {
 	var result BlobPublishResponse
-	err := p.Call(MethodBlobPublish, &req, &result)
+	err := m.c.Call(MethodBlobPublish, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -84,9 +93,9 @@ func (p *Plugin) BlobPublish(req BlobPublishRequest) (*BlobPublishResponse, erro
 }
 
 // BlobState where a blob stands: its current generation, published length and version. For a restarted provider (which generation to write) and a starting consumer (what to open).
-func (p *Plugin) BlobState(req BlobStateRequest) (*BlobStateResponse, error) {
+func (m Methods) BlobState(req BlobStateRequest) (*BlobStateResponse, error) {
 	var result BlobStateResponse
-	err := p.Call(MethodBlobState, &req, &result)
+	err := m.c.Call(MethodBlobState, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -94,11 +103,11 @@ func (p *Plugin) BlobState(req BlobStateRequest) (*BlobStateResponse, error) {
 }
 
 // CollectionAppend append an entry to a log-kind collection.
-func (p *Plugin) CollectionAppend(req CollectionAppendRequest) (*LogEntry, error) {
+func (m Methods) CollectionAppend(req CollectionAppendRequest) (*LogEntry, error) {
 	var result struct {
 		Entry *LogEntry `json:"entry,omitempty"`
 	}
-	err := p.Call(MethodCollectionAppend, &req, &result)
+	err := m.c.Call(MethodCollectionAppend, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -106,11 +115,11 @@ func (p *Plugin) CollectionAppend(req CollectionAppendRequest) (*LogEntry, error
 }
 
 // CollectionAppendKeyed append a keyed annotation to a keyed log (compacted-changelog shape).
-func (p *Plugin) CollectionAppendKeyed(req CollectionAppendKeyedRequest) (*LogEntry, error) {
+func (m Methods) CollectionAppendKeyed(req CollectionAppendKeyedRequest) (*LogEntry, error) {
 	var result struct {
 		Entry *LogEntry `json:"entry,omitempty"`
 	}
-	err := p.Call(MethodCollectionAppendKeyed, &req, &result)
+	err := m.c.Call(MethodCollectionAppendKeyed, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -118,9 +127,9 @@ func (p *Plugin) CollectionAppendKeyed(req CollectionAppendKeyedRequest) (*LogEn
 }
 
 // CollectionCount total record count for a collection.
-func (p *Plugin) CollectionCount(req CollectionCountRequest) (*CollectionCountResponse, error) {
+func (m Methods) CollectionCount(req CollectionCountRequest) (*CollectionCountResponse, error) {
 	var result CollectionCountResponse
-	err := p.Call(MethodCollectionCount, &req, &result)
+	err := m.c.Call(MethodCollectionCount, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -128,9 +137,9 @@ func (p *Plugin) CollectionCount(req CollectionCountRequest) (*CollectionCountRe
 }
 
 // CollectionDeleteRecords delete records from a collection by id (bulk)..
-func (p *Plugin) CollectionDeleteRecords(req CollectionDeleteRecordsRequest) (*CollectionDeleteRecordsResponse, error) {
+func (m Methods) CollectionDeleteRecords(req CollectionDeleteRecordsRequest) (*CollectionDeleteRecordsResponse, error) {
 	var result CollectionDeleteRecordsResponse
-	err := p.Call(MethodCollectionDeleteRecords, &req, &result)
+	err := m.c.Call(MethodCollectionDeleteRecords, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -138,9 +147,9 @@ func (p *Plugin) CollectionDeleteRecords(req CollectionDeleteRecordsRequest) (*C
 }
 
 // CollectionFetch fetch a single record from a collection by id.
-func (p *Plugin) CollectionFetch(req CollectionFetchRequest) (*CollectionFetchResponse, error) {
+func (m Methods) CollectionFetch(req CollectionFetchRequest) (*CollectionFetchResponse, error) {
 	var result CollectionFetchResponse
-	err := p.Call(MethodCollectionFetch, &req, &result)
+	err := m.c.Call(MethodCollectionFetch, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -148,9 +157,9 @@ func (p *Plugin) CollectionFetch(req CollectionFetchRequest) (*CollectionFetchRe
 }
 
 // CollectionFetchCompacted fetch a keyed log's folded current state for one key (compacted point-read).
-func (p *Plugin) CollectionFetchCompacted(req CollectionFetchCompactedRequest) (*CollectionFetchCompactedResponse, error) {
+func (m Methods) CollectionFetchCompacted(req CollectionFetchCompactedRequest) (*CollectionFetchCompactedResponse, error) {
 	var result CollectionFetchCompactedResponse
-	err := p.Call(MethodCollectionFetchCompacted, &req, &result)
+	err := m.c.Call(MethodCollectionFetchCompacted, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -158,9 +167,9 @@ func (p *Plugin) CollectionFetchCompacted(req CollectionFetchCompactedRequest) (
 }
 
 // CollectionGet read collection data with optional merge metadata.
-func (p *Plugin) CollectionGet(req CollectionGetRequest) (*CollectionGetResponse, error) {
+func (m Methods) CollectionGet(req CollectionGetRequest) (*CollectionGetResponse, error) {
 	var result CollectionGetResponse
-	err := p.Call(MethodCollectionGet, &req, &result)
+	err := m.c.Call(MethodCollectionGet, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -168,9 +177,9 @@ func (p *Plugin) CollectionGet(req CollectionGetRequest) (*CollectionGetResponse
 }
 
 // CollectionList list records in a collection (paginated).
-func (p *Plugin) CollectionList(req CollectionListRequest) (*CollectionListResponse, error) {
+func (m Methods) CollectionList(req CollectionListRequest) (*CollectionListResponse, error) {
 	var result CollectionListResponse
-	err := p.Call(MethodCollectionList, &req, &result)
+	err := m.c.Call(MethodCollectionList, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -178,14 +187,14 @@ func (p *Plugin) CollectionList(req CollectionListRequest) (*CollectionListRespo
 }
 
 // CollectionPatch partial update of an existing record.
-func (p *Plugin) CollectionPatch(req CollectionPatchRequest) error {
-	return p.Call(MethodCollectionPatch, &req, nil)
+func (m Methods) CollectionPatch(req CollectionPatchRequest) error {
+	return m.c.Call(MethodCollectionPatch, &req, nil)
 }
 
 // CollectionPut upsert records by id (bulk). Auto-registers the target as a record-keyed dynamic collection on first plugin call to an unknown name..
-func (p *Plugin) CollectionPut(req CollectionPutRequest) (*CollectionPutResponse, error) {
+func (m Methods) CollectionPut(req CollectionPutRequest) (*CollectionPutResponse, error) {
 	var result CollectionPutResponse
-	err := p.Call(MethodCollectionPut, &req, &result)
+	err := m.c.Call(MethodCollectionPut, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -193,9 +202,9 @@ func (p *Plugin) CollectionPut(req CollectionPutRequest) (*CollectionPutResponse
 }
 
 // CollectionReplace make the records in scope exactly the given set: upsert changed, delete absent, skip byte-identical. Scope is required and bounds what may be deleted..
-func (p *Plugin) CollectionReplace(req CollectionReplaceRequest) (*CollectionReplaceResponse, error) {
+func (m Methods) CollectionReplace(req CollectionReplaceRequest) (*CollectionReplaceResponse, error) {
 	var result CollectionReplaceResponse
-	err := p.Call(MethodCollectionReplace, &req, &result)
+	err := m.c.Call(MethodCollectionReplace, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -203,9 +212,9 @@ func (p *Plugin) CollectionReplace(req CollectionReplaceRequest) (*CollectionRep
 }
 
 // CollectionsCreateUser create a simple user list of words (name + words_text, one entry per line, optional `word = value`) and seed its entries.
-func (p *Plugin) CollectionsCreateUser(req CollectionsCreateUserRequest) (*CollectionsCreateUserResponse, error) {
+func (m Methods) CollectionsCreateUser(req CollectionsCreateUserRequest) (*CollectionsCreateUserResponse, error) {
 	var result CollectionsCreateUserResponse
-	err := p.Call(MethodCollectionsCreateUser, &req, &result)
+	err := m.c.Call(MethodCollectionsCreateUser, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -213,11 +222,11 @@ func (p *Plugin) CollectionsCreateUser(req CollectionsCreateUserRequest) (*Colle
 }
 
 // CollectionsList list collections with entries for display, optionally filtered by kind.
-func (p *Plugin) CollectionsList(req CollectionsListRequest) ([]CollectionsListSection, error) {
+func (m Methods) CollectionsList(req CollectionsListRequest) ([]CollectionsListSection, error) {
 	var result struct {
 		Sections []CollectionsListSection `json:"sections"`
 	}
-	err := p.Call(MethodCollectionsList, &req, &result)
+	err := m.c.Call(MethodCollectionsList, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -225,11 +234,11 @@ func (p *Plugin) CollectionsList(req CollectionsListRequest) ([]CollectionsListS
 }
 
 // CollectionsOwned list the collections holding records the caller owns, with per-group counts — the enumeration half of per-record ownership.
-func (p *Plugin) CollectionsOwned() ([]OwnedCollection, error) {
+func (m Methods) CollectionsOwned() ([]OwnedCollection, error) {
 	var result struct {
 		Owned []OwnedCollection `json:"owned"`
 	}
-	err := p.Call(MethodCollectionsOwned, nil, &result)
+	err := m.c.Call(MethodCollectionsOwned, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -237,16 +246,16 @@ func (p *Plugin) CollectionsOwned() ([]OwnedCollection, error) {
 }
 
 // CommandsAddAlias add an extra spoken form (alias) for an existing command.
-func (p *Plugin) CommandsAddAlias(req CommandsAddAliasRequest) error {
-	return p.Call(MethodCommandsAddAlias, &req, nil)
+func (m Methods) CommandsAddAlias(req CommandsAddAliasRequest) error {
+	return m.c.Call(MethodCommandsAddAlias, &req, nil)
 }
 
 // CommandsConfusability author-time acoustic confusability for a phrase: existing command words it may be misheard as that are co-eligible in its context.
-func (p *Plugin) CommandsConfusability(req CommandsConfusabilityRequest) ([]ConfusabilityFinding, error) {
+func (m Methods) CommandsConfusability(req CommandsConfusabilityRequest) ([]ConfusabilityFinding, error) {
 	var result struct {
 		Findings []ConfusabilityFinding `json:"findings"`
 	}
-	err := p.Call(MethodCommandsConfusability, &req, &result)
+	err := m.c.Call(MethodCommandsConfusability, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -254,16 +263,16 @@ func (p *Plugin) CommandsConfusability(req CommandsConfusabilityRequest) ([]Conf
 }
 
 // CommandsDelete delete a user command by canonical name.
-func (p *Plugin) CommandsDelete(req CommandsDeleteRequest) error {
-	return p.Call(MethodCommandsDelete, &req, nil)
+func (m Methods) CommandsDelete(req CommandsDeleteRequest) error {
+	return m.c.Call(MethodCommandsDelete, &req, nil)
 }
 
 // CommandsEnumerate flat enumeration of every registered command with dynamic/static classification — calibration host source of truth.
-func (p *Plugin) CommandsEnumerate() ([]EnumeratedCommand, error) {
+func (m Methods) CommandsEnumerate() ([]EnumeratedCommand, error) {
 	var result struct {
 		Commands []EnumeratedCommand `json:"commands"`
 	}
-	err := p.Call(MethodCommandsEnumerate, nil, &result)
+	err := m.c.Call(MethodCommandsEnumerate, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -271,9 +280,9 @@ func (p *Plugin) CommandsEnumerate() ([]EnumeratedCommand, error) {
 }
 
 // CommandsList return all commands grouped by category for HUD display.
-func (p *Plugin) CommandsList() (*CommandsListResponse, error) {
+func (m Methods) CommandsList() (*CommandsListResponse, error) {
 	var result CommandsListResponse
-	err := p.Call(MethodCommandsList, nil, &result)
+	err := m.c.Call(MethodCommandsList, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -281,11 +290,11 @@ func (p *Plugin) CommandsList() (*CommandsListResponse, error) {
 }
 
 // CommandsListAliases list the current user command-phrase aliases (added spoken forms).
-func (p *Plugin) CommandsListAliases() ([]CommandOverride, error) {
+func (m Methods) CommandsListAliases() ([]CommandOverride, error) {
 	var result struct {
 		Aliases []CommandOverride `json:"aliases"`
 	}
-	err := p.Call(MethodCommandsListAliases, nil, &result)
+	err := m.c.Call(MethodCommandsListAliases, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -293,11 +302,11 @@ func (p *Plugin) CommandsListAliases() ([]CommandOverride, error) {
 }
 
 // CommandsListOverrides list the current user command-phrase overrides.
-func (p *Plugin) CommandsListOverrides() ([]CommandOverride, error) {
+func (m Methods) CommandsListOverrides() ([]CommandOverride, error) {
 	var result struct {
 		Overrides []CommandOverride `json:"overrides"`
 	}
-	err := p.Call(MethodCommandsListOverrides, nil, &result)
+	err := m.c.Call(MethodCommandsListOverrides, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -305,9 +314,9 @@ func (p *Plugin) CommandsListOverrides() ([]CommandOverride, error) {
 }
 
 // CommandsPush register commands with the matching engine to the matching engine.
-func (p *Plugin) CommandsPush(req CommandsPushRequest) (*CommandsPushResponse, error) {
+func (m Methods) CommandsPush(req CommandsPushRequest) (*CommandsPushResponse, error) {
 	var result CommandsPushResponse
-	err := p.Call(MethodCommandsPush, &req, &result)
+	err := m.c.Call(MethodCommandsPush, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -315,9 +324,9 @@ func (p *Plugin) CommandsPush(req CommandsPushRequest) (*CommandsPushResponse, e
 }
 
 // CommandsRemoveAlias remove an added spoken form (alias) from a command.
-func (p *Plugin) CommandsRemoveAlias(req CommandsRemoveAliasRequest) (*CommandsRemoveAliasResponse, error) {
+func (m Methods) CommandsRemoveAlias(req CommandsRemoveAliasRequest) (*CommandsRemoveAliasResponse, error) {
 	var result CommandsRemoveAliasResponse
-	err := p.Call(MethodCommandsRemoveAlias, &req, &result)
+	err := m.c.Call(MethodCommandsRemoveAlias, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -325,14 +334,14 @@ func (p *Plugin) CommandsRemoveAlias(req CommandsRemoveAliasRequest) (*CommandsR
 }
 
 // CommandsReset reset a command override to the plugin default.
-func (p *Plugin) CommandsReset(req CommandsResetRequest) error {
-	return p.Call(MethodCommandsReset, &req, nil)
+func (m Methods) CommandsReset(req CommandsResetRequest) error {
+	return m.c.Call(MethodCommandsReset, &req, nil)
 }
 
 // CommandsResetOverride remove a user command-phrase override (revert to the plugin default).
-func (p *Plugin) CommandsResetOverride(req CommandsResetOverrideRequest) (*CommandsResetOverrideResponse, error) {
+func (m Methods) CommandsResetOverride(req CommandsResetOverrideRequest) (*CommandsResetOverrideResponse, error) {
 	var result CommandsResetOverrideResponse
-	err := p.Call(MethodCommandsResetOverride, &req, &result)
+	err := m.c.Call(MethodCommandsResetOverride, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -340,9 +349,9 @@ func (p *Plugin) CommandsResetOverride(req CommandsResetOverrideRequest) (*Comma
 }
 
 // CommandsResolve resolve words against the command registry — returns dispatch decision, partial-match feedback, and tiebreaker telemetry in one envelope.
-func (p *Plugin) CommandsResolve(req CommandsResolveRequest) (*CommandsResolveResponse, error) {
+func (m Methods) CommandsResolve(req CommandsResolveRequest) (*CommandsResolveResponse, error) {
 	var result CommandsResolveResponse
-	err := p.Call(MethodCommandsResolve, &req, &result)
+	err := m.c.Call(MethodCommandsResolve, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -350,9 +359,9 @@ func (p *Plugin) CommandsResolve(req CommandsResolveRequest) (*CommandsResolveRe
 }
 
 // CommandsResolvePhrase resolve a whole phrase into the commands it names, in order ("snap left": the mode entry, then the command it gates) — preview changes nothing, commit applies each step's tag writes.
-func (p *Plugin) CommandsResolvePhrase(req CommandsResolvePhraseRequest) (*CommandsResolvePhraseResponse, error) {
+func (m Methods) CommandsResolvePhrase(req CommandsResolvePhraseRequest) (*CommandsResolvePhraseResponse, error) {
 	var result CommandsResolvePhraseResponse
-	err := p.Call(MethodCommandsResolvePhrase, &req, &result)
+	err := m.c.Call(MethodCommandsResolvePhrase, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -360,24 +369,24 @@ func (p *Plugin) CommandsResolvePhrase(req CommandsResolvePhraseRequest) (*Comma
 }
 
 // CommandsSetOverride set a user command-phrase override (replace a command's spoken form).
-func (p *Plugin) CommandsSetOverride(req CommandsSetOverrideRequest) error {
-	return p.Call(MethodCommandsSetOverride, &req, nil)
+func (m Methods) CommandsSetOverride(req CommandsSetOverrideRequest) error {
+	return m.c.Call(MethodCommandsSetOverride, &req, nil)
 }
 
 // ControlSignal send a control signal to the Swift shell via the control stream.
-func (p *Plugin) ControlSignal(req ControlSignalRequest) error {
-	return p.Call(MethodControlSignal, &req, nil)
+func (m Methods) ControlSignal(req ControlSignalRequest) error {
+	return m.c.Call(MethodControlSignal, &req, nil)
 }
 
 // DiscoveryClosed notify that the discovery HUD closed; emits _platform.discovery.closed.
-func (p *Plugin) DiscoveryClosed() error {
-	return p.Call(MethodDiscoveryClosed, nil, nil)
+func (m Methods) DiscoveryClosed() error {
+	return m.c.Call(MethodDiscoveryClosed, nil, nil)
 }
 
 // Dispatch dispatch a typed Action to a plugin or platform builtin.
-func (p *Plugin) Dispatch(req DispatchRequest) (*DispatchResponse, error) {
+func (m Methods) Dispatch(req DispatchRequest) (*DispatchResponse, error) {
 	var result DispatchResponse
-	err := p.Call(MethodDispatch, &req, &result)
+	err := m.c.Call(MethodDispatch, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -385,9 +394,9 @@ func (p *Plugin) Dispatch(req DispatchRequest) (*DispatchResponse, error) {
 }
 
 // EffectsAssert assert an exclusivity-shape platform effect on behalf of this plugin.
-func (p *Plugin) EffectsAssert(req EffectsAssertRequest) (*EffectsAssertResponse, error) {
+func (m Methods) EffectsAssert(req EffectsAssertRequest) (*EffectsAssertResponse, error) {
 	var result EffectsAssertResponse
-	err := p.Call(MethodEffectsAssert, &req, &result)
+	err := m.c.Call(MethodEffectsAssert, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -395,9 +404,9 @@ func (p *Plugin) EffectsAssert(req EffectsAssertRequest) (*EffectsAssertResponse
 }
 
 // EffectsIsActive query whether this plugin holds top-of-stack for the named effect.
-func (p *Plugin) EffectsIsActive(req EffectsIsActiveRequest) (*EffectsIsActiveResponse, error) {
+func (m Methods) EffectsIsActive(req EffectsIsActiveRequest) (*EffectsIsActiveResponse, error) {
 	var result EffectsIsActiveResponse
-	err := p.Call(MethodEffectsIsActive, &req, &result)
+	err := m.c.Call(MethodEffectsIsActive, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -405,9 +414,9 @@ func (p *Plugin) EffectsIsActive(req EffectsIsActiveRequest) (*EffectsIsActiveRe
 }
 
 // EffectsRetract retract this plugin's assertion of an exclusivity-shape platform effect.
-func (p *Plugin) EffectsRetract(req EffectsRetractRequest) (*EffectsRetractResponse, error) {
+func (m Methods) EffectsRetract(req EffectsRetractRequest) (*EffectsRetractResponse, error) {
 	var result EffectsRetractResponse
-	err := p.Call(MethodEffectsRetract, &req, &result)
+	err := m.c.Call(MethodEffectsRetract, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -415,19 +424,19 @@ func (p *Plugin) EffectsRetract(req EffectsRetractRequest) (*EffectsRetractRespo
 }
 
 // EventsAppend append an event to the structured event log.
-func (p *Plugin) EventsAppend(req EventsAppendRequest) error {
-	return p.Call(MethodEventsAppend, &req, nil)
+func (m Methods) EventsAppend(req EventsAppendRequest) error {
+	return m.c.Call(MethodEventsAppend, &req, nil)
 }
 
 // EventsEmit emit a plugin event on the event bus.
-func (p *Plugin) EventsEmit(req EventsEmitRequest) error {
-	return p.Call(MethodEventsEmit, &req, nil)
+func (m Methods) EventsEmit(req EventsEmitRequest) error {
+	return m.c.Call(MethodEventsEmit, &req, nil)
 }
 
 // HttpRequest perform an HTTPS request to one of this plugin's allowed hosts, substituting the plugin's stored secrets into named headers. The plugin never sees the secret; redirects are returned, not followed.
-func (p *Plugin) HttpRequest(req HttpRequestRequest) (*HttpRequestResponse, error) {
+func (m Methods) HttpRequest(req HttpRequestRequest) (*HttpRequestResponse, error) {
 	var result HttpRequestResponse
-	err := p.Call(MethodHttpRequest, &req, &result)
+	err := m.c.Call(MethodHttpRequest, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -435,24 +444,24 @@ func (p *Plugin) HttpRequest(req HttpRequestRequest) (*HttpRequestResponse, erro
 }
 
 // HUDCreateChannel create a new HUD broadcast channel at runtime.
-func (p *Plugin) HUDCreateChannel(req HUDCreateChannelRequest) error {
-	return p.Call(MethodHudCreateChannel, &req, nil)
+func (m Methods) HUDCreateChannel(req HUDCreateChannelRequest) error {
+	return m.c.Call(MethodHudCreateChannel, &req, nil)
 }
 
 // HUDHide hide a HUD channel's window.
-func (p *Plugin) HUDHide(req HUDHideRequest) error {
-	return p.Call(MethodHudHide, &req, nil)
+func (m Methods) HUDHide(req HUDHideRequest) error {
+	return m.c.Call(MethodHudHide, &req, nil)
 }
 
 // HUDPush push HTML fragments to a named HUD channel.
-func (p *Plugin) HUDPush(req HUDPushRequest) error {
-	return p.Call(MethodHudPush, &req, nil)
+func (m Methods) HUDPush(req HUDPushRequest) error {
+	return m.c.Call(MethodHudPush, &req, nil)
 }
 
 // HUDRemoveChannel remove a HUD broadcast channel.
-func (p *Plugin) HUDRemoveChannel(req HUDRemoveChannelRequest) (*HUDRemoveChannelResponse, error) {
+func (m Methods) HUDRemoveChannel(req HUDRemoveChannelRequest) (*HUDRemoveChannelResponse, error) {
 	var result HUDRemoveChannelResponse
-	err := p.Call(MethodHudRemoveChannel, &req, &result)
+	err := m.c.Call(MethodHudRemoveChannel, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -460,31 +469,31 @@ func (p *Plugin) HUDRemoveChannel(req HUDRemoveChannelRequest) (*HUDRemoveChanne
 }
 
 // HUDSetSize report actual rendered size for a HUD channel window.
-func (p *Plugin) HUDSetSize(req HUDSetSizeRequest) error {
-	return p.Call(MethodHudSetSize, &req, nil)
+func (m Methods) HUDSetSize(req HUDSetSizeRequest) error {
+	return m.c.Call(MethodHudSetSize, &req, nil)
 }
 
 // HUDShow show a HUD channel's window.
-func (p *Plugin) HUDShow(req HUDShowRequest) error {
-	return p.Call(MethodHudShow, &req, nil)
+func (m Methods) HUDShow(req HUDShowRequest) error {
+	return m.c.Call(MethodHudShow, &req, nil)
 }
 
 // InputClick click a mouse button.
-func (p *Plugin) InputClick(req InputClickRequest) error {
-	return p.Call(MethodInputClick, &req, nil)
+func (m Methods) InputClick(req InputClickRequest) error {
+	return m.c.Call(MethodInputClick, &req, nil)
 }
 
 // InputClipboardAction perform a clipboard action (copy, paste, or set text).
-func (p *Plugin) InputClipboardAction(req InputClipboardActionRequest) error {
-	return p.Call(MethodInputClipboardAction, &req, nil)
+func (m Methods) InputClipboardAction(req InputClipboardActionRequest) error {
+	return m.c.Call(MethodInputClipboardAction, &req, nil)
 }
 
 // InputClipboardHistory get recent clipboard entries (if available). Exists only on Linux and Windows; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) InputClipboardHistory() ([]string, error) {
+func (m Methods) InputClipboardHistory() ([]string, error) {
 	var result struct {
 		Entries []string `json:"entries"`
 	}
-	err := p.Call(MethodInputClipboardHistory, nil, &result)
+	err := m.c.Call(MethodInputClipboardHistory, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -492,9 +501,9 @@ func (p *Plugin) InputClipboardHistory() ([]string, error) {
 }
 
 // InputClipboardRead read clipboard contents by type.
-func (p *Plugin) InputClipboardRead(req InputClipboardReadRequest) (*InputClipboardReadResponse, error) {
+func (m Methods) InputClipboardRead(req InputClipboardReadRequest) (*InputClipboardReadResponse, error) {
 	var result InputClipboardReadResponse
-	err := p.Call(MethodInputClipboardRead, &req, &result)
+	err := m.c.Call(MethodInputClipboardRead, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -502,11 +511,11 @@ func (p *Plugin) InputClipboardRead(req InputClipboardReadRequest) (*InputClipbo
 }
 
 // InputClipboardReadAll read all items from the clipboard.
-func (p *Plugin) InputClipboardReadAll() ([]ClipboardContents, error) {
+func (m Methods) InputClipboardReadAll() ([]ClipboardContents, error) {
 	var result struct {
 		Items []ClipboardContents `json:"items"`
 	}
-	err := p.Call(MethodInputClipboardReadAll, nil, &result)
+	err := m.c.Call(MethodInputClipboardReadAll, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -514,9 +523,9 @@ func (p *Plugin) InputClipboardReadAll() ([]ClipboardContents, error) {
 }
 
 // InputClipboardReadFormat read clipboard contents in a specific pasteboard type (UTI).
-func (p *Plugin) InputClipboardReadFormat(req InputClipboardReadFormatRequest) (*InputClipboardReadFormatResponse, error) {
+func (m Methods) InputClipboardReadFormat(req InputClipboardReadFormatRequest) (*InputClipboardReadFormatResponse, error) {
 	var result InputClipboardReadFormatResponse
-	err := p.Call(MethodInputClipboardReadFormat, &req, &result)
+	err := m.c.Call(MethodInputClipboardReadFormat, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -524,39 +533,39 @@ func (p *Plugin) InputClipboardReadFormat(req InputClipboardReadFormatRequest) (
 }
 
 // InputClipboardWrite write typed content to clipboard.
-func (p *Plugin) InputClipboardWrite(req InputClipboardWriteRequest) (bool, error) {
+func (m Methods) InputClipboardWrite(req InputClipboardWriteRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodInputClipboardWrite, &req, &result)
+	err := m.c.Call(MethodInputClipboardWrite, &req, &result)
 	return result.Ok, err
 }
 
 // InputClipboardWriteItems write multiple typed items to the clipboard.
-func (p *Plugin) InputClipboardWriteItems(req InputClipboardWriteItemsRequest) (bool, error) {
+func (m Methods) InputClipboardWriteItems(req InputClipboardWriteItemsRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodInputClipboardWriteItems, &req, &result)
+	err := m.c.Call(MethodInputClipboardWriteItems, &req, &result)
 	return result.Ok, err
 }
 
 // InputDoubleClick double-click at position.
-func (p *Plugin) InputDoubleClick(req InputDoubleClickRequest) error {
-	return p.Call(MethodInputDoubleClick, &req, nil)
+func (m Methods) InputDoubleClick(req InputDoubleClickRequest) error {
+	return m.c.Call(MethodInputDoubleClick, &req, nil)
 }
 
 // InputDrag atomic drag: mouse down, move, mouse up.
-func (p *Plugin) InputDrag(req InputDragRequest) error {
-	return p.Call(MethodInputDrag, &req, nil)
+func (m Methods) InputDrag(req InputDragRequest) error {
+	return m.c.Call(MethodInputDrag, &req, nil)
 }
 
 // InputListInputSources list available keyboard input sources.
-func (p *Plugin) InputListInputSources() ([]InputSource, error) {
+func (m Methods) InputListInputSources() ([]InputSource, error) {
 	var result struct {
 		Sources []InputSource `json:"sources"`
 	}
-	err := p.Call(MethodInputListInputSources, nil, &result)
+	err := m.c.Call(MethodInputListInputSources, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -564,14 +573,14 @@ func (p *Plugin) InputListInputSources() ([]InputSource, error) {
 }
 
 // InputMouseButton press, release, or drag-latch a mouse button (for drag operations, etc.).
-func (p *Plugin) InputMouseButton(req InputMouseButtonRequest) error {
-	return p.Call(MethodInputMouseButton, &req, nil)
+func (m Methods) InputMouseButton(req InputMouseButtonRequest) error {
+	return m.c.Call(MethodInputMouseButton, &req, nil)
 }
 
 // InputParseKeyEvent parse a browser key event into a BranchKit combo string.
-func (p *Plugin) InputParseKeyEvent(req InputParseKeyEventRequest) (*InputParseKeyEventResponse, error) {
+func (m Methods) InputParseKeyEvent(req InputParseKeyEventRequest) (*InputParseKeyEventResponse, error) {
 	var result InputParseKeyEventResponse
-	err := p.Call(MethodInputParseKeyEvent, &req, &result)
+	err := m.c.Call(MethodInputParseKeyEvent, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -579,53 +588,53 @@ func (p *Plugin) InputParseKeyEvent(req InputParseKeyEventRequest) (*InputParseK
 }
 
 // InputPressKey press a key by raw keycode or name, with optional modifiers.
-func (p *Plugin) InputPressKey(req InputPressKeyRequest) error {
-	return p.Call(MethodInputPressKey, &req, nil)
+func (m Methods) InputPressKey(req InputPressKeyRequest) error {
+	return m.c.Call(MethodInputPressKey, &req, nil)
 }
 
 // InputRawKey send a raw key event (press, release, or click) without modifier lifting.
-func (p *Plugin) InputRawKey(req InputRawKeyRequest) error {
-	return p.Call(MethodInputRawKey, &req, nil)
+func (m Methods) InputRawKey(req InputRawKeyRequest) error {
+	return m.c.Call(MethodInputRawKey, &req, nil)
 }
 
 // InputRightClick right-click at position.
-func (p *Plugin) InputRightClick(req InputRightClickRequest) error {
-	return p.Call(MethodInputRightClick, &req, nil)
+func (m Methods) InputRightClick(req InputRightClickRequest) error {
+	return m.c.Call(MethodInputRightClick, &req, nil)
 }
 
 // InputScroll scroll the mouse wheel.
-func (p *Plugin) InputScroll(req InputScrollRequest) error {
-	return p.Call(MethodInputScroll, &req, nil)
+func (m Methods) InputScroll(req InputScrollRequest) error {
+	return m.c.Call(MethodInputScroll, &req, nil)
 }
 
 // InputSelectAll select all content (Cmd+A).
-func (p *Plugin) InputSelectAll() error {
-	return p.Call(MethodInputSelectAll, nil, nil)
+func (m Methods) InputSelectAll() error {
+	return m.c.Call(MethodInputSelectAll, nil, nil)
 }
 
 // InputSwitchInputSource switch keyboard input source. On Linux, not available on GNOME (GNOME Shell switches input sources only from its own switcher; it exposes no way to ask).
-func (p *Plugin) InputSwitchInputSource(req InputSwitchInputSourceRequest) (bool, error) {
+func (m Methods) InputSwitchInputSource(req InputSwitchInputSourceRequest) (bool, error) {
 	var result struct {
 		Result bool `json:"result"`
 	}
-	err := p.Call(MethodInputSwitchInputSource, &req, &result)
+	err := m.c.Call(MethodInputSwitchInputSource, &req, &result)
 	return result.Result, err
 }
 
 // InputTripleClick triple-click at position (select paragraph/line).
-func (p *Plugin) InputTripleClick(req InputTripleClickRequest) error {
-	return p.Call(MethodInputTripleClick, &req, nil)
+func (m Methods) InputTripleClick(req InputTripleClickRequest) error {
+	return m.c.Call(MethodInputTripleClick, &req, nil)
 }
 
 // InputTypeText type text into the focused application as synthesized key events (the clipboard is not used).
-func (p *Plugin) InputTypeText(req InputTypeTextRequest) error {
-	return p.Call(MethodInputTypeText, &req, nil)
+func (m Methods) InputTypeText(req InputTypeTextRequest) error {
+	return m.c.Call(MethodInputTypeText, &req, nil)
 }
 
 // NativeAccentColor get the system accent color name.
-func (p *Plugin) NativeAccentColor() (*NativeAccentColorResponse, error) {
+func (m Methods) NativeAccentColor() (*NativeAccentColorResponse, error) {
 	var result NativeAccentColorResponse
-	err := p.Call(MethodNativeAccentColor, nil, &result)
+	err := m.c.Call(MethodNativeAccentColor, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -633,9 +642,9 @@ func (p *Plugin) NativeAccentColor() (*NativeAccentColorResponse, error) {
 }
 
 // NativeAccessibilityDisplayInvert check if display colors are inverted.
-func (p *Plugin) NativeAccessibilityDisplayInvert() (*NativeAccessibilityDisplayInvertResponse, error) {
+func (m Methods) NativeAccessibilityDisplayInvert() (*NativeAccessibilityDisplayInvertResponse, error) {
 	var result NativeAccessibilityDisplayInvertResponse
-	err := p.Call(MethodNativeAccessibilityDisplayInvert, nil, &result)
+	err := m.c.Call(MethodNativeAccessibilityDisplayInvert, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -643,9 +652,9 @@ func (p *Plugin) NativeAccessibilityDisplayInvert() (*NativeAccessibilityDisplay
 }
 
 // NativeAccessibilityEnabled check if accessibility access is granted for this app.
-func (p *Plugin) NativeAccessibilityEnabled() (*NativeAccessibilityEnabledResponse, error) {
+func (m Methods) NativeAccessibilityEnabled() (*NativeAccessibilityEnabledResponse, error) {
 	var result NativeAccessibilityEnabledResponse
-	err := p.Call(MethodNativeAccessibilityEnabled, nil, &result)
+	err := m.c.Call(MethodNativeAccessibilityEnabled, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -653,14 +662,14 @@ func (p *Plugin) NativeAccessibilityEnabled() (*NativeAccessibilityEnabledRespon
 }
 
 // NativeActivateApp bring an app to front by bundle ID.
-func (p *Plugin) NativeActivateApp(req NativeActivateAppRequest) error {
-	return p.Call(MethodNativeActivateApp, &req, nil)
+func (m Methods) NativeActivateApp(req NativeActivateAppRequest) error {
+	return m.c.Call(MethodNativeActivateApp, &req, nil)
 }
 
 // NativeActiveNetworkService get the primary active network service name.
-func (p *Plugin) NativeActiveNetworkService() (*NativeActiveNetworkServiceResponse, error) {
+func (m Methods) NativeActiveNetworkService() (*NativeActiveNetworkServiceResponse, error) {
 	var result NativeActiveNetworkServiceResponse
-	err := p.Call(MethodNativeActiveNetworkService, nil, &result)
+	err := m.c.Call(MethodNativeActiveNetworkService, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -668,11 +677,11 @@ func (p *Plugin) NativeActiveNetworkService() (*NativeActiveNetworkServiceRespon
 }
 
 // NativeActivePorts list processes with listening TCP/UDP ports.
-func (p *Plugin) NativeActivePorts() ([]ListeningPort, error) {
+func (m Methods) NativeActivePorts() ([]ListeningPort, error) {
 	var result struct {
 		Ports []ListeningPort `json:"ports"`
 	}
-	err := p.Call(MethodNativeActivePorts, nil, &result)
+	err := m.c.Call(MethodNativeActivePorts, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -680,11 +689,11 @@ func (p *Plugin) NativeActivePorts() ([]ListeningPort, error) {
 }
 
 // NativeActiveSpace get the active space per display.
-func (p *Plugin) NativeActiveSpace() ([]ActiveSpace, error) {
+func (m Methods) NativeActiveSpace() ([]ActiveSpace, error) {
 	var result struct {
 		Active []ActiveSpace `json:"active"`
 	}
-	err := p.Call(MethodNativeActiveSpace, nil, &result)
+	err := m.c.Call(MethodNativeActiveSpace, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -692,9 +701,9 @@ func (p *Plugin) NativeActiveSpace() ([]ActiveSpace, error) {
 }
 
 // NativeAirdropEnabled check if AirDrop discoverability is enabled. Exists only on macOS and Windows; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeAirdropEnabled() (*NativeAirdropEnabledResponse, error) {
+func (m Methods) NativeAirdropEnabled() (*NativeAirdropEnabledResponse, error) {
 	var result NativeAirdropEnabledResponse
-	err := p.Call(MethodNativeAirdropEnabled, nil, &result)
+	err := m.c.Call(MethodNativeAirdropEnabled, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -702,9 +711,9 @@ func (p *Plugin) NativeAirdropEnabled() (*NativeAirdropEnabledResponse, error) {
 }
 
 // NativeAirportPower check if Wi-Fi (AirPort) is powered on.
-func (p *Plugin) NativeAirportPower() (*NativeAirportPowerResponse, error) {
+func (m Methods) NativeAirportPower() (*NativeAirportPowerResponse, error) {
 	var result NativeAirportPowerResponse
-	err := p.Call(MethodNativeAirportPower, nil, &result)
+	err := m.c.Call(MethodNativeAirportPower, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -712,9 +721,9 @@ func (p *Plugin) NativeAirportPower() (*NativeAirportPowerResponse, error) {
 }
 
 // NativeAlertSound get the system alert sound name.
-func (p *Plugin) NativeAlertSound() (*NativeAlertSoundResponse, error) {
+func (m Methods) NativeAlertSound() (*NativeAlertSoundResponse, error) {
 	var result NativeAlertSoundResponse
-	err := p.Call(MethodNativeAlertSound, nil, &result)
+	err := m.c.Call(MethodNativeAlertSound, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -722,9 +731,9 @@ func (p *Plugin) NativeAlertSound() (*NativeAlertSoundResponse, error) {
 }
 
 // NativeAlertVolume get the alert volume (0.0-1.0).
-func (p *Plugin) NativeAlertVolume() (float64, error) {
+func (m Methods) NativeAlertVolume() (float64, error) {
 	var result float64
-	err := p.Call(MethodNativeAlertVolume, nil, &result)
+	err := m.c.Call(MethodNativeAlertVolume, nil, &result)
 	if err != nil {
 		return 0, err
 	}
@@ -732,11 +741,11 @@ func (p *Plugin) NativeAlertVolume() (float64, error) {
 }
 
 // NativeAllWindowIds list all on-screen window IDs. On Linux, not available on GNOME (GNOME exposes no window list; only the focused window is visible).
-func (p *Plugin) NativeAllWindowIds() ([]string, error) {
+func (m Methods) NativeAllWindowIds() ([]string, error) {
 	var result struct {
 		WindowIds []string `json:"window_ids"`
 	}
-	err := p.Call(MethodNativeAllWindowIds, nil, &result)
+	err := m.c.Call(MethodNativeAllWindowIds, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -744,9 +753,9 @@ func (p *Plugin) NativeAllWindowIds() ([]string, error) {
 }
 
 // NativeApfsSnapshots list APFS local snapshots as `tmutil listlocalsnapshots` prints them — a header line followed by one snapshot name per line, NOT JSON. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeApfsSnapshots() (*NativeApfsSnapshotsResponse, error) {
+func (m Methods) NativeApfsSnapshots() (*NativeApfsSnapshotsResponse, error) {
 	var result NativeApfsSnapshotsResponse
-	err := p.Call(MethodNativeApfsSnapshots, nil, &result)
+	err := m.c.Call(MethodNativeApfsSnapshots, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -754,9 +763,9 @@ func (p *Plugin) NativeApfsSnapshots() (*NativeApfsSnapshotsResponse, error) {
 }
 
 // NativeAppBundlePath get the filesystem path to an app bundle by bundle ID.
-func (p *Plugin) NativeAppBundlePath(req NativeAppBundlePathRequest) (*NativeAppBundlePathResponse, error) {
+func (m Methods) NativeAppBundlePath(req NativeAppBundlePathRequest) (*NativeAppBundlePathResponse, error) {
 	var result NativeAppBundlePathResponse
-	err := p.Call(MethodNativeAppBundlePath, &req, &result)
+	err := m.c.Call(MethodNativeAppBundlePath, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -764,9 +773,9 @@ func (p *Plugin) NativeAppBundlePath(req NativeAppBundlePathRequest) (*NativeApp
 }
 
 // NativeAppFocusedWindowID get focused window ID for app by bundle ID.
-func (p *Plugin) NativeAppFocusedWindowID(req NativeAppFocusedWindowIDRequest) (string, error) {
+func (m Methods) NativeAppFocusedWindowID(req NativeAppFocusedWindowIDRequest) (string, error) {
 	var result string
-	err := p.Call(MethodNativeAppFocusedWindowId, &req, &result)
+	err := m.c.Call(MethodNativeAppFocusedWindowId, &req, &result)
 	if err != nil {
 		return "", err
 	}
@@ -774,9 +783,9 @@ func (p *Plugin) NativeAppFocusedWindowID(req NativeAppFocusedWindowIDRequest) (
 }
 
 // NativeAppIcon get app icon as PNG (base64).
-func (p *Plugin) NativeAppIcon(req NativeAppIconRequest) (*NativeAppIconResponse, error) {
+func (m Methods) NativeAppIcon(req NativeAppIconRequest) (*NativeAppIconResponse, error) {
 	var result NativeAppIconResponse
-	err := p.Call(MethodNativeAppIcon, &req, &result)
+	err := m.c.Call(MethodNativeAppIcon, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -784,9 +793,9 @@ func (p *Plugin) NativeAppIcon(req NativeAppIconRequest) (*NativeAppIconResponse
 }
 
 // NativeAppIconPath get path to app icon.
-func (p *Plugin) NativeAppIconPath(req NativeAppIconPathRequest) (string, error) {
+func (m Methods) NativeAppIconPath(req NativeAppIconPathRequest) (string, error) {
 	var result string
-	err := p.Call(MethodNativeAppIconPath, &req, &result)
+	err := m.c.Call(MethodNativeAppIconPath, &req, &result)
 	if err != nil {
 		return "", err
 	}
@@ -794,9 +803,9 @@ func (p *Plugin) NativeAppIconPath(req NativeAppIconPathRequest) (string, error)
 }
 
 // NativeAppIsAgent check if app is an LSUIElement (agent/background). Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeAppIsAgent(req NativeAppIsAgentRequest) (*NativeAppIsAgentResponse, error) {
+func (m Methods) NativeAppIsAgent(req NativeAppIsAgentRequest) (*NativeAppIsAgentResponse, error) {
 	var result NativeAppIsAgentResponse
-	err := p.Call(MethodNativeAppIsAgent, &req, &result)
+	err := m.c.Call(MethodNativeAppIsAgent, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -804,9 +813,9 @@ func (p *Plugin) NativeAppIsAgent(req NativeAppIsAgentRequest) (*NativeAppIsAgen
 }
 
 // NativeAppIsRunning check if an app is running by bundle ID.
-func (p *Plugin) NativeAppIsRunning(req NativeAppIsRunningRequest) (*NativeAppIsRunningResponse, error) {
+func (m Methods) NativeAppIsRunning(req NativeAppIsRunningRequest) (*NativeAppIsRunningResponse, error) {
 	var result NativeAppIsRunningResponse
-	err := p.Call(MethodNativeAppIsRunning, &req, &result)
+	err := m.c.Call(MethodNativeAppIsRunning, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -814,9 +823,9 @@ func (p *Plugin) NativeAppIsRunning(req NativeAppIsRunningRequest) (*NativeAppIs
 }
 
 // NativeAppLaunchAtLogin check if app is in login items.
-func (p *Plugin) NativeAppLaunchAtLogin(req NativeAppLaunchAtLoginRequest) (*NativeAppLaunchAtLoginResponse, error) {
+func (m Methods) NativeAppLaunchAtLogin(req NativeAppLaunchAtLoginRequest) (*NativeAppLaunchAtLoginResponse, error) {
 	var result NativeAppLaunchAtLoginResponse
-	err := p.Call(MethodNativeAppLaunchAtLogin, &req, &result)
+	err := m.c.Call(MethodNativeAppLaunchAtLogin, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -824,9 +833,9 @@ func (p *Plugin) NativeAppLaunchAtLogin(req NativeAppLaunchAtLoginRequest) (*Nat
 }
 
 // NativeAppMetadata get bundle metadata for an application.
-func (p *Plugin) NativeAppMetadata(req NativeAppMetadataRequest) (*NativeAppMetadataResponse, error) {
+func (m Methods) NativeAppMetadata(req NativeAppMetadataRequest) (*NativeAppMetadataResponse, error) {
 	var result NativeAppMetadataResponse
-	err := p.Call(MethodNativeAppMetadata, &req, &result)
+	err := m.c.Call(MethodNativeAppMetadata, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -834,9 +843,9 @@ func (p *Plugin) NativeAppMetadata(req NativeAppMetadataRequest) (*NativeAppMeta
 }
 
 // NativeAppPath get an app path by bundle ID.
-func (p *Plugin) NativeAppPath(req NativeAppPathRequest) (string, error) {
+func (m Methods) NativeAppPath(req NativeAppPathRequest) (string, error) {
 	var result string
-	err := p.Call(MethodNativeAppPath, &req, &result)
+	err := m.c.Call(MethodNativeAppPath, &req, &result)
 	if err != nil {
 		return "", err
 	}
@@ -844,9 +853,9 @@ func (p *Plugin) NativeAppPath(req NativeAppPathRequest) (string, error) {
 }
 
 // NativeAppPid get PID of running app by bundle ID.
-func (p *Plugin) NativeAppPid(req NativeAppPidRequest) (int, error) {
+func (m Methods) NativeAppPid(req NativeAppPidRequest) (int, error) {
 	var result int
-	err := p.Call(MethodNativeAppPid, &req, &result)
+	err := m.c.Call(MethodNativeAppPid, &req, &result)
 	if err != nil {
 		return 0, err
 	}
@@ -854,9 +863,9 @@ func (p *Plugin) NativeAppPid(req NativeAppPidRequest) (int, error) {
 }
 
 // NativeAppSupportDirectory get the user's Application Support directory path.
-func (p *Plugin) NativeAppSupportDirectory() (*NativeAppSupportDirectoryResponse, error) {
+func (m Methods) NativeAppSupportDirectory() (*NativeAppSupportDirectoryResponse, error) {
 	var result NativeAppSupportDirectoryResponse
-	err := p.Call(MethodNativeAppSupportDirectory, nil, &result)
+	err := m.c.Call(MethodNativeAppSupportDirectory, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -864,11 +873,11 @@ func (p *Plugin) NativeAppSupportDirectory() (*NativeAppSupportDirectoryResponse
 }
 
 // NativeAppVerification the mechanisms that check apps before they run, and their states: Gatekeeper on macOS; SmartScreen and Smart App Control on Windows; none on Linux (an empty list). Facts, not a verdict.
-func (p *Plugin) NativeAppVerification() ([]SecurityFact, error) {
+func (m Methods) NativeAppVerification() ([]SecurityFact, error) {
 	var result struct {
 		Mechanisms []SecurityFact `json:"mechanisms"`
 	}
-	err := p.Call(MethodNativeAppVerification, nil, &result)
+	err := m.c.Call(MethodNativeAppVerification, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -876,9 +885,9 @@ func (p *Plugin) NativeAppVerification() ([]SecurityFact, error) {
 }
 
 // NativeAppVersion get an app version by bundle ID.
-func (p *Plugin) NativeAppVersion(req NativeAppVersionRequest) (string, error) {
+func (m Methods) NativeAppVersion(req NativeAppVersionRequest) (string, error) {
 	var result string
-	err := p.Call(MethodNativeAppVersion, &req, &result)
+	err := m.c.Call(MethodNativeAppVersion, &req, &result)
 	if err != nil {
 		return "", err
 	}
@@ -886,11 +895,11 @@ func (p *Plugin) NativeAppVersion(req NativeAppVersionRequest) (string, error) {
 }
 
 // NativeAppVolumes list each app playing audio, with its own volume and mute, as the system mixer shows it. Exists only on Linux and Windows; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeAppVolumes() ([]AppVolume, error) {
+func (m Methods) NativeAppVolumes() ([]AppVolume, error) {
 	var result struct {
 		Apps []AppVolume `json:"apps"`
 	}
-	err := p.Call(MethodNativeAppVolumes, nil, &result)
+	err := m.c.Call(MethodNativeAppVolumes, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -898,11 +907,11 @@ func (p *Plugin) NativeAppVolumes() ([]AppVolume, error) {
 }
 
 // NativeAppWindows list all windows belonging to a specific app by bundle ID.
-func (p *Plugin) NativeAppWindows(req NativeAppWindowsRequest) ([]WindowDetail, error) {
+func (m Methods) NativeAppWindows(req NativeAppWindowsRequest) ([]WindowDetail, error) {
 	var result struct {
 		Windows []WindowDetail `json:"windows"`
 	}
-	err := p.Call(MethodNativeAppWindows, &req, &result)
+	err := m.c.Call(MethodNativeAppWindows, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -910,9 +919,9 @@ func (p *Plugin) NativeAppWindows(req NativeAppWindowsRequest) ([]WindowDetail, 
 }
 
 // NativeAppWindowsCount count windows for an app by bundle ID. On Linux, not available on GNOME (GNOME exposes no window list; only the focused window is visible).
-func (p *Plugin) NativeAppWindowsCount(req NativeAppWindowsCountRequest) (int, error) {
+func (m Methods) NativeAppWindowsCount(req NativeAppWindowsCountRequest) (int, error) {
 	var result int
-	err := p.Call(MethodNativeAppWindowsCount, &req, &result)
+	err := m.c.Call(MethodNativeAppWindowsCount, &req, &result)
 	if err != nil {
 		return 0, err
 	}
@@ -920,11 +929,11 @@ func (p *Plugin) NativeAppWindowsCount(req NativeAppWindowsCountRequest) (int, e
 }
 
 // NativeAppsForPath applications the OS registers as able to open a given file (Launch Services).
-func (p *Plugin) NativeAppsForPath(req NativeAppsForPathRequest) ([]InstalledApp, error) {
+func (m Methods) NativeAppsForPath(req NativeAppsForPathRequest) ([]InstalledApp, error) {
 	var result struct {
 		Apps []InstalledApp `json:"apps"`
 	}
-	err := p.Call(MethodNativeAppsForPath, &req, &result)
+	err := m.c.Call(MethodNativeAppsForPath, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -932,9 +941,9 @@ func (p *Plugin) NativeAppsForPath(req NativeAppsForPathRequest) ([]InstalledApp
 }
 
 // NativeAudioDeviceVolume get volume state for a specific audio device by UID.
-func (p *Plugin) NativeAudioDeviceVolume(req NativeAudioDeviceVolumeRequest) (*NativeAudioDeviceVolumeResponse, error) {
+func (m Methods) NativeAudioDeviceVolume(req NativeAudioDeviceVolumeRequest) (*NativeAudioDeviceVolumeResponse, error) {
 	var result NativeAudioDeviceVolumeResponse
-	err := p.Call(MethodNativeAudioDeviceVolume, &req, &result)
+	err := m.c.Call(MethodNativeAudioDeviceVolume, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -942,11 +951,11 @@ func (p *Plugin) NativeAudioDeviceVolume(req NativeAudioDeviceVolumeRequest) (*N
 }
 
 // NativeAudioDevices list all audio input and output devices.
-func (p *Plugin) NativeAudioDevices() ([]AudioDevice, error) {
+func (m Methods) NativeAudioDevices() ([]AudioDevice, error) {
 	var result struct {
 		Devices []AudioDevice `json:"devices"`
 	}
-	err := p.Call(MethodNativeAudioDevices, nil, &result)
+	err := m.c.Call(MethodNativeAudioDevices, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -954,9 +963,9 @@ func (p *Plugin) NativeAudioDevices() ([]AudioDevice, error) {
 }
 
 // NativeAudioInputDevice get the default audio input device name.
-func (p *Plugin) NativeAudioInputDevice() (*NativeAudioInputDeviceResponse, error) {
+func (m Methods) NativeAudioInputDevice() (*NativeAudioInputDeviceResponse, error) {
 	var result NativeAudioInputDeviceResponse
-	err := p.Call(MethodNativeAudioInputDevice, nil, &result)
+	err := m.c.Call(MethodNativeAudioInputDevice, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -964,9 +973,9 @@ func (p *Plugin) NativeAudioInputDevice() (*NativeAudioInputDeviceResponse, erro
 }
 
 // NativeAudioInputLevel get the system audio input volume (0.0-1.0).
-func (p *Plugin) NativeAudioInputLevel() (float64, error) {
+func (m Methods) NativeAudioInputLevel() (float64, error) {
 	var result float64
-	err := p.Call(MethodNativeAudioInputLevel, nil, &result)
+	err := m.c.Call(MethodNativeAudioInputLevel, nil, &result)
 	if err != nil {
 		return 0, err
 	}
@@ -974,9 +983,9 @@ func (p *Plugin) NativeAudioInputLevel() (float64, error) {
 }
 
 // NativeAudioOutputDevice get the default audio output device name.
-func (p *Plugin) NativeAudioOutputDevice() (*NativeAudioOutputDeviceResponse, error) {
+func (m Methods) NativeAudioOutputDevice() (*NativeAudioOutputDeviceResponse, error) {
 	var result NativeAudioOutputDeviceResponse
-	err := p.Call(MethodNativeAudioOutputDevice, nil, &result)
+	err := m.c.Call(MethodNativeAudioOutputDevice, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -984,9 +993,9 @@ func (p *Plugin) NativeAudioOutputDevice() (*NativeAudioOutputDeviceResponse, er
 }
 
 // NativeAutoBrightness check if auto-brightness is enabled.
-func (p *Plugin) NativeAutoBrightness() (*NativeAutoBrightnessResponse, error) {
+func (m Methods) NativeAutoBrightness() (*NativeAutoBrightnessResponse, error) {
 	var result NativeAutoBrightnessResponse
-	err := p.Call(MethodNativeAutoBrightness, nil, &result)
+	err := m.c.Call(MethodNativeAutoBrightness, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -994,9 +1003,9 @@ func (p *Plugin) NativeAutoBrightness() (*NativeAutoBrightnessResponse, error) {
 }
 
 // NativeAutoRearrangeSpaces check if Spaces auto-rearrange based on usage. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeAutoRearrangeSpaces() (*NativeAutoRearrangeSpacesResponse, error) {
+func (m Methods) NativeAutoRearrangeSpaces() (*NativeAutoRearrangeSpacesResponse, error) {
 	var result NativeAutoRearrangeSpacesResponse
-	err := p.Call(MethodNativeAutoRearrangeSpaces, nil, &result)
+	err := m.c.Call(MethodNativeAutoRearrangeSpaces, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1004,9 +1013,9 @@ func (p *Plugin) NativeAutoRearrangeSpaces() (*NativeAutoRearrangeSpacesResponse
 }
 
 // NativeAutoTimezone check if automatic timezone is enabled.
-func (p *Plugin) NativeAutoTimezone() (*NativeAutoTimezoneResponse, error) {
+func (m Methods) NativeAutoTimezone() (*NativeAutoTimezoneResponse, error) {
 	var result NativeAutoTimezoneResponse
-	err := p.Call(MethodNativeAutoTimezone, nil, &result)
+	err := m.c.Call(MethodNativeAutoTimezone, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1014,9 +1023,9 @@ func (p *Plugin) NativeAutoTimezone() (*NativeAutoTimezoneResponse, error) {
 }
 
 // NativeAutocorrectEnabled check if auto-correction is enabled. Exists only on macOS and Windows; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeAutocorrectEnabled() (*NativeAutocorrectEnabledResponse, error) {
+func (m Methods) NativeAutocorrectEnabled() (*NativeAutocorrectEnabledResponse, error) {
 	var result NativeAutocorrectEnabledResponse
-	err := p.Call(MethodNativeAutocorrectEnabled, nil, &result)
+	err := m.c.Call(MethodNativeAutocorrectEnabled, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1024,9 +1033,9 @@ func (p *Plugin) NativeAutocorrectEnabled() (*NativeAutocorrectEnabledResponse, 
 }
 
 // NativeAutomaticLoginUser get automatic login username if configured.
-func (p *Plugin) NativeAutomaticLoginUser() (*NativeAutomaticLoginUserResponse, error) {
+func (m Methods) NativeAutomaticLoginUser() (*NativeAutomaticLoginUserResponse, error) {
 	var result NativeAutomaticLoginUserResponse
-	err := p.Call(MethodNativeAutomaticLoginUser, nil, &result)
+	err := m.c.Call(MethodNativeAutomaticLoginUser, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1034,9 +1043,9 @@ func (p *Plugin) NativeAutomaticLoginUser() (*NativeAutomaticLoginUserResponse, 
 }
 
 // NativeAutomationPermission check if automation permission is granted for target app. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeAutomationPermission(req NativeAutomationPermissionRequest) (*NativeAutomationPermissionResponse, error) {
+func (m Methods) NativeAutomationPermission(req NativeAutomationPermissionRequest) (*NativeAutomationPermissionResponse, error) {
 	var result NativeAutomationPermissionResponse
-	err := p.Call(MethodNativeAutomationPermission, &req, &result)
+	err := m.c.Call(MethodNativeAutomationPermission, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1044,9 +1053,9 @@ func (p *Plugin) NativeAutomationPermission(req NativeAutomationPermissionReques
 }
 
 // NativeAxElementAtPoint get the accessibility element at a screen point.
-func (p *Plugin) NativeAxElementAtPoint(req NativeAxElementAtPointRequest) (*NativeAxElementAtPointResponse, error) {
+func (m Methods) NativeAxElementAtPoint(req NativeAxElementAtPointRequest) (*NativeAxElementAtPointResponse, error) {
 	var result NativeAxElementAtPointResponse
-	err := p.Call(MethodNativeAxElementAtPoint, &req, &result)
+	err := m.c.Call(MethodNativeAxElementAtPoint, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1054,9 +1063,9 @@ func (p *Plugin) NativeAxElementAtPoint(req NativeAxElementAtPointRequest) (*Nat
 }
 
 // NativeAxElementTree get the accessibility element tree rooted at an element.
-func (p *Plugin) NativeAxElementTree(req NativeAxElementTreeRequest) (*AccessibleNode, error) {
+func (m Methods) NativeAxElementTree(req NativeAxElementTreeRequest) (*AccessibleNode, error) {
 	var result AccessibleNode
-	err := p.Call(MethodNativeAxElementTree, &req, &result)
+	err := m.c.Call(MethodNativeAxElementTree, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1064,9 +1073,9 @@ func (p *Plugin) NativeAxElementTree(req NativeAxElementTreeRequest) (*Accessibl
 }
 
 // NativeAxObserve observe an application's accessibility changes. Notifications arrive as _platform.ax.notification, addressed to the calling plugin alone: focus_changed, value_changed, name_changed, state_changed, children_changed, selection_changed, window_opened (none named means all).
-func (p *Plugin) NativeAxObserve(req NativeAxObserveRequest) (*NativeAxObserveResponse, error) {
+func (m Methods) NativeAxObserve(req NativeAxObserveRequest) (*NativeAxObserveResponse, error) {
 	var result NativeAxObserveResponse
-	err := p.Call(MethodNativeAxObserve, &req, &result)
+	err := m.c.Call(MethodNativeAxObserve, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1074,18 +1083,18 @@ func (p *Plugin) NativeAxObserve(req NativeAxObserveRequest) (*NativeAxObserveRe
 }
 
 // NativeAxPerformAction perform an action on an accessibility element: press (its default action, what a click does), toggle, focus, expand, collapse, increment, decrement, scroll_into_view, show_menu, or one of the element's own actions by its OS name. The element's actions list says which it offers.
-func (p *Plugin) NativeAxPerformAction(req NativeAxPerformActionRequest) (bool, error) {
+func (m Methods) NativeAxPerformAction(req NativeAxPerformActionRequest) (bool, error) {
 	var result struct {
 		Result bool `json:"result"`
 	}
-	err := p.Call(MethodNativeAxPerformAction, &req, &result)
+	err := m.c.Call(MethodNativeAxPerformAction, &req, &result)
 	return result.Result, err
 }
 
 // NativeAxReadAttributes read specific attributes from an accessibility element.
-func (p *Plugin) NativeAxReadAttributes(req NativeAxReadAttributesRequest) (map[string]json.RawMessage, error) {
+func (m Methods) NativeAxReadAttributes(req NativeAxReadAttributesRequest) (map[string]json.RawMessage, error) {
 	var result map[string]json.RawMessage
-	err := p.Call(MethodNativeAxReadAttributes, &req, &result)
+	err := m.c.Call(MethodNativeAxReadAttributes, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1093,18 +1102,18 @@ func (p *Plugin) NativeAxReadAttributes(req NativeAxReadAttributesRequest) (map[
 }
 
 // NativeAxSetAttribute set an accessibility element's value (text, or a number for a slider or spin button) or focus it (focused: true). Returns whether it took.
-func (p *Plugin) NativeAxSetAttribute(req NativeAxSetAttributeRequest) (bool, error) {
+func (m Methods) NativeAxSetAttribute(req NativeAxSetAttributeRequest) (bool, error) {
 	var result struct {
 		Result bool `json:"result"`
 	}
-	err := p.Call(MethodNativeAxSetAttribute, &req, &result)
+	err := m.c.Call(MethodNativeAxSetAttribute, &req, &result)
 	return result.Result, err
 }
 
 // NativeAxTargets get the controls a person can act on in an application's focused window: role, name, action and bounds of each, without field values (a password field's name is withheld). For choosing a control to act on by voice, gaze or switch.
-func (p *Plugin) NativeAxTargets(req NativeAxTargetsRequest) (*NativeAxTargetsResponse, error) {
+func (m Methods) NativeAxTargets(req NativeAxTargetsRequest) (*NativeAxTargetsResponse, error) {
 	var result NativeAxTargetsResponse
-	err := p.Call(MethodNativeAxTargets, &req, &result)
+	err := m.c.Call(MethodNativeAxTargets, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1112,20 +1121,20 @@ func (p *Plugin) NativeAxTargets(req NativeAxTargetsRequest) (*NativeAxTargetsRe
 }
 
 // NativeAxUnobserve stop observing accessibility changes. A plugin can end only its own subscriptions.
-func (p *Plugin) NativeAxUnobserve(req NativeAxUnobserveRequest) (bool, error) {
+func (m Methods) NativeAxUnobserve(req NativeAxUnobserveRequest) (bool, error) {
 	var result struct {
 		Result bool `json:"result"`
 	}
-	err := p.Call(MethodNativeAxUnobserve, &req, &result)
+	err := m.c.Call(MethodNativeAxUnobserve, &req, &result)
 	return result.Result, err
 }
 
 // NativeBackgroundItems list the programs that run in the background or start at login: launchd jobs on macOS, systemd services and autostart entries on Linux, services, Run keys and Startup folders on Windows.
-func (p *Plugin) NativeBackgroundItems() ([]BackgroundItem, error) {
+func (m Methods) NativeBackgroundItems() ([]BackgroundItem, error) {
 	var result struct {
 		Items []BackgroundItem `json:"items"`
 	}
-	err := p.Call(MethodNativeBackgroundItems, nil, &result)
+	err := m.c.Call(MethodNativeBackgroundItems, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1133,11 +1142,11 @@ func (p *Plugin) NativeBackgroundItems() ([]BackgroundItem, error) {
 }
 
 // NativeBatchIsTileable check which windows can be tiled.
-func (p *Plugin) NativeBatchIsTileable(req NativeBatchIsTileableRequest) ([]TileableEntry, error) {
+func (m Methods) NativeBatchIsTileable(req NativeBatchIsTileableRequest) ([]TileableEntry, error) {
 	var result struct {
 		Results []TileableEntry `json:"results"`
 	}
-	err := p.Call(MethodNativeBatchIsTileable, &req, &result)
+	err := m.c.Call(MethodNativeBatchIsTileable, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1145,11 +1154,11 @@ func (p *Plugin) NativeBatchIsTileable(req NativeBatchIsTileableRequest) ([]Tile
 }
 
 // NativeBatchSetFrames set positions/sizes for multiple windows.
-func (p *Plugin) NativeBatchSetFrames(req NativeBatchSetFramesRequest) ([]WindowFrame, error) {
+func (m Methods) NativeBatchSetFrames(req NativeBatchSetFramesRequest) ([]WindowFrame, error) {
 	var result struct {
 		Results []WindowFrame `json:"results"`
 	}
-	err := p.Call(MethodNativeBatchSetFrames, &req, &result)
+	err := m.c.Call(MethodNativeBatchSetFrames, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1157,9 +1166,9 @@ func (p *Plugin) NativeBatchSetFrames(req NativeBatchSetFramesRequest) ([]Window
 }
 
 // NativeBattery get battery status information.
-func (p *Plugin) NativeBattery() (*NativeBatteryResponse, error) {
+func (m Methods) NativeBattery() (*NativeBatteryResponse, error) {
 	var result NativeBatteryResponse
-	err := p.Call(MethodNativeBattery, nil, &result)
+	err := m.c.Call(MethodNativeBattery, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1167,9 +1176,9 @@ func (p *Plugin) NativeBattery() (*NativeBatteryResponse, error) {
 }
 
 // NativeBatteryCycleCount get battery cycle count.
-func (p *Plugin) NativeBatteryCycleCount() (int, error) {
+func (m Methods) NativeBatteryCycleCount() (int, error) {
 	var result int
-	err := p.Call(MethodNativeBatteryCycleCount, nil, &result)
+	err := m.c.Call(MethodNativeBatteryCycleCount, nil, &result)
 	if err != nil {
 		return 0, err
 	}
@@ -1177,9 +1186,9 @@ func (p *Plugin) NativeBatteryCycleCount() (int, error) {
 }
 
 // NativeBatteryHealth get battery health status. Exists only on macOS and Linux; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeBatteryHealth() (*NativeBatteryHealthResponse, error) {
+func (m Methods) NativeBatteryHealth() (*NativeBatteryHealthResponse, error) {
 	var result NativeBatteryHealthResponse
-	err := p.Call(MethodNativeBatteryHealth, nil, &result)
+	err := m.c.Call(MethodNativeBatteryHealth, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1187,9 +1196,9 @@ func (p *Plugin) NativeBatteryHealth() (*NativeBatteryHealthResponse, error) {
 }
 
 // NativeBatteryMaxCapacity get battery maximum capacity percentage.
-func (p *Plugin) NativeBatteryMaxCapacity() (float64, error) {
+func (m Methods) NativeBatteryMaxCapacity() (float64, error) {
 	var result float64
-	err := p.Call(MethodNativeBatteryMaxCapacity, nil, &result)
+	err := m.c.Call(MethodNativeBatteryMaxCapacity, nil, &result)
 	if err != nil {
 		return 0, err
 	}
@@ -1197,9 +1206,9 @@ func (p *Plugin) NativeBatteryMaxCapacity() (float64, error) {
 }
 
 // NativeBatteryTimeRemaining minutes of battery left at the current rate; absent on AC power or when the OS has no estimate.
-func (p *Plugin) NativeBatteryTimeRemaining() (int, error) {
+func (m Methods) NativeBatteryTimeRemaining() (int, error) {
 	var result int
-	err := p.Call(MethodNativeBatteryTimeRemaining, nil, &result)
+	err := m.c.Call(MethodNativeBatteryTimeRemaining, nil, &result)
 	if err != nil {
 		return 0, err
 	}
@@ -1207,11 +1216,11 @@ func (p *Plugin) NativeBatteryTimeRemaining() (int, error) {
 }
 
 // NativeBleDevices list the Bluetooth LE devices the OS is connected to or paired with that offer a GATT service the plugin declared.
-func (p *Plugin) NativeBleDevices(req NativeBleDevicesRequest) ([]BleDeviceEntry, error) {
+func (m Methods) NativeBleDevices(req NativeBleDevicesRequest) ([]BleDeviceEntry, error) {
 	var result struct {
 		Devices []BleDeviceEntry `json:"devices"`
 	}
-	err := p.Call(MethodNativeBleDevices, &req, &result)
+	err := m.c.Call(MethodNativeBleDevices, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1219,11 +1228,11 @@ func (p *Plugin) NativeBleDevices(req NativeBleDevicesRequest) ([]BleDeviceEntry
 }
 
 // NativeBleDiscoverServices discover the declared GATT services and their characteristics on a Bluetooth LE device the user allowed.
-func (p *Plugin) NativeBleDiscoverServices(req NativeBleDiscoverServicesRequest) ([]BleService, error) {
+func (m Methods) NativeBleDiscoverServices(req NativeBleDiscoverServicesRequest) ([]BleService, error) {
 	var result struct {
 		Services []BleService `json:"services"`
 	}
-	err := p.Call(MethodNativeBleDiscoverServices, &req, &result)
+	err := m.c.Call(MethodNativeBleDiscoverServices, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1231,9 +1240,9 @@ func (p *Plugin) NativeBleDiscoverServices(req NativeBleDiscoverServicesRequest)
 }
 
 // NativeBleSubscribe subscribe to a GATT characteristic's notifications; they arrive as _platform.ble.notification, addressed to the calling plugin alone.
-func (p *Plugin) NativeBleSubscribe(req NativeBleSubscribeRequest) (*NativeBleSubscribeResponse, error) {
+func (m Methods) NativeBleSubscribe(req NativeBleSubscribeRequest) (*NativeBleSubscribeResponse, error) {
 	var result NativeBleSubscribeResponse
-	err := p.Call(MethodNativeBleSubscribe, &req, &result)
+	err := m.c.Call(MethodNativeBleSubscribe, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1241,9 +1250,9 @@ func (p *Plugin) NativeBleSubscribe(req NativeBleSubscribeRequest) (*NativeBleSu
 }
 
 // NativeBleSubscribeAllThenWrite subscribe to all notify characteristics on the listed declared services, then write, in one GATT cycle.
-func (p *Plugin) NativeBleSubscribeAllThenWrite(req NativeBleSubscribeAllThenWriteRequest) (*NativeBleSubscribeAllThenWriteResponse, error) {
+func (m Methods) NativeBleSubscribeAllThenWrite(req NativeBleSubscribeAllThenWriteRequest) (*NativeBleSubscribeAllThenWriteResponse, error) {
 	var result NativeBleSubscribeAllThenWriteResponse
-	err := p.Call(MethodNativeBleSubscribeAllThenWrite, &req, &result)
+	err := m.c.Call(MethodNativeBleSubscribeAllThenWrite, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1251,9 +1260,9 @@ func (p *Plugin) NativeBleSubscribeAllThenWrite(req NativeBleSubscribeAllThenWri
 }
 
 // NativeBleUnsubscribe stop the notifications native.ble_subscribe started on one characteristic.
-func (p *Plugin) NativeBleUnsubscribe(req NativeBleUnsubscribeRequest) (*NativeBleUnsubscribeResponse, error) {
+func (m Methods) NativeBleUnsubscribe(req NativeBleUnsubscribeRequest) (*NativeBleUnsubscribeResponse, error) {
 	var result NativeBleUnsubscribeResponse
-	err := p.Call(MethodNativeBleUnsubscribe, &req, &result)
+	err := m.c.Call(MethodNativeBleUnsubscribe, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1261,9 +1270,9 @@ func (p *Plugin) NativeBleUnsubscribe(req NativeBleUnsubscribeRequest) (*NativeB
 }
 
 // NativeBleWrite write bytes to a GATT characteristic of a declared service on a Bluetooth LE device the user allowed.
-func (p *Plugin) NativeBleWrite(req NativeBleWriteRequest) (*NativeBleWriteResponse, error) {
+func (m Methods) NativeBleWrite(req NativeBleWriteRequest) (*NativeBleWriteResponse, error) {
 	var result NativeBleWriteResponse
-	err := p.Call(MethodNativeBleWrite, &req, &result)
+	err := m.c.Call(MethodNativeBleWrite, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1271,11 +1280,11 @@ func (p *Plugin) NativeBleWrite(req NativeBleWriteRequest) (*NativeBleWriteRespo
 }
 
 // NativeBluetoothDevices list paired/connected Bluetooth devices.
-func (p *Plugin) NativeBluetoothDevices() ([]BluetoothDevice, error) {
+func (m Methods) NativeBluetoothDevices() ([]BluetoothDevice, error) {
 	var result struct {
 		Devices []BluetoothDevice `json:"devices"`
 	}
-	err := p.Call(MethodNativeBluetoothDevices, nil, &result)
+	err := m.c.Call(MethodNativeBluetoothDevices, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1283,9 +1292,9 @@ func (p *Plugin) NativeBluetoothDevices() ([]BluetoothDevice, error) {
 }
 
 // NativeBluetoothPower check if Bluetooth is powered on.
-func (p *Plugin) NativeBluetoothPower() (*NativeBluetoothPowerResponse, error) {
+func (m Methods) NativeBluetoothPower() (*NativeBluetoothPowerResponse, error) {
 	var result NativeBluetoothPowerResponse
-	err := p.Call(MethodNativeBluetoothPower, nil, &result)
+	err := m.c.Call(MethodNativeBluetoothPower, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1293,9 +1302,9 @@ func (p *Plugin) NativeBluetoothPower() (*NativeBluetoothPowerResponse, error) {
 }
 
 // NativeBoldTextEnabled check if bold text is enabled in accessibility. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeBoldTextEnabled() (*NativeBoldTextEnabledResponse, error) {
+func (m Methods) NativeBoldTextEnabled() (*NativeBoldTextEnabledResponse, error) {
 	var result NativeBoldTextEnabledResponse
-	err := p.Call(MethodNativeBoldTextEnabled, nil, &result)
+	err := m.c.Call(MethodNativeBoldTextEnabled, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1303,9 +1312,9 @@ func (p *Plugin) NativeBoldTextEnabled() (*NativeBoldTextEnabledResponse, error)
 }
 
 // NativeBootVolume get the boot volume name.
-func (p *Plugin) NativeBootVolume() (*NativeBootVolumeResponse, error) {
+func (m Methods) NativeBootVolume() (*NativeBootVolumeResponse, error) {
 	var result NativeBootVolumeResponse
-	err := p.Call(MethodNativeBootVolume, nil, &result)
+	err := m.c.Call(MethodNativeBootVolume, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1313,14 +1322,14 @@ func (p *Plugin) NativeBootVolume() (*NativeBootVolumeResponse, error) {
 }
 
 // NativeBorders draw window border overlays (forwarded to Swift shell).
-func (p *Plugin) NativeBorders(req NativeBordersRequest) error {
-	return p.Call(MethodNativeBorders, &req, nil)
+func (m Methods) NativeBorders(req NativeBordersRequest) error {
+	return m.c.Call(MethodNativeBorders, &req, nil)
 }
 
 // NativeBounceKeys check if Bounce Keys is on (repeated presses of one key are ignored). Exists only on Linux and Windows; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeBounceKeys() (*NativeBounceKeysResponse, error) {
+func (m Methods) NativeBounceKeys() (*NativeBounceKeysResponse, error) {
 	var result NativeBounceKeysResponse
-	err := p.Call(MethodNativeBounceKeys, nil, &result)
+	err := m.c.Call(MethodNativeBounceKeys, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1328,9 +1337,9 @@ func (p *Plugin) NativeBounceKeys() (*NativeBounceKeysResponse, error) {
 }
 
 // NativeBrightness get display brightness (0.0-1.0).
-func (p *Plugin) NativeBrightness(req NativeBrightnessRequest) (*NativeBrightnessResponse, error) {
+func (m Methods) NativeBrightness(req NativeBrightnessRequest) (*NativeBrightnessResponse, error) {
 	var result NativeBrightnessResponse
-	err := p.Call(MethodNativeBrightness, &req, &result)
+	err := m.c.Call(MethodNativeBrightness, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1338,9 +1347,9 @@ func (p *Plugin) NativeBrightness(req NativeBrightnessRequest) (*NativeBrightnes
 }
 
 // NativeBundleForRemotePort resolve a loopback TCP connection's remote port to the owning process's app bundle ID.
-func (p *Plugin) NativeBundleForRemotePort(req NativeBundleForRemotePortRequest) (*NativeBundleForRemotePortResponse, error) {
+func (m Methods) NativeBundleForRemotePort(req NativeBundleForRemotePortRequest) (*NativeBundleForRemotePortResponse, error) {
 	var result NativeBundleForRemotePortResponse
-	err := p.Call(MethodNativeBundleForRemotePort, &req, &result)
+	err := m.c.Call(MethodNativeBundleForRemotePort, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1348,11 +1357,11 @@ func (p *Plugin) NativeBundleForRemotePort(req NativeBundleForRemotePortRequest)
 }
 
 // NativeCalendarEventsRange get calendar events in a date range (ISO 8601).
-func (p *Plugin) NativeCalendarEventsRange(req NativeCalendarEventsRangeRequest) ([]CalendarEvent, error) {
+func (m Methods) NativeCalendarEventsRange(req NativeCalendarEventsRangeRequest) ([]CalendarEvent, error) {
 	var result struct {
 		Events []CalendarEvent `json:"events"`
 	}
-	err := p.Call(MethodNativeCalendarEventsRange, &req, &result)
+	err := m.c.Call(MethodNativeCalendarEventsRange, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1360,11 +1369,11 @@ func (p *Plugin) NativeCalendarEventsRange(req NativeCalendarEventsRangeRequest)
 }
 
 // NativeCalendarEventsToday get today's calendar events.
-func (p *Plugin) NativeCalendarEventsToday() ([]CalendarEvent, error) {
+func (m Methods) NativeCalendarEventsToday() ([]CalendarEvent, error) {
 	var result struct {
 		Events []CalendarEvent `json:"events"`
 	}
-	err := p.Call(MethodNativeCalendarEventsToday, nil, &result)
+	err := m.c.Call(MethodNativeCalendarEventsToday, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1372,9 +1381,9 @@ func (p *Plugin) NativeCalendarEventsToday() ([]CalendarEvent, error) {
 }
 
 // NativeCalendarPermission check if calendar access is available. Exists only on macOS and Windows; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeCalendarPermission() (*NativeCalendarPermissionResponse, error) {
+func (m Methods) NativeCalendarPermission() (*NativeCalendarPermissionResponse, error) {
 	var result NativeCalendarPermissionResponse
-	err := p.Call(MethodNativeCalendarPermission, nil, &result)
+	err := m.c.Call(MethodNativeCalendarPermission, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1382,9 +1391,9 @@ func (p *Plugin) NativeCalendarPermission() (*NativeCalendarPermissionResponse, 
 }
 
 // NativeCameraPermission check if camera access is available.
-func (p *Plugin) NativeCameraPermission() (*NativeCameraPermissionResponse, error) {
+func (m Methods) NativeCameraPermission() (*NativeCameraPermissionResponse, error) {
 	var result NativeCameraPermissionResponse
-	err := p.Call(MethodNativeCameraPermission, nil, &result)
+	err := m.c.Call(MethodNativeCameraPermission, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1392,11 +1401,11 @@ func (p *Plugin) NativeCameraPermission() (*NativeCameraPermissionResponse, erro
 }
 
 // NativeCameras list available camera devices.
-func (p *Plugin) NativeCameras() ([]CameraDevice, error) {
+func (m Methods) NativeCameras() ([]CameraDevice, error) {
 	var result struct {
 		Cameras []CameraDevice `json:"cameras"`
 	}
-	err := p.Call(MethodNativeCameras, nil, &result)
+	err := m.c.Call(MethodNativeCameras, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1404,9 +1413,9 @@ func (p *Plugin) NativeCameras() ([]CameraDevice, error) {
 }
 
 // NativeCapsLockState check if Caps Lock is currently on.
-func (p *Plugin) NativeCapsLockState() (*NativeCapsLockStateResponse, error) {
+func (m Methods) NativeCapsLockState() (*NativeCapsLockStateResponse, error) {
 	var result NativeCapsLockStateResponse
-	err := p.Call(MethodNativeCapsLockState, nil, &result)
+	err := m.c.Call(MethodNativeCapsLockState, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1414,9 +1423,9 @@ func (p *Plugin) NativeCapsLockState() (*NativeCapsLockStateResponse, error) {
 }
 
 // NativeCaptureWindow capture a single window as PNG (base64).
-func (p *Plugin) NativeCaptureWindow(req NativeCaptureWindowRequest) (*NativeCaptureWindowResponse, error) {
+func (m Methods) NativeCaptureWindow(req NativeCaptureWindowRequest) (*NativeCaptureWindowResponse, error) {
 	var result NativeCaptureWindowResponse
-	err := p.Call(MethodNativeCaptureWindow, &req, &result)
+	err := m.c.Call(MethodNativeCaptureWindow, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1424,9 +1433,9 @@ func (p *Plugin) NativeCaptureWindow(req NativeCaptureWindowRequest) (*NativeCap
 }
 
 // NativeCaretBounds get where the caret is on screen: the rectangle of the selection's start in the focused text field (a thin one at a bare caret), in the coordinates window frames use. For putting something beside where the person is typing. Answers nothing for a password field, a control with no text, or when the field cannot say..
-func (p *Plugin) NativeCaretBounds() (*NativeCaretBoundsResponse, error) {
+func (m Methods) NativeCaretBounds() (*NativeCaretBoundsResponse, error) {
 	var result NativeCaretBoundsResponse
-	err := p.Call(MethodNativeCaretBounds, nil, &result)
+	err := m.c.Call(MethodNativeCaretBounds, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1434,9 +1443,9 @@ func (p *Plugin) NativeCaretBounds() (*NativeCaretBoundsResponse, error) {
 }
 
 // NativeCaretContext get the text on either side of the caret in the focused text field: up to 64 characters before the selection's start and after its end. For fitting typed text into what is already there (spacing, a capital at a sentence start). Answers nothing for a password field, a control with no text, or when the field cannot be read..
-func (p *Plugin) NativeCaretContext() (*NativeCaretContextResponse, error) {
+func (m Methods) NativeCaretContext() (*NativeCaretContextResponse, error) {
 	var result NativeCaretContextResponse
-	err := p.Call(MethodNativeCaretContext, nil, &result)
+	err := m.c.Call(MethodNativeCaretContext, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1444,23 +1453,23 @@ func (p *Plugin) NativeCaretContext() (*NativeCaretContextResponse, error) {
 }
 
 // NativeCascadeWindows cascade all windows for an app. On Linux, not available on sway (sway tiles windows; there is no cascade); nor on GNOME (GNOME exposes no window list; only the focused window is visible).
-func (p *Plugin) NativeCascadeWindows(req NativeCascadeWindowsRequest) (bool, error) {
+func (m Methods) NativeCascadeWindows(req NativeCascadeWindowsRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeCascadeWindows, &req, &result)
+	err := m.c.Call(MethodNativeCascadeWindows, &req, &result)
 	return result.Ok, err
 }
 
 // NativeCenterWindow center a window on its current display.
-func (p *Plugin) NativeCenterWindow(req NativeCenterWindowRequest) error {
-	return p.Call(MethodNativeCenterWindow, &req, nil)
+func (m Methods) NativeCenterWindow(req NativeCenterWindowRequest) error {
+	return m.c.Call(MethodNativeCenterWindow, &req, nil)
 }
 
 // NativeCheckPermission check a permission status (screen_recording, camera, etc.).
-func (p *Plugin) NativeCheckPermission(req NativeCheckPermissionRequest) (*NativeCheckPermissionResponse, error) {
+func (m Methods) NativeCheckPermission(req NativeCheckPermissionRequest) (*NativeCheckPermissionResponse, error) {
 	var result NativeCheckPermissionResponse
-	err := p.Call(MethodNativeCheckPermission, &req, &result)
+	err := m.c.Call(MethodNativeCheckPermission, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1468,36 +1477,36 @@ func (p *Plugin) NativeCheckPermission(req NativeCheckPermissionRequest) (*Nativ
 }
 
 // NativeClearFileQuarantine remove the quarantine extended attribute from a file.
-func (p *Plugin) NativeClearFileQuarantine(req NativeClearFileQuarantineRequest) (bool, error) {
+func (m Methods) NativeClearFileQuarantine(req NativeClearFileQuarantineRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeClearFileQuarantine, &req, &result)
+	err := m.c.Call(MethodNativeClearFileQuarantine, &req, &result)
 	return result.Ok, err
 }
 
 // NativeClearNotifications clear all delivered notifications for an app. Exists only on Windows; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeClearNotifications(req NativeClearNotificationsRequest) (bool, error) {
+func (m Methods) NativeClearNotifications(req NativeClearNotificationsRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeClearNotifications, &req, &result)
+	err := m.c.Call(MethodNativeClearNotifications, &req, &result)
 	return result.Ok, err
 }
 
 // NativeClickMenuItem click a menu item by navigating the menu bar path.
-func (p *Plugin) NativeClickMenuItem(req NativeClickMenuItemRequest) (bool, error) {
+func (m Methods) NativeClickMenuItem(req NativeClickMenuItemRequest) (bool, error) {
 	var result struct {
 		Result bool `json:"result"`
 	}
-	err := p.Call(MethodNativeClickMenuItem, &req, &result)
+	err := m.c.Call(MethodNativeClickMenuItem, &req, &result)
 	return result.Result, err
 }
 
 // NativeClipboardChangeCount a number that increases when the clipboard changes. Compare two samples to detect a change; a larger value is always later. On macOS this counts copies, so re-copying identical content advances it; elsewhere it counts observed changes, so it does not.
-func (p *Plugin) NativeClipboardChangeCount() (*NativeClipboardChangeCountResponse, error) {
+func (m Methods) NativeClipboardChangeCount() (*NativeClipboardChangeCountResponse, error) {
 	var result NativeClipboardChangeCountResponse
-	err := p.Call(MethodNativeClipboardChangeCount, nil, &result)
+	err := m.c.Call(MethodNativeClipboardChangeCount, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1505,9 +1514,9 @@ func (p *Plugin) NativeClipboardChangeCount() (*NativeClipboardChangeCountRespon
 }
 
 // NativeClipboardImageDimensions get dimensions of clipboard image as WxH.
-func (p *Plugin) NativeClipboardImageDimensions() (*NativeClipboardImageDimensionsResponse, error) {
+func (m Methods) NativeClipboardImageDimensions() (*NativeClipboardImageDimensionsResponse, error) {
 	var result NativeClipboardImageDimensionsResponse
-	err := p.Call(MethodNativeClipboardImageDimensions, nil, &result)
+	err := m.c.Call(MethodNativeClipboardImageDimensions, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1515,18 +1524,18 @@ func (p *Plugin) NativeClipboardImageDimensions() (*NativeClipboardImageDimensio
 }
 
 // NativeCloseWindow close a window by ID.
-func (p *Plugin) NativeCloseWindow(req NativeCloseWindowRequest) (bool, error) {
+func (m Methods) NativeCloseWindow(req NativeCloseWindowRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeCloseWindow, &req, &result)
+	err := m.c.Call(MethodNativeCloseWindow, &req, &result)
 	return result.Ok, err
 }
 
 // NativeColorAtPoint sample pixel color at screen coordinate.
-func (p *Plugin) NativeColorAtPoint(req NativeColorAtPointRequest) (*NativeColorAtPointResponse, error) {
+func (m Methods) NativeColorAtPoint(req NativeColorAtPointRequest) (*NativeColorAtPointResponse, error) {
 	var result NativeColorAtPointResponse
-	err := p.Call(MethodNativeColorAtPoint, &req, &result)
+	err := m.c.Call(MethodNativeColorAtPoint, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1534,9 +1543,9 @@ func (p *Plugin) NativeColorAtPoint(req NativeColorAtPointRequest) (*NativeColor
 }
 
 // NativeComputerName get the computer name.
-func (p *Plugin) NativeComputerName() (*NativeComputerNameResponse, error) {
+func (m Methods) NativeComputerName() (*NativeComputerNameResponse, error) {
 	var result NativeComputerNameResponse
-	err := p.Call(MethodNativeComputerName, nil, &result)
+	err := m.c.Call(MethodNativeComputerName, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1544,9 +1553,9 @@ func (p *Plugin) NativeComputerName() (*NativeComputerNameResponse, error) {
 }
 
 // NativeComputerSleepTime get computer sleep timeout in minutes, for the power source the machine is currently on.
-func (p *Plugin) NativeComputerSleepTime() (int, error) {
+func (m Methods) NativeComputerSleepTime() (int, error) {
 	var result int
-	err := p.Call(MethodNativeComputerSleepTime, nil, &result)
+	err := m.c.Call(MethodNativeComputerSleepTime, nil, &result)
 	if err != nil {
 		return 0, err
 	}
@@ -1554,9 +1563,9 @@ func (p *Plugin) NativeComputerSleepTime() (int, error) {
 }
 
 // NativeContactsPermission check if contacts access is available. Exists only on macOS and Windows; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeContactsPermission() (*NativeContactsPermissionResponse, error) {
+func (m Methods) NativeContactsPermission() (*NativeContactsPermissionResponse, error) {
 	var result NativeContactsPermissionResponse
-	err := p.Call(MethodNativeContactsPermission, nil, &result)
+	err := m.c.Call(MethodNativeContactsPermission, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1564,18 +1573,18 @@ func (p *Plugin) NativeContactsPermission() (*NativeContactsPermissionResponse, 
 }
 
 // NativeCopyFile copy a file or directory.
-func (p *Plugin) NativeCopyFile(req NativeCopyFileRequest) (bool, error) {
+func (m Methods) NativeCopyFile(req NativeCopyFileRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeCopyFile, &req, &result)
+	err := m.c.Call(MethodNativeCopyFile, &req, &result)
 	return result.Ok, err
 }
 
 // NativeCpuInfo get CPU chip name, core count, and architecture.
-func (p *Plugin) NativeCpuInfo() (*NativeCpuInfoResponse, error) {
+func (m Methods) NativeCpuInfo() (*NativeCpuInfoResponse, error) {
 	var result NativeCpuInfoResponse
-	err := p.Call(MethodNativeCpuInfo, nil, &result)
+	err := m.c.Call(MethodNativeCpuInfo, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1583,9 +1592,9 @@ func (p *Plugin) NativeCpuInfo() (*NativeCpuInfoResponse, error) {
 }
 
 // NativeCpuTemperature get CPU temperature in Celsius. Requires the third-party `osx-cpu-temp`; a reading without an explicit scale marker is rejected rather than assumed. Exists only on macOS and Linux; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeCpuTemperature() (float64, error) {
+func (m Methods) NativeCpuTemperature() (float64, error) {
 	var result float64
-	err := p.Call(MethodNativeCpuTemperature, nil, &result)
+	err := m.c.Call(MethodNativeCpuTemperature, nil, &result)
 	if err != nil {
 		return 0, err
 	}
@@ -1593,9 +1602,9 @@ func (p *Plugin) NativeCpuTemperature() (float64, error) {
 }
 
 // NativeCpuUsage get current CPU usage percentage.
-func (p *Plugin) NativeCpuUsage() (float64, error) {
+func (m Methods) NativeCpuUsage() (float64, error) {
 	var result float64
-	err := p.Call(MethodNativeCpuUsage, nil, &result)
+	err := m.c.Call(MethodNativeCpuUsage, nil, &result)
 	if err != nil {
 		return 0, err
 	}
@@ -1603,20 +1612,20 @@ func (p *Plugin) NativeCpuUsage() (float64, error) {
 }
 
 // NativeCreateDirectory create a directory (with intermediate directories).
-func (p *Plugin) NativeCreateDirectory(req NativeCreateDirectoryRequest) (bool, error) {
+func (m Methods) NativeCreateDirectory(req NativeCreateDirectoryRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeCreateDirectory, &req, &result)
+	err := m.c.Call(MethodNativeCreateDirectory, &req, &result)
 	return result.Ok, err
 }
 
 // NativeCronJobs list the current user crontab entries. Exists only on macOS and Linux; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeCronJobs() ([]string, error) {
+func (m Methods) NativeCronJobs() ([]string, error) {
 	var result struct {
 		Jobs []string `json:"jobs"`
 	}
-	err := p.Call(MethodNativeCronJobs, nil, &result)
+	err := m.c.Call(MethodNativeCronJobs, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1624,9 +1633,9 @@ func (p *Plugin) NativeCronJobs() ([]string, error) {
 }
 
 // NativeCurrencyCode get the system currency code (e.g. USD).
-func (p *Plugin) NativeCurrencyCode() (*NativeCurrencyCodeResponse, error) {
+func (m Methods) NativeCurrencyCode() (*NativeCurrencyCodeResponse, error) {
 	var result NativeCurrencyCodeResponse
-	err := p.Call(MethodNativeCurrencyCode, nil, &result)
+	err := m.c.Call(MethodNativeCurrencyCode, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1634,9 +1643,9 @@ func (p *Plugin) NativeCurrencyCode() (*NativeCurrencyCodeResponse, error) {
 }
 
 // NativeCurrentDatetime get the user's current local date and time as an RFC 3339 ZONED timestamp (offset populated, e.g. 2026-09-22T17:32:29-04:00). Deliberately zoned, not UTC: this answers 'what time is it for the user', and the offset is lossless - UTC is derivable from it, while local time is NOT derivable from a UTC instant without separately knowing the zone. Pair with native.timezone for the IANA identifier when you need DST-correct arithmetic rather than the current wall clock..
-func (p *Plugin) NativeCurrentDatetime() (*NativeCurrentDatetimeResponse, error) {
+func (m Methods) NativeCurrentDatetime() (*NativeCurrentDatetimeResponse, error) {
 	var result NativeCurrentDatetimeResponse
-	err := p.Call(MethodNativeCurrentDatetime, nil, &result)
+	err := m.c.Call(MethodNativeCurrentDatetime, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1644,9 +1653,9 @@ func (p *Plugin) NativeCurrentDatetime() (*NativeCurrentDatetimeResponse, error)
 }
 
 // NativeCurrentUser get current user session info.
-func (p *Plugin) NativeCurrentUser() (*NativeCurrentUserResponse, error) {
+func (m Methods) NativeCurrentUser() (*NativeCurrentUserResponse, error) {
 	var result NativeCurrentUserResponse
-	err := p.Call(MethodNativeCurrentUser, nil, &result)
+	err := m.c.Call(MethodNativeCurrentUser, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1654,9 +1663,9 @@ func (p *Plugin) NativeCurrentUser() (*NativeCurrentUserResponse, error) {
 }
 
 // NativeCurrentUserAdmin check if the current user has admin privileges.
-func (p *Plugin) NativeCurrentUserAdmin() (*NativeCurrentUserAdminResponse, error) {
+func (m Methods) NativeCurrentUserAdmin() (*NativeCurrentUserAdminResponse, error) {
 	var result NativeCurrentUserAdminResponse
-	err := p.Call(MethodNativeCurrentUserAdmin, nil, &result)
+	err := m.c.Call(MethodNativeCurrentUserAdmin, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1664,9 +1673,9 @@ func (p *Plugin) NativeCurrentUserAdmin() (*NativeCurrentUserAdminResponse, erro
 }
 
 // NativeCurrentWallpaper get the current desktop wallpaper path.
-func (p *Plugin) NativeCurrentWallpaper() (*NativeCurrentWallpaperResponse, error) {
+func (m Methods) NativeCurrentWallpaper() (*NativeCurrentWallpaperResponse, error) {
 	var result NativeCurrentWallpaperResponse
-	err := p.Call(MethodNativeCurrentWallpaper, nil, &result)
+	err := m.c.Call(MethodNativeCurrentWallpaper, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1674,9 +1683,9 @@ func (p *Plugin) NativeCurrentWallpaper() (*NativeCurrentWallpaperResponse, erro
 }
 
 // NativeCursor get the current cursor position. On Linux, not available on sway, GNOME or other Wayland compositors (Wayland gives a client no global pointer position, and XWayland knows it only over its own windows; only X11 sessions can read it).
-func (p *Plugin) NativeCursor() (*NativeCursorResponse, error) {
+func (m Methods) NativeCursor() (*NativeCursorResponse, error) {
 	var result NativeCursorResponse
-	err := p.Call(MethodNativeCursor, nil, &result)
+	err := m.c.Call(MethodNativeCursor, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1684,9 +1693,9 @@ func (p *Plugin) NativeCursor() (*NativeCursorResponse, error) {
 }
 
 // NativeCursorInfo get current cursor type and position. On Linux, not available on sway, GNOME or other Wayland compositors (Wayland gives a client no global pointer position, and XWayland knows it only over its own windows; only X11 sessions can read it).
-func (p *Plugin) NativeCursorInfo() (*NativeCursorInfoResponse, error) {
+func (m Methods) NativeCursorInfo() (*NativeCursorInfoResponse, error) {
 	var result NativeCursorInfoResponse
-	err := p.Call(MethodNativeCursorInfo, nil, &result)
+	err := m.c.Call(MethodNativeCursorInfo, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1694,9 +1703,9 @@ func (p *Plugin) NativeCursorInfo() (*NativeCursorInfoResponse, error) {
 }
 
 // NativeDarkMode check if dark mode is active.
-func (p *Plugin) NativeDarkMode() (*NativeDarkModeResponse, error) {
+func (m Methods) NativeDarkMode() (*NativeDarkModeResponse, error) {
 	var result NativeDarkModeResponse
-	err := p.Call(MethodNativeDarkMode, nil, &result)
+	err := m.c.Call(MethodNativeDarkMode, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1704,9 +1713,9 @@ func (p *Plugin) NativeDarkMode() (*NativeDarkModeResponse, error) {
 }
 
 // NativeDateFormat get user date format string.
-func (p *Plugin) NativeDateFormat() (*NativeDateFormatResponse, error) {
+func (m Methods) NativeDateFormat() (*NativeDateFormatResponse, error) {
 	var result NativeDateFormatResponse
-	err := p.Call(MethodNativeDateFormat, nil, &result)
+	err := m.c.Call(MethodNativeDateFormat, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1714,9 +1723,9 @@ func (p *Plugin) NativeDateFormat() (*NativeDateFormatResponse, error) {
 }
 
 // NativeDbusCall call one D-Bus method the plugin declared and the user switched on. Exists only on Linux; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeDbusCall(req NativeDbusCallRequest) (*NativeDbusCallResponse, error) {
+func (m Methods) NativeDbusCall(req NativeDbusCallRequest) (*NativeDbusCallResponse, error) {
 	var result NativeDbusCallResponse
-	err := p.Call(MethodNativeDbusCall, &req, &result)
+	err := m.c.Call(MethodNativeDbusCall, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1724,9 +1733,9 @@ func (p *Plugin) NativeDbusCall(req NativeDbusCallRequest) (*NativeDbusCallRespo
 }
 
 // NativeDefaultAppForMimeType get the application that opens files of a MIME type by default, by the identity the app operations use.
-func (p *Plugin) NativeDefaultAppForMimeType(req NativeDefaultAppForMimeTypeRequest) (*NativeDefaultAppForMimeTypeResponse, error) {
+func (m Methods) NativeDefaultAppForMimeType(req NativeDefaultAppForMimeTypeRequest) (*NativeDefaultAppForMimeTypeResponse, error) {
 	var result NativeDefaultAppForMimeTypeResponse
-	err := p.Call(MethodNativeDefaultAppForMimeType, &req, &result)
+	err := m.c.Call(MethodNativeDefaultAppForMimeType, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1734,9 +1743,9 @@ func (p *Plugin) NativeDefaultAppForMimeType(req NativeDefaultAppForMimeTypeRequ
 }
 
 // NativeDefaultAppForUti get the default application for a UTI. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeDefaultAppForUti(req NativeDefaultAppForUtiRequest) (*NativeDefaultAppForUtiResponse, error) {
+func (m Methods) NativeDefaultAppForUti(req NativeDefaultAppForUtiRequest) (*NativeDefaultAppForUtiResponse, error) {
 	var result NativeDefaultAppForUtiResponse
-	err := p.Call(MethodNativeDefaultAppForUti, &req, &result)
+	err := m.c.Call(MethodNativeDefaultAppForUti, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1744,9 +1753,9 @@ func (p *Plugin) NativeDefaultAppForUti(req NativeDefaultAppForUtiRequest) (*Nat
 }
 
 // NativeDefaultBrowser get the default browser bundle ID.
-func (p *Plugin) NativeDefaultBrowser() (*NativeDefaultBrowserResponse, error) {
+func (m Methods) NativeDefaultBrowser() (*NativeDefaultBrowserResponse, error) {
 	var result NativeDefaultBrowserResponse
-	err := p.Call(MethodNativeDefaultBrowser, nil, &result)
+	err := m.c.Call(MethodNativeDefaultBrowser, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1754,9 +1763,9 @@ func (p *Plugin) NativeDefaultBrowser() (*NativeDefaultBrowserResponse, error) {
 }
 
 // NativeDefaultEmailClient get the default email client bundle ID.
-func (p *Plugin) NativeDefaultEmailClient() (*NativeDefaultEmailClientResponse, error) {
+func (m Methods) NativeDefaultEmailClient() (*NativeDefaultEmailClientResponse, error) {
 	var result NativeDefaultEmailClientResponse
-	err := p.Call(MethodNativeDefaultEmailClient, nil, &result)
+	err := m.c.Call(MethodNativeDefaultEmailClient, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1764,9 +1773,9 @@ func (p *Plugin) NativeDefaultEmailClient() (*NativeDefaultEmailClientResponse, 
 }
 
 // NativeDefaultPrinter get the default printer name.
-func (p *Plugin) NativeDefaultPrinter() (*NativeDefaultPrinterResponse, error) {
+func (m Methods) NativeDefaultPrinter() (*NativeDefaultPrinterResponse, error) {
 	var result NativeDefaultPrinterResponse
-	err := p.Call(MethodNativeDefaultPrinter, nil, &result)
+	err := m.c.Call(MethodNativeDefaultPrinter, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1774,18 +1783,18 @@ func (p *Plugin) NativeDefaultPrinter() (*NativeDefaultPrinterResponse, error) {
 }
 
 // NativeDeleteFile delete a file or empty directory.
-func (p *Plugin) NativeDeleteFile(req NativeDeleteFileRequest) (bool, error) {
+func (m Methods) NativeDeleteFile(req NativeDeleteFileRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeDeleteFile, &req, &result)
+	err := m.c.Call(MethodNativeDeleteFile, &req, &result)
 	return result.Ok, err
 }
 
 // NativeDesktopDirectory get the user's Desktop directory path.
-func (p *Plugin) NativeDesktopDirectory() (*NativeDesktopDirectoryResponse, error) {
+func (m Methods) NativeDesktopDirectory() (*NativeDesktopDirectoryResponse, error) {
 	var result NativeDesktopDirectoryResponse
-	err := p.Call(MethodNativeDesktopDirectory, nil, &result)
+	err := m.c.Call(MethodNativeDesktopDirectory, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1793,11 +1802,11 @@ func (p *Plugin) NativeDesktopDirectory() (*NativeDesktopDirectoryResponse, erro
 }
 
 // NativeDetectBarcodes detect barcodes and QR codes from the screen.
-func (p *Plugin) NativeDetectBarcodes() ([]BarcodeResult, error) {
+func (m Methods) NativeDetectBarcodes() ([]BarcodeResult, error) {
 	var result struct {
 		Barcodes []BarcodeResult `json:"barcodes"`
 	}
-	err := p.Call(MethodNativeDetectBarcodes, nil, &result)
+	err := m.c.Call(MethodNativeDetectBarcodes, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1805,11 +1814,11 @@ func (p *Plugin) NativeDetectBarcodes() ([]BarcodeResult, error) {
 }
 
 // NativeDetectBarcodesFile detect barcodes and QR codes from an image file.
-func (p *Plugin) NativeDetectBarcodesFile(req NativeDetectBarcodesFileRequest) ([]BarcodeResult, error) {
+func (m Methods) NativeDetectBarcodesFile(req NativeDetectBarcodesFileRequest) ([]BarcodeResult, error) {
 	var result struct {
 		Barcodes []BarcodeResult `json:"barcodes"`
 	}
-	err := p.Call(MethodNativeDetectBarcodesFile, &req, &result)
+	err := m.c.Call(MethodNativeDetectBarcodesFile, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1817,9 +1826,9 @@ func (p *Plugin) NativeDetectBarcodesFile(req NativeDetectBarcodesFileRequest) (
 }
 
 // NativeDictationEnabled check if Dictation is enabled. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeDictationEnabled() (*NativeDictationEnabledResponse, error) {
+func (m Methods) NativeDictationEnabled() (*NativeDictationEnabledResponse, error) {
 	var result NativeDictationEnabledResponse
-	err := p.Call(MethodNativeDictationEnabled, nil, &result)
+	err := m.c.Call(MethodNativeDictationEnabled, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1827,9 +1836,9 @@ func (p *Plugin) NativeDictationEnabled() (*NativeDictationEnabledResponse, erro
 }
 
 // NativeDifferentiateWithoutColor check if differentiate without color is enabled. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeDifferentiateWithoutColor() (*NativeDifferentiateWithoutColorResponse, error) {
+func (m Methods) NativeDifferentiateWithoutColor() (*NativeDifferentiateWithoutColorResponse, error) {
 	var result NativeDifferentiateWithoutColorResponse
-	err := p.Call(MethodNativeDifferentiateWithoutColor, nil, &result)
+	err := m.c.Call(MethodNativeDifferentiateWithoutColor, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1837,11 +1846,11 @@ func (p *Plugin) NativeDifferentiateWithoutColor() (*NativeDifferentiateWithoutC
 }
 
 // NativeDirectoryContents list files and directories at a path.
-func (p *Plugin) NativeDirectoryContents(req NativeDirectoryContentsRequest) ([]DirectoryEntry, error) {
+func (m Methods) NativeDirectoryContents(req NativeDirectoryContentsRequest) ([]DirectoryEntry, error) {
 	var result struct {
 		Entries []DirectoryEntry `json:"entries"`
 	}
-	err := p.Call(MethodNativeDirectoryContents, &req, &result)
+	err := m.c.Call(MethodNativeDirectoryContents, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1849,9 +1858,9 @@ func (p *Plugin) NativeDirectoryContents(req NativeDirectoryContentsRequest) ([]
 }
 
 // NativeDiskSpace get disk space for a volume (default: /).
-func (p *Plugin) NativeDiskSpace(req NativeDiskSpaceRequest) (*NativeDiskSpaceResponse, error) {
+func (m Methods) NativeDiskSpace(req NativeDiskSpaceRequest) (*NativeDiskSpaceResponse, error) {
 	var result NativeDiskSpaceResponse
-	err := p.Call(MethodNativeDiskSpace, &req, &result)
+	err := m.c.Call(MethodNativeDiskSpace, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1859,9 +1868,9 @@ func (p *Plugin) NativeDiskSpace(req NativeDiskSpaceRequest) (*NativeDiskSpaceRe
 }
 
 // NativeDiskUsage get disk usage for a path (like du -sh).
-func (p *Plugin) NativeDiskUsage(req NativeDiskUsageRequest) (*NativeDiskUsageResponse, error) {
+func (m Methods) NativeDiskUsage(req NativeDiskUsageRequest) (*NativeDiskUsageResponse, error) {
 	var result NativeDiskUsageResponse
-	err := p.Call(MethodNativeDiskUsage, &req, &result)
+	err := m.c.Call(MethodNativeDiskUsage, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1869,14 +1878,14 @@ func (p *Plugin) NativeDiskUsage(req NativeDiskUsageRequest) (*NativeDiskUsageRe
 }
 
 // NativeDismissNotification dismiss a delivered notification (partial — no-op). Exists only on Windows; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeDismissNotification(req NativeDismissNotificationRequest) error {
-	return p.Call(MethodNativeDismissNotification, &req, nil)
+func (m Methods) NativeDismissNotification(req NativeDismissNotificationRequest) error {
+	return m.c.Call(MethodNativeDismissNotification, &req, nil)
 }
 
 // NativeDisplayBrightness get current display brightness (0.0-1.0).
-func (p *Plugin) NativeDisplayBrightness() (float64, error) {
+func (m Methods) NativeDisplayBrightness() (float64, error) {
 	var result float64
-	err := p.Call(MethodNativeDisplayBrightness, nil, &result)
+	err := m.c.Call(MethodNativeDisplayBrightness, nil, &result)
 	if err != nil {
 		return 0, err
 	}
@@ -1884,11 +1893,11 @@ func (p *Plugin) NativeDisplayBrightness() (float64, error) {
 }
 
 // NativeDisplayColorProfiles get color profile for each connected display.
-func (p *Plugin) NativeDisplayColorProfiles() ([]DisplayColorProfile, error) {
+func (m Methods) NativeDisplayColorProfiles() ([]DisplayColorProfile, error) {
 	var result struct {
 		Profiles []DisplayColorProfile `json:"profiles"`
 	}
-	err := p.Call(MethodNativeDisplayColorProfiles, nil, &result)
+	err := m.c.Call(MethodNativeDisplayColorProfiles, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1896,9 +1905,9 @@ func (p *Plugin) NativeDisplayColorProfiles() ([]DisplayColorProfile, error) {
 }
 
 // NativeDisplayCount get the number of connected displays.
-func (p *Plugin) NativeDisplayCount() (*NativeDisplayCountResponse, error) {
+func (m Methods) NativeDisplayCount() (*NativeDisplayCountResponse, error) {
 	var result NativeDisplayCountResponse
-	err := p.Call(MethodNativeDisplayCount, nil, &result)
+	err := m.c.Call(MethodNativeDisplayCount, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1906,9 +1915,9 @@ func (p *Plugin) NativeDisplayCount() (*NativeDisplayCountResponse, error) {
 }
 
 // NativeDisplayMirroring check if display mirroring is active.
-func (p *Plugin) NativeDisplayMirroring() (*NativeDisplayMirroringResponse, error) {
+func (m Methods) NativeDisplayMirroring() (*NativeDisplayMirroringResponse, error) {
 	var result NativeDisplayMirroringResponse
-	err := p.Call(MethodNativeDisplayMirroring, nil, &result)
+	err := m.c.Call(MethodNativeDisplayMirroring, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1916,9 +1925,9 @@ func (p *Plugin) NativeDisplayMirroring() (*NativeDisplayMirroringResponse, erro
 }
 
 // NativeDisplayRefreshRate get display refresh rate in Hz.
-func (p *Plugin) NativeDisplayRefreshRate(req NativeDisplayRefreshRateRequest) (float64, error) {
+func (m Methods) NativeDisplayRefreshRate(req NativeDisplayRefreshRateRequest) (float64, error) {
 	var result float64
-	err := p.Call(MethodNativeDisplayRefreshRate, &req, &result)
+	err := m.c.Call(MethodNativeDisplayRefreshRate, &req, &result)
 	if err != nil {
 		return 0, err
 	}
@@ -1926,11 +1935,11 @@ func (p *Plugin) NativeDisplayRefreshRate(req NativeDisplayRefreshRateRequest) (
 }
 
 // NativeDisplayRotation get rotation for each connected display.
-func (p *Plugin) NativeDisplayRotation() ([]DisplayRotation, error) {
+func (m Methods) NativeDisplayRotation() ([]DisplayRotation, error) {
 	var result struct {
 		Rotations []DisplayRotation `json:"rotations"`
 	}
-	err := p.Call(MethodNativeDisplayRotation, nil, &result)
+	err := m.c.Call(MethodNativeDisplayRotation, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1938,9 +1947,9 @@ func (p *Plugin) NativeDisplayRotation() ([]DisplayRotation, error) {
 }
 
 // NativeDisplayScaleFactor get display scale factor.
-func (p *Plugin) NativeDisplayScaleFactor(req NativeDisplayScaleFactorRequest) (float64, error) {
+func (m Methods) NativeDisplayScaleFactor(req NativeDisplayScaleFactorRequest) (float64, error) {
 	var result float64
-	err := p.Call(MethodNativeDisplayScaleFactor, &req, &result)
+	err := m.c.Call(MethodNativeDisplayScaleFactor, &req, &result)
 	if err != nil {
 		return 0, err
 	}
@@ -1948,9 +1957,9 @@ func (p *Plugin) NativeDisplayScaleFactor(req NativeDisplayScaleFactorRequest) (
 }
 
 // NativeDisplaySerialNumber get primary display serial number.
-func (p *Plugin) NativeDisplaySerialNumber() (*NativeDisplaySerialNumberResponse, error) {
+func (m Methods) NativeDisplaySerialNumber() (*NativeDisplaySerialNumberResponse, error) {
 	var result NativeDisplaySerialNumberResponse
-	err := p.Call(MethodNativeDisplaySerialNumber, nil, &result)
+	err := m.c.Call(MethodNativeDisplaySerialNumber, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1958,9 +1967,9 @@ func (p *Plugin) NativeDisplaySerialNumber() (*NativeDisplaySerialNumberResponse
 }
 
 // NativeDisplaySleepTime get display sleep timeout in minutes, for the power source the machine is currently on.
-func (p *Plugin) NativeDisplaySleepTime() (int, error) {
+func (m Methods) NativeDisplaySleepTime() (int, error) {
 	var result int
-	err := p.Call(MethodNativeDisplaySleepTime, nil, &result)
+	err := m.c.Call(MethodNativeDisplaySleepTime, nil, &result)
 	if err != nil {
 		return 0, err
 	}
@@ -1968,11 +1977,11 @@ func (p *Plugin) NativeDisplaySleepTime() (int, error) {
 }
 
 // NativeDisplays get metadata for all connected displays.
-func (p *Plugin) NativeDisplays() ([]DisplayMetadata, error) {
+func (m Methods) NativeDisplays() ([]DisplayMetadata, error) {
 	var result struct {
 		Displays []DisplayMetadata `json:"displays"`
 	}
-	err := p.Call(MethodNativeDisplays, nil, &result)
+	err := m.c.Call(MethodNativeDisplays, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1980,9 +1989,9 @@ func (p *Plugin) NativeDisplays() ([]DisplayMetadata, error) {
 }
 
 // NativeDnd get Do Not Disturb / Focus state (macOS: via the BranchKit Focus helper shortcut). Exists only on macOS and Linux; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeDnd() (*NativeDndResponse, error) {
+func (m Methods) NativeDnd() (*NativeDndResponse, error) {
 	var result NativeDndResponse
-	err := p.Call(MethodNativeDnd, nil, &result)
+	err := m.c.Call(MethodNativeDnd, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -1990,11 +1999,11 @@ func (p *Plugin) NativeDnd() (*NativeDndResponse, error) {
 }
 
 // NativeDnsServers list configured DNS server addresses.
-func (p *Plugin) NativeDnsServers() ([]string, error) {
+func (m Methods) NativeDnsServers() ([]string, error) {
 	var result struct {
 		Servers []string `json:"servers"`
 	}
-	err := p.Call(MethodNativeDnsServers, nil, &result)
+	err := m.c.Call(MethodNativeDnsServers, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2002,9 +2011,9 @@ func (p *Plugin) NativeDnsServers() ([]string, error) {
 }
 
 // NativeDockAutoHide check if Dock auto-hide is enabled. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeDockAutoHide() (*NativeDockAutoHideResponse, error) {
+func (m Methods) NativeDockAutoHide() (*NativeDockAutoHideResponse, error) {
 	var result NativeDockAutoHideResponse
-	err := p.Call(MethodNativeDockAutoHide, nil, &result)
+	err := m.c.Call(MethodNativeDockAutoHide, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2012,9 +2021,9 @@ func (p *Plugin) NativeDockAutoHide() (*NativeDockAutoHideResponse, error) {
 }
 
 // NativeDockMagnification check if Dock magnification is enabled. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeDockMagnification() (*NativeDockMagnificationResponse, error) {
+func (m Methods) NativeDockMagnification() (*NativeDockMagnificationResponse, error) {
 	var result NativeDockMagnificationResponse
-	err := p.Call(MethodNativeDockMagnification, nil, &result)
+	err := m.c.Call(MethodNativeDockMagnification, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2022,9 +2031,9 @@ func (p *Plugin) NativeDockMagnification() (*NativeDockMagnificationResponse, er
 }
 
 // NativeDockMinimizeEffect get Dock minimize animation. Returns one of: genie, scale, suck. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeDockMinimizeEffect() (*NativeDockMinimizeEffectResponse, error) {
+func (m Methods) NativeDockMinimizeEffect() (*NativeDockMinimizeEffectResponse, error) {
 	var result NativeDockMinimizeEffectResponse
-	err := p.Call(MethodNativeDockMinimizeEffect, nil, &result)
+	err := m.c.Call(MethodNativeDockMinimizeEffect, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2032,9 +2041,9 @@ func (p *Plugin) NativeDockMinimizeEffect() (*NativeDockMinimizeEffectResponse, 
 }
 
 // NativeDockMinimizeToApp check if windows minimize into app icon. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeDockMinimizeToApp() (*NativeDockMinimizeToAppResponse, error) {
+func (m Methods) NativeDockMinimizeToApp() (*NativeDockMinimizeToAppResponse, error) {
 	var result NativeDockMinimizeToAppResponse
-	err := p.Call(MethodNativeDockMinimizeToApp, nil, &result)
+	err := m.c.Call(MethodNativeDockMinimizeToApp, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2042,9 +2051,9 @@ func (p *Plugin) NativeDockMinimizeToApp() (*NativeDockMinimizeToAppResponse, er
 }
 
 // NativeDockPosition get the Dock position (left, bottom, right). Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeDockPosition() (*NativeDockPositionResponse, error) {
+func (m Methods) NativeDockPosition() (*NativeDockPositionResponse, error) {
 	var result NativeDockPositionResponse
-	err := p.Call(MethodNativeDockPosition, nil, &result)
+	err := m.c.Call(MethodNativeDockPosition, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2052,9 +2061,9 @@ func (p *Plugin) NativeDockPosition() (*NativeDockPositionResponse, error) {
 }
 
 // NativeDockShowIndicators check if Dock shows running app indicators. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeDockShowIndicators() (*NativeDockShowIndicatorsResponse, error) {
+func (m Methods) NativeDockShowIndicators() (*NativeDockShowIndicatorsResponse, error) {
 	var result NativeDockShowIndicatorsResponse
-	err := p.Call(MethodNativeDockShowIndicators, nil, &result)
+	err := m.c.Call(MethodNativeDockShowIndicators, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2062,9 +2071,9 @@ func (p *Plugin) NativeDockShowIndicators() (*NativeDockShowIndicatorsResponse, 
 }
 
 // NativeDockShowRecents check if Dock shows recent apps. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeDockShowRecents() (*NativeDockShowRecentsResponse, error) {
+func (m Methods) NativeDockShowRecents() (*NativeDockShowRecentsResponse, error) {
 	var result NativeDockShowRecentsResponse
-	err := p.Call(MethodNativeDockShowRecents, nil, &result)
+	err := m.c.Call(MethodNativeDockShowRecents, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2072,9 +2081,9 @@ func (p *Plugin) NativeDockShowRecents() (*NativeDockShowRecentsResponse, error)
 }
 
 // NativeDockSize get the Dock tile size (0-128). Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeDockSize() (int, error) {
+func (m Methods) NativeDockSize() (int, error) {
 	var result int
-	err := p.Call(MethodNativeDockSize, nil, &result)
+	err := m.c.Call(MethodNativeDockSize, nil, &result)
 	if err != nil {
 		return 0, err
 	}
@@ -2082,9 +2091,9 @@ func (p *Plugin) NativeDockSize() (int, error) {
 }
 
 // NativeDocumentsDirectory get the user's Documents directory path.
-func (p *Plugin) NativeDocumentsDirectory() (*NativeDocumentsDirectoryResponse, error) {
+func (m Methods) NativeDocumentsDirectory() (*NativeDocumentsDirectoryResponse, error) {
 	var result NativeDocumentsDirectoryResponse
-	err := p.Call(MethodNativeDocumentsDirectory, nil, &result)
+	err := m.c.Call(MethodNativeDocumentsDirectory, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2092,9 +2101,9 @@ func (p *Plugin) NativeDocumentsDirectory() (*NativeDocumentsDirectoryResponse, 
 }
 
 // NativeDownloadsDirectory get the user's Downloads directory path.
-func (p *Plugin) NativeDownloadsDirectory() (*NativeDownloadsDirectoryResponse, error) {
+func (m Methods) NativeDownloadsDirectory() (*NativeDownloadsDirectoryResponse, error) {
 	var result NativeDownloadsDirectoryResponse
-	err := p.Call(MethodNativeDownloadsDirectory, nil, &result)
+	err := m.c.Call(MethodNativeDownloadsDirectory, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2102,9 +2111,9 @@ func (p *Plugin) NativeDownloadsDirectory() (*NativeDownloadsDirectoryResponse, 
 }
 
 // NativeDwellClick check if the system's dwell click is on (holding the pointer still clicks). Exists only on macOS and Linux; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeDwellClick() (*NativeDwellClickResponse, error) {
+func (m Methods) NativeDwellClick() (*NativeDwellClickResponse, error) {
 	var result NativeDwellClickResponse
-	err := p.Call(MethodNativeDwellClick, nil, &result)
+	err := m.c.Call(MethodNativeDwellClick, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2112,27 +2121,27 @@ func (p *Plugin) NativeDwellClick() (*NativeDwellClickResponse, error) {
 }
 
 // NativeEjectDisk eject a mounted volume by path.
-func (p *Plugin) NativeEjectDisk(req NativeEjectDiskRequest) (bool, error) {
+func (m Methods) NativeEjectDisk(req NativeEjectDiskRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeEjectDisk, &req, &result)
+	err := m.c.Call(MethodNativeEjectDisk, &req, &result)
 	return result.Ok, err
 }
 
 // NativeEmptyTrash empty the Trash.
-func (p *Plugin) NativeEmptyTrash() (bool, error) {
+func (m Methods) NativeEmptyTrash() (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeEmptyTrash, nil, &result)
+	err := m.c.Call(MethodNativeEmptyTrash, nil, &result)
 	return result.Ok, err
 }
 
 // NativeEnvVar read an environment variable.
-func (p *Plugin) NativeEnvVar(req NativeEnvVarRequest) (*NativeEnvVarResponse, error) {
+func (m Methods) NativeEnvVar(req NativeEnvVarRequest) (*NativeEnvVarResponse, error) {
 	var result NativeEnvVarResponse
-	err := p.Call(MethodNativeEnvVar, &req, &result)
+	err := m.c.Call(MethodNativeEnvVar, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2140,9 +2149,9 @@ func (p *Plugin) NativeEnvVar(req NativeEnvVarRequest) (*NativeEnvVarResponse, e
 }
 
 // NativeEpochTime get current Unix epoch time in seconds.
-func (p *Plugin) NativeEpochTime() (*NativeEpochTimeResponse, error) {
+func (m Methods) NativeEpochTime() (*NativeEpochTimeResponse, error) {
 	var result NativeEpochTimeResponse
-	err := p.Call(MethodNativeEpochTime, nil, &result)
+	err := m.c.Call(MethodNativeEpochTime, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2150,9 +2159,9 @@ func (p *Plugin) NativeEpochTime() (*NativeEpochTimeResponse, error) {
 }
 
 // NativeExtendedAttributes read extended attributes (xattrs) from a file.
-func (p *Plugin) NativeExtendedAttributes(req NativeExtendedAttributesRequest) (json.RawMessage, error) {
+func (m Methods) NativeExtendedAttributes(req NativeExtendedAttributesRequest) (json.RawMessage, error) {
 	var result json.RawMessage
-	err := p.Call(MethodNativeExtendedAttributes, &req, &result)
+	err := m.c.Call(MethodNativeExtendedAttributes, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2160,11 +2169,11 @@ func (p *Plugin) NativeExtendedAttributes(req NativeExtendedAttributesRequest) (
 }
 
 // NativeExternalDisks list mounted external/removable disks.
-func (p *Plugin) NativeExternalDisks() ([]ExternalDisk, error) {
+func (m Methods) NativeExternalDisks() ([]ExternalDisk, error) {
 	var result struct {
 		Disks []ExternalDisk `json:"disks"`
 	}
-	err := p.Call(MethodNativeExternalDisks, nil, &result)
+	err := m.c.Call(MethodNativeExternalDisks, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2172,11 +2181,11 @@ func (p *Plugin) NativeExternalDisks() ([]ExternalDisk, error) {
 }
 
 // NativeExternalDisplayNames get names of connected external displays.
-func (p *Plugin) NativeExternalDisplayNames() ([]string, error) {
+func (m Methods) NativeExternalDisplayNames() ([]string, error) {
 	var result struct {
 		Names []string `json:"names"`
 	}
-	err := p.Call(MethodNativeExternalDisplayNames, nil, &result)
+	err := m.c.Call(MethodNativeExternalDisplayNames, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2184,11 +2193,11 @@ func (p *Plugin) NativeExternalDisplayNames() ([]string, error) {
 }
 
 // NativeFanSpeeds the machine's fans and their speeds in RPM, with each fan's minimum and maximum where the OS reports them. Empty on a machine without fans.
-func (p *Plugin) NativeFanSpeeds() ([]FanSpeed, error) {
+func (m Methods) NativeFanSpeeds() ([]FanSpeed, error) {
 	var result struct {
 		Fans []FanSpeed `json:"fans"`
 	}
-	err := p.Call(MethodNativeFanSpeeds, nil, &result)
+	err := m.c.Call(MethodNativeFanSpeeds, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2196,9 +2205,9 @@ func (p *Plugin) NativeFanSpeeds() ([]FanSpeed, error) {
 }
 
 // NativeFastUserSwitching check if fast user switching is enabled.
-func (p *Plugin) NativeFastUserSwitching() (*NativeFastUserSwitchingResponse, error) {
+func (m Methods) NativeFastUserSwitching() (*NativeFastUserSwitchingResponse, error) {
 	var result NativeFastUserSwitchingResponse
-	err := p.Call(MethodNativeFastUserSwitching, nil, &result)
+	err := m.c.Call(MethodNativeFastUserSwitching, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2206,9 +2215,9 @@ func (p *Plugin) NativeFastUserSwitching() (*NativeFastUserSwitchingResponse, er
 }
 
 // NativeFileAcl get file ACL as string.
-func (p *Plugin) NativeFileAcl(req NativeFileAclRequest) (string, error) {
+func (m Methods) NativeFileAcl(req NativeFileAclRequest) (string, error) {
 	var result string
-	err := p.Call(MethodNativeFileAcl, &req, &result)
+	err := m.c.Call(MethodNativeFileAcl, &req, &result)
 	if err != nil {
 		return "", err
 	}
@@ -2216,9 +2225,9 @@ func (p *Plugin) NativeFileAcl(req NativeFileAclRequest) (string, error) {
 }
 
 // NativeFileCreationDate get file creation date as ISO string.
-func (p *Plugin) NativeFileCreationDate(req NativeFileCreationDateRequest) (string, error) {
+func (m Methods) NativeFileCreationDate(req NativeFileCreationDateRequest) (string, error) {
 	var result string
-	err := p.Call(MethodNativeFileCreationDate, &req, &result)
+	err := m.c.Call(MethodNativeFileCreationDate, &req, &result)
 	if err != nil {
 		return "", err
 	}
@@ -2226,9 +2235,9 @@ func (p *Plugin) NativeFileCreationDate(req NativeFileCreationDateRequest) (stri
 }
 
 // NativeFileExists check if a file or directory exists.
-func (p *Plugin) NativeFileExists(req NativeFileExistsRequest) (*NativeFileExistsResponse, error) {
+func (m Methods) NativeFileExists(req NativeFileExistsRequest) (*NativeFileExistsResponse, error) {
 	var result NativeFileExistsResponse
-	err := p.Call(MethodNativeFileExists, &req, &result)
+	err := m.c.Call(MethodNativeFileExists, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2236,11 +2245,11 @@ func (p *Plugin) NativeFileExists(req NativeFileExistsRequest) (*NativeFileExist
 }
 
 // NativeFileExtendedAttributes list extended attributes on a file.
-func (p *Plugin) NativeFileExtendedAttributes(req NativeFileExtendedAttributesRequest) ([]string, error) {
+func (m Methods) NativeFileExtendedAttributes(req NativeFileExtendedAttributesRequest) ([]string, error) {
 	var result struct {
 		Attributes []string `json:"attributes"`
 	}
-	err := p.Call(MethodNativeFileExtendedAttributes, &req, &result)
+	err := m.c.Call(MethodNativeFileExtendedAttributes, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2248,9 +2257,9 @@ func (p *Plugin) NativeFileExtendedAttributes(req NativeFileExtendedAttributesRe
 }
 
 // NativeFileHash compute SHA-256 hash of a file.
-func (p *Plugin) NativeFileHash(req NativeFileHashRequest) (*NativeFileHashResponse, error) {
+func (m Methods) NativeFileHash(req NativeFileHashRequest) (*NativeFileHashResponse, error) {
 	var result NativeFileHashResponse
-	err := p.Call(MethodNativeFileHash, &req, &result)
+	err := m.c.Call(MethodNativeFileHash, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2258,9 +2267,9 @@ func (p *Plugin) NativeFileHash(req NativeFileHashRequest) (*NativeFileHashRespo
 }
 
 // NativeFileMetadata get metadata for a file or directory (size, dates, permissions).
-func (p *Plugin) NativeFileMetadata(req NativeFileMetadataRequest) (*NativeFileMetadataResponse, error) {
+func (m Methods) NativeFileMetadata(req NativeFileMetadataRequest) (*NativeFileMetadataResponse, error) {
 	var result NativeFileMetadataResponse
-	err := p.Call(MethodNativeFileMetadata, &req, &result)
+	err := m.c.Call(MethodNativeFileMetadata, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2268,9 +2277,9 @@ func (p *Plugin) NativeFileMetadata(req NativeFileMetadataRequest) (*NativeFileM
 }
 
 // NativeFileMimeType get a file's MIME type (text/plain, image/png), the file-type name every OS shares.
-func (p *Plugin) NativeFileMimeType(req NativeFileMimeTypeRequest) (string, error) {
+func (m Methods) NativeFileMimeType(req NativeFileMimeTypeRequest) (string, error) {
 	var result string
-	err := p.Call(MethodNativeFileMimeType, &req, &result)
+	err := m.c.Call(MethodNativeFileMimeType, &req, &result)
 	if err != nil {
 		return "", err
 	}
@@ -2278,9 +2287,9 @@ func (p *Plugin) NativeFileMimeType(req NativeFileMimeTypeRequest) (string, erro
 }
 
 // NativeFileModificationDate get file modification date as ISO string.
-func (p *Plugin) NativeFileModificationDate(req NativeFileModificationDateRequest) (string, error) {
+func (m Methods) NativeFileModificationDate(req NativeFileModificationDateRequest) (string, error) {
 	var result string
-	err := p.Call(MethodNativeFileModificationDate, &req, &result)
+	err := m.c.Call(MethodNativeFileModificationDate, &req, &result)
 	if err != nil {
 		return "", err
 	}
@@ -2288,9 +2297,9 @@ func (p *Plugin) NativeFileModificationDate(req NativeFileModificationDateReques
 }
 
 // NativeFileOwner get the owner user and group of a file.
-func (p *Plugin) NativeFileOwner(req NativeFileOwnerRequest) (*NativeFileOwnerResponse, error) {
+func (m Methods) NativeFileOwner(req NativeFileOwnerRequest) (*NativeFileOwnerResponse, error) {
 	var result NativeFileOwnerResponse
-	err := p.Call(MethodNativeFileOwner, &req, &result)
+	err := m.c.Call(MethodNativeFileOwner, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2298,9 +2307,9 @@ func (p *Plugin) NativeFileOwner(req NativeFileOwnerRequest) (*NativeFileOwnerRe
 }
 
 // NativeFileQuarantine check if a file has a quarantine flag.
-func (p *Plugin) NativeFileQuarantine(req NativeFileQuarantineRequest) (*NativeFileQuarantineResponse, error) {
+func (m Methods) NativeFileQuarantine(req NativeFileQuarantineRequest) (*NativeFileQuarantineResponse, error) {
 	var result NativeFileQuarantineResponse
-	err := p.Call(MethodNativeFileQuarantine, &req, &result)
+	err := m.c.Call(MethodNativeFileQuarantine, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2308,9 +2317,9 @@ func (p *Plugin) NativeFileQuarantine(req NativeFileQuarantineRequest) (*NativeF
 }
 
 // NativeFileSharingEnabled check if file sharing (SMB) is enabled.
-func (p *Plugin) NativeFileSharingEnabled() (*NativeFileSharingEnabledResponse, error) {
+func (m Methods) NativeFileSharingEnabled() (*NativeFileSharingEnabledResponse, error) {
 	var result NativeFileSharingEnabledResponse
-	err := p.Call(MethodNativeFileSharingEnabled, nil, &result)
+	err := m.c.Call(MethodNativeFileSharingEnabled, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2318,9 +2327,9 @@ func (p *Plugin) NativeFileSharingEnabled() (*NativeFileSharingEnabledResponse, 
 }
 
 // NativeFileSize get file size in bytes.
-func (p *Plugin) NativeFileSize(req NativeFileSizeRequest) (int, error) {
+func (m Methods) NativeFileSize(req NativeFileSizeRequest) (int, error) {
 	var result int
-	err := p.Call(MethodNativeFileSize, &req, &result)
+	err := m.c.Call(MethodNativeFileSize, &req, &result)
 	if err != nil {
 		return 0, err
 	}
@@ -2328,9 +2337,9 @@ func (p *Plugin) NativeFileSize(req NativeFileSizeRequest) (int, error) {
 }
 
 // NativeFileTags read or write Finder tags on a file.
-func (p *Plugin) NativeFileTags(req NativeFileTagsRequest) (json.RawMessage, error) {
+func (m Methods) NativeFileTags(req NativeFileTagsRequest) (json.RawMessage, error) {
 	var result json.RawMessage
-	err := p.Call(MethodNativeFileTags, &req, &result)
+	err := m.c.Call(MethodNativeFileTags, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2338,9 +2347,9 @@ func (p *Plugin) NativeFileTags(req NativeFileTagsRequest) (json.RawMessage, err
 }
 
 // NativeFileType get the UTI type of a file. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeFileType(req NativeFileTypeRequest) (*NativeFileTypeResponse, error) {
+func (m Methods) NativeFileType(req NativeFileTypeRequest) (*NativeFileTypeResponse, error) {
 	var result NativeFileTypeResponse
-	err := p.Call(MethodNativeFileType, &req, &result)
+	err := m.c.Call(MethodNativeFileType, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2348,9 +2357,9 @@ func (p *Plugin) NativeFileType(req NativeFileTypeRequest) (*NativeFileTypeRespo
 }
 
 // NativeFileUti get the UTI (Uniform Type Identifier) for a file. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeFileUti(req NativeFileUtiRequest) (string, error) {
+func (m Methods) NativeFileUti(req NativeFileUtiRequest) (string, error) {
 	var result string
-	err := p.Call(MethodNativeFileUti, &req, &result)
+	err := m.c.Call(MethodNativeFileUti, &req, &result)
 	if err != nil {
 		return "", err
 	}
@@ -2358,9 +2367,9 @@ func (p *Plugin) NativeFileUti(req NativeFileUtiRequest) (string, error) {
 }
 
 // NativeFilevaultStatus check if FileVault disk encryption is enabled.
-func (p *Plugin) NativeFilevaultStatus() (*NativeFilevaultStatusResponse, error) {
+func (m Methods) NativeFilevaultStatus() (*NativeFilevaultStatusResponse, error) {
 	var result NativeFilevaultStatusResponse
-	err := p.Call(MethodNativeFilevaultStatus, nil, &result)
+	err := m.c.Call(MethodNativeFilevaultStatus, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2368,9 +2377,9 @@ func (p *Plugin) NativeFilevaultStatus() (*NativeFilevaultStatusResponse, error)
 }
 
 // NativeFinderDefaultView get Finder default view style. Exists only on macOS and Linux; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeFinderDefaultView() (*NativeFinderDefaultViewResponse, error) {
+func (m Methods) NativeFinderDefaultView() (*NativeFinderDefaultViewResponse, error) {
 	var result NativeFinderDefaultViewResponse
-	err := p.Call(MethodNativeFinderDefaultView, nil, &result)
+	err := m.c.Call(MethodNativeFinderDefaultView, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2378,9 +2387,9 @@ func (p *Plugin) NativeFinderDefaultView() (*NativeFinderDefaultViewResponse, er
 }
 
 // NativeFinderNewWindowTarget get Finder new window default location. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeFinderNewWindowTarget() (*NativeFinderNewWindowTargetResponse, error) {
+func (m Methods) NativeFinderNewWindowTarget() (*NativeFinderNewWindowTargetResponse, error) {
 	var result NativeFinderNewWindowTargetResponse
-	err := p.Call(MethodNativeFinderNewWindowTarget, nil, &result)
+	err := m.c.Call(MethodNativeFinderNewWindowTarget, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2388,9 +2397,9 @@ func (p *Plugin) NativeFinderNewWindowTarget() (*NativeFinderNewWindowTargetResp
 }
 
 // NativeFinderShowExtensions whether the file manager shows file extensions. Exists only on macOS and Windows; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeFinderShowExtensions() (*NativeFinderShowExtensionsResponse, error) {
+func (m Methods) NativeFinderShowExtensions() (*NativeFinderShowExtensionsResponse, error) {
 	var result NativeFinderShowExtensionsResponse
-	err := p.Call(MethodNativeFinderShowExtensions, nil, &result)
+	err := m.c.Call(MethodNativeFinderShowExtensions, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2398,9 +2407,9 @@ func (p *Plugin) NativeFinderShowExtensions() (*NativeFinderShowExtensionsRespon
 }
 
 // NativeFinderShowHidden whether the file manager shows hidden files.
-func (p *Plugin) NativeFinderShowHidden() (*NativeFinderShowHiddenResponse, error) {
+func (m Methods) NativeFinderShowHidden() (*NativeFinderShowHiddenResponse, error) {
 	var result NativeFinderShowHiddenResponse
-	err := p.Call(MethodNativeFinderShowHidden, nil, &result)
+	err := m.c.Call(MethodNativeFinderShowHidden, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2408,9 +2417,9 @@ func (p *Plugin) NativeFinderShowHidden() (*NativeFinderShowHiddenResponse, erro
 }
 
 // NativeFinderShowPathBar check if Finder shows path bar. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeFinderShowPathBar() (*NativeFinderShowPathBarResponse, error) {
+func (m Methods) NativeFinderShowPathBar() (*NativeFinderShowPathBarResponse, error) {
 	var result NativeFinderShowPathBarResponse
-	err := p.Call(MethodNativeFinderShowPathBar, nil, &result)
+	err := m.c.Call(MethodNativeFinderShowPathBar, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2418,9 +2427,9 @@ func (p *Plugin) NativeFinderShowPathBar() (*NativeFinderShowPathBarResponse, er
 }
 
 // NativeFinderShowStatusBar whether the file manager shows a status bar. Exists only on macOS and Windows; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeFinderShowStatusBar() (*NativeFinderShowStatusBarResponse, error) {
+func (m Methods) NativeFinderShowStatusBar() (*NativeFinderShowStatusBarResponse, error) {
 	var result NativeFinderShowStatusBarResponse
-	err := p.Call(MethodNativeFinderShowStatusBar, nil, &result)
+	err := m.c.Call(MethodNativeFinderShowStatusBar, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2428,9 +2437,9 @@ func (p *Plugin) NativeFinderShowStatusBar() (*NativeFinderShowStatusBarResponse
 }
 
 // NativeFinderWindowPath get the path of the frontmost Finder window. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeFinderWindowPath() (*NativeFinderWindowPathResponse, error) {
+func (m Methods) NativeFinderWindowPath() (*NativeFinderWindowPathResponse, error) {
 	var result NativeFinderWindowPathResponse
-	err := p.Call(MethodNativeFinderWindowPath, nil, &result)
+	err := m.c.Call(MethodNativeFinderWindowPath, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2438,9 +2447,9 @@ func (p *Plugin) NativeFinderWindowPath() (*NativeFinderWindowPathResponse, erro
 }
 
 // NativeFirewallEnabled check if macOS firewall is enabled.
-func (p *Plugin) NativeFirewallEnabled() (*NativeFirewallEnabledResponse, error) {
+func (m Methods) NativeFirewallEnabled() (*NativeFirewallEnabledResponse, error) {
 	var result NativeFirewallEnabledResponse
-	err := p.Call(MethodNativeFirewallEnabled, nil, &result)
+	err := m.c.Call(MethodNativeFirewallEnabled, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2448,9 +2457,9 @@ func (p *Plugin) NativeFirewallEnabled() (*NativeFirewallEnabledResponse, error)
 }
 
 // NativeFirstDayOfWeek get the first day of the week (1=Sunday, 2=Monday).
-func (p *Plugin) NativeFirstDayOfWeek() (int, error) {
+func (m Methods) NativeFirstDayOfWeek() (int, error) {
 	var result int
-	err := p.Call(MethodNativeFirstDayOfWeek, nil, &result)
+	err := m.c.Call(MethodNativeFirstDayOfWeek, nil, &result)
 	if err != nil {
 		return 0, err
 	}
@@ -2458,18 +2467,18 @@ func (p *Plugin) NativeFirstDayOfWeek() (int, error) {
 }
 
 // NativeFlushDns flush DNS cache.
-func (p *Plugin) NativeFlushDns() (bool, error) {
+func (m Methods) NativeFlushDns() (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeFlushDns, nil, &result)
+	err := m.c.Call(MethodNativeFlushDns, nil, &result)
 	return result.Ok, err
 }
 
 // NativeFnKeyFunction get function key default behavior. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeFnKeyFunction() (*NativeFnKeyFunctionResponse, error) {
+func (m Methods) NativeFnKeyFunction() (*NativeFnKeyFunctionResponse, error) {
 	var result NativeFnKeyFunctionResponse
-	err := p.Call(MethodNativeFnKeyFunction, nil, &result)
+	err := m.c.Call(MethodNativeFnKeyFunction, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2477,9 +2486,9 @@ func (p *Plugin) NativeFnKeyFunction() (*NativeFnKeyFunctionResponse, error) {
 }
 
 // NativeFocusModes get configured Focus modes as the raw `com.apple.ncprefs` preference value — macOS plist text, NOT JSON. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeFocusModes() (*NativeFocusModesResponse, error) {
+func (m Methods) NativeFocusModes() (*NativeFocusModesResponse, error) {
 	var result NativeFocusModesResponse
-	err := p.Call(MethodNativeFocusModes, nil, &result)
+	err := m.c.Call(MethodNativeFocusModes, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2487,9 +2496,9 @@ func (p *Plugin) NativeFocusModes() (*NativeFocusModesResponse, error) {
 }
 
 // NativeFocusedElement get the currently focused UI element (text field, button, etc.).
-func (p *Plugin) NativeFocusedElement() (*NativeFocusedElementResponse, error) {
+func (m Methods) NativeFocusedElement() (*NativeFocusedElementResponse, error) {
 	var result NativeFocusedElementResponse
-	err := p.Call(MethodNativeFocusedElement, nil, &result)
+	err := m.c.Call(MethodNativeFocusedElement, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2497,9 +2506,9 @@ func (p *Plugin) NativeFocusedElement() (*NativeFocusedElementResponse, error) {
 }
 
 // NativeFocusedWindowID get the currently focused window ID.
-func (p *Plugin) NativeFocusedWindowID() (*NativeFocusedWindowIDResponse, error) {
+func (m Methods) NativeFocusedWindowID() (*NativeFocusedWindowIDResponse, error) {
 	var result NativeFocusedWindowIDResponse
-	err := p.Call(MethodNativeFocusedWindowId, nil, &result)
+	err := m.c.Call(MethodNativeFocusedWindowId, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2507,9 +2516,9 @@ func (p *Plugin) NativeFocusedWindowID() (*NativeFocusedWindowIDResponse, error)
 }
 
 // NativeFontSmoothing check if font smoothing (anti-aliasing) is enabled.
-func (p *Plugin) NativeFontSmoothing() (*NativeFontSmoothingResponse, error) {
+func (m Methods) NativeFontSmoothing() (*NativeFontSmoothingResponse, error) {
 	var result NativeFontSmoothingResponse
-	err := p.Call(MethodNativeFontSmoothing, nil, &result)
+	err := m.c.Call(MethodNativeFontSmoothing, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2517,18 +2526,18 @@ func (p *Plugin) NativeFontSmoothing() (*NativeFontSmoothingResponse, error) {
 }
 
 // NativeForceQuitApp force-quit an app by bundle ID.
-func (p *Plugin) NativeForceQuitApp(req NativeForceQuitAppRequest) (bool, error) {
+func (m Methods) NativeForceQuitApp(req NativeForceQuitAppRequest) (bool, error) {
 	var result struct {
 		Result bool `json:"result"`
 	}
-	err := p.Call(MethodNativeForceQuitApp, &req, &result)
+	err := m.c.Call(MethodNativeForceQuitApp, &req, &result)
 	return result.Result, err
 }
 
 // NativeFormatDate format an instant for the user, ON THE PLATFORM. `when` is an RFC 3339 instant; `style` is one of date, time, date_time. Rendered in the USER'S LOCAL ZONE and their locale's own conventions - including calendars and digits no format pattern can express: a Lao user correctly sees the Buddhist year 2569 where a caller formatting with a CLDR pattern would render 2026, and an Odia user sees Odia digits. Prefer this over native.date_format whenever you are DISPLAYING a date rather than inspecting the locale's format. Output is NOT byte-identical across operating systems and is not meant to be - each renders its own platform's conventions for that locale..
-func (p *Plugin) NativeFormatDate(req NativeFormatDateRequest) (*NativeFormatDateResponse, error) {
+func (m Methods) NativeFormatDate(req NativeFormatDateRequest) (*NativeFormatDateResponse, error) {
 	var result NativeFormatDateResponse
-	err := p.Call(MethodNativeFormatDate, &req, &result)
+	err := m.c.Call(MethodNativeFormatDate, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2536,9 +2545,9 @@ func (p *Plugin) NativeFormatDate(req NativeFormatDateRequest) (*NativeFormatDat
 }
 
 // NativeFrontmostApp get the currently active (frontmost) application.
-func (p *Plugin) NativeFrontmostApp() (*NativeFrontmostAppResponse, error) {
+func (m Methods) NativeFrontmostApp() (*NativeFrontmostAppResponse, error) {
 	var result NativeFrontmostAppResponse
-	err := p.Call(MethodNativeFrontmostApp, nil, &result)
+	err := m.c.Call(MethodNativeFrontmostApp, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2546,9 +2555,9 @@ func (p *Plugin) NativeFrontmostApp() (*NativeFrontmostAppResponse, error) {
 }
 
 // NativeFullDiskAccess check if full disk access is granted. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeFullDiskAccess() (*NativeFullDiskAccessResponse, error) {
+func (m Methods) NativeFullDiskAccess() (*NativeFullDiskAccessResponse, error) {
 	var result NativeFullDiskAccessResponse
-	err := p.Call(MethodNativeFullDiskAccess, nil, &result)
+	err := m.c.Call(MethodNativeFullDiskAccess, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2556,9 +2565,9 @@ func (p *Plugin) NativeFullDiskAccess() (*NativeFullDiskAccessResponse, error) {
 }
 
 // NativeFunctionKeysStandard check if function keys are set to standard behavior (not media). Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeFunctionKeysStandard() (*NativeFunctionKeysStandardResponse, error) {
+func (m Methods) NativeFunctionKeysStandard() (*NativeFunctionKeysStandardResponse, error) {
 	var result NativeFunctionKeysStandardResponse
-	err := p.Call(MethodNativeFunctionKeysStandard, nil, &result)
+	err := m.c.Call(MethodNativeFunctionKeysStandard, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2566,9 +2575,9 @@ func (p *Plugin) NativeFunctionKeysStandard() (*NativeFunctionKeysStandardRespon
 }
 
 // NativeGatewayAddress get the default gateway IP address.
-func (p *Plugin) NativeGatewayAddress() (*NativeGatewayAddressResponse, error) {
+func (m Methods) NativeGatewayAddress() (*NativeGatewayAddressResponse, error) {
 	var result NativeGatewayAddressResponse
-	err := p.Call(MethodNativeGatewayAddress, nil, &result)
+	err := m.c.Call(MethodNativeGatewayAddress, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2576,14 +2585,14 @@ func (p *Plugin) NativeGatewayAddress() (*NativeGatewayAddressResponse, error) {
 }
 
 // NativeGeneratePdf render HTML to a PDF file through a Chromium-family browser (Chromium, Chrome, Edge or Brave) run headless and cut off from the network. Refused, naming what to install, when none is.
-func (p *Plugin) NativeGeneratePdf(req NativeGeneratePdfRequest) error {
-	return p.Call(MethodNativeGeneratePdf, &req, nil)
+func (m Methods) NativeGeneratePdf(req NativeGeneratePdfRequest) error {
+	return m.c.Call(MethodNativeGeneratePdf, &req, nil)
 }
 
 // NativeGetWindowInfo get detailed info for a single window.
-func (p *Plugin) NativeGetWindowInfo(req NativeGetWindowInfoRequest) (*NativeGetWindowInfoResponse, error) {
+func (m Methods) NativeGetWindowInfo(req NativeGetWindowInfoRequest) (*NativeGetWindowInfoResponse, error) {
 	var result NativeGetWindowInfoResponse
-	err := p.Call(MethodNativeGetWindowInfo, &req, &result)
+	err := m.c.Call(MethodNativeGetWindowInfo, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2591,11 +2600,11 @@ func (p *Plugin) NativeGetWindowInfo(req NativeGetWindowInfoRequest) (*NativeGet
 }
 
 // NativeGlobFiles find files matching a glob pattern.
-func (p *Plugin) NativeGlobFiles(req NativeGlobFilesRequest) ([]string, error) {
+func (m Methods) NativeGlobFiles(req NativeGlobFilesRequest) ([]string, error) {
 	var result struct {
 		Paths []string `json:"paths"`
 	}
-	err := p.Call(MethodNativeGlobFiles, &req, &result)
+	err := m.c.Call(MethodNativeGlobFiles, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2603,11 +2612,11 @@ func (p *Plugin) NativeGlobFiles(req NativeGlobFilesRequest) ([]string, error) {
 }
 
 // NativeGpuInfo the machine's graphics processors: name, vendor, dedicated memory and driver. A GPU that shares system memory (Apple silicon, most integrated GPUs) reports no dedicated memory.
-func (p *Plugin) NativeGpuInfo() ([]GpuInfo, error) {
+func (m Methods) NativeGpuInfo() ([]GpuInfo, error) {
 	var result struct {
 		Gpus []GpuInfo `json:"gpus"`
 	}
-	err := p.Call(MethodNativeGpuInfo, nil, &result)
+	err := m.c.Call(MethodNativeGpuInfo, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2615,9 +2624,9 @@ func (p *Plugin) NativeGpuInfo() ([]GpuInfo, error) {
 }
 
 // NativeGrayscaleEnabled check if grayscale display is enabled.
-func (p *Plugin) NativeGrayscaleEnabled() (*NativeGrayscaleEnabledResponse, error) {
+func (m Methods) NativeGrayscaleEnabled() (*NativeGrayscaleEnabledResponse, error) {
 	var result NativeGrayscaleEnabledResponse
-	err := p.Call(MethodNativeGrayscaleEnabled, nil, &result)
+	err := m.c.Call(MethodNativeGrayscaleEnabled, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2625,9 +2634,9 @@ func (p *Plugin) NativeGrayscaleEnabled() (*NativeGrayscaleEnabledResponse, erro
 }
 
 // NativeGroupWindowsByApp check if Mission Control groups windows by app. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeGroupWindowsByApp() (*NativeGroupWindowsByAppResponse, error) {
+func (m Methods) NativeGroupWindowsByApp() (*NativeGroupWindowsByAppResponse, error) {
 	var result NativeGroupWindowsByAppResponse
-	err := p.Call(MethodNativeGroupWindowsByApp, nil, &result)
+	err := m.c.Call(MethodNativeGroupWindowsByApp, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2635,9 +2644,9 @@ func (p *Plugin) NativeGroupWindowsByApp() (*NativeGroupWindowsByAppResponse, er
 }
 
 // NativeHandoffEnabled check if Handoff is enabled. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeHandoffEnabled() (*NativeHandoffEnabledResponse, error) {
+func (m Methods) NativeHandoffEnabled() (*NativeHandoffEnabledResponse, error) {
 	var result NativeHandoffEnabledResponse
-	err := p.Call(MethodNativeHandoffEnabled, nil, &result)
+	err := m.c.Call(MethodNativeHandoffEnabled, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2645,9 +2654,9 @@ func (p *Plugin) NativeHandoffEnabled() (*NativeHandoffEnabledResponse, error) {
 }
 
 // NativeHardwareModel get the hardware model identifier (e.g. Mac14,2).
-func (p *Plugin) NativeHardwareModel() (*NativeHardwareModelResponse, error) {
+func (m Methods) NativeHardwareModel() (*NativeHardwareModelResponse, error) {
 	var result NativeHardwareModelResponse
-	err := p.Call(MethodNativeHardwareModel, nil, &result)
+	err := m.c.Call(MethodNativeHardwareModel, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2655,9 +2664,9 @@ func (p *Plugin) NativeHardwareModel() (*NativeHardwareModelResponse, error) {
 }
 
 // NativeHardwareUuid get the hardware UUID.
-func (p *Plugin) NativeHardwareUuid() (*NativeHardwareUuidResponse, error) {
+func (m Methods) NativeHardwareUuid() (*NativeHardwareUuidResponse, error) {
 	var result NativeHardwareUuidResponse
-	err := p.Call(MethodNativeHardwareUuid, nil, &result)
+	err := m.c.Call(MethodNativeHardwareUuid, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2665,9 +2674,9 @@ func (p *Plugin) NativeHardwareUuid() (*NativeHardwareUuidResponse, error) {
 }
 
 // NativeHidClaim hold a HID device the plugin declared exclusively, so its input reaches the plugin and not the OS. Exists only on macOS and Linux; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeHidClaim(req NativeHidClaimRequest) (*NativeHidClaimResponse, error) {
+func (m Methods) NativeHidClaim(req NativeHidClaimRequest) (*NativeHidClaimResponse, error) {
 	var result NativeHidClaimResponse
-	err := p.Call(MethodNativeHidClaim, &req, &result)
+	err := m.c.Call(MethodNativeHidClaim, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2675,9 +2684,9 @@ func (p *Plugin) NativeHidClaim(req NativeHidClaimRequest) (*NativeHidClaimRespo
 }
 
 // NativeHidClose stop receiving a HID device's input (and end the plugin's exclusive hold on it).
-func (p *Plugin) NativeHidClose(req NativeHidCloseRequest) (*NativeHidCloseResponse, error) {
+func (m Methods) NativeHidClose(req NativeHidCloseRequest) (*NativeHidCloseResponse, error) {
 	var result NativeHidCloseResponse
-	err := p.Call(MethodNativeHidClose, &req, &result)
+	err := m.c.Call(MethodNativeHidClose, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2685,11 +2694,11 @@ func (p *Plugin) NativeHidClose(req NativeHidCloseRequest) (*NativeHidCloseRespo
 }
 
 // NativeHidDevices list the connected HID devices whose vendor:product the plugin declared, never a keyboard, pointer or security key.
-func (p *Plugin) NativeHidDevices() ([]HidDeviceEntry, error) {
+func (m Methods) NativeHidDevices() ([]HidDeviceEntry, error) {
 	var result struct {
 		Devices []HidDeviceEntry `json:"devices"`
 	}
-	err := p.Call(MethodNativeHidDevices, nil, &result)
+	err := m.c.Call(MethodNativeHidDevices, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2697,11 +2706,11 @@ func (p *Plugin) NativeHidDevices() ([]HidDeviceEntry, error) {
 }
 
 // NativeHidElements return the parsed HID element tree (buttons, axes, dials) of a HID device the plugin declared and the user switched on.
-func (p *Plugin) NativeHidElements(req NativeHidElementsRequest) ([]HidElementEntry, error) {
+func (m Methods) NativeHidElements(req NativeHidElementsRequest) ([]HidElementEntry, error) {
 	var result struct {
 		Elements []HidElementEntry `json:"elements"`
 	}
-	err := p.Call(MethodNativeHidElements, &req, &result)
+	err := m.c.Call(MethodNativeHidElements, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2709,9 +2718,9 @@ func (p *Plugin) NativeHidElements(req NativeHidElementsRequest) ([]HidElementEn
 }
 
 // NativeHidOpen start receiving a HID device's input as _platform.hid.report (and on macOS _platform.hid.input), addressed to the calling plugin alone.
-func (p *Plugin) NativeHidOpen(req NativeHidOpenRequest) (*NativeHidOpenResponse, error) {
+func (m Methods) NativeHidOpen(req NativeHidOpenRequest) (*NativeHidOpenResponse, error) {
 	var result NativeHidOpenResponse
-	err := p.Call(MethodNativeHidOpen, &req, &result)
+	err := m.c.Call(MethodNativeHidOpen, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2719,9 +2728,9 @@ func (p *Plugin) NativeHidOpen(req NativeHidOpenRequest) (*NativeHidOpenResponse
 }
 
 // NativeHidRelease end the plugin's exclusive hold on a HID device, giving its input back to the OS. Exists only on macOS and Linux; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeHidRelease(req NativeHidReleaseRequest) (*NativeHidReleaseResponse, error) {
+func (m Methods) NativeHidRelease(req NativeHidReleaseRequest) (*NativeHidReleaseResponse, error) {
 	var result NativeHidReleaseResponse
-	err := p.Call(MethodNativeHidRelease, &req, &result)
+	err := m.c.Call(MethodNativeHidRelease, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2729,9 +2738,9 @@ func (p *Plugin) NativeHidRelease(req NativeHidReleaseRequest) (*NativeHidReleas
 }
 
 // NativeHidSendReport send an output or feature report to a HID device the plugin declared and the user switched on.
-func (p *Plugin) NativeHidSendReport(req NativeHidSendReportRequest) (*NativeHidSendReportResponse, error) {
+func (m Methods) NativeHidSendReport(req NativeHidSendReportRequest) (*NativeHidSendReportResponse, error) {
 	var result NativeHidSendReportResponse
-	err := p.Call(MethodNativeHidSendReport, &req, &result)
+	err := m.c.Call(MethodNativeHidSendReport, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2739,14 +2748,14 @@ func (p *Plugin) NativeHidSendReport(req NativeHidSendReportRequest) (*NativeHid
 }
 
 // NativeHideApp hide an app by bundle ID. On Linux, not available on sway (this compositor has no minimize; sway uses the scratchpad); nor on GNOME (GNOME exposes no window IPC to minimize through).
-func (p *Plugin) NativeHideApp(req NativeHideAppRequest) error {
-	return p.Call(MethodNativeHideApp, &req, nil)
+func (m Methods) NativeHideApp(req NativeHideAppRequest) error {
+	return m.c.Call(MethodNativeHideApp, &req, nil)
 }
 
 // NativeHighlightColor get the system highlight/selection color.
-func (p *Plugin) NativeHighlightColor() (*NativeHighlightColorResponse, error) {
+func (m Methods) NativeHighlightColor() (*NativeHighlightColorResponse, error) {
 	var result NativeHighlightColorResponse
-	err := p.Call(MethodNativeHighlightColor, nil, &result)
+	err := m.c.Call(MethodNativeHighlightColor, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2754,9 +2763,9 @@ func (p *Plugin) NativeHighlightColor() (*NativeHighlightColorResponse, error) {
 }
 
 // NativeHomeDirectory get the current user's home directory path.
-func (p *Plugin) NativeHomeDirectory() (*NativeHomeDirectoryResponse, error) {
+func (m Methods) NativeHomeDirectory() (*NativeHomeDirectoryResponse, error) {
 	var result NativeHomeDirectoryResponse
-	err := p.Call(MethodNativeHomeDirectory, nil, &result)
+	err := m.c.Call(MethodNativeHomeDirectory, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2764,9 +2773,9 @@ func (p *Plugin) NativeHomeDirectory() (*NativeHomeDirectoryResponse, error) {
 }
 
 // NativeHomebrewPrefix get the Homebrew installation prefix. Exists only on macOS and Linux; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeHomebrewPrefix() (*NativeHomebrewPrefixResponse, error) {
+func (m Methods) NativeHomebrewPrefix() (*NativeHomebrewPrefixResponse, error) {
 	var result NativeHomebrewPrefixResponse
-	err := p.Call(MethodNativeHomebrewPrefix, nil, &result)
+	err := m.c.Call(MethodNativeHomebrewPrefix, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2774,9 +2783,9 @@ func (p *Plugin) NativeHomebrewPrefix() (*NativeHomebrewPrefixResponse, error) {
 }
 
 // NativeHostname get the system hostname.
-func (p *Plugin) NativeHostname() (*NativeHostnameResponse, error) {
+func (m Methods) NativeHostname() (*NativeHostnameResponse, error) {
 	var result NativeHostnameResponse
-	err := p.Call(MethodNativeHostname, nil, &result)
+	err := m.c.Call(MethodNativeHostname, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2784,11 +2793,11 @@ func (p *Plugin) NativeHostname() (*NativeHostnameResponse, error) {
 }
 
 // NativeHostnameResolve resolve a hostname to IP addresses. A plugin may resolve only a host it declares in requires.network that the user has switched on.
-func (p *Plugin) NativeHostnameResolve(req NativeHostnameResolveRequest) ([]string, error) {
+func (m Methods) NativeHostnameResolve(req NativeHostnameResolveRequest) ([]string, error) {
 	var result struct {
 		Addresses []string `json:"addresses"`
 	}
-	err := p.Call(MethodNativeHostnameResolve, &req, &result)
+	err := m.c.Call(MethodNativeHostnameResolve, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2796,9 +2805,9 @@ func (p *Plugin) NativeHostnameResolve(req NativeHostnameResolveRequest) ([]stri
 }
 
 // NativeHotCorners get hot corner actions as JSON string. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeHotCorners() (*NativeHotCornersResponse, error) {
+func (m Methods) NativeHotCorners() (*NativeHotCornersResponse, error) {
 	var result NativeHotCornersResponse
-	err := p.Call(MethodNativeHotCorners, nil, &result)
+	err := m.c.Call(MethodNativeHotCorners, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2806,9 +2815,9 @@ func (p *Plugin) NativeHotCorners() (*NativeHotCornersResponse, error) {
 }
 
 // NativeIcloudDesktopSync check if iCloud Desktop & Documents sync is enabled. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeIcloudDesktopSync() (*NativeIcloudDesktopSyncResponse, error) {
+func (m Methods) NativeIcloudDesktopSync() (*NativeIcloudDesktopSyncResponse, error) {
 	var result NativeIcloudDesktopSyncResponse
-	err := p.Call(MethodNativeIcloudDesktopSync, nil, &result)
+	err := m.c.Call(MethodNativeIcloudDesktopSync, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2816,9 +2825,9 @@ func (p *Plugin) NativeIcloudDesktopSync() (*NativeIcloudDesktopSyncResponse, er
 }
 
 // NativeIcloudDrivePath get the local path to iCloud Drive. Exists only on macOS and Windows; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeIcloudDrivePath() (*NativeIcloudDrivePathResponse, error) {
+func (m Methods) NativeIcloudDrivePath() (*NativeIcloudDrivePathResponse, error) {
 	var result NativeIcloudDrivePathResponse
-	err := p.Call(MethodNativeIcloudDrivePath, nil, &result)
+	err := m.c.Call(MethodNativeIcloudDrivePath, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2826,9 +2835,9 @@ func (p *Plugin) NativeIcloudDrivePath() (*NativeIcloudDrivePathResponse, error)
 }
 
 // NativeIcloudSignedIn check if the user is signed into iCloud. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeIcloudSignedIn() (*NativeIcloudSignedInResponse, error) {
+func (m Methods) NativeIcloudSignedIn() (*NativeIcloudSignedInResponse, error) {
 	var result NativeIcloudSignedInResponse
-	err := p.Call(MethodNativeIcloudSignedIn, nil, &result)
+	err := m.c.Call(MethodNativeIcloudSignedIn, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2836,9 +2845,9 @@ func (p *Plugin) NativeIcloudSignedIn() (*NativeIcloudSignedInResponse, error) {
 }
 
 // NativeIncreaseContrast check if Increase Contrast is enabled.
-func (p *Plugin) NativeIncreaseContrast() (*NativeIncreaseContrastResponse, error) {
+func (m Methods) NativeIncreaseContrast() (*NativeIncreaseContrastResponse, error) {
 	var result NativeIncreaseContrastResponse
-	err := p.Call(MethodNativeIncreaseContrast, nil, &result)
+	err := m.c.Call(MethodNativeIncreaseContrast, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2846,11 +2855,11 @@ func (p *Plugin) NativeIncreaseContrast() (*NativeIncreaseContrastResponse, erro
 }
 
 // NativeInputSources list installed keyboard input sources.
-func (p *Plugin) NativeInputSources() ([]InputSource, error) {
+func (m Methods) NativeInputSources() ([]InputSource, error) {
 	var result struct {
 		Sources []InputSource `json:"sources"`
 	}
-	err := p.Call(MethodNativeInputSources, nil, &result)
+	err := m.c.Call(MethodNativeInputSources, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2858,11 +2867,11 @@ func (p *Plugin) NativeInputSources() ([]InputSource, error) {
 }
 
 // NativeInstalledApps list all installed applications by scanning the filesystem.
-func (p *Plugin) NativeInstalledApps() ([]InstalledApp, error) {
+func (m Methods) NativeInstalledApps() ([]InstalledApp, error) {
 	var result struct {
 		Apps []InstalledApp `json:"apps"`
 	}
-	err := p.Call(MethodNativeInstalledApps, nil, &result)
+	err := m.c.Call(MethodNativeInstalledApps, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2870,9 +2879,9 @@ func (p *Plugin) NativeInstalledApps() ([]InstalledApp, error) {
 }
 
 // NativeInterfaceStyleSwitcher get auto appearance switching setting. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeInterfaceStyleSwitcher() (*NativeInterfaceStyleSwitcherResponse, error) {
+func (m Methods) NativeInterfaceStyleSwitcher() (*NativeInterfaceStyleSwitcherResponse, error) {
 	var result NativeInterfaceStyleSwitcherResponse
-	err := p.Call(MethodNativeInterfaceStyleSwitcher, nil, &result)
+	err := m.c.Call(MethodNativeInterfaceStyleSwitcher, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2880,9 +2889,9 @@ func (p *Plugin) NativeInterfaceStyleSwitcher() (*NativeInterfaceStyleSwitcherRe
 }
 
 // NativeIpv6Address get primary IPv6 address.
-func (p *Plugin) NativeIpv6Address() (*NativeIpv6AddressResponse, error) {
+func (m Methods) NativeIpv6Address() (*NativeIpv6AddressResponse, error) {
 	var result NativeIpv6AddressResponse
-	err := p.Call(MethodNativeIpv6Address, nil, &result)
+	err := m.c.Call(MethodNativeIpv6Address, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2890,18 +2899,18 @@ func (p *Plugin) NativeIpv6Address() (*NativeIpv6AddressResponse, error) {
 }
 
 // NativeIsAppHidden check if an application is hidden. On Linux, not available on sway (this compositor has no minimize; sway uses the scratchpad); nor on GNOME (GNOME exposes no window IPC to minimize through).
-func (p *Plugin) NativeIsAppHidden(req NativeIsAppHiddenRequest) (bool, error) {
+func (m Methods) NativeIsAppHidden(req NativeIsAppHiddenRequest) (bool, error) {
 	var result struct {
 		Result bool `json:"result"`
 	}
-	err := p.Call(MethodNativeIsAppHidden, &req, &result)
+	err := m.c.Call(MethodNativeIsAppHidden, &req, &result)
 	return result.Result, err
 }
 
 // NativeIsDirectory check if a path is a directory.
-func (p *Plugin) NativeIsDirectory(req NativeIsDirectoryRequest) (*NativeIsDirectoryResponse, error) {
+func (m Methods) NativeIsDirectory(req NativeIsDirectoryRequest) (*NativeIsDirectoryResponse, error) {
 	var result NativeIsDirectoryResponse
-	err := p.Call(MethodNativeIsDirectory, &req, &result)
+	err := m.c.Call(MethodNativeIsDirectory, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2909,9 +2918,9 @@ func (p *Plugin) NativeIsDirectory(req NativeIsDirectoryRequest) (*NativeIsDirec
 }
 
 // NativeIsFileHidden check if file has hidden flag.
-func (p *Plugin) NativeIsFileHidden(req NativeIsFileHiddenRequest) (*NativeIsFileHiddenResponse, error) {
+func (m Methods) NativeIsFileHidden(req NativeIsFileHiddenRequest) (*NativeIsFileHiddenResponse, error) {
 	var result NativeIsFileHiddenResponse
-	err := p.Call(MethodNativeIsFileHidden, &req, &result)
+	err := m.c.Call(MethodNativeIsFileHidden, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2919,9 +2928,9 @@ func (p *Plugin) NativeIsFileHidden(req NativeIsFileHiddenRequest) (*NativeIsFil
 }
 
 // NativeKernelVersion get the running kernel version as a bare version string.
-func (p *Plugin) NativeKernelVersion() (*NativeKernelVersionResponse, error) {
+func (m Methods) NativeKernelVersion() (*NativeKernelVersionResponse, error) {
 	var result NativeKernelVersionResponse
-	err := p.Call(MethodNativeKernelVersion, nil, &result)
+	err := m.c.Call(MethodNativeKernelVersion, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2929,9 +2938,9 @@ func (p *Plugin) NativeKernelVersion() (*NativeKernelVersionResponse, error) {
 }
 
 // NativeKeyRepeatDelay get initial key repeat delay (seconds).
-func (p *Plugin) NativeKeyRepeatDelay() (float64, error) {
+func (m Methods) NativeKeyRepeatDelay() (float64, error) {
 	var result float64
-	err := p.Call(MethodNativeKeyRepeatDelay, nil, &result)
+	err := m.c.Call(MethodNativeKeyRepeatDelay, nil, &result)
 	if err != nil {
 		return 0, err
 	}
@@ -2939,9 +2948,9 @@ func (p *Plugin) NativeKeyRepeatDelay() (float64, error) {
 }
 
 // NativeKeyRepeatRate get the keyboard repeat rate (keys per second).
-func (p *Plugin) NativeKeyRepeatRate() (float64, error) {
+func (m Methods) NativeKeyRepeatRate() (float64, error) {
 	var result float64
-	err := p.Call(MethodNativeKeyRepeatRate, nil, &result)
+	err := m.c.Call(MethodNativeKeyRepeatRate, nil, &result)
 	if err != nil {
 		return 0, err
 	}
@@ -2949,9 +2958,9 @@ func (p *Plugin) NativeKeyRepeatRate() (float64, error) {
 }
 
 // NativeKeyboardBrightness get keyboard backlight brightness (0.0-1.0). Exists only on macOS and Linux; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeKeyboardBrightness() (float64, error) {
+func (m Methods) NativeKeyboardBrightness() (float64, error) {
 	var result float64
-	err := p.Call(MethodNativeKeyboardBrightness, nil, &result)
+	err := m.c.Call(MethodNativeKeyboardBrightness, nil, &result)
 	if err != nil {
 		return 0, err
 	}
@@ -2959,9 +2968,9 @@ func (p *Plugin) NativeKeyboardBrightness() (float64, error) {
 }
 
 // NativeKeyboardLayout get the current keyboard layout and key mappings.
-func (p *Plugin) NativeKeyboardLayout() (*NativeKeyboardLayoutResponse, error) {
+func (m Methods) NativeKeyboardLayout() (*NativeKeyboardLayoutResponse, error) {
 	var result NativeKeyboardLayoutResponse
-	err := p.Call(MethodNativeKeyboardLayout, nil, &result)
+	err := m.c.Call(MethodNativeKeyboardLayout, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2969,14 +2978,14 @@ func (p *Plugin) NativeKeyboardLayout() (*NativeKeyboardLayoutResponse, error) {
 }
 
 // NativeKeychainDelete delete a password from this plugin's keychain drawer.
-func (p *Plugin) NativeKeychainDelete(req NativeKeychainDeleteRequest) error {
-	return p.Call(MethodNativeKeychainDelete, &req, nil)
+func (m Methods) NativeKeychainDelete(req NativeKeychainDeleteRequest) error {
+	return m.c.Call(MethodNativeKeychainDelete, &req, nil)
 }
 
 // NativeKeychainRead read a password from this plugin's keychain drawer.
-func (p *Plugin) NativeKeychainRead(req NativeKeychainReadRequest) (*NativeKeychainReadResponse, error) {
+func (m Methods) NativeKeychainRead(req NativeKeychainReadRequest) (*NativeKeychainReadResponse, error) {
 	var result NativeKeychainReadResponse
-	err := p.Call(MethodNativeKeychainRead, &req, &result)
+	err := m.c.Call(MethodNativeKeychainRead, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -2984,23 +2993,23 @@ func (p *Plugin) NativeKeychainRead(req NativeKeychainReadRequest) (*NativeKeych
 }
 
 // NativeKeychainWrite store a password in this plugin's keychain drawer.
-func (p *Plugin) NativeKeychainWrite(req NativeKeychainWriteRequest) error {
-	return p.Call(MethodNativeKeychainWrite, &req, nil)
+func (m Methods) NativeKeychainWrite(req NativeKeychainWriteRequest) error {
+	return m.c.Call(MethodNativeKeychainWrite, &req, nil)
 }
 
 // NativeKillProcess send a signal to a process by PID.
-func (p *Plugin) NativeKillProcess(req NativeKillProcessRequest) (bool, error) {
+func (m Methods) NativeKillProcess(req NativeKillProcessRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeKillProcess, &req, &result)
+	err := m.c.Call(MethodNativeKillProcess, &req, &result)
 	return result.Ok, err
 }
 
 // NativeLastReboot get the last reboot date/time.
-func (p *Plugin) NativeLastReboot() (*NativeLastRebootResponse, error) {
+func (m Methods) NativeLastReboot() (*NativeLastRebootResponse, error) {
 	var result NativeLastRebootResponse
-	err := p.Call(MethodNativeLastReboot, nil, &result)
+	err := m.c.Call(MethodNativeLastReboot, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3008,16 +3017,16 @@ func (p *Plugin) NativeLastReboot() (*NativeLastRebootResponse, error) {
 }
 
 // NativeLaunchApp launch an application by bundle ID.
-func (p *Plugin) NativeLaunchApp(req NativeLaunchAppRequest) error {
-	return p.Call(MethodNativeLaunchApp, &req, nil)
+func (m Methods) NativeLaunchApp(req NativeLaunchAppRequest) error {
+	return m.c.Call(MethodNativeLaunchApp, &req, nil)
 }
 
 // NativeListAudioInputDevices list available audio input device names.
-func (p *Plugin) NativeListAudioInputDevices() ([]string, error) {
+func (m Methods) NativeListAudioInputDevices() ([]string, error) {
 	var result struct {
 		Devices []string `json:"devices"`
 	}
-	err := p.Call(MethodNativeListAudioInputDevices, nil, &result)
+	err := m.c.Call(MethodNativeListAudioInputDevices, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3025,11 +3034,11 @@ func (p *Plugin) NativeListAudioInputDevices() ([]string, error) {
 }
 
 // NativeListAudioOutputDevices list available audio output device names.
-func (p *Plugin) NativeListAudioOutputDevices() ([]string, error) {
+func (m Methods) NativeListAudioOutputDevices() ([]string, error) {
 	var result struct {
 		Devices []string `json:"devices"`
 	}
-	err := p.Call(MethodNativeListAudioOutputDevices, nil, &result)
+	err := m.c.Call(MethodNativeListAudioOutputDevices, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3037,11 +3046,11 @@ func (p *Plugin) NativeListAudioOutputDevices() ([]string, error) {
 }
 
 // NativeListNotifications list delivered notifications (partial — returns empty). Exists only on Windows; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeListNotifications() ([]DeliveredNotification, error) {
+func (m Methods) NativeListNotifications() ([]DeliveredNotification, error) {
 	var result struct {
 		Notifications []DeliveredNotification `json:"notifications"`
 	}
-	err := p.Call(MethodNativeListNotifications, nil, &result)
+	err := m.c.Call(MethodNativeListNotifications, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3049,11 +3058,11 @@ func (p *Plugin) NativeListNotifications() ([]DeliveredNotification, error) {
 }
 
 // NativeListShortcuts list available Shortcuts.app shortcuts. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeListShortcuts() ([]ShortcutInfo, error) {
+func (m Methods) NativeListShortcuts() ([]ShortcutInfo, error) {
 	var result struct {
 		Shortcuts []ShortcutInfo `json:"shortcuts"`
 	}
-	err := p.Call(MethodNativeListShortcuts, nil, &result)
+	err := m.c.Call(MethodNativeListShortcuts, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3061,11 +3070,11 @@ func (p *Plugin) NativeListShortcuts() ([]ShortcutInfo, error) {
 }
 
 // NativeListSpaces list all spaces across all displays.
-func (p *Plugin) NativeListSpaces() ([]SpaceInfo, error) {
+func (m Methods) NativeListSpaces() ([]SpaceInfo, error) {
 	var result struct {
 		Spaces []SpaceInfo `json:"spaces"`
 	}
-	err := p.Call(MethodNativeListSpaces, nil, &result)
+	err := m.c.Call(MethodNativeListSpaces, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3073,9 +3082,9 @@ func (p *Plugin) NativeListSpaces() ([]SpaceInfo, error) {
 }
 
 // NativeLiveTextEnabled check if Live Text is enabled. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeLiveTextEnabled() (*NativeLiveTextEnabledResponse, error) {
+func (m Methods) NativeLiveTextEnabled() (*NativeLiveTextEnabledResponse, error) {
 	var result NativeLiveTextEnabledResponse
-	err := p.Call(MethodNativeLiveTextEnabled, nil, &result)
+	err := m.c.Call(MethodNativeLiveTextEnabled, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3083,9 +3092,9 @@ func (p *Plugin) NativeLiveTextEnabled() (*NativeLiveTextEnabledResponse, error)
 }
 
 // NativeLocalIP get the primary local/LAN IP address.
-func (p *Plugin) NativeLocalIP() (*NativeLocalIPResponse, error) {
+func (m Methods) NativeLocalIP() (*NativeLocalIPResponse, error) {
 	var result NativeLocalIPResponse
-	err := p.Call(MethodNativeLocalIp, nil, &result)
+	err := m.c.Call(MethodNativeLocalIp, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3093,9 +3102,9 @@ func (p *Plugin) NativeLocalIP() (*NativeLocalIPResponse, error) {
 }
 
 // NativeLocale get current system locale identifier.
-func (p *Plugin) NativeLocale() (*NativeLocaleResponse, error) {
+func (m Methods) NativeLocale() (*NativeLocaleResponse, error) {
 	var result NativeLocaleResponse
-	err := p.Call(MethodNativeLocale, nil, &result)
+	err := m.c.Call(MethodNativeLocale, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3103,9 +3112,9 @@ func (p *Plugin) NativeLocale() (*NativeLocaleResponse, error) {
 }
 
 // NativeLocatePointerEnabled check if the system shows where the pointer is on request: shaking it on macOS, pressing Ctrl on GNOME and Windows.
-func (p *Plugin) NativeLocatePointerEnabled() (*NativeLocatePointerEnabledResponse, error) {
+func (m Methods) NativeLocatePointerEnabled() (*NativeLocatePointerEnabledResponse, error) {
 	var result NativeLocatePointerEnabledResponse
-	err := p.Call(MethodNativeLocatePointerEnabled, nil, &result)
+	err := m.c.Call(MethodNativeLocatePointerEnabled, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3113,9 +3122,9 @@ func (p *Plugin) NativeLocatePointerEnabled() (*NativeLocatePointerEnabledRespon
 }
 
 // NativeLocationEnabled check if Location Services is enabled.
-func (p *Plugin) NativeLocationEnabled() (*NativeLocationEnabledResponse, error) {
+func (m Methods) NativeLocationEnabled() (*NativeLocationEnabledResponse, error) {
 	var result NativeLocationEnabledResponse
-	err := p.Call(MethodNativeLocationEnabled, nil, &result)
+	err := m.c.Call(MethodNativeLocationEnabled, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3123,16 +3132,16 @@ func (p *Plugin) NativeLocationEnabled() (*NativeLocationEnabledResponse, error)
 }
 
 // NativeLogOut log out current user.
-func (p *Plugin) NativeLogOut() error {
-	return p.Call(MethodNativeLogOut, nil, nil)
+func (m Methods) NativeLogOut() error {
+	return m.c.Call(MethodNativeLogOut, nil, nil)
 }
 
 // NativeLoggedInUsers list currently logged-in users.
-func (p *Plugin) NativeLoggedInUsers() ([]string, error) {
+func (m Methods) NativeLoggedInUsers() ([]string, error) {
 	var result struct {
 		Users []string `json:"users"`
 	}
-	err := p.Call(MethodNativeLoggedInUsers, nil, &result)
+	err := m.c.Call(MethodNativeLoggedInUsers, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3140,11 +3149,11 @@ func (p *Plugin) NativeLoggedInUsers() ([]string, error) {
 }
 
 // NativeLoginItems list login items (launch-at-login entries).
-func (p *Plugin) NativeLoginItems() ([]LoginItem, error) {
+func (m Methods) NativeLoginItems() ([]LoginItem, error) {
 	var result struct {
 		Items []LoginItem `json:"items"`
 	}
-	err := p.Call(MethodNativeLoginItems, nil, &result)
+	err := m.c.Call(MethodNativeLoginItems, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3152,11 +3161,11 @@ func (p *Plugin) NativeLoginItems() ([]LoginItem, error) {
 }
 
 // NativeLoginItemsModern list modern login items (SMAppService). Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeLoginItemsModern() ([]string, error) {
+func (m Methods) NativeLoginItemsModern() ([]string, error) {
 	var result struct {
 		Items []string `json:"items"`
 	}
-	err := p.Call(MethodNativeLoginItemsModern, nil, &result)
+	err := m.c.Call(MethodNativeLoginItemsModern, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3164,9 +3173,9 @@ func (p *Plugin) NativeLoginItemsModern() ([]string, error) {
 }
 
 // NativeLowPowerMode check if Low Power Mode is enabled.
-func (p *Plugin) NativeLowPowerMode() (*NativeLowPowerModeResponse, error) {
+func (m Methods) NativeLowPowerMode() (*NativeLowPowerModeResponse, error) {
 	var result NativeLowPowerModeResponse
-	err := p.Call(MethodNativeLowPowerMode, nil, &result)
+	err := m.c.Call(MethodNativeLowPowerMode, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3174,9 +3183,9 @@ func (p *Plugin) NativeLowPowerMode() (*NativeLowPowerModeResponse, error) {
 }
 
 // NativeMacAddress get primary network interface MAC address.
-func (p *Plugin) NativeMacAddress() (*NativeMacAddressResponse, error) {
+func (m Methods) NativeMacAddress() (*NativeMacAddressResponse, error) {
 	var result NativeMacAddressResponse
-	err := p.Call(MethodNativeMacAddress, nil, &result)
+	err := m.c.Call(MethodNativeMacAddress, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3184,9 +3193,9 @@ func (p *Plugin) NativeMacAddress() (*NativeMacAddressResponse, error) {
 }
 
 // NativeMagnifierEnabled check if the screen magnifier is on (Zoom, the GNOME magnifier, Magnifier).
-func (p *Plugin) NativeMagnifierEnabled() (*NativeMagnifierEnabledResponse, error) {
+func (m Methods) NativeMagnifierEnabled() (*NativeMagnifierEnabledResponse, error) {
 	var result NativeMagnifierEnabledResponse
-	err := p.Call(MethodNativeMagnifierEnabled, nil, &result)
+	err := m.c.Call(MethodNativeMagnifierEnabled, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3194,18 +3203,18 @@ func (p *Plugin) NativeMagnifierEnabled() (*NativeMagnifierEnabledResponse, erro
 }
 
 // NativeMaximizeWindow maximize window to fill screen. On Linux, not available on sway (sway tiles rather than maximizing; there is no such window state); nor on GNOME (GNOME exposes no window IPC; use its own tiling keybinds).
-func (p *Plugin) NativeMaximizeWindow(req NativeMaximizeWindowRequest) (bool, error) {
+func (m Methods) NativeMaximizeWindow(req NativeMaximizeWindowRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeMaximizeWindow, &req, &result)
+	err := m.c.Call(MethodNativeMaximizeWindow, &req, &result)
 	return result.Ok, err
 }
 
 // NativeMeasurementSystem get the measurement system. Returns one of: metric, us.
-func (p *Plugin) NativeMeasurementSystem() (*NativeMeasurementSystemResponse, error) {
+func (m Methods) NativeMeasurementSystem() (*NativeMeasurementSystemResponse, error) {
 	var result NativeMeasurementSystemResponse
-	err := p.Call(MethodNativeMeasurementSystem, nil, &result)
+	err := m.c.Call(MethodNativeMeasurementSystem, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3213,24 +3222,24 @@ func (p *Plugin) NativeMeasurementSystem() (*NativeMeasurementSystemResponse, er
 }
 
 // NativeMediaNextTrack skip to next track in the current media player.
-func (p *Plugin) NativeMediaNextTrack() error {
-	return p.Call(MethodNativeMediaNextTrack, nil, nil)
+func (m Methods) NativeMediaNextTrack() error {
+	return m.c.Call(MethodNativeMediaNextTrack, nil, nil)
 }
 
 // NativeMediaPlayPause toggle play/pause for the current media player.
-func (p *Plugin) NativeMediaPlayPause() error {
-	return p.Call(MethodNativeMediaPlayPause, nil, nil)
+func (m Methods) NativeMediaPlayPause() error {
+	return m.c.Call(MethodNativeMediaPlayPause, nil, nil)
 }
 
 // NativeMediaPreviousTrack skip to previous track in the current media player.
-func (p *Plugin) NativeMediaPreviousTrack() error {
-	return p.Call(MethodNativeMediaPreviousTrack, nil, nil)
+func (m Methods) NativeMediaPreviousTrack() error {
+	return m.c.Call(MethodNativeMediaPreviousTrack, nil, nil)
 }
 
 // NativeMemoryInfo get total and available system memory.
-func (p *Plugin) NativeMemoryInfo() (*NativeMemoryInfoResponse, error) {
+func (m Methods) NativeMemoryInfo() (*NativeMemoryInfoResponse, error) {
 	var result NativeMemoryInfoResponse
-	err := p.Call(MethodNativeMemoryInfo, nil, &result)
+	err := m.c.Call(MethodNativeMemoryInfo, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3238,9 +3247,9 @@ func (p *Plugin) NativeMemoryInfo() (*NativeMemoryInfoResponse, error) {
 }
 
 // NativeMemoryPressure get memory pressure level. Unavailable when `memory_pressure -Q` names no level, which is the stock macOS 15 case — it reports only a free-percentage summary. Returns one of: nominal, warn, critical.
-func (p *Plugin) NativeMemoryPressure() (*NativeMemoryPressureResponse, error) {
+func (m Methods) NativeMemoryPressure() (*NativeMemoryPressureResponse, error) {
 	var result NativeMemoryPressureResponse
-	err := p.Call(MethodNativeMemoryPressure, nil, &result)
+	err := m.c.Call(MethodNativeMemoryPressure, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3248,11 +3257,11 @@ func (p *Plugin) NativeMemoryPressure() (*NativeMemoryPressureResponse, error) {
 }
 
 // NativeMenuBar read the menu bar structure of an application by PID.
-func (p *Plugin) NativeMenuBar(req NativeMenuBarRequest) ([]MenuItem, error) {
+func (m Methods) NativeMenuBar(req NativeMenuBarRequest) ([]MenuItem, error) {
 	var result struct {
 		Items []MenuItem `json:"items"`
 	}
-	err := p.Call(MethodNativeMenuBar, &req, &result)
+	err := m.c.Call(MethodNativeMenuBar, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3260,9 +3269,9 @@ func (p *Plugin) NativeMenuBar(req NativeMenuBarRequest) ([]MenuItem, error) {
 }
 
 // NativeMenuBarAutoHide check if menu bar auto-hide is enabled. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeMenuBarAutoHide() (*NativeMenuBarAutoHideResponse, error) {
+func (m Methods) NativeMenuBarAutoHide() (*NativeMenuBarAutoHideResponse, error) {
 	var result NativeMenuBarAutoHideResponse
-	err := p.Call(MethodNativeMenuBarAutoHide, nil, &result)
+	err := m.c.Call(MethodNativeMenuBarAutoHide, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3270,9 +3279,9 @@ func (p *Plugin) NativeMenuBarAutoHide() (*NativeMenuBarAutoHideResponse, error)
 }
 
 // NativeMenuBarBatteryPercent check if battery percentage is shown in menu bar.
-func (p *Plugin) NativeMenuBarBatteryPercent() (*NativeMenuBarBatteryPercentResponse, error) {
+func (m Methods) NativeMenuBarBatteryPercent() (*NativeMenuBarBatteryPercentResponse, error) {
 	var result NativeMenuBarBatteryPercentResponse
-	err := p.Call(MethodNativeMenuBarBatteryPercent, nil, &result)
+	err := m.c.Call(MethodNativeMenuBarBatteryPercent, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3280,9 +3289,9 @@ func (p *Plugin) NativeMenuBarBatteryPercent() (*NativeMenuBarBatteryPercentResp
 }
 
 // NativeMenuBarClockFormat whether the clock is 12-hour or 24-hour, as 12h or 24h.
-func (p *Plugin) NativeMenuBarClockFormat() (*NativeMenuBarClockFormatResponse, error) {
+func (m Methods) NativeMenuBarClockFormat() (*NativeMenuBarClockFormatResponse, error) {
 	var result NativeMenuBarClockFormatResponse
-	err := p.Call(MethodNativeMenuBarClockFormat, nil, &result)
+	err := m.c.Call(MethodNativeMenuBarClockFormat, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3290,9 +3299,9 @@ func (p *Plugin) NativeMenuBarClockFormat() (*NativeMenuBarClockFormatResponse, 
 }
 
 // NativeMicrophonePermission check if microphone access is available.
-func (p *Plugin) NativeMicrophonePermission() (*NativeMicrophonePermissionResponse, error) {
+func (m Methods) NativeMicrophonePermission() (*NativeMicrophonePermissionResponse, error) {
 	var result NativeMicrophonePermissionResponse
-	err := p.Call(MethodNativeMicrophonePermission, nil, &result)
+	err := m.c.Call(MethodNativeMicrophonePermission, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3300,14 +3309,14 @@ func (p *Plugin) NativeMicrophonePermission() (*NativeMicrophonePermissionRespon
 }
 
 // NativeMinimizeWindow minimize a window by ID. On Linux, not available on sway (this compositor has no minimize; sway uses the scratchpad); nor on GNOME (GNOME exposes no window IPC to minimize through).
-func (p *Plugin) NativeMinimizeWindow(req NativeMinimizeWindowRequest) error {
-	return p.Call(MethodNativeMinimizeWindow, &req, nil)
+func (m Methods) NativeMinimizeWindow(req NativeMinimizeWindowRequest) error {
+	return m.c.Call(MethodNativeMinimizeWindow, &req, nil)
 }
 
 // NativeModelName get the hardware model name (e.g. MacBook Pro 14-inch 2023).
-func (p *Plugin) NativeModelName() (*NativeModelNameResponse, error) {
+func (m Methods) NativeModelName() (*NativeModelNameResponse, error) {
 	var result NativeModelNameResponse
-	err := p.Call(MethodNativeModelName, nil, &result)
+	err := m.c.Call(MethodNativeModelName, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3315,9 +3324,9 @@ func (p *Plugin) NativeModelName() (*NativeModelNameResponse, error) {
 }
 
 // NativeMonoAudio check if mono audio is on (the left and right channels are mixed, so either ear hears everything).
-func (p *Plugin) NativeMonoAudio() (*NativeMonoAudioResponse, error) {
+func (m Methods) NativeMonoAudio() (*NativeMonoAudioResponse, error) {
 	var result NativeMonoAudioResponse
-	err := p.Call(MethodNativeMonoAudio, nil, &result)
+	err := m.c.Call(MethodNativeMonoAudio, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3325,11 +3334,11 @@ func (p *Plugin) NativeMonoAudio() (*NativeMonoAudioResponse, error) {
 }
 
 // NativeMountPoints list mounted volumes.
-func (p *Plugin) NativeMountPoints() ([]string, error) {
+func (m Methods) NativeMountPoints() ([]string, error) {
 	var result struct {
 		Volumes []string `json:"volumes"`
 	}
-	err := p.Call(MethodNativeMountPoints, nil, &result)
+	err := m.c.Call(MethodNativeMountPoints, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3337,14 +3346,14 @@ func (p *Plugin) NativeMountPoints() ([]string, error) {
 }
 
 // NativeMouseButtonClick click a specific mouse button (middle, button4, etc.).
-func (p *Plugin) NativeMouseButtonClick(req NativeMouseButtonClickRequest) error {
-	return p.Call(MethodNativeMouseButtonClick, &req, nil)
+func (m Methods) NativeMouseButtonClick(req NativeMouseButtonClickRequest) error {
+	return m.c.Call(MethodNativeMouseButtonClick, &req, nil)
 }
 
 // NativeMouseKeys check if Mouse Keys is on (the numeric keypad moves the pointer).
-func (p *Plugin) NativeMouseKeys() (*NativeMouseKeysResponse, error) {
+func (m Methods) NativeMouseKeys() (*NativeMouseKeysResponse, error) {
 	var result NativeMouseKeysResponse
-	err := p.Call(MethodNativeMouseKeys, nil, &result)
+	err := m.c.Call(MethodNativeMouseKeys, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3352,9 +3361,9 @@ func (p *Plugin) NativeMouseKeys() (*NativeMouseKeysResponse, error) {
 }
 
 // NativeMouseSpeed get the mouse tracking speed (0.0-3.0).
-func (p *Plugin) NativeMouseSpeed() (float64, error) {
+func (m Methods) NativeMouseSpeed() (float64, error) {
 	var result float64
-	err := p.Call(MethodNativeMouseSpeed, nil, &result)
+	err := m.c.Call(MethodNativeMouseSpeed, nil, &result)
 	if err != nil {
 		return 0, err
 	}
@@ -3362,37 +3371,37 @@ func (p *Plugin) NativeMouseSpeed() (float64, error) {
 }
 
 // NativeMoveFile move or rename a file or directory.
-func (p *Plugin) NativeMoveFile(req NativeMoveFileRequest) (bool, error) {
+func (m Methods) NativeMoveFile(req NativeMoveFileRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeMoveFile, &req, &result)
+	err := m.c.Call(MethodNativeMoveFile, &req, &result)
 	return result.Ok, err
 }
 
 // NativeMoveWindowToDisplay move a window to a different display. On Linux, not available on GNOME (GNOME exposes no window IPC to set window properties through).
-func (p *Plugin) NativeMoveWindowToDisplay(req NativeMoveWindowToDisplayRequest) error {
-	return p.Call(MethodNativeMoveWindowToDisplay, &req, nil)
+func (m Methods) NativeMoveWindowToDisplay(req NativeMoveWindowToDisplayRequest) error {
+	return m.c.Call(MethodNativeMoveWindowToDisplay, &req, nil)
 }
 
 // NativeMoveWindowToSpace dEPRECATED, silent no-op on modern macOS: the private CGS move APIs this calls are dead (verified on Sequoia 2026-07-25) — the window does not move, and the call re-reads the window's spaces and reports false. Kept for older systems. For a working move, drive the visible path the bundled placement plugin uses: mouse-hold the title bar + Ctrl+N. space_id here is an opaque CGS space id from native.list_spaces, NOT the 1-based ordinal that native.switch_space takes. Exists only on macOS and Linux; elsewhere it is refused with platform_no_analogue. On Linux, not available on GNOME (GNOME moves windows between workspaces only from its own shortcuts; its XWayland windows ignore the EWMH request).
-func (p *Plugin) NativeMoveWindowToSpace(req NativeMoveWindowToSpaceRequest) (bool, error) {
+func (m Methods) NativeMoveWindowToSpace(req NativeMoveWindowToSpaceRequest) (bool, error) {
 	var result struct {
 		Result bool `json:"result"`
 	}
-	err := p.Call(MethodNativeMoveWindowToSpace, &req, &result)
+	err := m.c.Call(MethodNativeMoveWindowToSpace, &req, &result)
 	return result.Result, err
 }
 
 // NativeMute set mute state on default output device.
-func (p *Plugin) NativeMute(req NativeMuteRequest) error {
-	return p.Call(MethodNativeMute, &req, nil)
+func (m Methods) NativeMute(req NativeMuteRequest) error {
+	return m.c.Call(MethodNativeMute, &req, nil)
 }
 
 // NativeNetworkBandwidth get network link speed.
-func (p *Plugin) NativeNetworkBandwidth() (*NativeNetworkBandwidthResponse, error) {
+func (m Methods) NativeNetworkBandwidth() (*NativeNetworkBandwidthResponse, error) {
 	var result NativeNetworkBandwidthResponse
-	err := p.Call(MethodNativeNetworkBandwidth, nil, &result)
+	err := m.c.Call(MethodNativeNetworkBandwidth, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3400,9 +3409,9 @@ func (p *Plugin) NativeNetworkBandwidth() (*NativeNetworkBandwidthResponse, erro
 }
 
 // NativeNetworkDnsDomain get DNS search domain.
-func (p *Plugin) NativeNetworkDnsDomain() (*NativeNetworkDnsDomainResponse, error) {
+func (m Methods) NativeNetworkDnsDomain() (*NativeNetworkDnsDomainResponse, error) {
 	var result NativeNetworkDnsDomainResponse
-	err := p.Call(MethodNativeNetworkDnsDomain, nil, &result)
+	err := m.c.Call(MethodNativeNetworkDnsDomain, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3410,11 +3419,11 @@ func (p *Plugin) NativeNetworkDnsDomain() (*NativeNetworkDnsDomainResponse, erro
 }
 
 // NativeNetworkInterfaces list network interfaces with IP addresses.
-func (p *Plugin) NativeNetworkInterfaces() ([]NetworkInterface, error) {
+func (m Methods) NativeNetworkInterfaces() ([]NetworkInterface, error) {
 	var result struct {
 		Interfaces []NetworkInterface `json:"interfaces"`
 	}
-	err := p.Call(MethodNativeNetworkInterfaces, nil, &result)
+	err := m.c.Call(MethodNativeNetworkInterfaces, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3422,9 +3431,9 @@ func (p *Plugin) NativeNetworkInterfaces() ([]NetworkInterface, error) {
 }
 
 // NativeNetworkProxyEnabled check if any network proxy is configured.
-func (p *Plugin) NativeNetworkProxyEnabled() (*NativeNetworkProxyEnabledResponse, error) {
+func (m Methods) NativeNetworkProxyEnabled() (*NativeNetworkProxyEnabledResponse, error) {
 	var result NativeNetworkProxyEnabledResponse
-	err := p.Call(MethodNativeNetworkProxyEnabled, nil, &result)
+	err := m.c.Call(MethodNativeNetworkProxyEnabled, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3432,9 +3441,9 @@ func (p *Plugin) NativeNetworkProxyEnabled() (*NativeNetworkProxyEnabledResponse
 }
 
 // NativeNetworkQuality run a quick network quality test (upload/download Mbps). The test contacts Apple, so a plugin declares mensura.cdn-apple.com in requires.network. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeNetworkQuality() (*NativeNetworkQualityResponse, error) {
+func (m Methods) NativeNetworkQuality() (*NativeNetworkQualityResponse, error) {
 	var result NativeNetworkQualityResponse
-	err := p.Call(MethodNativeNetworkQuality, nil, &result)
+	err := m.c.Call(MethodNativeNetworkQuality, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3442,9 +3451,9 @@ func (p *Plugin) NativeNetworkQuality() (*NativeNetworkQualityResponse, error) {
 }
 
 // NativeNetworkReachable check if a host is reachable via network. A plugin may check only a host it declares in requires.network that the user has switched on.
-func (p *Plugin) NativeNetworkReachable(req NativeNetworkReachableRequest) (*NativeNetworkReachableResponse, error) {
+func (m Methods) NativeNetworkReachable(req NativeNetworkReachableRequest) (*NativeNetworkReachableResponse, error) {
 	var result NativeNetworkReachableResponse
-	err := p.Call(MethodNativeNetworkReachable, &req, &result)
+	err := m.c.Call(MethodNativeNetworkReachable, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3452,9 +3461,9 @@ func (p *Plugin) NativeNetworkReachable(req NativeNetworkReachableRequest) (*Nat
 }
 
 // NativeNetworkSignalStrength get Wi-Fi signal strength in dBm.
-func (p *Plugin) NativeNetworkSignalStrength() (float64, error) {
+func (m Methods) NativeNetworkSignalStrength() (float64, error) {
 	var result float64
-	err := p.Call(MethodNativeNetworkSignalStrength, nil, &result)
+	err := m.c.Call(MethodNativeNetworkSignalStrength, nil, &result)
 	if err != nil {
 		return 0, err
 	}
@@ -3462,9 +3471,9 @@ func (p *Plugin) NativeNetworkSignalStrength() (float64, error) {
 }
 
 // NativeNetworkSsid get currently connected Wi-Fi SSID.
-func (p *Plugin) NativeNetworkSsid() (*NativeNetworkSsidResponse, error) {
+func (m Methods) NativeNetworkSsid() (*NativeNetworkSsidResponse, error) {
 	var result NativeNetworkSsidResponse
-	err := p.Call(MethodNativeNetworkSsid, nil, &result)
+	err := m.c.Call(MethodNativeNetworkSsid, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3472,18 +3481,18 @@ func (p *Plugin) NativeNetworkSsid() (*NativeNetworkSsidResponse, error) {
 }
 
 // NativeNewAppWindow open a new window of an app on the current Space, without switching to an existing window on another Space.
-func (p *Plugin) NativeNewAppWindow(req NativeNewAppWindowRequest) (bool, error) {
+func (m Methods) NativeNewAppWindow(req NativeNewAppWindowRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeNewAppWindow, &req, &result)
+	err := m.c.Call(MethodNativeNewAppWindow, &req, &result)
 	return result.Ok, err
 }
 
 // NativeNightShift check if Night Shift is currently enabled. Exists only on macOS and Linux; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeNightShift() (*NativeNightShiftResponse, error) {
+func (m Methods) NativeNightShift() (*NativeNightShiftResponse, error) {
 	var result NativeNightShiftResponse
-	err := p.Call(MethodNativeNightShift, nil, &result)
+	err := m.c.Call(MethodNativeNightShift, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3491,9 +3500,9 @@ func (p *Plugin) NativeNightShift() (*NativeNightShiftResponse, error) {
 }
 
 // NativeNotificationSoundEnabled check if notification sounds are enabled.
-func (p *Plugin) NativeNotificationSoundEnabled() (*NativeNotificationSoundEnabledResponse, error) {
+func (m Methods) NativeNotificationSoundEnabled() (*NativeNotificationSoundEnabledResponse, error) {
 	var result NativeNotificationSoundEnabledResponse
-	err := p.Call(MethodNativeNotificationSoundEnabled, nil, &result)
+	err := m.c.Call(MethodNativeNotificationSoundEnabled, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3501,9 +3510,9 @@ func (p *Plugin) NativeNotificationSoundEnabled() (*NativeNotificationSoundEnabl
 }
 
 // NativeNotify post a rich notification (osascript fallback).
-func (p *Plugin) NativeNotify(req NativeNotifyRequest) (*NativeNotifyResponse, error) {
+func (m Methods) NativeNotify(req NativeNotifyRequest) (*NativeNotifyResponse, error) {
 	var result NativeNotifyResponse
-	err := p.Call(MethodNativeNotify, &req, &result)
+	err := m.c.Call(MethodNativeNotify, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3511,9 +3520,9 @@ func (p *Plugin) NativeNotify(req NativeNotifyRequest) (*NativeNotifyResponse, e
 }
 
 // NativeNowPlaying get currently playing media info (title, artist, album, app).
-func (p *Plugin) NativeNowPlaying() (*NativeNowPlayingResponse, error) {
+func (m Methods) NativeNowPlaying() (*NativeNowPlayingResponse, error) {
 	var result NativeNowPlayingResponse
-	err := p.Call(MethodNativeNowPlaying, nil, &result)
+	err := m.c.Call(MethodNativeNowPlaying, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3521,9 +3530,9 @@ func (p *Plugin) NativeNowPlaying() (*NativeNowPlayingResponse, error) {
 }
 
 // NativeNumberFormatDecimal get decimal separator character.
-func (p *Plugin) NativeNumberFormatDecimal() (*NativeNumberFormatDecimalResponse, error) {
+func (m Methods) NativeNumberFormatDecimal() (*NativeNumberFormatDecimalResponse, error) {
 	var result NativeNumberFormatDecimalResponse
-	err := p.Call(MethodNativeNumberFormatDecimal, nil, &result)
+	err := m.c.Call(MethodNativeNumberFormatDecimal, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3531,11 +3540,11 @@ func (p *Plugin) NativeNumberFormatDecimal() (*NativeNumberFormatDecimalResponse
 }
 
 // NativeOcrClipboard oCR text from the clipboard image.
-func (p *Plugin) NativeOcrClipboard() ([]OcrRegion, error) {
+func (m Methods) NativeOcrClipboard() ([]OcrRegion, error) {
 	var result struct {
 		Regions []OcrRegion `json:"regions"`
 	}
-	err := p.Call(MethodNativeOcrClipboard, nil, &result)
+	err := m.c.Call(MethodNativeOcrClipboard, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3543,11 +3552,11 @@ func (p *Plugin) NativeOcrClipboard() ([]OcrRegion, error) {
 }
 
 // NativeOcrFile oCR text from an image file path.
-func (p *Plugin) NativeOcrFile(req NativeOcrFileRequest) ([]OcrRegion, error) {
+func (m Methods) NativeOcrFile(req NativeOcrFileRequest) ([]OcrRegion, error) {
 	var result struct {
 		Regions []OcrRegion `json:"regions"`
 	}
-	err := p.Call(MethodNativeOcrFile, &req, &result)
+	err := m.c.Call(MethodNativeOcrFile, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3555,11 +3564,11 @@ func (p *Plugin) NativeOcrFile(req NativeOcrFileRequest) ([]OcrRegion, error) {
 }
 
 // NativeOcrScreen oCR text from the current screen.
-func (p *Plugin) NativeOcrScreen() ([]OcrRegion, error) {
+func (m Methods) NativeOcrScreen() ([]OcrRegion, error) {
 	var result struct {
 		Regions []OcrRegion `json:"regions"`
 	}
-	err := p.Call(MethodNativeOcrScreen, nil, &result)
+	err := m.c.Call(MethodNativeOcrScreen, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3567,11 +3576,11 @@ func (p *Plugin) NativeOcrScreen() ([]OcrRegion, error) {
 }
 
 // NativeOcrScreenRegion oCR text from a screen region (x, y, width, height).
-func (p *Plugin) NativeOcrScreenRegion(req NativeOcrScreenRegionRequest) ([]OcrRegion, error) {
+func (m Methods) NativeOcrScreenRegion(req NativeOcrScreenRegionRequest) ([]OcrRegion, error) {
 	var result struct {
 		Regions []OcrRegion `json:"regions"`
 	}
-	err := p.Call(MethodNativeOcrScreenRegion, &req, &result)
+	err := m.c.Call(MethodNativeOcrScreenRegion, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3579,11 +3588,11 @@ func (p *Plugin) NativeOcrScreenRegion(req NativeOcrScreenRegionRequest) ([]OcrR
 }
 
 // NativeOcrWindow oCR text from a specific window by ID.
-func (p *Plugin) NativeOcrWindow(req NativeOcrWindowRequest) ([]OcrRegion, error) {
+func (m Methods) NativeOcrWindow(req NativeOcrWindowRequest) ([]OcrRegion, error) {
 	var result struct {
 		Regions []OcrRegion `json:"regions"`
 	}
-	err := p.Call(MethodNativeOcrWindow, &req, &result)
+	err := m.c.Call(MethodNativeOcrWindow, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3591,9 +3600,9 @@ func (p *Plugin) NativeOcrWindow(req NativeOcrWindowRequest) ([]OcrRegion, error
 }
 
 // NativeOnScreenKeyboardEnabled check if the on-screen keyboard is on.
-func (p *Plugin) NativeOnScreenKeyboardEnabled() (*NativeOnScreenKeyboardEnabledResponse, error) {
+func (m Methods) NativeOnScreenKeyboardEnabled() (*NativeOnScreenKeyboardEnabledResponse, error) {
 	var result NativeOnScreenKeyboardEnabledResponse
-	err := p.Call(MethodNativeOnScreenKeyboardEnabled, nil, &result)
+	err := m.c.Call(MethodNativeOnScreenKeyboardEnabled, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3601,39 +3610,39 @@ func (p *Plugin) NativeOnScreenKeyboardEnabled() (*NativeOnScreenKeyboardEnabled
 }
 
 // NativeOpenAppSettings open an app's preferences window. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeOpenAppSettings(req NativeOpenAppSettingsRequest) error {
-	return p.Call(MethodNativeOpenAppSettings, &req, nil)
+func (m Methods) NativeOpenAppSettings(req NativeOpenAppSettingsRequest) error {
+	return m.c.Call(MethodNativeOpenAppSettings, &req, nil)
 }
 
 // NativeOpenFinderWindow open a Finder window at a specific path. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeOpenFinderWindow(req NativeOpenFinderWindowRequest) error {
-	return p.Call(MethodNativeOpenFinderWindow, &req, nil)
+func (m Methods) NativeOpenFinderWindow(req NativeOpenFinderWindowRequest) error {
+	return m.c.Call(MethodNativeOpenFinderWindow, &req, nil)
 }
 
 // NativeOpenSystemSettings open System Settings to a specific pane (e.g. 'Privacy_Accessibility').
-func (p *Plugin) NativeOpenSystemSettings(req NativeOpenSystemSettingsRequest) error {
-	return p.Call(MethodNativeOpenSystemSettings, &req, nil)
+func (m Methods) NativeOpenSystemSettings(req NativeOpenSystemSettingsRequest) error {
+	return m.c.Call(MethodNativeOpenSystemSettings, &req, nil)
 }
 
 // NativeOpenTarget open a URL or file path with the default handler.
-func (p *Plugin) NativeOpenTarget(req NativeOpenTargetRequest) error {
-	return p.Call(MethodNativeOpenTarget, &req, nil)
+func (m Methods) NativeOpenTarget(req NativeOpenTargetRequest) error {
+	return m.c.Call(MethodNativeOpenTarget, &req, nil)
 }
 
 // NativeOpenURL open a web (http, https) or email (mailto) link in its default handler; any other scheme is refused.
-func (p *Plugin) NativeOpenURL(req NativeOpenURLRequest) error {
-	return p.Call(MethodNativeOpenUrl, &req, nil)
+func (m Methods) NativeOpenURL(req NativeOpenURLRequest) error {
+	return m.c.Call(MethodNativeOpenUrl, &req, nil)
 }
 
 // NativeOpenWithApp open a URL or path with a specific application.
-func (p *Plugin) NativeOpenWithApp(req NativeOpenWithAppRequest) error {
-	return p.Call(MethodNativeOpenWithApp, &req, nil)
+func (m Methods) NativeOpenWithApp(req NativeOpenWithAppRequest) error {
+	return m.c.Call(MethodNativeOpenWithApp, &req, nil)
 }
 
 // NativeOptimizedCharging check if optimized battery charging is enabled. Exists only on macOS and Linux; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeOptimizedCharging() (*NativeOptimizedChargingResponse, error) {
+func (m Methods) NativeOptimizedCharging() (*NativeOptimizedChargingResponse, error) {
 	var result NativeOptimizedChargingResponse
-	err := p.Call(MethodNativeOptimizedCharging, nil, &result)
+	err := m.c.Call(MethodNativeOptimizedCharging, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3641,9 +3650,9 @@ func (p *Plugin) NativeOptimizedCharging() (*NativeOptimizedChargingResponse, er
 }
 
 // NativePdfExtractText extract text from a PDF file.
-func (p *Plugin) NativePdfExtractText(req NativePdfExtractTextRequest) (string, error) {
+func (m Methods) NativePdfExtractText(req NativePdfExtractTextRequest) (string, error) {
 	var result string
-	err := p.Call(MethodNativePdfExtractText, &req, &result)
+	err := m.c.Call(MethodNativePdfExtractText, &req, &result)
 	if err != nil {
 		return "", err
 	}
@@ -3651,9 +3660,9 @@ func (p *Plugin) NativePdfExtractText(req NativePdfExtractTextRequest) (string, 
 }
 
 // NativePdfPageCount get the page count of a PDF file.
-func (p *Plugin) NativePdfPageCount(req NativePdfPageCountRequest) (int, error) {
+func (m Methods) NativePdfPageCount(req NativePdfPageCountRequest) (int, error) {
 	var result int
-	err := p.Call(MethodNativePdfPageCount, &req, &result)
+	err := m.c.Call(MethodNativePdfPageCount, &req, &result)
 	if err != nil {
 		return 0, err
 	}
@@ -3661,14 +3670,14 @@ func (p *Plugin) NativePdfPageCount(req NativePdfPageCountRequest) (int, error) 
 }
 
 // NativePinWindowAbove pin or unpin a window above all others. On Linux, not available on GNOME (GNOME exposes no window IPC to set window properties through); nor on sway (sway has no stacking levels; floating windows are always above tiled ones).
-func (p *Plugin) NativePinWindowAbove(req NativePinWindowAboveRequest) error {
-	return p.Call(MethodNativePinWindowAbove, &req, nil)
+func (m Methods) NativePinWindowAbove(req NativePinWindowAboveRequest) error {
+	return m.c.Call(MethodNativePinWindowAbove, &req, nil)
 }
 
 // NativePinchToZoom check if pinch-to-zoom gesture is enabled. Exists only on macOS and Windows; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativePinchToZoom() (*NativePinchToZoomResponse, error) {
+func (m Methods) NativePinchToZoom() (*NativePinchToZoomResponse, error) {
 	var result NativePinchToZoomResponse
-	err := p.Call(MethodNativePinchToZoom, nil, &result)
+	err := m.c.Call(MethodNativePinchToZoom, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3676,9 +3685,9 @@ func (p *Plugin) NativePinchToZoom() (*NativePinchToZoomResponse, error) {
 }
 
 // NativePing ping a host and return latency in milliseconds. A plugin may ping only a host it declares in requires.network that the user has switched on.
-func (p *Plugin) NativePing(req NativePingRequest) (float64, error) {
+func (m Methods) NativePing(req NativePingRequest) (float64, error) {
 	var result float64
-	err := p.Call(MethodNativePing, &req, &result)
+	err := m.c.Call(MethodNativePing, &req, &result)
 	if err != nil {
 		return 0, err
 	}
@@ -3686,9 +3695,9 @@ func (p *Plugin) NativePing(req NativePingRequest) (float64, error) {
 }
 
 // NativePlayFeedbackWhenVolumeChanged check if volume change feedback sound is enabled. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativePlayFeedbackWhenVolumeChanged() (*NativePlayFeedbackWhenVolumeChangedResponse, error) {
+func (m Methods) NativePlayFeedbackWhenVolumeChanged() (*NativePlayFeedbackWhenVolumeChangedResponse, error) {
 	var result NativePlayFeedbackWhenVolumeChangedResponse
-	err := p.Call(MethodNativePlayFeedbackWhenVolumeChanged, nil, &result)
+	err := m.c.Call(MethodNativePlayFeedbackWhenVolumeChanged, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3696,19 +3705,19 @@ func (p *Plugin) NativePlayFeedbackWhenVolumeChanged() (*NativePlayFeedbackWhenV
 }
 
 // NativePlaySound play a named system sound.
-func (p *Plugin) NativePlaySound(req NativePlaySoundRequest) error {
-	return p.Call(MethodNativePlaySound, &req, nil)
+func (m Methods) NativePlaySound(req NativePlaySoundRequest) error {
+	return m.c.Call(MethodNativePlaySound, &req, nil)
 }
 
 // NativePollBurst request burst-mode world model polling (200ms intervals).
-func (p *Plugin) NativePollBurst() error {
-	return p.Call(MethodNativePollBurst, nil, nil)
+func (m Methods) NativePollBurst() error {
+	return m.c.Call(MethodNativePollBurst, nil, nil)
 }
 
 // NativePowerAdapterConnected check if power adapter is connected.
-func (p *Plugin) NativePowerAdapterConnected() (*NativePowerAdapterConnectedResponse, error) {
+func (m Methods) NativePowerAdapterConnected() (*NativePowerAdapterConnectedResponse, error) {
 	var result NativePowerAdapterConnectedResponse
-	err := p.Call(MethodNativePowerAdapterConnected, nil, &result)
+	err := m.c.Call(MethodNativePowerAdapterConnected, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3716,9 +3725,9 @@ func (p *Plugin) NativePowerAdapterConnected() (*NativePowerAdapterConnectedResp
 }
 
 // NativePowerMode get the power mode: saving energy, balanced, or favouring performance. Returns one of: power-saver, balanced, performance.
-func (p *Plugin) NativePowerMode() (*NativePowerModeResponse, error) {
+func (m Methods) NativePowerMode() (*NativePowerModeResponse, error) {
 	var result NativePowerModeResponse
-	err := p.Call(MethodNativePowerMode, nil, &result)
+	err := m.c.Call(MethodNativePowerMode, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3726,9 +3735,9 @@ func (p *Plugin) NativePowerMode() (*NativePowerModeResponse, error) {
 }
 
 // NativePowerSource get current power source type. Returns one of: AC, Battery, UPS, Unknown.
-func (p *Plugin) NativePowerSource() (*NativePowerSourceResponse, error) {
+func (m Methods) NativePowerSource() (*NativePowerSourceResponse, error) {
 	var result NativePowerSourceResponse
-	err := p.Call(MethodNativePowerSource, nil, &result)
+	err := m.c.Call(MethodNativePowerSource, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3736,9 +3745,9 @@ func (p *Plugin) NativePowerSource() (*NativePowerSourceResponse, error) {
 }
 
 // NativePressAndHoldEnabled check if press-and-hold for accented characters is enabled. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativePressAndHoldEnabled() (*NativePressAndHoldEnabledResponse, error) {
+func (m Methods) NativePressAndHoldEnabled() (*NativePressAndHoldEnabledResponse, error) {
 	var result NativePressAndHoldEnabledResponse
-	err := p.Call(MethodNativePressAndHoldEnabled, nil, &result)
+	err := m.c.Call(MethodNativePressAndHoldEnabled, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3746,9 +3755,9 @@ func (p *Plugin) NativePressAndHoldEnabled() (*NativePressAndHoldEnabledResponse
 }
 
 // NativePreventSleep assert or release sleep prevention.
-func (p *Plugin) NativePreventSleep(req NativePreventSleepRequest) (*NativePreventSleepResponse, error) {
+func (m Methods) NativePreventSleep(req NativePreventSleepRequest) (*NativePreventSleepResponse, error) {
 	var result NativePreventSleepResponse
-	err := p.Call(MethodNativePreventSleep, &req, &result)
+	err := m.c.Call(MethodNativePreventSleep, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3756,9 +3765,9 @@ func (p *Plugin) NativePreventSleep(req NativePreventSleepRequest) (*NativePreve
 }
 
 // NativePrimaryDisplay get metadata for the primary display.
-func (p *Plugin) NativePrimaryDisplay() (*NativePrimaryDisplayResponse, error) {
+func (m Methods) NativePrimaryDisplay() (*NativePrimaryDisplayResponse, error) {
 	var result NativePrimaryDisplayResponse
-	err := p.Call(MethodNativePrimaryDisplay, nil, &result)
+	err := m.c.Call(MethodNativePrimaryDisplay, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3766,9 +3775,9 @@ func (p *Plugin) NativePrimaryDisplay() (*NativePrimaryDisplayResponse, error) {
 }
 
 // NativePrimaryDisplayID get primary display ID.
-func (p *Plugin) NativePrimaryDisplayID() (*NativePrimaryDisplayIDResponse, error) {
+func (m Methods) NativePrimaryDisplayID() (*NativePrimaryDisplayIDResponse, error) {
 	var result NativePrimaryDisplayIDResponse
-	err := p.Call(MethodNativePrimaryDisplayId, nil, &result)
+	err := m.c.Call(MethodNativePrimaryDisplayId, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3776,9 +3785,9 @@ func (p *Plugin) NativePrimaryDisplayID() (*NativePrimaryDisplayIDResponse, erro
 }
 
 // NativePrinterSharingEnabled check if printer sharing is enabled.
-func (p *Plugin) NativePrinterSharingEnabled() (*NativePrinterSharingEnabledResponse, error) {
+func (m Methods) NativePrinterSharingEnabled() (*NativePrinterSharingEnabledResponse, error) {
 	var result NativePrinterSharingEnabledResponse
-	err := p.Call(MethodNativePrinterSharingEnabled, nil, &result)
+	err := m.c.Call(MethodNativePrinterSharingEnabled, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3786,11 +3795,11 @@ func (p *Plugin) NativePrinterSharingEnabled() (*NativePrinterSharingEnabledResp
 }
 
 // NativePrinters list available printers.
-func (p *Plugin) NativePrinters() ([]PrinterInfo, error) {
+func (m Methods) NativePrinters() ([]PrinterInfo, error) {
 	var result struct {
 		Printers []PrinterInfo `json:"printers"`
 	}
-	err := p.Call(MethodNativePrinters, nil, &result)
+	err := m.c.Call(MethodNativePrinters, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3798,9 +3807,9 @@ func (p *Plugin) NativePrinters() ([]PrinterInfo, error) {
 }
 
 // NativeProcessCount get total number of running processes.
-func (p *Plugin) NativeProcessCount() (*NativeProcessCountResponse, error) {
+func (m Methods) NativeProcessCount() (*NativeProcessCountResponse, error) {
 	var result NativeProcessCountResponse
-	err := p.Call(MethodNativeProcessCount, nil, &result)
+	err := m.c.Call(MethodNativeProcessCount, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3808,9 +3817,9 @@ func (p *Plugin) NativeProcessCount() (*NativeProcessCountResponse, error) {
 }
 
 // NativeProcessCpuUsage get CPU usage for process by PID.
-func (p *Plugin) NativeProcessCpuUsage(req NativeProcessCpuUsageRequest) (float64, error) {
+func (m Methods) NativeProcessCpuUsage(req NativeProcessCpuUsageRequest) (float64, error) {
 	var result float64
-	err := p.Call(MethodNativeProcessCpuUsage, &req, &result)
+	err := m.c.Call(MethodNativeProcessCpuUsage, &req, &result)
 	if err != nil {
 		return 0, err
 	}
@@ -3818,9 +3827,9 @@ func (p *Plugin) NativeProcessCpuUsage(req NativeProcessCpuUsageRequest) (float6
 }
 
 // NativeProcessExists check if a process with given PID exists.
-func (p *Plugin) NativeProcessExists(req NativeProcessExistsRequest) (*NativeProcessExistsResponse, error) {
+func (m Methods) NativeProcessExists(req NativeProcessExistsRequest) (*NativeProcessExistsResponse, error) {
 	var result NativeProcessExistsResponse
-	err := p.Call(MethodNativeProcessExists, &req, &result)
+	err := m.c.Call(MethodNativeProcessExists, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3828,9 +3837,9 @@ func (p *Plugin) NativeProcessExists(req NativeProcessExistsRequest) (*NativePro
 }
 
 // NativeProcessInfo get info about a process by PID (name, cpu, memory, path).
-func (p *Plugin) NativeProcessInfo(req NativeProcessInfoRequest) (*NativeProcessInfoResponse, error) {
+func (m Methods) NativeProcessInfo(req NativeProcessInfoRequest) (*NativeProcessInfoResponse, error) {
 	var result NativeProcessInfoResponse
-	err := p.Call(MethodNativeProcessInfo, &req, &result)
+	err := m.c.Call(MethodNativeProcessInfo, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3838,11 +3847,11 @@ func (p *Plugin) NativeProcessInfo(req NativeProcessInfoRequest) (*NativeProcess
 }
 
 // NativeProcessList list all running processes with PID, name, and user.
-func (p *Plugin) NativeProcessList() ([]ProcessInfo, error) {
+func (m Methods) NativeProcessList() ([]ProcessInfo, error) {
 	var result struct {
 		Processes []ProcessInfo `json:"processes"`
 	}
-	err := p.Call(MethodNativeProcessList, nil, &result)
+	err := m.c.Call(MethodNativeProcessList, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3850,9 +3859,9 @@ func (p *Plugin) NativeProcessList() ([]ProcessInfo, error) {
 }
 
 // NativeProcessMemoryUsage get memory usage in bytes for process by PID.
-func (p *Plugin) NativeProcessMemoryUsage(req NativeProcessMemoryUsageRequest) (int, error) {
+func (m Methods) NativeProcessMemoryUsage(req NativeProcessMemoryUsageRequest) (int, error) {
 	var result int
-	err := p.Call(MethodNativeProcessMemoryUsage, &req, &result)
+	err := m.c.Call(MethodNativeProcessMemoryUsage, &req, &result)
 	if err != nil {
 		return 0, err
 	}
@@ -3860,9 +3869,9 @@ func (p *Plugin) NativeProcessMemoryUsage(req NativeProcessMemoryUsageRequest) (
 }
 
 // NativeProcessName get process name by PID.
-func (p *Plugin) NativeProcessName(req NativeProcessNameRequest) (string, error) {
+func (m Methods) NativeProcessName(req NativeProcessNameRequest) (string, error) {
 	var result string
-	err := p.Call(MethodNativeProcessName, &req, &result)
+	err := m.c.Call(MethodNativeProcessName, &req, &result)
 	if err != nil {
 		return "", err
 	}
@@ -3870,9 +3879,9 @@ func (p *Plugin) NativeProcessName(req NativeProcessNameRequest) (string, error)
 }
 
 // NativeProcessParentPid get parent PID of a process.
-func (p *Plugin) NativeProcessParentPid(req NativeProcessParentPidRequest) (int, error) {
+func (m Methods) NativeProcessParentPid(req NativeProcessParentPidRequest) (int, error) {
 	var result int
-	err := p.Call(MethodNativeProcessParentPid, &req, &result)
+	err := m.c.Call(MethodNativeProcessParentPid, &req, &result)
 	if err != nil {
 		return 0, err
 	}
@@ -3880,9 +3889,9 @@ func (p *Plugin) NativeProcessParentPid(req NativeProcessParentPidRequest) (int,
 }
 
 // NativeProcessPath get the executable path for a PID.
-func (p *Plugin) NativeProcessPath(req NativeProcessPathRequest) (string, error) {
+func (m Methods) NativeProcessPath(req NativeProcessPathRequest) (string, error) {
 	var result string
-	err := p.Call(MethodNativeProcessPath, &req, &result)
+	err := m.c.Call(MethodNativeProcessPath, &req, &result)
 	if err != nil {
 		return "", err
 	}
@@ -3890,9 +3899,9 @@ func (p *Plugin) NativeProcessPath(req NativeProcessPathRequest) (string, error)
 }
 
 // NativeProcessStartTime get process start time as ISO string.
-func (p *Plugin) NativeProcessStartTime(req NativeProcessStartTimeRequest) (string, error) {
+func (m Methods) NativeProcessStartTime(req NativeProcessStartTimeRequest) (string, error) {
 	var result string
-	err := p.Call(MethodNativeProcessStartTime, &req, &result)
+	err := m.c.Call(MethodNativeProcessStartTime, &req, &result)
 	if err != nil {
 		return "", err
 	}
@@ -3900,9 +3909,9 @@ func (p *Plugin) NativeProcessStartTime(req NativeProcessStartTimeRequest) (stri
 }
 
 // NativeProxySettings get system proxy configuration.
-func (p *Plugin) NativeProxySettings() (*NativeProxySettingsResponse, error) {
+func (m Methods) NativeProxySettings() (*NativeProxySettingsResponse, error) {
 	var result NativeProxySettingsResponse
-	err := p.Call(MethodNativeProxySettings, nil, &result)
+	err := m.c.Call(MethodNativeProxySettings, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3910,9 +3919,9 @@ func (p *Plugin) NativeProxySettings() (*NativeProxySettingsResponse, error) {
 }
 
 // NativePublicIP get the external/public IP address via a DNS lookup (no HTTP). The lookup asks OpenDNS, so a plugin declares resolver1.opendns.com in requires.network.
-func (p *Plugin) NativePublicIP() (*NativePublicIPResponse, error) {
+func (m Methods) NativePublicIP() (*NativePublicIPResponse, error) {
 	var result NativePublicIPResponse
-	err := p.Call(MethodNativePublicIp, nil, &result)
+	err := m.c.Call(MethodNativePublicIp, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3920,9 +3929,9 @@ func (p *Plugin) NativePublicIP() (*NativePublicIPResponse, error) {
 }
 
 // NativePurgeableSpace get purgeable disk space in bytes. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativePurgeableSpace() (int, error) {
+func (m Methods) NativePurgeableSpace() (int, error) {
 	var result int
-	err := p.Call(MethodNativePurgeableSpace, nil, &result)
+	err := m.c.Call(MethodNativePurgeableSpace, nil, &result)
 	if err != nil {
 		return 0, err
 	}
@@ -3930,9 +3939,9 @@ func (p *Plugin) NativePurgeableSpace() (int, error) {
 }
 
 // NativeQuickLook generate Quick Look thumbnail as PNG (base64).
-func (p *Plugin) NativeQuickLook(req NativeQuickLookRequest) (*NativeQuickLookResponse, error) {
+func (m Methods) NativeQuickLook(req NativeQuickLookRequest) (*NativeQuickLookResponse, error) {
 	var result NativeQuickLookResponse
-	err := p.Call(MethodNativeQuickLook, &req, &result)
+	err := m.c.Call(MethodNativeQuickLook, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3940,23 +3949,23 @@ func (p *Plugin) NativeQuickLook(req NativeQuickLookRequest) (*NativeQuickLookRe
 }
 
 // NativeQuitApp gracefully quit an app by bundle ID.
-func (p *Plugin) NativeQuitApp(req NativeQuitAppRequest) (bool, error) {
+func (m Methods) NativeQuitApp(req NativeQuitAppRequest) (bool, error) {
 	var result struct {
 		Result bool `json:"result"`
 	}
-	err := p.Call(MethodNativeQuitApp, &req, &result)
+	err := m.c.Call(MethodNativeQuitApp, &req, &result)
 	return result.Result, err
 }
 
 // NativeRaiseWindow raise a window to the front.
-func (p *Plugin) NativeRaiseWindow(req NativeRaiseWindowRequest) error {
-	return p.Call(MethodNativeRaiseWindow, &req, nil)
+func (m Methods) NativeRaiseWindow(req NativeRaiseWindowRequest) error {
+	return m.c.Call(MethodNativeRaiseWindow, &req, nil)
 }
 
 // NativeRandomUuid generate a random UUID v4.
-func (p *Plugin) NativeRandomUuid() (*NativeRandomUuidResponse, error) {
+func (m Methods) NativeRandomUuid() (*NativeRandomUuidResponse, error) {
 	var result NativeRandomUuidResponse
-	err := p.Call(MethodNativeRandomUuid, nil, &result)
+	err := m.c.Call(MethodNativeRandomUuid, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3964,9 +3973,9 @@ func (p *Plugin) NativeRandomUuid() (*NativeRandomUuidResponse, error) {
 }
 
 // NativeReadAppPreference read one setting from another app's settings domain the plugin declared and the user switched on: macOS defaults, GSettings on Linux, the user's registry on Windows.
-func (p *Plugin) NativeReadAppPreference(req NativeReadAppPreferenceRequest) (json.RawMessage, error) {
+func (m Methods) NativeReadAppPreference(req NativeReadAppPreferenceRequest) (json.RawMessage, error) {
 	var result json.RawMessage
-	err := p.Call(MethodNativeReadAppPreference, &req, &result)
+	err := m.c.Call(MethodNativeReadAppPreference, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3974,9 +3983,9 @@ func (p *Plugin) NativeReadAppPreference(req NativeReadAppPreferenceRequest) (js
 }
 
 // NativeReadFile read file contents as UTF-8 string.
-func (p *Plugin) NativeReadFile(req NativeReadFileRequest) (*NativeReadFileResponse, error) {
+func (m Methods) NativeReadFile(req NativeReadFileRequest) (*NativeReadFileResponse, error) {
 	var result NativeReadFileResponse
-	err := p.Call(MethodNativeReadFile, &req, &result)
+	err := m.c.Call(MethodNativeReadFile, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3984,9 +3993,9 @@ func (p *Plugin) NativeReadFile(req NativeReadFileRequest) (*NativeReadFileRespo
 }
 
 // NativeReadFileBinary read a file as base64-encoded binary.
-func (p *Plugin) NativeReadFileBinary(req NativeReadFileBinaryRequest) (*NativeReadFileBinaryResponse, error) {
+func (m Methods) NativeReadFileBinary(req NativeReadFileBinaryRequest) (*NativeReadFileBinaryResponse, error) {
 	var result NativeReadFileBinaryResponse
-	err := p.Call(MethodNativeReadFileBinary, &req, &result)
+	err := m.c.Call(MethodNativeReadFileBinary, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -3994,9 +4003,9 @@ func (p *Plugin) NativeReadFileBinary(req NativeReadFileBinaryRequest) (*NativeR
 }
 
 // NativeReadPlist read a property list file as JSON.
-func (p *Plugin) NativeReadPlist(req NativeReadPlistRequest) (json.RawMessage, error) {
+func (m Methods) NativeReadPlist(req NativeReadPlistRequest) (json.RawMessage, error) {
 	var result json.RawMessage
-	err := p.Call(MethodNativeReadPlist, &req, &result)
+	err := m.c.Call(MethodNativeReadPlist, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -4004,11 +4013,11 @@ func (p *Plugin) NativeReadPlist(req NativeReadPlistRequest) (json.RawMessage, e
 }
 
 // NativeRecentDocuments get recent documents for an app (by bundle ID).
-func (p *Plugin) NativeRecentDocuments(req NativeRecentDocumentsRequest) ([]string, error) {
+func (m Methods) NativeRecentDocuments(req NativeRecentDocumentsRequest) ([]string, error) {
 	var result struct {
 		Paths []string `json:"paths"`
 	}
-	err := p.Call(MethodNativeRecentDocuments, &req, &result)
+	err := m.c.Call(MethodNativeRecentDocuments, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -4016,9 +4025,9 @@ func (p *Plugin) NativeRecentDocuments(req NativeRecentDocumentsRequest) ([]stri
 }
 
 // NativeReduceMotion check if Reduce Motion is enabled.
-func (p *Plugin) NativeReduceMotion() (*NativeReduceMotionResponse, error) {
+func (m Methods) NativeReduceMotion() (*NativeReduceMotionResponse, error) {
 	var result NativeReduceMotionResponse
-	err := p.Call(MethodNativeReduceMotion, nil, &result)
+	err := m.c.Call(MethodNativeReduceMotion, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -4026,9 +4035,9 @@ func (p *Plugin) NativeReduceMotion() (*NativeReduceMotionResponse, error) {
 }
 
 // NativeReduceTransparency check if Reduce Transparency is enabled. Exists only on macOS and Windows; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeReduceTransparency() (*NativeReduceTransparencyResponse, error) {
+func (m Methods) NativeReduceTransparency() (*NativeReduceTransparencyResponse, error) {
 	var result NativeReduceTransparencyResponse
-	err := p.Call(MethodNativeReduceTransparency, nil, &result)
+	err := m.c.Call(MethodNativeReduceTransparency, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -4036,11 +4045,11 @@ func (p *Plugin) NativeReduceTransparency() (*NativeReduceTransparencyResponse, 
 }
 
 // NativeRemindersIncomplete get incomplete reminders.
-func (p *Plugin) NativeRemindersIncomplete() ([]ReminderItem, error) {
+func (m Methods) NativeRemindersIncomplete() ([]ReminderItem, error) {
 	var result struct {
 		Reminders []ReminderItem `json:"reminders"`
 	}
-	err := p.Call(MethodNativeRemindersIncomplete, nil, &result)
+	err := m.c.Call(MethodNativeRemindersIncomplete, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -4048,9 +4057,9 @@ func (p *Plugin) NativeRemindersIncomplete() ([]ReminderItem, error) {
 }
 
 // NativeRemoteLoginEnabled check if Remote Login (SSH) is enabled.
-func (p *Plugin) NativeRemoteLoginEnabled() (*NativeRemoteLoginEnabledResponse, error) {
+func (m Methods) NativeRemoteLoginEnabled() (*NativeRemoteLoginEnabledResponse, error) {
 	var result NativeRemoteLoginEnabledResponse
-	err := p.Call(MethodNativeRemoteLoginEnabled, nil, &result)
+	err := m.c.Call(MethodNativeRemoteLoginEnabled, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -4058,18 +4067,18 @@ func (p *Plugin) NativeRemoteLoginEnabled() (*NativeRemoteLoginEnabledResponse, 
 }
 
 // NativeRenameFile rename a file or directory (same parent, new name).
-func (p *Plugin) NativeRenameFile(req NativeRenameFileRequest) (bool, error) {
+func (m Methods) NativeRenameFile(req NativeRenameFileRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeRenameFile, &req, &result)
+	err := m.c.Call(MethodNativeRenameFile, &req, &result)
 	return result.Ok, err
 }
 
 // NativeRequestScreenCapture request screen capture permission (shows system dialog).
-func (p *Plugin) NativeRequestScreenCapture() (*NativeRequestScreenCaptureResponse, error) {
+func (m Methods) NativeRequestScreenCapture() (*NativeRequestScreenCaptureResponse, error) {
 	var result NativeRequestScreenCaptureResponse
-	err := p.Call(MethodNativeRequestScreenCapture, nil, &result)
+	err := m.c.Call(MethodNativeRequestScreenCapture, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -4077,9 +4086,9 @@ func (p *Plugin) NativeRequestScreenCapture() (*NativeRequestScreenCaptureRespon
 }
 
 // NativeResourceUsage get CPU and memory usage snapshot.
-func (p *Plugin) NativeResourceUsage() (*NativeResourceUsageResponse, error) {
+func (m Methods) NativeResourceUsage() (*NativeResourceUsageResponse, error) {
 	var result NativeResourceUsageResponse
-	err := p.Call(MethodNativeResourceUsage, nil, &result)
+	err := m.c.Call(MethodNativeResourceUsage, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -4087,23 +4096,23 @@ func (p *Plugin) NativeResourceUsage() (*NativeResourceUsageResponse, error) {
 }
 
 // NativeRestartApp quit and relaunch an app by bundle ID.
-func (p *Plugin) NativeRestartApp(req NativeRestartAppRequest) (bool, error) {
+func (m Methods) NativeRestartApp(req NativeRestartAppRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeRestartApp, &req, &result)
+	err := m.c.Call(MethodNativeRestartApp, &req, &result)
 	return result.Ok, err
 }
 
 // NativeRevealInFinder reveal file in Finder.
-func (p *Plugin) NativeRevealInFinder(req NativeRevealInFinderRequest) error {
-	return p.Call(MethodNativeRevealInFinder, &req, nil)
+func (m Methods) NativeRevealInFinder(req NativeRevealInFinderRequest) error {
+	return m.c.Call(MethodNativeRevealInFinder, &req, nil)
 }
 
 // NativeRosettaInstalled check if Rosetta 2 is installed (Apple Silicon). Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeRosettaInstalled() (*NativeRosettaInstalledResponse, error) {
+func (m Methods) NativeRosettaInstalled() (*NativeRosettaInstalledResponse, error) {
 	var result NativeRosettaInstalledResponse
-	err := p.Call(MethodNativeRosettaInstalled, nil, &result)
+	err := m.c.Call(MethodNativeRosettaInstalled, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -4111,9 +4120,9 @@ func (p *Plugin) NativeRosettaInstalled() (*NativeRosettaInstalledResponse, erro
 }
 
 // NativeRunApplescript execute an AppleScript via osascript. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeRunApplescript(req NativeRunApplescriptRequest) (*NativeRunApplescriptResponse, error) {
+func (m Methods) NativeRunApplescript(req NativeRunApplescriptRequest) (*NativeRunApplescriptResponse, error) {
 	var result NativeRunApplescriptResponse
-	err := p.Call(MethodNativeRunApplescript, &req, &result)
+	err := m.c.Call(MethodNativeRunApplescript, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -4121,9 +4130,9 @@ func (p *Plugin) NativeRunApplescript(req NativeRunApplescriptRequest) (*NativeR
 }
 
 // NativeRunJxa run JavaScript for Automation (JXA) code. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeRunJxa(req NativeRunJxaRequest) (*NativeRunJxaResponse, error) {
+func (m Methods) NativeRunJxa(req NativeRunJxaRequest) (*NativeRunJxaResponse, error) {
 	var result NativeRunJxaResponse
-	err := p.Call(MethodNativeRunJxa, &req, &result)
+	err := m.c.Call(MethodNativeRunJxa, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -4131,9 +4140,9 @@ func (p *Plugin) NativeRunJxa(req NativeRunJxaRequest) (*NativeRunJxaResponse, e
 }
 
 // NativeRunShortcut run a Shortcuts.app shortcut by name. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeRunShortcut(req NativeRunShortcutRequest) (*NativeRunShortcutResponse, error) {
+func (m Methods) NativeRunShortcut(req NativeRunShortcutRequest) (*NativeRunShortcutResponse, error) {
 	var result NativeRunShortcutResponse
-	err := p.Call(MethodNativeRunShortcut, &req, &result)
+	err := m.c.Call(MethodNativeRunShortcut, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -4141,11 +4150,11 @@ func (p *Plugin) NativeRunShortcut(req NativeRunShortcutRequest) (*NativeRunShor
 }
 
 // NativeRunningApps list all running applications.
-func (p *Plugin) NativeRunningApps() ([]RunningApp, error) {
+func (m Methods) NativeRunningApps() ([]RunningApp, error) {
 	var result struct {
 		Apps []RunningApp `json:"apps"`
 	}
-	err := p.Call(MethodNativeRunningApps, nil, &result)
+	err := m.c.Call(MethodNativeRunningApps, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -4153,9 +4162,9 @@ func (p *Plugin) NativeRunningApps() ([]RunningApp, error) {
 }
 
 // NativeScreenCapturePermission check screen capture permission status (Sonoma 14+).
-func (p *Plugin) NativeScreenCapturePermission() (*NativeScreenCapturePermissionResponse, error) {
+func (m Methods) NativeScreenCapturePermission() (*NativeScreenCapturePermissionResponse, error) {
 	var result NativeScreenCapturePermissionResponse
-	err := p.Call(MethodNativeScreenCapturePermission, nil, &result)
+	err := m.c.Call(MethodNativeScreenCapturePermission, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -4163,9 +4172,9 @@ func (p *Plugin) NativeScreenCapturePermission() (*NativeScreenCapturePermission
 }
 
 // NativeScreenCount get number of connected displays.
-func (p *Plugin) NativeScreenCount() (*NativeScreenCountResponse, error) {
+func (m Methods) NativeScreenCount() (*NativeScreenCountResponse, error) {
 	var result NativeScreenCountResponse
-	err := p.Call(MethodNativeScreenCount, nil, &result)
+	err := m.c.Call(MethodNativeScreenCount, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -4173,14 +4182,14 @@ func (p *Plugin) NativeScreenCount() (*NativeScreenCountResponse, error) {
 }
 
 // NativeScreenLock lock the screen.
-func (p *Plugin) NativeScreenLock() error {
-	return p.Call(MethodNativeScreenLock, nil, nil)
+func (m Methods) NativeScreenLock() error {
+	return m.c.Call(MethodNativeScreenLock, nil, nil)
 }
 
 // NativeScreenLocked check if screen is currently locked.
-func (p *Plugin) NativeScreenLocked() (*NativeScreenLockedResponse, error) {
+func (m Methods) NativeScreenLocked() (*NativeScreenLockedResponse, error) {
 	var result NativeScreenLockedResponse
-	err := p.Call(MethodNativeScreenLocked, nil, &result)
+	err := m.c.Call(MethodNativeScreenLocked, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -4188,9 +4197,9 @@ func (p *Plugin) NativeScreenLocked() (*NativeScreenLockedResponse, error) {
 }
 
 // NativeScreenReaderEnabled check if the screen reader is on (VoiceOver, Orca, Narrator).
-func (p *Plugin) NativeScreenReaderEnabled() (*NativeScreenReaderEnabledResponse, error) {
+func (m Methods) NativeScreenReaderEnabled() (*NativeScreenReaderEnabledResponse, error) {
 	var result NativeScreenReaderEnabledResponse
-	err := p.Call(MethodNativeScreenReaderEnabled, nil, &result)
+	err := m.c.Call(MethodNativeScreenReaderEnabled, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -4198,9 +4207,9 @@ func (p *Plugin) NativeScreenReaderEnabled() (*NativeScreenReaderEnabledResponse
 }
 
 // NativeScreenResolution get primary display resolution as 'WxH'.
-func (p *Plugin) NativeScreenResolution() (*NativeScreenResolutionResponse, error) {
+func (m Methods) NativeScreenResolution() (*NativeScreenResolutionResponse, error) {
 	var result NativeScreenResolutionResponse
-	err := p.Call(MethodNativeScreenResolution, nil, &result)
+	err := m.c.Call(MethodNativeScreenResolution, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -4208,9 +4217,9 @@ func (p *Plugin) NativeScreenResolution() (*NativeScreenResolutionResponse, erro
 }
 
 // NativeScreenSaverAskPassword check if password required after screen saver.
-func (p *Plugin) NativeScreenSaverAskPassword() (*NativeScreenSaverAskPasswordResponse, error) {
+func (m Methods) NativeScreenSaverAskPassword() (*NativeScreenSaverAskPasswordResponse, error) {
 	var result NativeScreenSaverAskPasswordResponse
-	err := p.Call(MethodNativeScreenSaverAskPassword, nil, &result)
+	err := m.c.Call(MethodNativeScreenSaverAskPassword, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -4218,9 +4227,9 @@ func (p *Plugin) NativeScreenSaverAskPassword() (*NativeScreenSaverAskPasswordRe
 }
 
 // NativeScreenSaverDelay get delay before password required after screen saver.
-func (p *Plugin) NativeScreenSaverDelay() (int, error) {
+func (m Methods) NativeScreenSaverDelay() (int, error) {
 	var result int
-	err := p.Call(MethodNativeScreenSaverDelay, nil, &result)
+	err := m.c.Call(MethodNativeScreenSaverDelay, nil, &result)
 	if err != nil {
 		return 0, err
 	}
@@ -4228,14 +4237,14 @@ func (p *Plugin) NativeScreenSaverDelay() (int, error) {
 }
 
 // NativeScreenSaverStart start the screen saver.
-func (p *Plugin) NativeScreenSaverStart() error {
-	return p.Call(MethodNativeScreenSaverStart, nil, nil)
+func (m Methods) NativeScreenSaverStart() error {
+	return m.c.Call(MethodNativeScreenSaverStart, nil, nil)
 }
 
 // NativeScreenSaverStatus check if the screen saver is currently active.
-func (p *Plugin) NativeScreenSaverStatus() (*NativeScreenSaverStatusResponse, error) {
+func (m Methods) NativeScreenSaverStatus() (*NativeScreenSaverStatusResponse, error) {
 	var result NativeScreenSaverStatusResponse
-	err := p.Call(MethodNativeScreenSaverStatus, nil, &result)
+	err := m.c.Call(MethodNativeScreenSaverStatus, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -4243,9 +4252,9 @@ func (p *Plugin) NativeScreenSaverStatus() (*NativeScreenSaverStatusResponse, er
 }
 
 // NativeScreenSharingEnabled check if screen sharing is enabled.
-func (p *Plugin) NativeScreenSharingEnabled() (*NativeScreenSharingEnabledResponse, error) {
+func (m Methods) NativeScreenSharingEnabled() (*NativeScreenSharingEnabledResponse, error) {
 	var result NativeScreenSharingEnabledResponse
-	err := p.Call(MethodNativeScreenSharingEnabled, nil, &result)
+	err := m.c.Call(MethodNativeScreenSharingEnabled, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -4253,9 +4262,9 @@ func (p *Plugin) NativeScreenSharingEnabled() (*NativeScreenSharingEnabledRespon
 }
 
 // NativeScreenshot capture a screenshot as base64-encoded PNG.
-func (p *Plugin) NativeScreenshot(req NativeScreenshotRequest) (*NativeScreenshotResponse, error) {
+func (m Methods) NativeScreenshot(req NativeScreenshotRequest) (*NativeScreenshotResponse, error) {
 	var result NativeScreenshotResponse
-	err := p.Call(MethodNativeScreenshot, &req, &result)
+	err := m.c.Call(MethodNativeScreenshot, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -4263,9 +4272,9 @@ func (p *Plugin) NativeScreenshot(req NativeScreenshotRequest) (*NativeScreensho
 }
 
 // NativeScreenshotFormat get screenshot file format. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeScreenshotFormat() (*NativeScreenshotFormatResponse, error) {
+func (m Methods) NativeScreenshotFormat() (*NativeScreenshotFormatResponse, error) {
 	var result NativeScreenshotFormatResponse
-	err := p.Call(MethodNativeScreenshotFormat, nil, &result)
+	err := m.c.Call(MethodNativeScreenshotFormat, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -4273,9 +4282,9 @@ func (p *Plugin) NativeScreenshotFormat() (*NativeScreenshotFormatResponse, erro
 }
 
 // NativeScreenshotIncludeShadow check if screenshots include window shadow. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeScreenshotIncludeShadow() (*NativeScreenshotIncludeShadowResponse, error) {
+func (m Methods) NativeScreenshotIncludeShadow() (*NativeScreenshotIncludeShadowResponse, error) {
 	var result NativeScreenshotIncludeShadowResponse
-	err := p.Call(MethodNativeScreenshotIncludeShadow, nil, &result)
+	err := m.c.Call(MethodNativeScreenshotIncludeShadow, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -4283,9 +4292,9 @@ func (p *Plugin) NativeScreenshotIncludeShadow() (*NativeScreenshotIncludeShadow
 }
 
 // NativeScreenshotLocation get the configured screenshot save location. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeScreenshotLocation() (*NativeScreenshotLocationResponse, error) {
+func (m Methods) NativeScreenshotLocation() (*NativeScreenshotLocationResponse, error) {
 	var result NativeScreenshotLocationResponse
-	err := p.Call(MethodNativeScreenshotLocation, nil, &result)
+	err := m.c.Call(MethodNativeScreenshotLocation, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -4293,9 +4302,9 @@ func (p *Plugin) NativeScreenshotLocation() (*NativeScreenshotLocationResponse, 
 }
 
 // NativeScreenshotShowThumbnail check if screenshot thumbnail is shown. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeScreenshotShowThumbnail() (*NativeScreenshotShowThumbnailResponse, error) {
+func (m Methods) NativeScreenshotShowThumbnail() (*NativeScreenshotShowThumbnailResponse, error) {
 	var result NativeScreenshotShowThumbnailResponse
-	err := p.Call(MethodNativeScreenshotShowThumbnail, nil, &result)
+	err := m.c.Call(MethodNativeScreenshotShowThumbnail, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -4303,9 +4312,9 @@ func (p *Plugin) NativeScreenshotShowThumbnail() (*NativeScreenshotShowThumbnail
 }
 
 // NativeScrollDirection check if natural (inverted) scroll direction is enabled.
-func (p *Plugin) NativeScrollDirection() (*NativeScrollDirectionResponse, error) {
+func (m Methods) NativeScrollDirection() (*NativeScrollDirectionResponse, error) {
 	var result NativeScrollDirectionResponse
-	err := p.Call(MethodNativeScrollDirection, nil, &result)
+	err := m.c.Call(MethodNativeScrollDirection, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -4313,9 +4322,9 @@ func (p *Plugin) NativeScrollDirection() (*NativeScrollDirectionResponse, error)
 }
 
 // NativeScrollDirectionNatural check if scroll direction is natural.
-func (p *Plugin) NativeScrollDirectionNatural() (*NativeScrollDirectionNaturalResponse, error) {
+func (m Methods) NativeScrollDirectionNatural() (*NativeScrollDirectionNaturalResponse, error) {
 	var result NativeScrollDirectionNaturalResponse
-	err := p.Call(MethodNativeScrollDirectionNatural, nil, &result)
+	err := m.c.Call(MethodNativeScrollDirectionNatural, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -4323,11 +4332,11 @@ func (p *Plugin) NativeScrollDirectionNatural() (*NativeScrollDirectionNaturalRe
 }
 
 // NativeSearchContacts search contacts by name.
-func (p *Plugin) NativeSearchContacts(req NativeSearchContactsRequest) ([]ContactInfo, error) {
+func (m Methods) NativeSearchContacts(req NativeSearchContactsRequest) ([]ContactInfo, error) {
 	var result struct {
 		Contacts []ContactInfo `json:"contacts"`
 	}
-	err := p.Call(MethodNativeSearchContacts, &req, &result)
+	err := m.c.Call(MethodNativeSearchContacts, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -4335,9 +4344,9 @@ func (p *Plugin) NativeSearchContacts(req NativeSearchContactsRequest) ([]Contac
 }
 
 // NativeSecureInputEnabled check if Secure Input is currently enabled (blocks key events). Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeSecureInputEnabled() (*NativeSecureInputEnabledResponse, error) {
+func (m Methods) NativeSecureInputEnabled() (*NativeSecureInputEnabledResponse, error) {
 	var result NativeSecureInputEnabledResponse
-	err := p.Call(MethodNativeSecureInputEnabled, nil, &result)
+	err := m.c.Call(MethodNativeSecureInputEnabled, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -4345,11 +4354,11 @@ func (p *Plugin) NativeSecureInputEnabled() (*NativeSecureInputEnabledResponse, 
 }
 
 // NativeSelectedFinderItems get Finder selection. Exists only on macOS and Windows; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeSelectedFinderItems() ([]string, error) {
+func (m Methods) NativeSelectedFinderItems() ([]string, error) {
 	var result struct {
 		Paths []string `json:"paths"`
 	}
-	err := p.Call(MethodNativeSelectedFinderItems, nil, &result)
+	err := m.c.Call(MethodNativeSelectedFinderItems, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -4357,9 +4366,9 @@ func (p *Plugin) NativeSelectedFinderItems() ([]string, error) {
 }
 
 // NativeSelectedText get the text selected in the focused app, never from a password field. Read through the OS accessibility interface; on macOS, an app that offers no selection through it is asked to copy, and the clipboard is put back..
-func (p *Plugin) NativeSelectedText() (*NativeSelectedTextResponse, error) {
+func (m Methods) NativeSelectedText() (*NativeSelectedTextResponse, error) {
 	var result NativeSelectedTextResponse
-	err := p.Call(MethodNativeSelectedText, nil, &result)
+	err := m.c.Call(MethodNativeSelectedText, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -4367,9 +4376,9 @@ func (p *Plugin) NativeSelectedText() (*NativeSelectedTextResponse, error) {
 }
 
 // NativeSerialNumber get the hardware serial number.
-func (p *Plugin) NativeSerialNumber() (*NativeSerialNumberResponse, error) {
+func (m Methods) NativeSerialNumber() (*NativeSerialNumberResponse, error) {
 	var result NativeSerialNumberResponse
-	err := p.Call(MethodNativeSerialNumber, nil, &result)
+	err := m.c.Call(MethodNativeSerialNumber, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -4377,510 +4386,510 @@ func (p *Plugin) NativeSerialNumber() (*NativeSerialNumberResponse, error) {
 }
 
 // NativeSetAirportPower turn Wi-Fi (AirPort) on or off.
-func (p *Plugin) NativeSetAirportPower(req NativeSetAirportPowerRequest) (bool, error) {
+func (m Methods) NativeSetAirportPower(req NativeSetAirportPowerRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetAirportPower, &req, &result)
+	err := m.c.Call(MethodNativeSetAirportPower, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetAppHidden hide or unhide an app. On Linux, not available on sway (this compositor has no minimize; sway uses the scratchpad); nor on GNOME (GNOME exposes no window IPC to minimize through).
-func (p *Plugin) NativeSetAppHidden(req NativeSetAppHiddenRequest) (bool, error) {
+func (m Methods) NativeSetAppHidden(req NativeSetAppHiddenRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetAppHidden, &req, &result)
+	err := m.c.Call(MethodNativeSetAppHidden, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetAppMuted mute or unmute one app in the system mixer; false when the app has no audio stream. Exists only on Linux and Windows; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeSetAppMuted(req NativeSetAppMutedRequest) (bool, error) {
+func (m Methods) NativeSetAppMuted(req NativeSetAppMutedRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetAppMuted, &req, &result)
+	err := m.c.Call(MethodNativeSetAppMuted, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetAppVolume set one app's volume (0.0-1.0) in the system mixer; false when the app has no audio stream. Exists only on Linux and Windows; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeSetAppVolume(req NativeSetAppVolumeRequest) (bool, error) {
+func (m Methods) NativeSetAppVolume(req NativeSetAppVolumeRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetAppVolume, &req, &result)
+	err := m.c.Call(MethodNativeSetAppVolume, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetAudioDevice set the default audio input or output device.
-func (p *Plugin) NativeSetAudioDevice(req NativeSetAudioDeviceRequest) error {
-	return p.Call(MethodNativeSetAudioDevice, &req, nil)
+func (m Methods) NativeSetAudioDevice(req NativeSetAudioDeviceRequest) error {
+	return m.c.Call(MethodNativeSetAudioDevice, &req, nil)
 }
 
 // NativeSetAudioDeviceVolume set volume for a specific audio device by UID.
-func (p *Plugin) NativeSetAudioDeviceVolume(req NativeSetAudioDeviceVolumeRequest) error {
-	return p.Call(MethodNativeSetAudioDeviceVolume, &req, nil)
+func (m Methods) NativeSetAudioDeviceVolume(req NativeSetAudioDeviceVolumeRequest) error {
+	return m.c.Call(MethodNativeSetAudioDeviceVolume, &req, nil)
 }
 
 // NativeSetAudioInputDevice set active audio input device by name.
-func (p *Plugin) NativeSetAudioInputDevice(req NativeSetAudioInputDeviceRequest) (bool, error) {
+func (m Methods) NativeSetAudioInputDevice(req NativeSetAudioInputDeviceRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetAudioInputDevice, &req, &result)
+	err := m.c.Call(MethodNativeSetAudioInputDevice, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetAudioOutputDevice set active audio output device by name.
-func (p *Plugin) NativeSetAudioOutputDevice(req NativeSetAudioOutputDeviceRequest) (bool, error) {
+func (m Methods) NativeSetAudioOutputDevice(req NativeSetAudioOutputDeviceRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetAudioOutputDevice, &req, &result)
+	err := m.c.Call(MethodNativeSetAudioOutputDevice, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetAutoRearrangeSpaces enable or disable auto-rearrange Spaces. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeSetAutoRearrangeSpaces(req NativeSetAutoRearrangeSpacesRequest) (bool, error) {
+func (m Methods) NativeSetAutoRearrangeSpaces(req NativeSetAutoRearrangeSpacesRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetAutoRearrangeSpaces, &req, &result)
+	err := m.c.Call(MethodNativeSetAutoRearrangeSpaces, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetBluetoothPower turn Bluetooth on or off.
-func (p *Plugin) NativeSetBluetoothPower(req NativeSetBluetoothPowerRequest) (bool, error) {
+func (m Methods) NativeSetBluetoothPower(req NativeSetBluetoothPowerRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetBluetoothPower, &req, &result)
+	err := m.c.Call(MethodNativeSetBluetoothPower, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetBounceKeys turn Bounce Keys on or off (repeated presses of one key are ignored). Exists only on Linux and Windows; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeSetBounceKeys(req NativeSetBounceKeysRequest) (bool, error) {
+func (m Methods) NativeSetBounceKeys(req NativeSetBounceKeysRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetBounceKeys, &req, &result)
+	err := m.c.Call(MethodNativeSetBounceKeys, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetBrightness set display brightness (0.0-1.0).
-func (p *Plugin) NativeSetBrightness(req NativeSetBrightnessRequest) error {
-	return p.Call(MethodNativeSetBrightness, &req, nil)
+func (m Methods) NativeSetBrightness(req NativeSetBrightnessRequest) error {
+	return m.c.Call(MethodNativeSetBrightness, &req, nil)
 }
 
 // NativeSetDarkMode set dark or light mode.
-func (p *Plugin) NativeSetDarkMode(req NativeSetDarkModeRequest) error {
-	return p.Call(MethodNativeSetDarkMode, &req, nil)
+func (m Methods) NativeSetDarkMode(req NativeSetDarkModeRequest) error {
+	return m.c.Call(MethodNativeSetDarkMode, &req, nil)
 }
 
 // NativeSetDnd set Do Not Disturb on or off (idempotent; macOS: via the BranchKit Focus helper shortcut). Exists only on macOS and Linux; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeSetDnd(req NativeSetDndRequest) error {
-	return p.Call(MethodNativeSetDnd, &req, nil)
+func (m Methods) NativeSetDnd(req NativeSetDndRequest) error {
+	return m.c.Call(MethodNativeSetDnd, &req, nil)
 }
 
 // NativeSetDockAutoHide enable or disable Dock auto-hide. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeSetDockAutoHide(req NativeSetDockAutoHideRequest) (bool, error) {
+func (m Methods) NativeSetDockAutoHide(req NativeSetDockAutoHideRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetDockAutoHide, &req, &result)
+	err := m.c.Call(MethodNativeSetDockAutoHide, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetDockMagnification enable or disable Dock magnification. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeSetDockMagnification(req NativeSetDockMagnificationRequest) (bool, error) {
+func (m Methods) NativeSetDockMagnification(req NativeSetDockMagnificationRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetDockMagnification, &req, &result)
+	err := m.c.Call(MethodNativeSetDockMagnification, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetDockMinimizeEffect set Dock minimize animation (genie/scale). Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeSetDockMinimizeEffect(req NativeSetDockMinimizeEffectRequest) (bool, error) {
+func (m Methods) NativeSetDockMinimizeEffect(req NativeSetDockMinimizeEffectRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetDockMinimizeEffect, &req, &result)
+	err := m.c.Call(MethodNativeSetDockMinimizeEffect, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetDockPosition set the Dock position (left, bottom, right). Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeSetDockPosition(req NativeSetDockPositionRequest) (bool, error) {
+func (m Methods) NativeSetDockPosition(req NativeSetDockPositionRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetDockPosition, &req, &result)
+	err := m.c.Call(MethodNativeSetDockPosition, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetDockShowRecents show or hide recent apps in Dock. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeSetDockShowRecents(req NativeSetDockShowRecentsRequest) (bool, error) {
+func (m Methods) NativeSetDockShowRecents(req NativeSetDockShowRecentsRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetDockShowRecents, &req, &result)
+	err := m.c.Call(MethodNativeSetDockShowRecents, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetDockSize set Dock tile size. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeSetDockSize(req NativeSetDockSizeRequest) (bool, error) {
+func (m Methods) NativeSetDockSize(req NativeSetDockSizeRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetDockSize, &req, &result)
+	err := m.c.Call(MethodNativeSetDockSize, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetDwellClick turn the system's dwell click on or off (holding the pointer still clicks). Exists only on Linux; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeSetDwellClick(req NativeSetDwellClickRequest) (bool, error) {
+func (m Methods) NativeSetDwellClick(req NativeSetDwellClickRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetDwellClick, &req, &result)
+	err := m.c.Call(MethodNativeSetDwellClick, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetExtendedAttribute set an extended attribute on a file.
-func (p *Plugin) NativeSetExtendedAttribute(req NativeSetExtendedAttributeRequest) (bool, error) {
+func (m Methods) NativeSetExtendedAttribute(req NativeSetExtendedAttributeRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetExtendedAttribute, &req, &result)
+	err := m.c.Call(MethodNativeSetExtendedAttribute, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetFileHidden set file hidden flag.
-func (p *Plugin) NativeSetFileHidden(req NativeSetFileHiddenRequest) (bool, error) {
+func (m Methods) NativeSetFileHidden(req NativeSetFileHiddenRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetFileHidden, &req, &result)
+	err := m.c.Call(MethodNativeSetFileHidden, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetFilePermissions set file permissions (chmod octal mode). Exists only on macOS and Linux; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeSetFilePermissions(req NativeSetFilePermissionsRequest) (bool, error) {
+func (m Methods) NativeSetFilePermissions(req NativeSetFilePermissionsRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetFilePermissions, &req, &result)
+	err := m.c.Call(MethodNativeSetFilePermissions, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetFinderShowExtensions show or hide file extensions in Finder. Exists only on macOS and Windows; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeSetFinderShowExtensions(req NativeSetFinderShowExtensionsRequest) (bool, error) {
+func (m Methods) NativeSetFinderShowExtensions(req NativeSetFinderShowExtensionsRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetFinderShowExtensions, &req, &result)
+	err := m.c.Call(MethodNativeSetFinderShowExtensions, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetFinderShowHidden show or hide hidden files in Finder.
-func (p *Plugin) NativeSetFinderShowHidden(req NativeSetFinderShowHiddenRequest) (bool, error) {
+func (m Methods) NativeSetFinderShowHidden(req NativeSetFinderShowHiddenRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetFinderShowHidden, &req, &result)
+	err := m.c.Call(MethodNativeSetFinderShowHidden, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetHighlightColor set system highlight/accent color.
-func (p *Plugin) NativeSetHighlightColor(req NativeSetHighlightColorRequest) (bool, error) {
+func (m Methods) NativeSetHighlightColor(req NativeSetHighlightColorRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetHighlightColor, &req, &result)
+	err := m.c.Call(MethodNativeSetHighlightColor, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetHotCorner set a hot corner action. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeSetHotCorner(req NativeSetHotCornerRequest) (bool, error) {
+func (m Methods) NativeSetHotCorner(req NativeSetHotCornerRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetHotCorner, &req, &result)
+	err := m.c.Call(MethodNativeSetHotCorner, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetInputSource switch to a keyboard input source by ID. On Linux, not available on GNOME (GNOME Shell switches input sources only from its own switcher; it exposes no way to ask).
-func (p *Plugin) NativeSetInputSource(req NativeSetInputSourceRequest) (bool, error) {
+func (m Methods) NativeSetInputSource(req NativeSetInputSourceRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetInputSource, &req, &result)
+	err := m.c.Call(MethodNativeSetInputSource, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetKeyRepeatDelay set initial key repeat delay (seconds).
-func (p *Plugin) NativeSetKeyRepeatDelay(req NativeSetKeyRepeatDelayRequest) (bool, error) {
+func (m Methods) NativeSetKeyRepeatDelay(req NativeSetKeyRepeatDelayRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetKeyRepeatDelay, &req, &result)
+	err := m.c.Call(MethodNativeSetKeyRepeatDelay, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetKeyRepeatRate set key repeat rate (keys per second).
-func (p *Plugin) NativeSetKeyRepeatRate(req NativeSetKeyRepeatRateRequest) (bool, error) {
+func (m Methods) NativeSetKeyRepeatRate(req NativeSetKeyRepeatRateRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetKeyRepeatRate, &req, &result)
+	err := m.c.Call(MethodNativeSetKeyRepeatRate, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetMagnifierEnabled turn the screen magnifier on or off; false when it did not change. Exists only on Linux and Windows; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeSetMagnifierEnabled(req NativeSetMagnifierEnabledRequest) (bool, error) {
+func (m Methods) NativeSetMagnifierEnabled(req NativeSetMagnifierEnabledRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetMagnifierEnabled, &req, &result)
+	err := m.c.Call(MethodNativeSetMagnifierEnabled, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetMenuBarAutoHide enable or disable menu bar auto-hide. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeSetMenuBarAutoHide(req NativeSetMenuBarAutoHideRequest) (bool, error) {
+func (m Methods) NativeSetMenuBarAutoHide(req NativeSetMenuBarAutoHideRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetMenuBarAutoHide, &req, &result)
+	err := m.c.Call(MethodNativeSetMenuBarAutoHide, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetMonoAudio turn mono audio on or off (the left and right channels are mixed, so either ear hears everything).
-func (p *Plugin) NativeSetMonoAudio(req NativeSetMonoAudioRequest) (bool, error) {
+func (m Methods) NativeSetMonoAudio(req NativeSetMonoAudioRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetMonoAudio, &req, &result)
+	err := m.c.Call(MethodNativeSetMonoAudio, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetMouseKeys turn Mouse Keys on or off (the numeric keypad moves the pointer). Exists only on Linux and Windows; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeSetMouseKeys(req NativeSetMouseKeysRequest) (bool, error) {
+func (m Methods) NativeSetMouseKeys(req NativeSetMouseKeysRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetMouseKeys, &req, &result)
+	err := m.c.Call(MethodNativeSetMouseKeys, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetMouseSpeed set mouse tracking speed.
-func (p *Plugin) NativeSetMouseSpeed(req NativeSetMouseSpeedRequest) (bool, error) {
+func (m Methods) NativeSetMouseSpeed(req NativeSetMouseSpeedRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetMouseSpeed, &req, &result)
+	err := m.c.Call(MethodNativeSetMouseSpeed, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetNightShift enable or disable Night Shift. Exists only on macOS and Linux; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeSetNightShift(req NativeSetNightShiftRequest) error {
-	return p.Call(MethodNativeSetNightShift, &req, nil)
+func (m Methods) NativeSetNightShift(req NativeSetNightShiftRequest) error {
+	return m.c.Call(MethodNativeSetNightShift, &req, nil)
 }
 
 // NativeSetOnScreenKeyboardEnabled show or hide the on-screen keyboard; false when it did not change. Exists only on Linux and Windows; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeSetOnScreenKeyboardEnabled(req NativeSetOnScreenKeyboardEnabledRequest) (bool, error) {
+func (m Methods) NativeSetOnScreenKeyboardEnabled(req NativeSetOnScreenKeyboardEnabledRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetOnScreenKeyboardEnabled, &req, &result)
+	err := m.c.Call(MethodNativeSetOnScreenKeyboardEnabled, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetPowerMode set the power mode (power-saver, balanced or performance); false when refused or not offered. Exists only on Linux and Windows; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeSetPowerMode(req NativeSetPowerModeRequest) (bool, error) {
+func (m Methods) NativeSetPowerMode(req NativeSetPowerModeRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetPowerMode, &req, &result)
+	err := m.c.Call(MethodNativeSetPowerMode, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetScreenReaderEnabled turn the screen reader on or off (VoiceOver, Orca, Narrator); false when it did not change. Exists only on Linux and Windows; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeSetScreenReaderEnabled(req NativeSetScreenReaderEnabledRequest) (bool, error) {
+func (m Methods) NativeSetScreenReaderEnabled(req NativeSetScreenReaderEnabledRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetScreenReaderEnabled, &req, &result)
+	err := m.c.Call(MethodNativeSetScreenReaderEnabled, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetScreenshotFormat set screenshot file format (png/jpg/pdf/tiff). Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeSetScreenshotFormat(req NativeSetScreenshotFormatRequest) (bool, error) {
+func (m Methods) NativeSetScreenshotFormat(req NativeSetScreenshotFormatRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetScreenshotFormat, &req, &result)
+	err := m.c.Call(MethodNativeSetScreenshotFormat, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetScreenshotIncludeShadow enable or disable window shadow in screenshots. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeSetScreenshotIncludeShadow(req NativeSetScreenshotIncludeShadowRequest) (bool, error) {
+func (m Methods) NativeSetScreenshotIncludeShadow(req NativeSetScreenshotIncludeShadowRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetScreenshotIncludeShadow, &req, &result)
+	err := m.c.Call(MethodNativeSetScreenshotIncludeShadow, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetScreenshotLocation set the screenshot save location. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeSetScreenshotLocation(req NativeSetScreenshotLocationRequest) (bool, error) {
+func (m Methods) NativeSetScreenshotLocation(req NativeSetScreenshotLocationRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetScreenshotLocation, &req, &result)
+	err := m.c.Call(MethodNativeSetScreenshotLocation, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetScrollDirectionNatural set natural scroll direction.
-func (p *Plugin) NativeSetScrollDirectionNatural(req NativeSetScrollDirectionNaturalRequest) (bool, error) {
+func (m Methods) NativeSetScrollDirectionNatural(req NativeSetScrollDirectionNaturalRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetScrollDirectionNatural, &req, &result)
+	err := m.c.Call(MethodNativeSetScrollDirectionNatural, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetSidebarIconSize set sidebar icon size (1=small,2=medium,3=large). Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeSetSidebarIconSize(req NativeSetSidebarIconSizeRequest) (bool, error) {
+func (m Methods) NativeSetSidebarIconSize(req NativeSetSidebarIconSizeRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetSidebarIconSize, &req, &result)
+	err := m.c.Call(MethodNativeSetSidebarIconSize, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetSlowKeys turn Slow Keys on or off (a key registers only after it is held). Exists only on Linux and Windows; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeSetSlowKeys(req NativeSetSlowKeysRequest) (bool, error) {
+func (m Methods) NativeSetSlowKeys(req NativeSetSlowKeysRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetSlowKeys, &req, &result)
+	err := m.c.Call(MethodNativeSetSlowKeys, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetStageManager enable or disable Stage Manager. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeSetStageManager(req NativeSetStageManagerRequest) (bool, error) {
+func (m Methods) NativeSetStageManager(req NativeSetStageManagerRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetStageManager, &req, &result)
+	err := m.c.Call(MethodNativeSetStageManager, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetStickyKeys turn Sticky Keys on or off (modifiers latch, so shortcuts need one key at a time). Exists only on Linux and Windows; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeSetStickyKeys(req NativeSetStickyKeysRequest) (bool, error) {
+func (m Methods) NativeSetStickyKeys(req NativeSetStickyKeysRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetStickyKeys, &req, &result)
+	err := m.c.Call(MethodNativeSetStickyKeys, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetTapToClick enable or disable tap-to-click.
-func (p *Plugin) NativeSetTapToClick(req NativeSetTapToClickRequest) (bool, error) {
+func (m Methods) NativeSetTapToClick(req NativeSetTapToClickRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetTapToClick, &req, &result)
+	err := m.c.Call(MethodNativeSetTapToClick, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetTextScale set the system text size as a factor of the default (1.0); false when refused. Exists only on Linux; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeSetTextScale(req NativeSetTextScaleRequest) (bool, error) {
+func (m Methods) NativeSetTextScale(req NativeSetTextScaleRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetTextScale, &req, &result)
+	err := m.c.Call(MethodNativeSetTextScale, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetTrackpadSpeed set trackpad tracking speed.
-func (p *Plugin) NativeSetTrackpadSpeed(req NativeSetTrackpadSpeedRequest) (bool, error) {
+func (m Methods) NativeSetTrackpadSpeed(req NativeSetTrackpadSpeedRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetTrackpadSpeed, &req, &result)
+	err := m.c.Call(MethodNativeSetTrackpadSpeed, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetURLSchemeHandler register an application as the handler for a URL scheme.
-func (p *Plugin) NativeSetURLSchemeHandler(req NativeSetURLSchemeHandlerRequest) (bool, error) {
+func (m Methods) NativeSetURLSchemeHandler(req NativeSetURLSchemeHandlerRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetUrlSchemeHandler, &req, &result)
+	err := m.c.Call(MethodNativeSetUrlSchemeHandler, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetVisualAlertsEnabled turn screen flashing on alert sounds on or off; false when it did not change. Exists only on Linux and Windows; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeSetVisualAlertsEnabled(req NativeSetVisualAlertsEnabledRequest) (bool, error) {
+func (m Methods) NativeSetVisualAlertsEnabled(req NativeSetVisualAlertsEnabledRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetVisualAlertsEnabled, &req, &result)
+	err := m.c.Call(MethodNativeSetVisualAlertsEnabled, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetVolume set system volume (0.0–1.0).
-func (p *Plugin) NativeSetVolume(req NativeSetVolumeRequest) error {
-	return p.Call(MethodNativeSetVolume, &req, nil)
+func (m Methods) NativeSetVolume(req NativeSetVolumeRequest) error {
+	return m.c.Call(MethodNativeSetVolume, &req, nil)
 }
 
 // NativeSetWallpaper set the desktop wallpaper to an image file.
-func (p *Plugin) NativeSetWallpaper(req NativeSetWallpaperRequest) (bool, error) {
+func (m Methods) NativeSetWallpaper(req NativeSetWallpaperRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSetWallpaper, &req, &result)
+	err := m.c.Call(MethodNativeSetWallpaper, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSetWindowAlpha set window transparency. On Linux, not available on GNOME (GNOME exposes no window IPC to set window properties through).
-func (p *Plugin) NativeSetWindowAlpha(req NativeSetWindowAlphaRequest) error {
-	return p.Call(MethodNativeSetWindowAlpha, &req, nil)
+func (m Methods) NativeSetWindowAlpha(req NativeSetWindowAlphaRequest) error {
+	return m.c.Call(MethodNativeSetWindowAlpha, &req, nil)
 }
 
 // NativeSetWindowLevel set a window's level (floating, normal, below). On Linux, not available on GNOME (GNOME exposes no window IPC to set window properties through); nor on sway (sway has no stacking levels; floating windows are always above tiled ones).
-func (p *Plugin) NativeSetWindowLevel(req NativeSetWindowLevelRequest) (bool, error) {
+func (m Methods) NativeSetWindowLevel(req NativeSetWindowLevelRequest) (bool, error) {
 	var result struct {
 		Result bool `json:"result"`
 	}
-	err := p.Call(MethodNativeSetWindowLevel, &req, &result)
+	err := m.c.Call(MethodNativeSetWindowLevel, &req, &result)
 	return result.Result, err
 }
 
 // NativeSetWindowPosition move a window to x,y without changing size.
-func (p *Plugin) NativeSetWindowPosition(req NativeSetWindowPositionRequest) error {
-	return p.Call(MethodNativeSetWindowPosition, &req, nil)
+func (m Methods) NativeSetWindowPosition(req NativeSetWindowPositionRequest) error {
+	return m.c.Call(MethodNativeSetWindowPosition, &req, nil)
 }
 
 // NativeSetWindowShadow enable or disable the drop shadow for a window. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeSetWindowShadow(req NativeSetWindowShadowRequest) error {
-	return p.Call(MethodNativeSetWindowShadow, &req, nil)
+func (m Methods) NativeSetWindowShadow(req NativeSetWindowShadowRequest) error {
+	return m.c.Call(MethodNativeSetWindowShadow, &req, nil)
 }
 
 // NativeSetWindowSize resize a window without changing position.
-func (p *Plugin) NativeSetWindowSize(req NativeSetWindowSizeRequest) error {
-	return p.Call(MethodNativeSetWindowSize, &req, nil)
+func (m Methods) NativeSetWindowSize(req NativeSetWindowSizeRequest) error {
+	return m.c.Call(MethodNativeSetWindowSize, &req, nil)
 }
 
 // NativeSetWindowSticky set a window to appear on all spaces (sticky). Exists only on macOS and Linux; elsewhere it is refused with platform_no_analogue. On Linux, not available on GNOME (GNOME exposes no window IPC to set window properties through).
-func (p *Plugin) NativeSetWindowSticky(req NativeSetWindowStickyRequest) error {
-	return p.Call(MethodNativeSetWindowSticky, &req, nil)
+func (m Methods) NativeSetWindowSticky(req NativeSetWindowStickyRequest) error {
+	return m.c.Call(MethodNativeSetWindowSticky, &req, nil)
 }
 
 // NativeSharingName get the local network sharing name.
-func (p *Plugin) NativeSharingName() (*NativeSharingNameResponse, error) {
+func (m Methods) NativeSharingName() (*NativeSharingNameResponse, error) {
 	var result NativeSharingNameResponse
-	err := p.Call(MethodNativeSharingName, nil, &result)
+	err := m.c.Call(MethodNativeSharingName, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -4888,9 +4897,9 @@ func (p *Plugin) NativeSharingName() (*NativeSharingNameResponse, error) {
 }
 
 // NativeShowScrollBars get scroll bar visibility setting.
-func (p *Plugin) NativeShowScrollBars() (*NativeShowScrollBarsResponse, error) {
+func (m Methods) NativeShowScrollBars() (*NativeShowScrollBarsResponse, error) {
 	var result NativeShowScrollBarsResponse
-	err := p.Call(MethodNativeShowScrollBars, nil, &result)
+	err := m.c.Call(MethodNativeShowScrollBars, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -4898,9 +4907,9 @@ func (p *Plugin) NativeShowScrollBars() (*NativeShowScrollBarsResponse, error) {
 }
 
 // NativeSidebarIconSize get sidebar icon size. Returns one of: small, medium, large. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeSidebarIconSize() (*NativeSidebarIconSizeResponse, error) {
+func (m Methods) NativeSidebarIconSize() (*NativeSidebarIconSizeResponse, error) {
 	var result NativeSidebarIconSizeResponse
-	err := p.Call(MethodNativeSidebarIconSize, nil, &result)
+	err := m.c.Call(MethodNativeSidebarIconSize, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -4908,9 +4917,9 @@ func (p *Plugin) NativeSidebarIconSize() (*NativeSidebarIconSizeResponse, error)
 }
 
 // NativeSiriEnabled check if Siri is enabled. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeSiriEnabled() (*NativeSiriEnabledResponse, error) {
+func (m Methods) NativeSiriEnabled() (*NativeSiriEnabledResponse, error) {
 	var result NativeSiriEnabledResponse
-	err := p.Call(MethodNativeSiriEnabled, nil, &result)
+	err := m.c.Call(MethodNativeSiriEnabled, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -4918,14 +4927,14 @@ func (p *Plugin) NativeSiriEnabled() (*NativeSiriEnabledResponse, error) {
 }
 
 // NativeSleepNow put the system to sleep immediately.
-func (p *Plugin) NativeSleepNow() error {
-	return p.Call(MethodNativeSleepNow, nil, nil)
+func (m Methods) NativeSleepNow() error {
+	return m.c.Call(MethodNativeSleepNow, nil, nil)
 }
 
 // NativeSlowKeys check if Slow Keys is enabled.
-func (p *Plugin) NativeSlowKeys() (*NativeSlowKeysResponse, error) {
+func (m Methods) NativeSlowKeys() (*NativeSlowKeysResponse, error) {
 	var result NativeSlowKeysResponse
-	err := p.Call(MethodNativeSlowKeys, nil, &result)
+	err := m.c.Call(MethodNativeSlowKeys, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -4933,9 +4942,9 @@ func (p *Plugin) NativeSlowKeys() (*NativeSlowKeysResponse, error) {
 }
 
 // NativeSmartQuotesEnabled check if smart quotes are enabled. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeSmartQuotesEnabled() (*NativeSmartQuotesEnabledResponse, error) {
+func (m Methods) NativeSmartQuotesEnabled() (*NativeSmartQuotesEnabledResponse, error) {
 	var result NativeSmartQuotesEnabledResponse
-	err := p.Call(MethodNativeSmartQuotesEnabled, nil, &result)
+	err := m.c.Call(MethodNativeSmartQuotesEnabled, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -4943,9 +4952,9 @@ func (p *Plugin) NativeSmartQuotesEnabled() (*NativeSmartQuotesEnabledResponse, 
 }
 
 // NativeSmartZoom check if smart zoom (double-tap) is enabled. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeSmartZoom() (*NativeSmartZoomResponse, error) {
+func (m Methods) NativeSmartZoom() (*NativeSmartZoomResponse, error) {
 	var result NativeSmartZoomResponse
-	err := p.Call(MethodNativeSmartZoom, nil, &result)
+	err := m.c.Call(MethodNativeSmartZoom, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -4953,9 +4962,9 @@ func (p *Plugin) NativeSmartZoom() (*NativeSmartZoomResponse, error) {
 }
 
 // NativeSoundEffectsEnabled check if UI sound effects are enabled.
-func (p *Plugin) NativeSoundEffectsEnabled() (*NativeSoundEffectsEnabledResponse, error) {
+func (m Methods) NativeSoundEffectsEnabled() (*NativeSoundEffectsEnabledResponse, error) {
 	var result NativeSoundEffectsEnabledResponse
-	err := p.Call(MethodNativeSoundEffectsEnabled, nil, &result)
+	err := m.c.Call(MethodNativeSoundEffectsEnabled, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -4963,9 +4972,9 @@ func (p *Plugin) NativeSoundEffectsEnabled() (*NativeSoundEffectsEnabledResponse
 }
 
 // NativeSpacesSpanDisplays check if Spaces span displays independently.
-func (p *Plugin) NativeSpacesSpanDisplays() (*NativeSpacesSpanDisplaysResponse, error) {
+func (m Methods) NativeSpacesSpanDisplays() (*NativeSpacesSpanDisplaysResponse, error) {
 	var result NativeSpacesSpanDisplaysResponse
-	err := p.Call(MethodNativeSpacesSpanDisplays, nil, &result)
+	err := m.c.Call(MethodNativeSpacesSpanDisplays, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -4973,11 +4982,11 @@ func (p *Plugin) NativeSpacesSpanDisplays() (*NativeSpacesSpanDisplaysResponse, 
 }
 
 // NativeSpeechLocales list available speech recognition locales. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeSpeechLocales() ([]SpeechLocale, error) {
+func (m Methods) NativeSpeechLocales() ([]SpeechLocale, error) {
 	var result struct {
 		Locales []SpeechLocale `json:"locales"`
 	}
-	err := p.Call(MethodNativeSpeechLocales, nil, &result)
+	err := m.c.Call(MethodNativeSpeechLocales, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -4985,9 +4994,9 @@ func (p *Plugin) NativeSpeechLocales() ([]SpeechLocale, error) {
 }
 
 // NativeSpeechRecognitionAvailable check if on-device speech recognition is available. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeSpeechRecognitionAvailable() (*NativeSpeechRecognitionAvailableResponse, error) {
+func (m Methods) NativeSpeechRecognitionAvailable() (*NativeSpeechRecognitionAvailableResponse, error) {
 	var result NativeSpeechRecognitionAvailableResponse
-	err := p.Call(MethodNativeSpeechRecognitionAvailable, nil, &result)
+	err := m.c.Call(MethodNativeSpeechRecognitionAvailable, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -4995,9 +5004,9 @@ func (p *Plugin) NativeSpeechRecognitionAvailable() (*NativeSpeechRecognitionAva
 }
 
 // NativeSpeechRecognizeFile recognize speech from an audio file (returns transcript). Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeSpeechRecognizeFile(req NativeSpeechRecognizeFileRequest) (string, error) {
+func (m Methods) NativeSpeechRecognizeFile(req NativeSpeechRecognizeFileRequest) (string, error) {
 	var result string
-	err := p.Call(MethodNativeSpeechRecognizeFile, &req, &result)
+	err := m.c.Call(MethodNativeSpeechRecognizeFile, &req, &result)
 	if err != nil {
 		return "", err
 	}
@@ -5005,9 +5014,9 @@ func (p *Plugin) NativeSpeechRecognizeFile(req NativeSpeechRecognizeFileRequest)
 }
 
 // NativeSpellingLanguage get current spelling language. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeSpellingLanguage() (*NativeSpellingLanguageResponse, error) {
+func (m Methods) NativeSpellingLanguage() (*NativeSpellingLanguageResponse, error) {
 	var result NativeSpellingLanguageResponse
-	err := p.Call(MethodNativeSpellingLanguage, nil, &result)
+	err := m.c.Call(MethodNativeSpellingLanguage, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5015,11 +5024,11 @@ func (p *Plugin) NativeSpellingLanguage() (*NativeSpellingLanguageResponse, erro
 }
 
 // NativeSpotlight search files via Spotlight.
-func (p *Plugin) NativeSpotlight(req NativeSpotlightRequest) ([]SpotlightResult, error) {
+func (m Methods) NativeSpotlight(req NativeSpotlightRequest) ([]SpotlightResult, error) {
 	var result struct {
 		Results []SpotlightResult `json:"results"`
 	}
-	err := p.Call(MethodNativeSpotlight, &req, &result)
+	err := m.c.Call(MethodNativeSpotlight, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5027,9 +5036,9 @@ func (p *Plugin) NativeSpotlight(req NativeSpotlightRequest) ([]SpotlightResult,
 }
 
 // NativeStageManagerEnabled check if Stage Manager is enabled. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeStageManagerEnabled() (*NativeStageManagerEnabledResponse, error) {
+func (m Methods) NativeStageManagerEnabled() (*NativeStageManagerEnabledResponse, error) {
 	var result NativeStageManagerEnabledResponse
-	err := p.Call(MethodNativeStageManagerEnabled, nil, &result)
+	err := m.c.Call(MethodNativeStageManagerEnabled, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5037,9 +5046,9 @@ func (p *Plugin) NativeStageManagerEnabled() (*NativeStageManagerEnabledResponse
 }
 
 // NativeStartupDisk get the boot volume name and path.
-func (p *Plugin) NativeStartupDisk() (*NativeStartupDiskResponse, error) {
+func (m Methods) NativeStartupDisk() (*NativeStartupDiskResponse, error) {
 	var result NativeStartupDiskResponse
-	err := p.Call(MethodNativeStartupDisk, nil, &result)
+	err := m.c.Call(MethodNativeStartupDisk, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5047,9 +5056,9 @@ func (p *Plugin) NativeStartupDisk() (*NativeStartupDiskResponse, error) {
 }
 
 // NativeStartupSoundEnabled check if startup sound is enabled. Exists only on macOS and Windows; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeStartupSoundEnabled() (*NativeStartupSoundEnabledResponse, error) {
+func (m Methods) NativeStartupSoundEnabled() (*NativeStartupSoundEnabledResponse, error) {
 	var result NativeStartupSoundEnabledResponse
-	err := p.Call(MethodNativeStartupSoundEnabled, nil, &result)
+	err := m.c.Call(MethodNativeStartupSoundEnabled, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5057,9 +5066,9 @@ func (p *Plugin) NativeStartupSoundEnabled() (*NativeStartupSoundEnabledResponse
 }
 
 // NativeStatusIndicator whether a visible status-indicator surface (tray/status item) exists that can show recording state.
-func (p *Plugin) NativeStatusIndicator() (*NativeStatusIndicatorResponse, error) {
+func (m Methods) NativeStatusIndicator() (*NativeStatusIndicatorResponse, error) {
 	var result NativeStatusIndicatorResponse
-	err := p.Call(MethodNativeStatusIndicator, nil, &result)
+	err := m.c.Call(MethodNativeStatusIndicator, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5067,9 +5076,9 @@ func (p *Plugin) NativeStatusIndicator() (*NativeStatusIndicatorResponse, error)
 }
 
 // NativeStickyKeys check if Sticky Keys is enabled.
-func (p *Plugin) NativeStickyKeys() (*NativeStickyKeysResponse, error) {
+func (m Methods) NativeStickyKeys() (*NativeStickyKeysResponse, error) {
 	var result NativeStickyKeysResponse
-	err := p.Call(MethodNativeStickyKeys, nil, &result)
+	err := m.c.Call(MethodNativeStickyKeys, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5077,9 +5086,9 @@ func (p *Plugin) NativeStickyKeys() (*NativeStickyKeysResponse, error) {
 }
 
 // NativeSwipeBetweenPages check if swipe between pages gesture is enabled. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeSwipeBetweenPages() (*NativeSwipeBetweenPagesResponse, error) {
+func (m Methods) NativeSwipeBetweenPages() (*NativeSwipeBetweenPagesResponse, error) {
 	var result NativeSwipeBetweenPagesResponse
-	err := p.Call(MethodNativeSwipeBetweenPages, nil, &result)
+	err := m.c.Call(MethodNativeSwipeBetweenPages, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5087,14 +5096,14 @@ func (p *Plugin) NativeSwipeBetweenPages() (*NativeSwipeBetweenPagesResponse, er
 }
 
 // NativeSwitchSpace switch to a Mission Control desktop by number (1-16) via the user's Switch-to-Desktop symbolic hotkey (respects remaps, auto-enables disabled shortcuts; falls back to default Ctrl+N).
-func (p *Plugin) NativeSwitchSpace(req NativeSwitchSpaceRequest) error {
-	return p.Call(MethodNativeSwitchSpace, &req, nil)
+func (m Methods) NativeSwitchSpace(req NativeSwitchSpaceRequest) error {
+	return m.c.Call(MethodNativeSwitchSpace, &req, nil)
 }
 
 // NativeSwitchSpaceWhenSwitchingApp check if switching to app switches to its Space. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeSwitchSpaceWhenSwitchingApp() (*NativeSwitchSpaceWhenSwitchingAppResponse, error) {
+func (m Methods) NativeSwitchSpaceWhenSwitchingApp() (*NativeSwitchSpaceWhenSwitchingAppResponse, error) {
 	var result NativeSwitchSpaceWhenSwitchingAppResponse
-	err := p.Call(MethodNativeSwitchSpaceWhenSwitchingApp, nil, &result)
+	err := m.c.Call(MethodNativeSwitchSpaceWhenSwitchingApp, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5102,18 +5111,18 @@ func (p *Plugin) NativeSwitchSpaceWhenSwitchingApp() (*NativeSwitchSpaceWhenSwit
 }
 
 // NativeSymlink create a symbolic link.
-func (p *Plugin) NativeSymlink(req NativeSymlinkRequest) (bool, error) {
+func (m Methods) NativeSymlink(req NativeSymlinkRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeSymlink, &req, &result)
+	err := m.c.Call(MethodNativeSymlink, &req, &result)
 	return result.Ok, err
 }
 
 // NativeSystemAppearance get system appearance info (accent color, highlight color, reduce motion, reduce transparency).
-func (p *Plugin) NativeSystemAppearance() (*NativeSystemAppearanceResponse, error) {
+func (m Methods) NativeSystemAppearance() (*NativeSystemAppearanceResponse, error) {
 	var result NativeSystemAppearanceResponse
-	err := p.Call(MethodNativeSystemAppearance, nil, &result)
+	err := m.c.Call(MethodNativeSystemAppearance, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5121,9 +5130,9 @@ func (p *Plugin) NativeSystemAppearance() (*NativeSystemAppearanceResponse, erro
 }
 
 // NativeSystemInfo get system identity (macOS version, model, serial).
-func (p *Plugin) NativeSystemInfo() (*NativeSystemInfoResponse, error) {
+func (m Methods) NativeSystemInfo() (*NativeSystemInfoResponse, error) {
 	var result NativeSystemInfoResponse
-	err := p.Call(MethodNativeSystemInfo, nil, &result)
+	err := m.c.Call(MethodNativeSystemInfo, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5131,11 +5140,11 @@ func (p *Plugin) NativeSystemInfo() (*NativeSystemInfoResponse, error) {
 }
 
 // NativeSystemIntegrity the mechanisms that protect the system itself, and their states: SIP on macOS; Secure Boot and memory integrity on Windows; Secure Boot and AppArmor or SELinux on Linux. Facts, not a verdict.
-func (p *Plugin) NativeSystemIntegrity() ([]SecurityFact, error) {
+func (m Methods) NativeSystemIntegrity() ([]SecurityFact, error) {
 	var result struct {
 		Mechanisms []SecurityFact `json:"mechanisms"`
 	}
-	err := p.Call(MethodNativeSystemIntegrity, nil, &result)
+	err := m.c.Call(MethodNativeSystemIntegrity, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5143,9 +5152,9 @@ func (p *Plugin) NativeSystemIntegrity() ([]SecurityFact, error) {
 }
 
 // NativeSystemLanguage get the system language code (e.g. en).
-func (p *Plugin) NativeSystemLanguage() (*NativeSystemLanguageResponse, error) {
+func (m Methods) NativeSystemLanguage() (*NativeSystemLanguageResponse, error) {
 	var result NativeSystemLanguageResponse
-	err := p.Call(MethodNativeSystemLanguage, nil, &result)
+	err := m.c.Call(MethodNativeSystemLanguage, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5153,9 +5162,9 @@ func (p *Plugin) NativeSystemLanguage() (*NativeSystemLanguageResponse, error) {
 }
 
 // NativeSystemRegion get the system region code (e.g. US).
-func (p *Plugin) NativeSystemRegion() (*NativeSystemRegionResponse, error) {
+func (m Methods) NativeSystemRegion() (*NativeSystemRegionResponse, error) {
 	var result NativeSystemRegionResponse
-	err := p.Call(MethodNativeSystemRegion, nil, &result)
+	err := m.c.Call(MethodNativeSystemRegion, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5163,11 +5172,11 @@ func (p *Plugin) NativeSystemRegion() (*NativeSystemRegionResponse, error) {
 }
 
 // NativeSystemSounds list available system alert sounds.
-func (p *Plugin) NativeSystemSounds() ([]string, error) {
+func (m Methods) NativeSystemSounds() ([]string, error) {
 	var result struct {
 		Sounds []string `json:"sounds"`
 	}
-	err := p.Call(MethodNativeSystemSounds, nil, &result)
+	err := m.c.Call(MethodNativeSystemSounds, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5175,9 +5184,9 @@ func (p *Plugin) NativeSystemSounds() ([]string, error) {
 }
 
 // NativeSystemUptime get system uptime.
-func (p *Plugin) NativeSystemUptime() (*NativeSystemUptimeResponse, error) {
+func (m Methods) NativeSystemUptime() (*NativeSystemUptimeResponse, error) {
 	var result NativeSystemUptimeResponse
-	err := p.Call(MethodNativeSystemUptime, nil, &result)
+	err := m.c.Call(MethodNativeSystemUptime, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5185,9 +5194,9 @@ func (p *Plugin) NativeSystemUptime() (*NativeSystemUptimeResponse, error) {
 }
 
 // NativeSystemUptimeSeconds get system uptime in seconds.
-func (p *Plugin) NativeSystemUptimeSeconds() (*NativeSystemUptimeSecondsResponse, error) {
+func (m Methods) NativeSystemUptimeSeconds() (*NativeSystemUptimeSecondsResponse, error) {
 	var result NativeSystemUptimeSecondsResponse
-	err := p.Call(MethodNativeSystemUptimeSeconds, nil, &result)
+	err := m.c.Call(MethodNativeSystemUptimeSeconds, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5195,9 +5204,9 @@ func (p *Plugin) NativeSystemUptimeSeconds() (*NativeSystemUptimeSecondsResponse
 }
 
 // NativeTapToClick check if tap-to-click is enabled on trackpad.
-func (p *Plugin) NativeTapToClick() (*NativeTapToClickResponse, error) {
+func (m Methods) NativeTapToClick() (*NativeTapToClickResponse, error) {
 	var result NativeTapToClickResponse
-	err := p.Call(MethodNativeTapToClick, nil, &result)
+	err := m.c.Call(MethodNativeTapToClick, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5205,9 +5214,9 @@ func (p *Plugin) NativeTapToClick() (*NativeTapToClickResponse, error) {
 }
 
 // NativeTempDirectory get the system temporary directory path.
-func (p *Plugin) NativeTempDirectory() (*NativeTempDirectoryResponse, error) {
+func (m Methods) NativeTempDirectory() (*NativeTempDirectoryResponse, error) {
 	var result NativeTempDirectoryResponse
-	err := p.Call(MethodNativeTempDirectory, nil, &result)
+	err := m.c.Call(MethodNativeTempDirectory, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5215,9 +5224,9 @@ func (p *Plugin) NativeTempDirectory() (*NativeTempDirectoryResponse, error) {
 }
 
 // NativeTemperatureUnit get temperature unit preference.
-func (p *Plugin) NativeTemperatureUnit() (*NativeTemperatureUnitResponse, error) {
+func (m Methods) NativeTemperatureUnit() (*NativeTemperatureUnitResponse, error) {
 	var result NativeTemperatureUnitResponse
-	err := p.Call(MethodNativeTemperatureUnit, nil, &result)
+	err := m.c.Call(MethodNativeTemperatureUnit, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5225,9 +5234,9 @@ func (p *Plugin) NativeTemperatureUnit() (*NativeTemperatureUnitResponse, error)
 }
 
 // NativeTextReplacements get user text replacements as the raw `NSUserDictionaryReplacementItems` preference value — macOS plist text, NOT JSON. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeTextReplacements() (*NativeTextReplacementsResponse, error) {
+func (m Methods) NativeTextReplacements() (*NativeTextReplacementsResponse, error) {
 	var result NativeTextReplacementsResponse
-	err := p.Call(MethodNativeTextReplacements, nil, &result)
+	err := m.c.Call(MethodNativeTextReplacements, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5235,9 +5244,9 @@ func (p *Plugin) NativeTextReplacements() (*NativeTextReplacementsResponse, erro
 }
 
 // NativeTextScale get the system text size as a factor of the default (1.0). Exists only on Linux and Windows; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeTextScale() (float64, error) {
+func (m Methods) NativeTextScale() (float64, error) {
 	var result float64
-	err := p.Call(MethodNativeTextScale, nil, &result)
+	err := m.c.Call(MethodNativeTextScale, nil, &result)
 	if err != nil {
 		return 0, err
 	}
@@ -5245,9 +5254,9 @@ func (p *Plugin) NativeTextScale() (float64, error) {
 }
 
 // NativeThermalState get coarse CPU throttling state from `pmset -g therm`. NOT ProcessInfo.thermalState — for the four-level nominal/fair/serious/critical reading, subscribe to _platform.thermal.changed. Returns one of: nominal, throttled.
-func (p *Plugin) NativeThermalState() (*NativeThermalStateResponse, error) {
+func (m Methods) NativeThermalState() (*NativeThermalStateResponse, error) {
 	var result NativeThermalStateResponse
-	err := p.Call(MethodNativeThermalState, nil, &result)
+	err := m.c.Call(MethodNativeThermalState, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5255,9 +5264,9 @@ func (p *Plugin) NativeThermalState() (*NativeThermalStateResponse, error) {
 }
 
 // NativeThreeFingerDrag check if three-finger drag is enabled. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeThreeFingerDrag() (*NativeThreeFingerDragResponse, error) {
+func (m Methods) NativeThreeFingerDrag() (*NativeThreeFingerDragResponse, error) {
 	var result NativeThreeFingerDragResponse
-	err := p.Call(MethodNativeThreeFingerDrag, nil, &result)
+	err := m.c.Call(MethodNativeThreeFingerDrag, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5265,11 +5274,11 @@ func (p *Plugin) NativeThreeFingerDrag() (*NativeThreeFingerDragResponse, error)
 }
 
 // NativeThunderboltDevices devices connected over Thunderbolt or USB4, not the machine's own ports: name, vendor, unique id, and whether the OS has authorized each where it asks.
-func (p *Plugin) NativeThunderboltDevices() ([]ThunderboltDevice, error) {
+func (m Methods) NativeThunderboltDevices() ([]ThunderboltDevice, error) {
 	var result struct {
 		Devices []ThunderboltDevice `json:"devices"`
 	}
-	err := p.Call(MethodNativeThunderboltDevices, nil, &result)
+	err := m.c.Call(MethodNativeThunderboltDevices, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5277,9 +5286,9 @@ func (p *Plugin) NativeThunderboltDevices() ([]ThunderboltDevice, error) {
 }
 
 // NativeTimeFormat get user time format string.
-func (p *Plugin) NativeTimeFormat() (*NativeTimeFormatResponse, error) {
+func (m Methods) NativeTimeFormat() (*NativeTimeFormatResponse, error) {
 	var result NativeTimeFormatResponse
-	err := p.Call(MethodNativeTimeFormat, nil, &result)
+	err := m.c.Call(MethodNativeTimeFormat, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5287,9 +5296,9 @@ func (p *Plugin) NativeTimeFormat() (*NativeTimeFormatResponse, error) {
 }
 
 // NativeTimeMachineLastBackup get the last Time Machine backup date. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeTimeMachineLastBackup() (*NativeTimeMachineLastBackupResponse, error) {
+func (m Methods) NativeTimeMachineLastBackup() (*NativeTimeMachineLastBackupResponse, error) {
 	var result NativeTimeMachineLastBackupResponse
-	err := p.Call(MethodNativeTimeMachineLastBackup, nil, &result)
+	err := m.c.Call(MethodNativeTimeMachineLastBackup, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5297,9 +5306,9 @@ func (p *Plugin) NativeTimeMachineLastBackup() (*NativeTimeMachineLastBackupResp
 }
 
 // NativeTimeMachineStatus check if Time Machine is enabled and get destination. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeTimeMachineStatus() (*NativeTimeMachineStatusResponse, error) {
+func (m Methods) NativeTimeMachineStatus() (*NativeTimeMachineStatusResponse, error) {
 	var result NativeTimeMachineStatusResponse
-	err := p.Call(MethodNativeTimeMachineStatus, nil, &result)
+	err := m.c.Call(MethodNativeTimeMachineStatus, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5307,9 +5316,9 @@ func (p *Plugin) NativeTimeMachineStatus() (*NativeTimeMachineStatusResponse, er
 }
 
 // NativeTimezone get current system timezone identifier.
-func (p *Plugin) NativeTimezone() (*NativeTimezoneResponse, error) {
+func (m Methods) NativeTimezone() (*NativeTimezoneResponse, error) {
 	var result NativeTimezoneResponse
-	err := p.Call(MethodNativeTimezone, nil, &result)
+	err := m.c.Call(MethodNativeTimezone, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5317,32 +5326,32 @@ func (p *Plugin) NativeTimezone() (*NativeTimezoneResponse, error) {
 }
 
 // NativeToggleBluetooth toggle Bluetooth on/off.
-func (p *Plugin) NativeToggleBluetooth(req NativeToggleBluetoothRequest) (bool, error) {
+func (m Methods) NativeToggleBluetooth(req NativeToggleBluetoothRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeToggleBluetooth, &req, &result)
+	err := m.c.Call(MethodNativeToggleBluetooth, &req, &result)
 	return result.Ok, err
 }
 
 // NativeToggleFullscreen toggle native fullscreen for a window. On Linux, not available on sway (sway tiles rather than maximizing; there is no such window state); nor on GNOME (GNOME exposes no window IPC; use its own tiling keybinds).
-func (p *Plugin) NativeToggleFullscreen(req NativeToggleFullscreenRequest) error {
-	return p.Call(MethodNativeToggleFullscreen, &req, nil)
+func (m Methods) NativeToggleFullscreen(req NativeToggleFullscreenRequest) error {
+	return m.c.Call(MethodNativeToggleFullscreen, &req, nil)
 }
 
 // NativeToggleWifi toggle Wi-Fi on/off.
-func (p *Plugin) NativeToggleWifi(req NativeToggleWifiRequest) (bool, error) {
+func (m Methods) NativeToggleWifi(req NativeToggleWifiRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeToggleWifi, &req, &result)
+	err := m.c.Call(MethodNativeToggleWifi, &req, &result)
 	return result.Ok, err
 }
 
 // NativeTouchIDAvailable check if Touch ID / biometric auth hardware is available.
-func (p *Plugin) NativeTouchIDAvailable() (*NativeTouchIDAvailableResponse, error) {
+func (m Methods) NativeTouchIDAvailable() (*NativeTouchIDAvailableResponse, error) {
 	var result NativeTouchIDAvailableResponse
-	err := p.Call(MethodNativeTouchIdAvailable, nil, &result)
+	err := m.c.Call(MethodNativeTouchIdAvailable, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5350,9 +5359,9 @@ func (p *Plugin) NativeTouchIDAvailable() (*NativeTouchIDAvailableResponse, erro
 }
 
 // NativeTrackpadSpeed get the trackpad tracking speed (0.0-3.0).
-func (p *Plugin) NativeTrackpadSpeed() (float64, error) {
+func (m Methods) NativeTrackpadSpeed() (float64, error) {
 	var result float64
-	err := p.Call(MethodNativeTrackpadSpeed, nil, &result)
+	err := m.c.Call(MethodNativeTrackpadSpeed, nil, &result)
 	if err != nil {
 		return 0, err
 	}
@@ -5360,9 +5369,9 @@ func (p *Plugin) NativeTrackpadSpeed() (float64, error) {
 }
 
 // NativeTransparencyConsent check TCC consent status for a service (e.g. kTCCServiceAccessibility). Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeTransparencyConsent(req NativeTransparencyConsentRequest) (string, error) {
+func (m Methods) NativeTransparencyConsent(req NativeTransparencyConsentRequest) (string, error) {
 	var result string
-	err := p.Call(MethodNativeTransparencyConsent, &req, &result)
+	err := m.c.Call(MethodNativeTransparencyConsent, &req, &result)
 	if err != nil {
 		return "", err
 	}
@@ -5370,18 +5379,18 @@ func (p *Plugin) NativeTransparencyConsent(req NativeTransparencyConsentRequest)
 }
 
 // NativeTrash move file to Trash.
-func (p *Plugin) NativeTrash(req NativeTrashRequest) (bool, error) {
+func (m Methods) NativeTrash(req NativeTrashRequest) (bool, error) {
 	var result struct {
 		Result bool `json:"result"`
 	}
-	err := p.Call(MethodNativeTrash, &req, &result)
+	err := m.c.Call(MethodNativeTrash, &req, &result)
 	return result.Result, err
 }
 
 // NativeTrueTone check if True Tone is enabled. KNOWN LIMITATION: the `corebrightnessdiag` probe this depends on is absent from macOS 15, where this always reports false. Exists only on macOS and Windows; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeTrueTone() (*NativeTrueToneResponse, error) {
+func (m Methods) NativeTrueTone() (*NativeTrueToneResponse, error) {
 	var result NativeTrueToneResponse
-	err := p.Call(MethodNativeTrueTone, nil, &result)
+	err := m.c.Call(MethodNativeTrueTone, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5389,11 +5398,11 @@ func (p *Plugin) NativeTrueTone() (*NativeTrueToneResponse, error) {
 }
 
 // NativeTtsVoices list available text-to-speech voices.
-func (p *Plugin) NativeTtsVoices() ([]TtsVoice, error) {
+func (m Methods) NativeTtsVoices() ([]TtsVoice, error) {
 	var result struct {
 		Voices []TtsVoice `json:"voices"`
 	}
-	err := p.Call(MethodNativeTtsVoices, nil, &result)
+	err := m.c.Call(MethodNativeTtsVoices, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5401,9 +5410,9 @@ func (p *Plugin) NativeTtsVoices() ([]TtsVoice, error) {
 }
 
 // NativeTwentyFourHourClock check if 24-hour clock is enabled.
-func (p *Plugin) NativeTwentyFourHourClock() (*NativeTwentyFourHourClockResponse, error) {
+func (m Methods) NativeTwentyFourHourClock() (*NativeTwentyFourHourClockResponse, error) {
 	var result NativeTwentyFourHourClockResponse
-	err := p.Call(MethodNativeTwentyFourHourClock, nil, &result)
+	err := m.c.Call(MethodNativeTwentyFourHourClock, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5411,28 +5420,28 @@ func (p *Plugin) NativeTwentyFourHourClock() (*NativeTwentyFourHourClockResponse
 }
 
 // NativeUnhideApp unhide a hidden application. On Linux, not available on sway (this compositor has no minimize; sway uses the scratchpad); nor on GNOME (GNOME exposes no window IPC to minimize through).
-func (p *Plugin) NativeUnhideApp(req NativeUnhideAppRequest) error {
-	return p.Call(MethodNativeUnhideApp, &req, nil)
+func (m Methods) NativeUnhideApp(req NativeUnhideAppRequest) error {
+	return m.c.Call(MethodNativeUnhideApp, &req, nil)
 }
 
 // NativeUnminimizeWindow restore a minimized window by ID. On Linux, not available on sway (this compositor has no minimize; sway uses the scratchpad); nor on GNOME (GNOME exposes no window IPC to minimize through).
-func (p *Plugin) NativeUnminimizeWindow(req NativeUnminimizeWindowRequest) error {
-	return p.Call(MethodNativeUnminimizeWindow, &req, nil)
+func (m Methods) NativeUnminimizeWindow(req NativeUnminimizeWindowRequest) error {
+	return m.c.Call(MethodNativeUnminimizeWindow, &req, nil)
 }
 
 // NativeUnzip extract a zip archive to a directory.
-func (p *Plugin) NativeUnzip(req NativeUnzipRequest) (bool, error) {
+func (m Methods) NativeUnzip(req NativeUnzipRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeUnzip, &req, &result)
+	err := m.c.Call(MethodNativeUnzip, &req, &result)
 	return result.Ok, err
 }
 
 // NativeURLSchemeHandler get the bundle ID registered as the handler for a URL scheme.
-func (p *Plugin) NativeURLSchemeHandler(req NativeURLSchemeHandlerRequest) (*NativeURLSchemeHandlerResponse, error) {
+func (m Methods) NativeURLSchemeHandler(req NativeURLSchemeHandlerRequest) (*NativeURLSchemeHandlerResponse, error) {
 	var result NativeURLSchemeHandlerResponse
-	err := p.Call(MethodNativeUrlSchemeHandler, &req, &result)
+	err := m.c.Call(MethodNativeUrlSchemeHandler, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5440,11 +5449,11 @@ func (p *Plugin) NativeURLSchemeHandler(req NativeURLSchemeHandlerRequest) (*Nat
 }
 
 // NativeUsbDevices list connected USB devices.
-func (p *Plugin) NativeUsbDevices() ([]UsbDevice, error) {
+func (m Methods) NativeUsbDevices() ([]UsbDevice, error) {
 	var result struct {
 		Devices []UsbDevice `json:"devices"`
 	}
-	err := p.Call(MethodNativeUsbDevices, nil, &result)
+	err := m.c.Call(MethodNativeUsbDevices, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5452,9 +5461,9 @@ func (p *Plugin) NativeUsbDevices() ([]UsbDevice, error) {
 }
 
 // NativeUserAvatar get the current user account avatar as base64 PNG.
-func (p *Plugin) NativeUserAvatar() (*NativeUserAvatarResponse, error) {
+func (m Methods) NativeUserAvatar() (*NativeUserAvatarResponse, error) {
 	var result NativeUserAvatarResponse
-	err := p.Call(MethodNativeUserAvatar, nil, &result)
+	err := m.c.Call(MethodNativeUserAvatar, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5462,9 +5471,9 @@ func (p *Plugin) NativeUserAvatar() (*NativeUserAvatarResponse, error) {
 }
 
 // NativeUserName get the current user's display name.
-func (p *Plugin) NativeUserName() (*NativeUserNameResponse, error) {
+func (m Methods) NativeUserName() (*NativeUserNameResponse, error) {
 	var result NativeUserNameResponse
-	err := p.Call(MethodNativeUserName, nil, &result)
+	err := m.c.Call(MethodNativeUserName, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5472,9 +5481,9 @@ func (p *Plugin) NativeUserName() (*NativeUserNameResponse, error) {
 }
 
 // NativeUserShell get the current user's login shell path. Exists only on macOS and Linux; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeUserShell() (*NativeUserShellResponse, error) {
+func (m Methods) NativeUserShell() (*NativeUserShellResponse, error) {
 	var result NativeUserShellResponse
-	err := p.Call(MethodNativeUserShell, nil, &result)
+	err := m.c.Call(MethodNativeUserShell, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5482,9 +5491,9 @@ func (p *Plugin) NativeUserShell() (*NativeUserShellResponse, error) {
 }
 
 // NativeVisualAlertsEnabled check if the screen flashes when an alert sound plays.
-func (p *Plugin) NativeVisualAlertsEnabled() (*NativeVisualAlertsEnabledResponse, error) {
+func (m Methods) NativeVisualAlertsEnabled() (*NativeVisualAlertsEnabledResponse, error) {
 	var result NativeVisualAlertsEnabledResponse
-	err := p.Call(MethodNativeVisualAlertsEnabled, nil, &result)
+	err := m.c.Call(MethodNativeVisualAlertsEnabled, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5492,9 +5501,9 @@ func (p *Plugin) NativeVisualAlertsEnabled() (*NativeVisualAlertsEnabledResponse
 }
 
 // NativeVolume get system volume and mute state.
-func (p *Plugin) NativeVolume() (*NativeVolumeResponse, error) {
+func (m Methods) NativeVolume() (*NativeVolumeResponse, error) {
 	var result NativeVolumeResponse
-	err := p.Call(MethodNativeVolume, nil, &result)
+	err := m.c.Call(MethodNativeVolume, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5502,9 +5511,9 @@ func (p *Plugin) NativeVolume() (*NativeVolumeResponse, error) {
 }
 
 // NativeVpnStatus check if a VPN connection is active.
-func (p *Plugin) NativeVpnStatus() (*NativeVpnStatusResponse, error) {
+func (m Methods) NativeVpnStatus() (*NativeVpnStatusResponse, error) {
 	var result NativeVpnStatusResponse
-	err := p.Call(MethodNativeVpnStatus, nil, &result)
+	err := m.c.Call(MethodNativeVpnStatus, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5512,14 +5521,14 @@ func (p *Plugin) NativeVpnStatus() (*NativeVpnStatusResponse, error) {
 }
 
 // NativeWarpCursor move the cursor to a position.
-func (p *Plugin) NativeWarpCursor(req NativeWarpCursorRequest) error {
-	return p.Call(MethodNativeWarpCursor, &req, nil)
+func (m Methods) NativeWarpCursor(req NativeWarpCursorRequest) error {
+	return m.c.Call(MethodNativeWarpCursor, &req, nil)
 }
 
 // NativeWifi get WiFi interface information.
-func (p *Plugin) NativeWifi() (*NativeWifiResponse, error) {
+func (m Methods) NativeWifi() (*NativeWifiResponse, error) {
 	var result NativeWifiResponse
-	err := p.Call(MethodNativeWifi, nil, &result)
+	err := m.c.Call(MethodNativeWifi, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5527,11 +5536,11 @@ func (p *Plugin) NativeWifi() (*NativeWifiResponse, error) {
 }
 
 // NativeWifiNetworks scan for nearby Wi-Fi networks.
-func (p *Plugin) NativeWifiNetworks() ([]string, error) {
+func (m Methods) NativeWifiNetworks() ([]string, error) {
 	var result struct {
 		Networks []string `json:"networks"`
 	}
-	err := p.Call(MethodNativeWifiNetworks, nil, &result)
+	err := m.c.Call(MethodNativeWifiNetworks, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5539,9 +5548,9 @@ func (p *Plugin) NativeWifiNetworks() ([]string, error) {
 }
 
 // NativeWindowApp get the owning app bundle ID for a window.
-func (p *Plugin) NativeWindowApp(req NativeWindowAppRequest) (string, error) {
+func (m Methods) NativeWindowApp(req NativeWindowAppRequest) (string, error) {
 	var result string
-	err := p.Call(MethodNativeWindowApp, &req, &result)
+	err := m.c.Call(MethodNativeWindowApp, &req, &result)
 	if err != nil {
 		return "", err
 	}
@@ -5549,9 +5558,9 @@ func (p *Plugin) NativeWindowApp(req NativeWindowAppRequest) (string, error) {
 }
 
 // NativeWindowBounds get a window position and size by ID.
-func (p *Plugin) NativeWindowBounds(req NativeWindowBoundsRequest) (*NativeWindowBoundsResponse, error) {
+func (m Methods) NativeWindowBounds(req NativeWindowBoundsRequest) (*NativeWindowBoundsResponse, error) {
 	var result NativeWindowBoundsResponse
-	err := p.Call(MethodNativeWindowBounds, &req, &result)
+	err := m.c.Call(MethodNativeWindowBounds, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5559,9 +5568,9 @@ func (p *Plugin) NativeWindowBounds(req NativeWindowBoundsRequest) (*NativeWindo
 }
 
 // NativeWindowDisplayID get display ID for window.
-func (p *Plugin) NativeWindowDisplayID(req NativeWindowDisplayIDRequest) (int, error) {
+func (m Methods) NativeWindowDisplayID(req NativeWindowDisplayIDRequest) (int, error) {
 	var result int
-	err := p.Call(MethodNativeWindowDisplayId, &req, &result)
+	err := m.c.Call(MethodNativeWindowDisplayId, &req, &result)
 	if err != nil {
 		return 0, err
 	}
@@ -5569,9 +5578,9 @@ func (p *Plugin) NativeWindowDisplayID(req NativeWindowDisplayIDRequest) (int, e
 }
 
 // NativeWindowIsFullscreen check if window is fullscreen.
-func (p *Plugin) NativeWindowIsFullscreen(req NativeWindowIsFullscreenRequest) (bool, error) {
+func (m Methods) NativeWindowIsFullscreen(req NativeWindowIsFullscreenRequest) (bool, error) {
 	var result bool
-	err := p.Call(MethodNativeWindowIsFullscreen, &req, &result)
+	err := m.c.Call(MethodNativeWindowIsFullscreen, &req, &result)
 	if err != nil {
 		return false, err
 	}
@@ -5579,9 +5588,9 @@ func (p *Plugin) NativeWindowIsFullscreen(req NativeWindowIsFullscreenRequest) (
 }
 
 // NativeWindowIsMinimized check if window is minimized.
-func (p *Plugin) NativeWindowIsMinimized(req NativeWindowIsMinimizedRequest) (bool, error) {
+func (m Methods) NativeWindowIsMinimized(req NativeWindowIsMinimizedRequest) (bool, error) {
 	var result bool
-	err := p.Call(MethodNativeWindowIsMinimized, &req, &result)
+	err := m.c.Call(MethodNativeWindowIsMinimized, &req, &result)
 	if err != nil {
 		return false, err
 	}
@@ -5589,9 +5598,9 @@ func (p *Plugin) NativeWindowIsMinimized(req NativeWindowIsMinimizedRequest) (bo
 }
 
 // NativeWindowLayer get window layer level. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeWindowLayer(req NativeWindowLayerRequest) (int, error) {
+func (m Methods) NativeWindowLayer(req NativeWindowLayerRequest) (int, error) {
 	var result int
-	err := p.Call(MethodNativeWindowLayer, &req, &result)
+	err := m.c.Call(MethodNativeWindowLayer, &req, &result)
 	if err != nil {
 		return 0, err
 	}
@@ -5599,9 +5608,9 @@ func (p *Plugin) NativeWindowLayer(req NativeWindowLayerRequest) (int, error) {
 }
 
 // NativeWindowScreenshot take a screenshot of a specific window as base64 PNG.
-func (p *Plugin) NativeWindowScreenshot(req NativeWindowScreenshotRequest) (string, error) {
+func (m Methods) NativeWindowScreenshot(req NativeWindowScreenshotRequest) (string, error) {
 	var result string
-	err := p.Call(MethodNativeWindowScreenshot, &req, &result)
+	err := m.c.Call(MethodNativeWindowScreenshot, &req, &result)
 	if err != nil {
 		return "", err
 	}
@@ -5609,9 +5618,9 @@ func (p *Plugin) NativeWindowScreenshot(req NativeWindowScreenshotRequest) (stri
 }
 
 // NativeWindowSubrole get window subrole. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeWindowSubrole(req NativeWindowSubroleRequest) (string, error) {
+func (m Methods) NativeWindowSubrole(req NativeWindowSubroleRequest) (string, error) {
 	var result string
-	err := p.Call(MethodNativeWindowSubrole, &req, &result)
+	err := m.c.Call(MethodNativeWindowSubrole, &req, &result)
 	if err != nil {
 		return "", err
 	}
@@ -5619,9 +5628,9 @@ func (p *Plugin) NativeWindowSubrole(req NativeWindowSubroleRequest) (string, er
 }
 
 // NativeWindowTitle get a window title by ID.
-func (p *Plugin) NativeWindowTitle(req NativeWindowTitleRequest) (string, error) {
+func (m Methods) NativeWindowTitle(req NativeWindowTitleRequest) (string, error) {
 	var result string
-	err := p.Call(MethodNativeWindowTitle, &req, &result)
+	err := m.c.Call(MethodNativeWindowTitle, &req, &result)
 	if err != nil {
 		return "", err
 	}
@@ -5629,9 +5638,9 @@ func (p *Plugin) NativeWindowTitle(req NativeWindowTitleRequest) (string, error)
 }
 
 // NativeWmiQuery read the instances of one WMI class the plugin declared and the user switched on. Exists only on Windows; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeWmiQuery(req NativeWmiQueryRequest) (*NativeWmiQueryResponse, error) {
+func (m Methods) NativeWmiQuery(req NativeWmiQueryRequest) (*NativeWmiQueryResponse, error) {
 	var result NativeWmiQueryResponse
-	err := p.Call(MethodNativeWmiQuery, &req, &result)
+	err := m.c.Call(MethodNativeWmiQuery, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5639,9 +5648,9 @@ func (p *Plugin) NativeWmiQuery(req NativeWmiQueryRequest) (*NativeWmiQueryRespo
 }
 
 // NativeWorldModel get a snapshot of all windows and displays (with managed HUD windows).
-func (p *Plugin) NativeWorldModel(req NativeWorldModelRequest) (*WorldModel, error) {
+func (m Methods) NativeWorldModel(req NativeWorldModelRequest) (*WorldModel, error) {
 	var result WorldModel
-	err := p.Call(MethodNativeWorldModel, &req, &result)
+	err := m.c.Call(MethodNativeWorldModel, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5649,23 +5658,23 @@ func (p *Plugin) NativeWorldModel(req NativeWorldModelRequest) (*WorldModel, err
 }
 
 // NativeWriteAppPreference change (or, with null, reset) one setting in another app's settings domain the plugin declared for writing and the user switched on.
-func (p *Plugin) NativeWriteAppPreference(req NativeWriteAppPreferenceRequest) error {
-	return p.Call(MethodNativeWriteAppPreference, &req, nil)
+func (m Methods) NativeWriteAppPreference(req NativeWriteAppPreferenceRequest) error {
+	return m.c.Call(MethodNativeWriteAppPreference, &req, nil)
 }
 
 // NativeWriteFile write string contents to a file.
-func (p *Plugin) NativeWriteFile(req NativeWriteFileRequest) (bool, error) {
+func (m Methods) NativeWriteFile(req NativeWriteFileRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeWriteFile, &req, &result)
+	err := m.c.Call(MethodNativeWriteFile, &req, &result)
 	return result.Ok, err
 }
 
 // NativeXcodePath get the active Xcode developer directory path. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeXcodePath() (*NativeXcodePathResponse, error) {
+func (m Methods) NativeXcodePath() (*NativeXcodePathResponse, error) {
 	var result NativeXcodePathResponse
-	err := p.Call(MethodNativeXcodePath, nil, &result)
+	err := m.c.Call(MethodNativeXcodePath, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5673,9 +5682,9 @@ func (p *Plugin) NativeXcodePath() (*NativeXcodePathResponse, error) {
 }
 
 // NativeXcodeVersion get the installed Xcode version. Exists only on macOS; elsewhere it is refused with platform_no_analogue.
-func (p *Plugin) NativeXcodeVersion() (*NativeXcodeVersionResponse, error) {
+func (m Methods) NativeXcodeVersion() (*NativeXcodeVersionResponse, error) {
 	var result NativeXcodeVersionResponse
-	err := p.Call(MethodNativeXcodeVersion, nil, &result)
+	err := m.c.Call(MethodNativeXcodeVersion, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5683,18 +5692,18 @@ func (p *Plugin) NativeXcodeVersion() (*NativeXcodeVersionResponse, error) {
 }
 
 // NativeZip create a zip archive from files or a directory.
-func (p *Plugin) NativeZip(req NativeZipRequest) (bool, error) {
+func (m Methods) NativeZip(req NativeZipRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodNativeZip, &req, &result)
+	err := m.c.Call(MethodNativeZip, &req, &result)
 	return result.Ok, err
 }
 
 // NetworkRequestHost ask for one more network host at runtime (a plugin declaring requestable hosts). It appears on the plugin's page, off until the user allows it.
-func (p *Plugin) NetworkRequestHost(req NetworkRequestHostRequest) (*NetworkRequestHostResponse, error) {
+func (m Methods) NetworkRequestHost(req NetworkRequestHostRequest) (*NetworkRequestHostResponse, error) {
 	var result NetworkRequestHostResponse
-	err := p.Call(MethodNetworkRequestHost, &req, &result)
+	err := m.c.Call(MethodNetworkRequestHost, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5702,9 +5711,9 @@ func (p *Plugin) NetworkRequestHost(req NetworkRequestHostRequest) (*NetworkRequ
 }
 
 // OauthConnect ask the person to sign in to an outside service for this plugin. BranchKit runs the sign-in and keeps the tokens; the plugin spends the access token by naming oauth.<provider> in http.request.
-func (p *Plugin) OauthConnect(req OauthConnectRequest) (*OauthConnectResponse, error) {
+func (m Methods) OauthConnect(req OauthConnectRequest) (*OauthConnectResponse, error) {
 	var result OauthConnectResponse
-	err := p.Call(MethodOauthConnect, &req, &result)
+	err := m.c.Call(MethodOauthConnect, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5712,9 +5721,9 @@ func (p *Plugin) OauthConnect(req OauthConnectRequest) (*OauthConnectResponse, e
 }
 
 // OauthDisconnect forget this plugin's sign-in to a service: both tokens and the record.
-func (p *Plugin) OauthDisconnect(req OauthDisconnectRequest) (*OauthDisconnectResponse, error) {
+func (m Methods) OauthDisconnect(req OauthDisconnectRequest) (*OauthDisconnectResponse, error) {
 	var result OauthDisconnectResponse
-	err := p.Call(MethodOauthDisconnect, &req, &result)
+	err := m.c.Call(MethodOauthDisconnect, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5722,9 +5731,9 @@ func (p *Plugin) OauthDisconnect(req OauthDisconnectRequest) (*OauthDisconnectRe
 }
 
 // OauthStatus whether this plugin is signed in to a service, what the service granted, and where the token goes. Never the token.
-func (p *Plugin) OauthStatus(req OauthStatusRequest) (*OauthStatusResponse, error) {
+func (m Methods) OauthStatus(req OauthStatusRequest) (*OauthStatusResponse, error) {
 	var result OauthStatusResponse
-	err := p.Call(MethodOauthStatus, &req, &result)
+	err := m.c.Call(MethodOauthStatus, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5732,9 +5741,9 @@ func (p *Plugin) OauthStatus(req OauthStatusRequest) (*OauthStatusResponse, erro
 }
 
 // OutputClear nothing is true on one of your HUD channels now: clears its semantic state so every renderer stops conveying it; visibility stays yours (hud.hide).
-func (p *Plugin) OutputClear(req OutputClearRequest) (*OutputClearResponse, error) {
+func (m Methods) OutputClear(req OutputClearRequest) (*OutputClearResponse, error) {
 	var result OutputClearResponse
-	err := p.Call(MethodOutputClear, &req, &result)
+	err := m.c.Call(MethodOutputClear, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5742,9 +5751,9 @@ func (p *Plugin) OutputClear(req OutputClearRequest) (*OutputClearResponse, erro
 }
 
 // OutputState set a HUD channel's current semantic output state — a document of what is true for the person, in human language, consumed by every renderer; supersedes the previous state.
-func (p *Plugin) OutputState(req OutputStateRequest) (*OutputStateResponse, error) {
+func (m Methods) OutputState(req OutputStateRequest) (*OutputStateResponse, error) {
 	var result OutputStateResponse
-	err := p.Call(MethodOutputState, &req, &result)
+	err := m.c.Call(MethodOutputState, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5752,27 +5761,27 @@ func (p *Plugin) OutputState(req OutputStateRequest) (*OutputStateResponse, erro
 }
 
 // OverlayClear remove the caller's overlay of that id.
-func (p *Plugin) OverlayClear(req OverlayClearRequest) (bool, error) {
+func (m Methods) OverlayClear(req OverlayClearRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodOverlayClear, &req, &result)
+	err := m.c.Call(MethodOverlayClear, &req, &result)
 	return result.Ok, err
 }
 
 // OverlayShow draw shapes over the screen (outlines, fills, circles, a countdown ring; never text), replacing the caller's overlay of that id.
-func (p *Plugin) OverlayShow(req OverlayShowRequest) (bool, error) {
+func (m Methods) OverlayShow(req OverlayShowRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
 	}
-	err := p.Call(MethodOverlayShow, &req, &result)
+	err := m.c.Call(MethodOverlayShow, &req, &result)
 	return result.Ok, err
 }
 
 // OverridesApply add, remove, restore, patch, rename, revert (reset one entry to its plugin default), or reset user overrides for a collection.
-func (p *Plugin) OverridesApply(req OverridesApplyRequest) (*OverridesApplyResponse, error) {
+func (m Methods) OverridesApply(req OverridesApplyRequest) (*OverridesApplyResponse, error) {
 	var result OverridesApplyResponse
-	err := p.Call(MethodOverridesApply, &req, &result)
+	err := m.c.Call(MethodOverridesApply, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5780,11 +5789,11 @@ func (p *Plugin) OverridesApply(req OverridesApplyRequest) (*OverridesApplyRespo
 }
 
 // OverridesList list overlay entries — a plugin sees which collections carry its annotations (including dangling ids to prune); the host sees every tenant.
-func (p *Plugin) OverridesList() ([]OverlayRow, error) {
+func (m Methods) OverridesList() ([]OverlayRow, error) {
 	var result struct {
 		Overlays []OverlayRow `json:"overlays"`
 	}
-	err := p.Call(MethodOverridesList, nil, &result)
+	err := m.c.Call(MethodOverridesList, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5792,9 +5801,9 @@ func (p *Plugin) OverridesList() ([]OverlayRow, error) {
 }
 
 // PipelinesAudioLevel how loud the captured audio is, now and at its loudest since a moment you name (dBFS) — tells a working microphone from a silent one.
-func (p *Plugin) PipelinesAudioLevel(req PipelinesAudioLevelRequest) (*PipelinesAudioLevelResponse, error) {
+func (m Methods) PipelinesAudioLevel(req PipelinesAudioLevelRequest) (*PipelinesAudioLevelResponse, error) {
 	var result PipelinesAudioLevelResponse
-	err := p.Call(MethodPipelinesAudioLevel, &req, &result)
+	err := m.c.Call(MethodPipelinesAudioLevel, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5802,9 +5811,9 @@ func (p *Plugin) PipelinesAudioLevel(req PipelinesAudioLevelRequest) (*Pipelines
 }
 
 // PipelinesGrammar get the current command grammar word list — or, with full=true, the complete vocabulary_update seed payload (words, narrow_to, weights, DAG).
-func (p *Plugin) PipelinesGrammar(req PipelinesGrammarRequest) (*PipelinesGrammarResponse, error) {
+func (m Methods) PipelinesGrammar(req PipelinesGrammarRequest) (*PipelinesGrammarResponse, error) {
 	var result PipelinesGrammarResponse
-	err := p.Call(MethodPipelinesGrammar, &req, &result)
+	err := m.c.Call(MethodPipelinesGrammar, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5812,9 +5821,9 @@ func (p *Plugin) PipelinesGrammar(req PipelinesGrammarRequest) (*PipelinesGramma
 }
 
 // PipelinesInject send a custom configuration event to one stage of a running pipeline.
-func (p *Plugin) PipelinesInject(req PipelinesInjectRequest) (*PipelinesInjectResponse, error) {
+func (m Methods) PipelinesInject(req PipelinesInjectRequest) (*PipelinesInjectResponse, error) {
 	var result PipelinesInjectResponse
-	err := p.Call(MethodPipelinesInject, &req, &result)
+	err := m.c.Call(MethodPipelinesInject, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5822,9 +5831,9 @@ func (p *Plugin) PipelinesInject(req PipelinesInjectRequest) (*PipelinesInjectRe
 }
 
 // PipelinesRun start a named pipeline.
-func (p *Plugin) PipelinesRun(req PipelinesRunRequest) (*PipelinesRunResponse, error) {
+func (m Methods) PipelinesRun(req PipelinesRunRequest) (*PipelinesRunResponse, error) {
 	var result PipelinesRunResponse
-	err := p.Call(MethodPipelinesRun, &req, &result)
+	err := m.c.Call(MethodPipelinesRun, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5832,9 +5841,9 @@ func (p *Plugin) PipelinesRun(req PipelinesRunRequest) (*PipelinesRunResponse, e
 }
 
 // PipelinesStatus list currently running pipelines.
-func (p *Plugin) PipelinesStatus() (*PipelinesStatusResponse, error) {
+func (m Methods) PipelinesStatus() (*PipelinesStatusResponse, error) {
 	var result PipelinesStatusResponse
-	err := p.Call(MethodPipelinesStatus, nil, &result)
+	err := m.c.Call(MethodPipelinesStatus, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5842,9 +5851,9 @@ func (p *Plugin) PipelinesStatus() (*PipelinesStatusResponse, error) {
 }
 
 // PipelinesStop stop a running pipeline by name.
-func (p *Plugin) PipelinesStop(req PipelinesStopRequest) (*PipelinesStopResponse, error) {
+func (m Methods) PipelinesStop(req PipelinesStopRequest) (*PipelinesStopResponse, error) {
 	var result PipelinesStopResponse
-	err := p.Call(MethodPipelinesStop, &req, &result)
+	err := m.c.Call(MethodPipelinesStop, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5852,9 +5861,9 @@ func (p *Plugin) PipelinesStop(req PipelinesStopRequest) (*PipelinesStopResponse
 }
 
 // PipelinesWarm pre-spawn + pre-load a pipeline's recognizer stages (grammar built off the hold path).
-func (p *Plugin) PipelinesWarm(req PipelinesWarmRequest) (*PipelinesWarmResponse, error) {
+func (m Methods) PipelinesWarm(req PipelinesWarmRequest) (*PipelinesWarmResponse, error) {
 	var result PipelinesWarmResponse
-	err := p.Call(MethodPipelinesWarm, &req, &result)
+	err := m.c.Call(MethodPipelinesWarm, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5862,9 +5871,9 @@ func (p *Plugin) PipelinesWarm(req PipelinesWarmRequest) (*PipelinesWarmResponse
 }
 
 // PlatformProfile which operations and host events this machine cannot provide, and why — ask before calling instead of handling a refusal.
-func (p *Plugin) PlatformProfile() (*PlatformProfileResponse, error) {
+func (m Methods) PlatformProfile() (*PlatformProfileResponse, error) {
 	var result PlatformProfileResponse
-	err := p.Call(MethodPlatformProfile, nil, &result)
+	err := m.c.Call(MethodPlatformProfile, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5872,9 +5881,9 @@ func (p *Plugin) PlatformProfile() (*PlatformProfileResponse, error) {
 }
 
 // PluginDataExport copy one file out of the caller's own data dir into Downloads and reveal it (the one egress a plugin cannot perform itself).
-func (p *Plugin) PluginDataExport(req PluginDataExportRequest) (*PluginDataExportResponse, error) {
+func (m Methods) PluginDataExport(req PluginDataExportRequest) (*PluginDataExportResponse, error) {
 	var result PluginDataExportResponse
-	err := p.Call(MethodPluginDataExport, &req, &result)
+	err := m.c.Call(MethodPluginDataExport, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5882,24 +5891,24 @@ func (p *Plugin) PluginDataExport(req PluginDataExportRequest) (*PluginDataExpor
 }
 
 // PluginDebug write a diagnostic line to this plugin's per-plugin log file. Use shared.Logf instead for cross-cutting coordination lines that belong in branchkit.log..
-func (p *Plugin) PluginDebug(req PluginDebugRequest) error {
-	return p.Call(MethodPluginDebug, &req, nil)
+func (m Methods) PluginDebug(req PluginDebugRequest) error {
+	return m.c.Call(MethodPluginDebug, &req, nil)
 }
 
 // PluginReportHealth report whether this plugin can do its job. For a standing condition the platform cannot see from outside — a companion app disconnected, a device unplugged — not for a call that failed once..
-func (p *Plugin) PluginReportHealth(req PluginReportHealthRequest) error {
-	return p.Call(MethodPluginReportHealth, &req, nil)
+func (m Methods) PluginReportHealth(req PluginReportHealthRequest) error {
+	return m.c.Call(MethodPluginReportHealth, &req, nil)
 }
 
 // PluginReportSetup report where one of this plugin's Setup steps stands — done, needs the person, or in progress — with one line of summary shown while it is folded. Only steps the plugin declared in implements.setup_steps..
-func (p *Plugin) PluginReportSetup(req PluginReportSetupRequest) error {
-	return p.Call(MethodPluginReportSetup, &req, nil)
+func (m Methods) PluginReportSetup(req PluginReportSetupRequest) error {
+	return m.c.Call(MethodPluginReportSetup, &req, nil)
 }
 
 // PrivacyGetRecording read the effective recording flag for a log-kind collection (privacy control plane).
-func (p *Plugin) PrivacyGetRecording(req PrivacyGetRecordingRequest) (*PrivacyGetRecordingResponse, error) {
+func (m Methods) PrivacyGetRecording(req PrivacyGetRecordingRequest) (*PrivacyGetRecordingResponse, error) {
 	var result PrivacyGetRecordingResponse
-	err := p.Call(MethodPrivacyGetRecording, &req, &result)
+	err := m.c.Call(MethodPrivacyGetRecording, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5907,16 +5916,16 @@ func (p *Plugin) PrivacyGetRecording(req PrivacyGetRecordingRequest) (*PrivacyGe
 }
 
 // PrivacySetRecording toggle the recording flag on a log-kind collection (privacy control plane).
-func (p *Plugin) PrivacySetRecording(req PrivacySetRecordingRequest) error {
-	return p.Call(MethodPrivacySetRecording, &req, nil)
+func (m Methods) PrivacySetRecording(req PrivacySetRecordingRequest) error {
+	return m.c.Call(MethodPrivacySetRecording, &req, nil)
 }
 
 // PrivilegesList the caller's own declared privileges with live granted/pending/denied state.
-func (p *Plugin) PrivilegesList() ([]PrivilegeStatusEntry, error) {
+func (m Methods) PrivilegesList() ([]PrivilegeStatusEntry, error) {
 	var result struct {
 		Privileges []PrivilegeStatusEntry `json:"privileges"`
 	}
-	err := p.Call(MethodPrivilegesList, nil, &result)
+	err := m.c.Call(MethodPrivilegesList, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5924,9 +5933,9 @@ func (p *Plugin) PrivilegesList() ([]PrivilegeStatusEntry, error) {
 }
 
 // PrivilegesRelinquish give back one of the caller's optional privileges: returns a live grant and/or withdraws a pending request; de-escalation, no consent needed.
-func (p *Plugin) PrivilegesRelinquish(req PrivilegesRelinquishRequest) (*PrivilegesRelinquishResponse, error) {
+func (m Methods) PrivilegesRelinquish(req PrivilegesRelinquishRequest) (*PrivilegesRelinquishResponse, error) {
 	var result PrivilegesRelinquishResponse
-	err := p.Call(MethodPrivilegesRelinquish, &req, &result)
+	err := m.c.Call(MethodPrivilegesRelinquish, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5934,9 +5943,9 @@ func (p *Plugin) PrivilegesRelinquish(req PrivilegesRelinquishRequest) (*Privile
 }
 
 // PrivilegesRequest request one of the caller's declared optional privileges; lands as an Approve/Dismiss to-do on the Plugins page.
-func (p *Plugin) PrivilegesRequest(req PrivilegesRequestRequest) (*PrivilegesRequestResponse, error) {
+func (m Methods) PrivilegesRequest(req PrivilegesRequestRequest) (*PrivilegesRequestResponse, error) {
 	var result PrivilegesRequestResponse
-	err := p.Call(MethodPrivilegesRequest, &req, &result)
+	err := m.c.Call(MethodPrivilegesRequest, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5944,9 +5953,9 @@ func (p *Plugin) PrivilegesRequest(req PrivilegesRequestRequest) (*PrivilegesReq
 }
 
 // RecognitionBiasApply apply a calibration-measured strength to the never-standalone recognition bias (provenance: calibration); refuses over a manually-set value unless force.
-func (p *Plugin) RecognitionBiasApply(req RecognitionBiasApplyRequest) (*RecognitionBiasApplyResponse, error) {
+func (m Methods) RecognitionBiasApply(req RecognitionBiasApplyRequest) (*RecognitionBiasApplyResponse, error) {
 	var result RecognitionBiasApplyResponse
-	err := p.Call(MethodRecognitionBiasApply, &req, &result)
+	err := m.c.Call(MethodRecognitionBiasApply, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5954,9 +5963,9 @@ func (p *Plugin) RecognitionBiasApply(req RecognitionBiasApplyRequest) (*Recogni
 }
 
 // RecognitionBiasGet read the never-standalone recognition bias (enabled, strength, provenance).
-func (p *Plugin) RecognitionBiasGet() (*RecognitionBiasGetResponse, error) {
+func (m Methods) RecognitionBiasGet() (*RecognitionBiasGetResponse, error) {
 	var result RecognitionBiasGetResponse
-	err := p.Call(MethodRecognitionBiasGet, nil, &result)
+	err := m.c.Call(MethodRecognitionBiasGet, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5964,9 +5973,9 @@ func (p *Plugin) RecognitionBiasGet() (*RecognitionBiasGetResponse, error) {
 }
 
 // RecognitionBiasSet manually set the never-standalone recognition bias (provenance: manual); the write path behind the Recordings tab's control.
-func (p *Plugin) RecognitionBiasSet(req RecognitionBiasSetRequest) (*RecognitionBiasSetResponse, error) {
+func (m Methods) RecognitionBiasSet(req RecognitionBiasSetRequest) (*RecognitionBiasSetResponse, error) {
 	var result RecognitionBiasSetResponse
-	err := p.Call(MethodRecognitionBiasSet, &req, &result)
+	err := m.c.Call(MethodRecognitionBiasSet, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5974,9 +5983,9 @@ func (p *Plugin) RecognitionBiasSet(req RecognitionBiasSetRequest) (*Recognition
 }
 
 // RecognitionRedecode re-decode the caller's own captured audio through a registered recognizer stage against the LIVE grammar (the fragility ladder) — the platform runs it because the grammar is platform state and plugins cannot exec.
-func (p *Plugin) RecognitionRedecode(req RecognitionRedecodeRequest) (*RecognitionRedecodeResponse, error) {
+func (m Methods) RecognitionRedecode(req RecognitionRedecodeRequest) (*RecognitionRedecodeResponse, error) {
 	var result RecognitionRedecodeResponse
-	err := p.Call(MethodRecognitionRedecode, &req, &result)
+	err := m.c.Call(MethodRecognitionRedecode, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5984,9 +5993,9 @@ func (p *Plugin) RecognitionRedecode(req RecognitionRedecodeRequest) (*Recogniti
 }
 
 // SecretsDelete remove a stored credential. Deleting a name that was never set is not an error.
-func (p *Plugin) SecretsDelete(req SecretsDeleteRequest) (*SecretsDeleteResponse, error) {
+func (m Methods) SecretsDelete(req SecretsDeleteRequest) (*SecretsDeleteResponse, error) {
 	var result SecretsDeleteResponse
-	err := p.Call(MethodSecretsDelete, &req, &result)
+	err := m.c.Call(MethodSecretsDelete, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -5994,9 +6003,9 @@ func (p *Plugin) SecretsDelete(req SecretsDeleteRequest) (*SecretsDeleteResponse
 }
 
 // SecretsIsSet whether this plugin has stored a credential under this name. The only question askable about a value that cannot be read.
-func (p *Plugin) SecretsIsSet(req SecretsIsSetRequest) (*SecretsIsSetResponse, error) {
+func (m Methods) SecretsIsSet(req SecretsIsSetRequest) (*SecretsIsSetResponse, error) {
 	var result SecretsIsSetResponse
-	err := p.Call(MethodSecretsIsSet, &req, &result)
+	err := m.c.Call(MethodSecretsIsSet, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -6004,9 +6013,9 @@ func (p *Plugin) SecretsIsSet(req SecretsIsSetRequest) (*SecretsIsSetResponse, e
 }
 
 // SecretsList the credential names this plugin has stored, and how they are protected on this machine.
-func (p *Plugin) SecretsList() (*SecretsListResponse, error) {
+func (m Methods) SecretsList() (*SecretsListResponse, error) {
 	var result SecretsListResponse
-	err := p.Call(MethodSecretsList, nil, &result)
+	err := m.c.Call(MethodSecretsList, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -6014,9 +6023,9 @@ func (p *Plugin) SecretsList() (*SecretsListResponse, error) {
 }
 
 // SecretsRequestSlot ask for a credential row on this plugin's Settings page: the user pastes the value straight into the store, bound to one host this plugin can reach. The plugin never sees the value.
-func (p *Plugin) SecretsRequestSlot(req SecretsRequestSlotRequest) (*SecretsRequestSlotResponse, error) {
+func (m Methods) SecretsRequestSlot(req SecretsRequestSlotRequest) (*SecretsRequestSlotResponse, error) {
 	var result SecretsRequestSlotResponse
-	err := p.Call(MethodSecretsRequestSlot, &req, &result)
+	err := m.c.Call(MethodSecretsRequestSlot, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -6024,9 +6033,9 @@ func (p *Plugin) SecretsRequestSlot(req SecretsRequestSlotRequest) (*SecretsRequ
 }
 
 // SecretsSet store a credential for this plugin. Values are encrypted and can never be read back over the wire.
-func (p *Plugin) SecretsSet(req SecretsSetRequest) (*SecretsSetResponse, error) {
+func (m Methods) SecretsSet(req SecretsSetRequest) (*SecretsSetResponse, error) {
 	var result SecretsSetResponse
-	err := p.Call(MethodSecretsSet, &req, &result)
+	err := m.c.Call(MethodSecretsSet, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -6034,9 +6043,9 @@ func (p *Plugin) SecretsSet(req SecretsSetRequest) (*SecretsSetResponse, error) 
 }
 
 // SelectionPick resolve a selection pick by index — clears selection state, emits event, closes HUD.
-func (p *Plugin) SelectionPick(req SelectionPickRequest) (*SelectionPickResponse, error) {
+func (m Methods) SelectionPick(req SelectionPickRequest) (*SelectionPickResponse, error) {
 	var result SelectionPickResponse
-	err := p.Call(MethodSelectionPick, &req, &result)
+	err := m.c.Call(MethodSelectionPick, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -6044,19 +6053,19 @@ func (p *Plugin) SelectionPick(req SelectionPickRequest) (*SelectionPickResponse
 }
 
 // SelectionSet show the selection HUD with items for the user to pick from.
-func (p *Plugin) SelectionSet(req SelectionSetRequest) error {
-	return p.Call(MethodSelectionSet, &req, nil)
+func (m Methods) SelectionSet(req SelectionSetRequest) error {
+	return m.c.Call(MethodSelectionSet, &req, nil)
 }
 
 // SessionBoundary emit _platform.input.session_boundary at actual session boundaries.
-func (p *Plugin) SessionBoundary() error {
-	return p.Call(MethodSessionBoundary, nil, nil)
+func (m Methods) SessionBoundary() error {
+	return m.c.Call(MethodSessionBoundary, nil, nil)
 }
 
 // SessionEndCleanup tear down input-session HUD/tag state and emit session_ended event.
-func (p *Plugin) SessionEndCleanup() (*SessionEndCleanupResponse, error) {
+func (m Methods) SessionEndCleanup() (*SessionEndCleanupResponse, error) {
 	var result SessionEndCleanupResponse
-	err := p.Call(MethodSessionEndCleanup, nil, &result)
+	err := m.c.Call(MethodSessionEndCleanup, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -6064,24 +6073,24 @@ func (p *Plugin) SessionEndCleanup() (*SessionEndCleanupResponse, error) {
 }
 
 // SettingsPatchSignals push Datastar signal patches to the calling plugin's active settings SSE streams.
-func (p *Plugin) SettingsPatchSignals(req SettingsPatchSignalsRequest) error {
-	return p.Call(MethodSettingsPatchSignals, &req, nil)
+func (m Methods) SettingsPatchSignals(req SettingsPatchSignalsRequest) error {
+	return m.c.Call(MethodSettingsPatchSignals, &req, nil)
 }
 
 // SettingsRedirect navigate the settings UI to a tab declared by the calling plugin.
-func (p *Plugin) SettingsRedirect(req SettingsRedirectRequest) error {
-	return p.Call(MethodSettingsRedirect, &req, nil)
+func (m Methods) SettingsRedirect(req SettingsRedirectRequest) error {
+	return m.c.Call(MethodSettingsRedirect, &req, nil)
 }
 
 // SettingsRefresh trigger a full re-render of all active settings SSE streams.
-func (p *Plugin) SettingsRefresh() error {
-	return p.Call(MethodSettingsRefresh, nil, nil)
+func (m Methods) SettingsRefresh() error {
+	return m.c.Call(MethodSettingsRefresh, nil, nil)
 }
 
 // SettingsRulesCreate create a new user voice command from settings-UI signals.
-func (p *Plugin) SettingsRulesCreate(req SettingsRulesCreateRequest) (*SettingsRulesCreateResponse, error) {
+func (m Methods) SettingsRulesCreate(req SettingsRulesCreateRequest) (*SettingsRulesCreateResponse, error) {
 	var result SettingsRulesCreateResponse
-	err := p.Call(MethodSettingsRulesCreate, &req, &result)
+	err := m.c.Call(MethodSettingsRulesCreate, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -6089,9 +6098,9 @@ func (p *Plugin) SettingsRulesCreate(req SettingsRulesCreateRequest) (*SettingsR
 }
 
 // SettingsRulesUpdate update an existing user voice command from settings-UI signals.
-func (p *Plugin) SettingsRulesUpdate(req SettingsRulesUpdateRequest) (*SettingsRulesUpdateResponse, error) {
+func (m Methods) SettingsRulesUpdate(req SettingsRulesUpdateRequest) (*SettingsRulesUpdateResponse, error) {
 	var result SettingsRulesUpdateResponse
-	err := p.Call(MethodSettingsRulesUpdate, &req, &result)
+	err := m.c.Call(MethodSettingsRulesUpdate, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -6099,16 +6108,16 @@ func (p *Plugin) SettingsRulesUpdate(req SettingsRulesUpdateRequest) (*SettingsR
 }
 
 // SpeechAnnounce post a VoiceOver announcement (spoken in the person's VoiceOver voice when VoiceOver is running; ignored otherwise).
-func (p *Plugin) SpeechAnnounce(req SpeechAnnounceRequest) error {
-	return p.Call(MethodSpeechAnnounce, &req, nil)
+func (m Methods) SpeechAnnounce(req SpeechAnnounceRequest) error {
+	return m.c.Call(MethodSpeechAnnounce, &req, nil)
 }
 
 // SpeechEngines list the speech engines `speech.say` can speak through, and the voices each offers; naming one starts it and waits for its voices.
-func (p *Plugin) SpeechEngines(req SpeechEnginesRequest) ([]SpeechEngineInfo, error) {
+func (m Methods) SpeechEngines(req SpeechEnginesRequest) ([]SpeechEngineInfo, error) {
 	var result struct {
 		Engines []SpeechEngineInfo `json:"engines"`
 	}
-	err := p.Call(MethodSpeechEngines, &req, &result)
+	err := m.c.Call(MethodSpeechEngines, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -6116,14 +6125,14 @@ func (p *Plugin) SpeechEngines(req SpeechEnginesRequest) ([]SpeechEngineInfo, er
 }
 
 // SpeechRestartEngine stop a speech engine the caller ships so its next utterance starts it afresh (a new model chosen).
-func (p *Plugin) SpeechRestartEngine(req SpeechRestartEngineRequest) error {
-	return p.Call(MethodSpeechRestartEngine, &req, nil)
+func (m Methods) SpeechRestartEngine(req SpeechRestartEngineRequest) error {
+	return m.c.Call(MethodSpeechRestartEngine, &req, nil)
 }
 
 // SpeechSay speak words through the system voice or a speech engine stage (a primitive: the platform makes the sound and reports the span for echo suppression; what to say is the caller's policy).
-func (p *Plugin) SpeechSay(req SpeechSayRequest) (*SpeechSayResponse, error) {
+func (m Methods) SpeechSay(req SpeechSayRequest) (*SpeechSayResponse, error) {
 	var result SpeechSayResponse
-	err := p.Call(MethodSpeechSay, &req, &result)
+	err := m.c.Call(MethodSpeechSay, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -6131,14 +6140,14 @@ func (p *Plugin) SpeechSay(req SpeechSayRequest) (*SpeechSayResponse, error) {
 }
 
 // SpeechStop stop the system voice now and drop anything queued behind it.
-func (p *Plugin) SpeechStop() error {
-	return p.Call(MethodSpeechStop, nil, nil)
+func (m Methods) SpeechStop() error {
+	return m.c.Call(MethodSpeechStop, nil, nil)
 }
 
 // StagesRequest ask a request stage the caller ships for one answer.
-func (p *Plugin) StagesRequest(req StagesRequestRequest) (*StagesRequestResponse, error) {
+func (m Methods) StagesRequest(req StagesRequestRequest) (*StagesRequestResponse, error) {
 	var result StagesRequestResponse
-	err := p.Call(MethodStagesRequest, &req, &result)
+	err := m.c.Call(MethodStagesRequest, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -6146,24 +6155,24 @@ func (p *Plugin) StagesRequest(req StagesRequestRequest) (*StagesRequestResponse
 }
 
 // SystemLaunchApp launch an app and post a 'Launching' notification to the HUD.
-func (p *Plugin) SystemLaunchApp(req SystemLaunchAppRequest) error {
-	return p.Call(MethodSystemLaunchApp, &req, nil)
+func (m Methods) SystemLaunchApp(req SystemLaunchAppRequest) error {
+	return m.c.Call(MethodSystemLaunchApp, &req, nil)
 }
 
 // SystemNotify show a HUD notification with title and body text.
-func (p *Plugin) SystemNotify(req SystemNotifyRequest) error {
-	return p.Call(MethodSystemNotify, &req, nil)
+func (m Methods) SystemNotify(req SystemNotifyRequest) error {
+	return m.c.Call(MethodSystemNotify, &req, nil)
 }
 
 // SystemRunShell start a shell command via /bin/bash -c, run by the platform outside any plugin sandbox (security-sensitive; not on Windows).
-func (p *Plugin) SystemRunShell(req SystemRunShellRequest) error {
-	return p.Call(MethodSystemRunShell, &req, nil)
+func (m Methods) SystemRunShell(req SystemRunShellRequest) error {
+	return m.c.Call(MethodSystemRunShell, &req, nil)
 }
 
 // TrialBegin open a calibration trial — writes _platform.calibration.active, returns a trial_id.
-func (p *Plugin) TrialBegin() (*TrialBeginResponse, error) {
+func (m Methods) TrialBegin() (*TrialBeginResponse, error) {
 	var result TrialBeginResponse
-	err := p.Call(MethodTrialBegin, nil, &result)
+	err := m.c.Call(MethodTrialBegin, nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -6171,9 +6180,9 @@ func (p *Plugin) TrialBegin() (*TrialBeginResponse, error) {
 }
 
 // TrialEnd close a calibration trial — clears the tag and spawns release RPCs to fixture owners.
-func (p *Plugin) TrialEnd(req TrialEndRequest) (*TrialEndResponse, error) {
+func (m Methods) TrialEnd(req TrialEndRequest) (*TrialEndResponse, error) {
 	var result TrialEndResponse
-	err := p.Call(MethodTrialEnd, &req, &result)
+	err := m.c.Call(MethodTrialEnd, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -6181,9 +6190,9 @@ func (p *Plugin) TrialEnd(req TrialEndRequest) (*TrialEndResponse, error) {
 }
 
 // TrialEnterContext enter a command's context for a trial — writes mode-gated requires_tags (platform write) or forwards trial_apply_fixture to a dynamic command's owner — and returns the entered context (kind + tags + fixture_handle).
-func (p *Plugin) TrialEnterContext(req TrialEnterContextRequest) (*TrialEnterContextResponse, error) {
+func (m Methods) TrialEnterContext(req TrialEnterContextRequest) (*TrialEnterContextResponse, error) {
 	var result TrialEnterContextResponse
-	err := p.Call(MethodTrialEnterContext, &req, &result)
+	err := m.c.Call(MethodTrialEnterContext, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -6191,16 +6200,16 @@ func (p *Plugin) TrialEnterContext(req TrialEnterContextRequest) (*TrialEnterCon
 }
 
 // TrialRegisterFixture register a fixture handle under an open trial so trial_end can release it.
-func (p *Plugin) TrialRegisterFixture(req TrialRegisterFixtureRequest) error {
-	return p.Call(MethodTrialRegisterFixture, &req, nil)
+func (m Methods) TrialRegisterFixture(req TrialRegisterFixtureRequest) error {
+	return m.c.Call(MethodTrialRegisterFixture, &req, nil)
 }
 
 // TrialResolveSamples resolve concrete prompt phrases for a command whose vocabulary the caller can't derive — forwards trial_samples to a dynamic command's owner (empty when the owner doesn't implement the optional hook; the host then falls back to its own default)..
-func (p *Plugin) TrialResolveSamples(req TrialResolveSamplesRequest) ([]string, error) {
+func (m Methods) TrialResolveSamples(req TrialResolveSamplesRequest) ([]string, error) {
 	var result struct {
 		Prompts []string `json:"prompts"`
 	}
-	err := p.Call(MethodTrialResolveSamples, &req, &result)
+	err := m.c.Call(MethodTrialResolveSamples, &req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -6208,16 +6217,16 @@ func (p *Plugin) TrialResolveSamples(req TrialResolveSamplesRequest) ([]string, 
 }
 
 // VocabularyCommit commit pending vocabulary additions to the recognition pipeline.
-func (p *Plugin) VocabularyCommit() error {
-	return p.Call(MethodVocabularyCommit, nil, nil)
+func (m Methods) VocabularyCommit() error {
+	return m.c.Call(MethodVocabularyCommit, nil, nil)
 }
 
 // WiringDescribe describe the resolved collection graph as the caller can see it.
-func (p *Plugin) WiringDescribe() ([]WiringCollection, error) {
+func (m Methods) WiringDescribe() ([]WiringCollection, error) {
 	var result struct {
 		Collections []WiringCollection `json:"collections"`
 	}
-	err := p.Call(MethodWiringDescribe, nil, &result)
+	err := m.c.Call(MethodWiringDescribe, nil, &result)
 	if err != nil {
 		return nil, err
 	}

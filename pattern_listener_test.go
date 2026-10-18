@@ -40,6 +40,7 @@ func TestOnPatternDeliversWithTheConcreteEventType(t *testing.T) {
 		handlers:  map[string]HandlerFunc{},
 		listeners: map[string][]ListenerFunc{},
 	}
+	p.Methods = NewMethods(p)
 	var seen []string
 	p.OnPattern("scripts.*.*", func(eventType string, _ json.RawMessage) {
 		seen = append(seen, eventType)
@@ -69,6 +70,7 @@ func TestOnPatternGlobstarDeliversAtAnyDepth(t *testing.T) {
 		handlers:  map[string]HandlerFunc{},
 		listeners: map[string][]ListenerFunc{},
 	}
+	p.Methods = NewMethods(p)
 	var seen []string
 	p.OnPattern("ext.acme.**", func(eventType string, _ json.RawMessage) {
 		seen = append(seen, eventType)
@@ -90,6 +92,7 @@ func TestExactListenersRunBeforePatternListeners(t *testing.T) {
 		handlers:  map[string]HandlerFunc{},
 		listeners: map[string][]ListenerFunc{},
 	}
+	p.Methods = NewMethods(p)
 	var order []string
 	p.On("scripts.headphones.charged", func(_ json.RawMessage) { order = append(order, "exact") })
 	p.OnPattern("scripts.*.*", func(_ string, _ json.RawMessage) { order = append(order, "pattern") })
@@ -108,6 +111,7 @@ func TestPatternListenerPanicIsContained(t *testing.T) {
 		handlers:  map[string]HandlerFunc{},
 		listeners: map[string][]ListenerFunc{},
 	}
+	p.Methods = NewMethods(p)
 	reached := false
 	p.OnPattern("scripts.*.*", func(_ string, _ json.RawMessage) { panic("boom") })
 	p.OnPattern("scripts.*.*", func(_ string, _ json.RawMessage) { reached = true })

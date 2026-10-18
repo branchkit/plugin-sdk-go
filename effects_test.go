@@ -22,6 +22,7 @@ func displacedPlugin(t *testing.T, self string) (*Plugin, *[]EffectDisplacedEven
 		listeners: map[string][]ListenerFunc{},
 		pluginID:  self,
 	}
+	p.Methods = NewMethods(p)
 	var seen []EffectDisplacedEventParams
 	p.OnEffectDisplaced(func(evt EffectDisplacedEventParams) {
 		seen = append(seen, evt)

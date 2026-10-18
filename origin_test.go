@@ -14,6 +14,7 @@ func TestListenersReadTheEventOrigin(t *testing.T) {
 		handlers:  map[string]HandlerFunc{},
 		listeners: map[string][]ListenerFunc{},
 	}
+	p.Methods = NewMethods(p)
 	var exact, patterned []EventOrigin
 	p.On("scripts.headphones.charged", func(json.RawMessage) {
 		exact = append(exact, p.CurrentEventOrigin())

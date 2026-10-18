@@ -189,6 +189,10 @@ func (q *notifyQueue) close() {
 // Registering after Run() is safe (the bookkeeping maps are mutex-guarded) but
 // may miss notifications already drained.
 type Plugin struct {
+	// Methods is the generated typed wrappers (methods_gen.go), over this
+	// Plugin as their Caller: p.CollectionGet(req) is p.Methods.CollectionGet.
+	Methods
+
 	pluginID string
 
 	// stdin/stdout are from the plugin's perspective:
@@ -292,6 +296,7 @@ func NewDetachedPlugin() *Plugin {
 		ready:     make(chan struct{}),
 		notifyQ:   newNotifyQueue(),
 	}
+	p.Methods = NewMethods(p)
 	p.closeOnce.Do(func() { close(p.closed) })
 	return p
 }
@@ -318,6 +323,7 @@ func NewPlugin() *Plugin {
 		ready:     make(chan struct{}),
 		notifyQ:   newNotifyQueue(),
 	}
+	p.Methods = NewMethods(p)
 
 	// Keep the platform profile on_ready carries. Registered before any
 	// plugin listener, so a plugin's own OnReady already sees Platform().

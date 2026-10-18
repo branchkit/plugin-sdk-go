@@ -5,6 +5,19 @@ git history.
 
 ## Unreleased
 
+### Typed wrappers
+
+- The generated wrappers are methods of a generated `Methods` type over a
+  `Caller` (any type with `Call(method, params, result) error`), and
+  `Plugin` embeds it, so `p.CollectionGet(req)` and every other call site
+  is unchanged. `NewMethods(c)` gives the same wrappers over any Caller,
+  such as a test's fake, with no transport.
+- `p.WithTimeout(d)` returns the wrappers with `d` as each call's timeout,
+  in place of `Call`'s 10 s default. Before, only a raw `CallWithTimeout`
+  could wait longer.
+- A `Plugin` built by hand (`&Plugin{...}`, inside the package) must set
+  `p.Methods = NewMethods(p)`; `NewPlugin` and `NewDetachedPlugin` do.
+
 ### Network
 
 - Over a handed-off proxy channel (`BRANCHKIT_PROXY=fd://N`, Linux), a dial
