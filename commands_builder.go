@@ -151,8 +151,9 @@ func (b *CommandBuilder) SetsOnPartial(tags ...string) *CommandBuilder {
 	return b
 }
 
-// CancelsBridge marks the command as allowed to interrupt an in-progress
-// multi-utterance bridge (cancel-style words like "dismiss").
+// CancelsBridge marks the command as allowed to interrupt a multi-word
+// pattern held part-way through. A command of two or more words interrupts
+// without it; set it on one-word cancel words like "over".
 func (b *CommandBuilder) CancelsBridge() *CommandBuilder {
 	yes := true
 	b.spec.CancelsBridge = &yes
