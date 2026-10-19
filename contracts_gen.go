@@ -11,6 +11,7 @@ const (
 	MethodActionsList                         = "actions.list"                             // since 0.1.0
 	MethodActionsPush                         = "actions.push"                             // since 0.2.0
 	MethodArtifactDelete                      = "artifact.delete"                          // since 0.1.0
+	MethodArtifactDownload                    = "artifact.download"                        // since 0.1.0
 	MethodBindingsPropose                     = "bindings.propose"                         // since 0.1.0
 	MethodBindingsReport                      = "bindings.report"                          // since 0.1.0
 	MethodBindingsSet                         = "bindings.set"                             // since 0.1.0
@@ -60,6 +61,7 @@ const (
 	MethodHudRemoveChannel                    = "hud.remove_channel"                       // since 0.1.0
 	MethodHudSetSize                          = "hud.set_size"                             // since 0.1.0
 	MethodHudShow                             = "hud.show"                                 // since 0.1.0
+	MethodIndicatorSet                        = "indicator.set"                            // since 0.1.0
 	MethodInputClick                          = "input.click"                              // since 0.1.0
 	MethodInputClipboardAction                = "input.clipboard_action"                   // since 0.1.0
 	MethodInputClipboardHistory               = "input.clipboard_history"                  // since 0.1.0

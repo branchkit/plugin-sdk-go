@@ -42,6 +42,11 @@ func (m Methods) ArtifactDelete(req ArtifactDeleteRequest) error {
 	return m.c.Call(MethodArtifactDelete, &req, nil)
 }
 
+// ArtifactDownload download one of the caller's own declared artifacts (ref: <plugin>/<artifact>) on the platform's downloader; progress is published to _platform.model_download.
+func (m Methods) ArtifactDownload(req ArtifactDownloadRequest) error {
+	return m.c.Call(MethodArtifactDownload, &req, nil)
+}
+
 // BindingsPropose propose settings for the caller's own device triggers; the user answers in BranchKit's own window, and the settings become theirs.
 func (m Methods) BindingsPropose(req BindingsProposeRequest) (*BindingsProposeResponse, error) {
 	var result BindingsProposeResponse
@@ -476,6 +481,11 @@ func (m Methods) HUDSetSize(req HUDSetSizeRequest) error {
 // HUDShow show a HUD channel's window.
 func (m Methods) HUDShow(req HUDShowRequest) error {
 	return m.c.Call(MethodHudShow, &req, nil)
+}
+
+// IndicatorSet show what input is doing on the recording indicator (menu bar or tray icon, and the floating pill): idle, capturing text or an action, listening, asleep, processing, speaking or loading.
+func (m Methods) IndicatorSet(req IndicatorSetRequest) error {
+	return m.c.Call(MethodIndicatorSet, &req, nil)
 }
 
 // InputClick click a mouse button.

@@ -1161,6 +1161,21 @@ type HudFragment struct {
 	TargetID string `json:"target_id"`
 }
 
+// IndicatorState is auto-generated from the OpenRPC spec.
+// What the indicator shows.
+type IndicatorState string
+
+const (
+	IndicatorStateIdle        IndicatorState = "idle"
+	IndicatorStateInputText   IndicatorState = "input_text"
+	IndicatorStateInputAction IndicatorState = "input_action"
+	IndicatorStateListening   IndicatorState = "listening"
+	IndicatorStateStandby     IndicatorState = "standby"
+	IndicatorStateProcessing  IndicatorState = "processing"
+	IndicatorStateSpeaking    IndicatorState = "speaking"
+	IndicatorStateLoading     IndicatorState = "loading"
+)
+
 // InputSource is auto-generated from the OpenRPC spec.
 // An available keyboard input source.
 type InputSource struct {
@@ -2555,6 +2570,12 @@ type ArtifactDeleteRequest struct {
 	Ref string `json:"ref"`
 }
 
+// ArtifactDownloadRequest is the request type for artifact.download.
+type ArtifactDownloadRequest struct {
+	// non-empty
+	Ref string `json:"ref"`
+}
+
 // BindingsProposeRequest is the request type for bindings.propose.
 type BindingsProposeRequest struct {
 	// Settings to propose for the caller's own triggers. Nothing is written
@@ -3559,6 +3580,11 @@ type HUDShowRequest struct {
 	// Swift shell.
 	// non-empty
 	Channel string `json:"channel"`
+}
+
+// IndicatorSetRequest is the request type for indicator.set.
+type IndicatorSetRequest struct {
+	State IndicatorState `json:"state"`
 }
 
 // InputClickRequest is the request type for input.click.
