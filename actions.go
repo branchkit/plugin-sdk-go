@@ -87,7 +87,7 @@ func (r *actionRegistry) dispatch(params json.RawMessage) (any, error) {
 //	})
 //
 // Return value semantics:
-//   - return nil → OnActionResponse{Status: Ok} with no control_message
+//   - return nil → OnActionResponse{Status: Ok}
 //   - return OnActionResponse → returned verbatim
 //   - return any other value → marshaled as the JSON-RPC result (caller decides shape)
 //   - return error → translated to a JSON-RPC error response

@@ -378,11 +378,6 @@ func (m Methods) CommandsSetOverride(req CommandsSetOverrideRequest) error {
 	return m.c.Call(MethodCommandsSetOverride, &req, nil)
 }
 
-// ControlSignal send a control signal to the Swift shell via the control stream.
-func (m Methods) ControlSignal(req ControlSignalRequest) error {
-	return m.c.Call(MethodControlSignal, &req, nil)
-}
-
 // DiscoveryClosed notify that the discovery HUD closed; emits _platform.discovery.closed.
 func (m Methods) DiscoveryClosed() error {
 	return m.c.Call(MethodDiscoveryClosed, nil, nil)

@@ -46,8 +46,8 @@ func TestHandleActionDispatchesByAction(t *testing.T) {
 		if err := req.UnmarshalParams(&params); err != nil {
 			return nil, err
 		}
-		msg := "snapped " + params.Position
-		return OnActionResponse{Status: OnActionStatusOk, ControlMessage: &msg}, nil
+		msg, _ := json.Marshal("snapped " + params.Position)
+		return OnActionResponse{Status: OnActionStatusOk, Result: msg}, nil
 	})
 
 	p.HandleAction("foo.focus", func(req *OnActionRequest) (any, error) {
@@ -68,8 +68,8 @@ func TestHandleActionDispatchesByAction(t *testing.T) {
 	if got.Status != OnActionStatusOk {
 		t.Fatalf("expected ok, got %s", got.Status)
 	}
-	if got.ControlMessage == nil || *got.ControlMessage != "snapped left" {
-		t.Fatalf("expected control_message=snapped left, got %v", got.ControlMessage)
+	if string(got.Result) != `"snapped left"` {
+		t.Fatalf("expected result=\"snapped left\", got %s", got.Result)
 	}
 	if snapCalls.Load() != 1 {
 		t.Fatalf("expected snap called once, got %d", snapCalls.Load())

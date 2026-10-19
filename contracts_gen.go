@@ -46,7 +46,6 @@ const (
 	MethodCommandsResolve                     = "commands.resolve"                         // since 0.1.0
 	MethodCommandsResolvePhrase               = "commands.resolve_phrase"                  // since 0.1.0
 	MethodCommandsSetOverride                 = "commands.set_override"                    // since 0.1.0
-	MethodControlSignal                       = "control.signal"                           // since 0.1.0
 	MethodDiscoveryClosed                     = "discovery.closed"                         // since 0.1.0
 	MethodDispatch                            = "dispatch"                                 // since 0.1.0
 	MethodEffectsAssert                       = "effects.assert"                           // since 0.1.0

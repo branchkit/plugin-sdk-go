@@ -168,9 +168,8 @@ type TiedCandidate struct {
 // has a Plugin action. Nil when the command has no action or the action is
 // not a Plugin type.
 type ActionResponse struct {
-	Status         string          `json:"status,omitempty"`
-	ControlMessage string          `json:"control_message,omitempty"`
-	Result         json.RawMessage `json:"result,omitempty"`
+	Status string          `json:"status,omitempty"`
+	Result json.RawMessage `json:"result,omitempty"`
 }
 
 // SimulateCommand feeds a phrase to the matching engine, executes the matched

@@ -3292,14 +3292,6 @@ type CommandsSetOverrideRequest struct {
 	NewPattern string `json:"new_pattern"`
 }
 
-// ControlSignalRequest is the request type for control.signal.
-type ControlSignalRequest struct {
-	// Raw control-stream signal string (e.g. "open hud", "hide discovery").
-	// Forwarded verbatim to the Swift shell via the platform's control stream.
-	// non-empty
-	Signal string `json:"signal"`
-}
-
 // DispatchRequest is the request type for dispatch.
 type DispatchRequest struct {
 	// The action to dispatch.
@@ -3308,9 +3300,6 @@ type DispatchRequest struct {
 
 // DispatchResponse is the response type for dispatch.
 type DispatchResponse struct {
-	// Control message to forward to the Swift host (if any).
-	// Present on `status == "ok"`; absent on `status == "error"`.
-	ControlMessage *string `json:"control_message,omitempty"`
 	// Plugin that handled the action. Present on `status == "ok"`.
 	Handler *string `json:"handler,omitempty"`
 	// Error or denial message. Omitted on success.
@@ -8491,9 +8480,6 @@ type SelectionPickRequest struct {
 
 // SelectionPickResponse is the response type for selection.pick.
 type SelectionPickResponse struct {
-	// Control message to forward to the Swift host
-	// (always `"close hud"` here).
-	ControlMessage string `json:"control_message"`
 	// Id of the picked item (from the original `HUDItem.id`).
 	ItemID string `json:"item_id"`
 	Ok     bool   `json:"ok"`
@@ -8521,10 +8507,7 @@ type SelectionSetRequest struct {
 
 // SessionEndCleanupResponse is the response type for session.end_cleanup.
 type SessionEndCleanupResponse struct {
-	// Control message to forward to the Swift host
-	// (e.g. "hide discovery", "hide hud"), if any.
-	ControlMessage *string `json:"control_message,omitempty"`
-	Ok             bool    `json:"ok"`
+	Ok bool `json:"ok"`
 	// Whether the input plugin should reset its recognition engine after
 	// the session ends. Always `true` for `session.end_cleanup`.
 	ResetEngine bool `json:"reset_engine"`
@@ -8870,9 +8853,6 @@ type OnActionRequest struct {
 
 // OnActionResponse is the response type for on_action.
 type OnActionResponse struct {
-	// Control message to forward to the Swift host (e.g., 'show commands').
-	// default ""
-	ControlMessage *string `json:"control_message,omitempty"`
 	// Structured result payload. Opaque to the platform — piped through
 	// to the dispatch caller as-is. Plugins use this to return data from
 	// action handlers (e.g., computed values, confirmation details).
