@@ -5,6 +5,21 @@ git history.
 
 ## Unreleased
 
+## 0.21.0 — 2026-10-19
+
+Breaking: plugins no longer send raw messages to the host.
+
+- Removed `Methods.ControlSignal` and `ControlSignalRequest`. Use the
+  operation for the effect: `HUDShow` / `HUDHide` for windows,
+  `IndicatorSet` for the recording indicator, `ArtifactDownload` for the
+  plugin's own artifacts.
+- Removed `OnActionResponse.ControlMessage`. A handler that opens or closes
+  a window calls `HUDShow` / `HUDHide` itself; return data in `Result`.
+  The platform ignores (and logs) a `control_message` from an older SDK.
+- Removed `ControlMessage` from `DispatchResult`, `SelectionPickResult`
+  and `SessionEndCleanupResult`: each operation now delivers its own HUD
+  change. Also removed from the harness's `ActionResponse`.
+
 ## 0.20.0 — 2026-10-19
 
 New surface; nothing removed.
