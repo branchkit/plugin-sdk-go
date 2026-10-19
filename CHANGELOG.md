@@ -5,6 +5,26 @@ git history.
 
 ## Unreleased
 
+## 0.20.0 — 2026-10-19
+
+New surface; nothing removed.
+
+- `Methods.IndicatorSet(IndicatorSetRequest{State: ...})` shows what input is
+  doing on the recording indicator (the menu-bar or tray icon, and the
+  floating pill). `IndicatorState` names what the input becomes, not any one
+  plugin's modes: `IndicatorStateIdle`, `IndicatorStateInputText`,
+  `IndicatorStateInputAction`, `IndicatorStateListening`,
+  `IndicatorStateStandby`, `IndicatorStateProcessing`,
+  `IndicatorStateSpeaking`, `IndicatorStateLoading`. It needs the
+  `microphone` privilege, and a host that draws no indicator refuses it.
+- `Methods.ArtifactDownload(ArtifactDownloadRequest{Ref: "<plugin>/<artifact>"})`
+  downloads one of the caller's own declared artifacts on the platform's
+  downloader; progress is published to `_platform.model_download`. A ref
+  naming another plugin's artifact, or a missing downloader, is an error.
+- Prefer these to the raw `ControlSignal("shell:icon:...")` and
+  `ControlSignal("download_model:...")` forms: the platform now refuses a
+  raw icon state, and a later release removes `ControlSignal`.
+
 ## 0.19.1 — 2026-10-18
 
 Documentation only; no behaviour or type changes.
