@@ -1985,8 +1985,9 @@ type ResolveResult struct {
 	// the "no match, no partial" branch. See platform commit history for
 	// the matching `capture.progress` suppression. False by
 	// default; only true when the bridge survived.
-	BridgeActive bool     `json:"bridge_active"`
-	ClearsTags   []string `json:"clears_tags"`
+	BridgeActive bool `json:"bridge_active"`
+	// The tags this resolve cleared, on the same terms as `sets_tags`.
+	ClearsTags []string `json:"clears_tags"`
 	// wire uint · min 0
 	ConsumedCount int `json:"consumed_count"`
 	// The required tag, or a mode in force, is a select mode's: the
@@ -2006,9 +2007,12 @@ type ResolveResult struct {
 	// configuration locally.
 	ScopedPrefixes []string `json:"scoped_prefixes"`
 	// Currently active scoped tags at match time.
-	ScopedTags []string         `json:"scoped_tags"`
-	SetsTags   []string         `json:"sets_tags"`
-	Telemetry  ResolveTelemetry `json:"telemetry"`
+	ScopedTags []string `json:"scoped_tags"`
+	// The tags this resolve set: what its commit applied, not only what the
+	// command asked for, so a write the policy chain refused, or one a hold
+	// ended before, is absent. A preview reports what committing would set.
+	SetsTags  []string         `json:"sets_tags"`
+	Telemetry ResolveTelemetry `json:"telemetry"`
 	// The genuinely-tied candidate set, populated only when resolution
 	// reduced to 2+ equally-eligible commands the matcher could not
 	// separate (same gating + scope, same winning length). When non-empty,
@@ -3177,8 +3181,9 @@ type CommandsResolveResponse struct {
 	// the "no match, no partial" branch. See platform commit history for
 	// the matching `capture.progress` suppression. False by
 	// default; only true when the bridge survived.
-	BridgeActive *bool    `json:"bridge_active,omitempty"`
-	ClearsTags   []string `json:"clears_tags"`
+	BridgeActive *bool `json:"bridge_active,omitempty"`
+	// The tags this resolve cleared, on the same terms as `sets_tags`.
+	ClearsTags []string `json:"clears_tags"`
 	// wire uint · min 0
 	ConsumedCount int `json:"consumed_count"`
 	// The required tag, or a mode in force, is a select mode's: the
@@ -3198,9 +3203,12 @@ type CommandsResolveResponse struct {
 	// configuration locally.
 	ScopedPrefixes []string `json:"scoped_prefixes,omitempty"`
 	// Currently active scoped tags at match time.
-	ScopedTags []string         `json:"scoped_tags,omitempty"`
-	SetsTags   []string         `json:"sets_tags"`
-	Telemetry  ResolveTelemetry `json:"telemetry"`
+	ScopedTags []string `json:"scoped_tags,omitempty"`
+	// The tags this resolve set: what its commit applied, not only what the
+	// command asked for, so a write the policy chain refused, or one a hold
+	// ended before, is absent. A preview reports what committing would set.
+	SetsTags  []string         `json:"sets_tags"`
+	Telemetry ResolveTelemetry `json:"telemetry"`
 	// The genuinely-tied candidate set, populated only when resolution
 	// reduced to 2+ equally-eligible commands the matcher could not
 	// separate (same gating + scope, same winning length). When non-empty,
