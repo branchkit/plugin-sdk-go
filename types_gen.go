@@ -8090,6 +8090,10 @@ type PipelinesGrammarRequest struct {
 
 // PipelinesGrammarResponse is the response type for pipelines.grammar.
 type PipelinesGrammarResponse struct {
+	// Content version of the structured grammar in that payload (only with
+	// `full: true` and the structured grammar on): the same version
+	// `recognition.redecode` reports for items decoded under it.
+	GrammarVersion *string `json:"grammar_version,omitempty"`
 	// Full seed payload (only with `full: true`).
 	VocabularyUpdate json.RawMessage `json:"vocabulary_update,omitempty"`
 	Words            []string        `json:"words"`
@@ -8385,7 +8389,14 @@ type RecognitionRedecodeRequest struct {
 
 // RecognitionRedecodeResponse is the response type for recognition.redecode.
 type RecognitionRedecodeResponse struct {
-	Lines []RedecodeLine `json:"lines"`
+	// Content version of the structured grammar the items that asked for it
+	// were decoded under (`structured`). The live grammar changes as plugins
+	// push vocabulary, so a caller caching verdicts keys them by this, not by
+	// a grammar it fetched earlier. Equal to `pipelines.grammar`'s
+	// `grammar_version` for the same grammar. Empty when no item was
+	// decoded structured.
+	GrammarVersion *string        `json:"grammar_version,omitempty"`
+	Lines          []RedecodeLine `json:"lines"`
 	// Stable content version of the acoustic model used for this re-decode — a
 	// hash of the model dir's `model.onnx`. Lets a per-clip fragility history
 	// distinguish re-probes across a model swap (a constant engine id can't).
