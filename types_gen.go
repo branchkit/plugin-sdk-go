@@ -1870,16 +1870,33 @@ type RedecodeItem struct {
 	BiasStrength *float64       `json:"bias_strength,omitempty"`
 	ID           string         `json:"id"`
 	Noise        *RedecodeNoise `json:"noise,omitempty"`
+	// When set, the item decodes through the live STRUCTURED grammar: the
+	// pattern DAG and union a starting recognition pipeline is seeded with
+	// (the `pipelines.grammar` full export), so a word decodes only where a
+	// command places it, exactly as in the live stage. Off = the flat live
+	// union. The grammar is the platform's; the plugin only opts in. Ignored
+	// when `words` is given. Bias does not apply on this path: structure
+	// supersedes it, as in the live stage.
+	// default false
+	Structured *bool `json:"structured,omitempty"`
 	// default []
 	Words []string `json:"words,omitempty"`
 }
 
 // RedecodeLine is auto-generated from the OpenRPC spec.
 type RedecodeLine struct {
-	Error string `json:"error"`
-	ID    string `json:"id"`
+	// Wall-clock time the recognizer spent decoding this item, in
+	// milliseconds (model load excluded). Absent when the item failed.
+	// wire double
+	DecodeMs *float64 `json:"decode_ms,omitempty"`
+	Error    string   `json:"error"`
+	ID       string   `json:"id"`
 	// default ""
 	Text string `json:"text"`
+	// Per-word confidence margins of the decoded words, in order: how far each
+	// word's best token led its runner-up. The weakest is the decode's least
+	// certain word. Absent when the recognizer reports none.
+	WordMargins []float64 `json:"word_margins,omitempty"`
 }
 
 // RedecodeNoise is auto-generated from the OpenRPC spec.
