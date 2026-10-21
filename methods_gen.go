@@ -3629,17 +3629,17 @@ func (m Methods) NativeOpenSystemSettings(req NativeOpenSystemSettingsRequest) e
 	return m.c.Call(MethodNativeOpenSystemSettings, &req, nil)
 }
 
-// NativeOpenTarget open a URL or file path with the default handler.
+// NativeOpenTarget open a URL or file path with the default handler. A plugin may open a web address only for a host it declares in requires.network that the user has switched on.
 func (m Methods) NativeOpenTarget(req NativeOpenTargetRequest) error {
 	return m.c.Call(MethodNativeOpenTarget, &req, nil)
 }
 
-// NativeOpenURL open a web (http, https) or email (mailto) link in its default handler; any other scheme is refused.
+// NativeOpenURL open a web (http, https) or email (mailto) link in its default handler; any other scheme is refused. A plugin may open a web address only for a host it declares in requires.network that the user has switched on.
 func (m Methods) NativeOpenURL(req NativeOpenURLRequest) error {
 	return m.c.Call(MethodNativeOpenUrl, &req, nil)
 }
 
-// NativeOpenWithApp open a URL or path with a specific application.
+// NativeOpenWithApp open a URL or path with a specific application. A plugin may open a web address only for a host it declares in requires.network that the user has switched on.
 func (m Methods) NativeOpenWithApp(req NativeOpenWithAppRequest) error {
 	return m.c.Call(MethodNativeOpenWithApp, &req, nil)
 }
