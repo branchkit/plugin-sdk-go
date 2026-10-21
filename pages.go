@@ -5,13 +5,18 @@ import (
 	"fmt"
 )
 
-// SettingsTabFunc renders one settings tab. It returns the tab's HTML
+// PageFunc renders one of the plugin's pages. It returns the page's HTML
 // FRAGMENT — the platform's frame owns the container the fragment is
 // morphed into, and the SDK attaches the stylesheet registered with
 // [Plugin.SettingsCSS]. An error is rendered by the platform as the tab's
 // error state, so a renderer that cannot draw should say why rather than
 // return an empty string.
-type SettingsTabFunc func(req *RenderSettingsRequest) (string, error)
+type PageFunc func(req *RenderSettingsRequest) (string, error)
+
+// SettingsTabFunc is the old name of [PageFunc].
+//
+// Deprecated: use PageFunc. Removed once the plugins built here have moved.
+type SettingsTabFunc = PageFunc
 
 // settingsRefresher is what the render hook needs from a settings mirror:
 // a synchronous read-through. Kept as an interface so the hook does not
@@ -20,8 +25,9 @@ type settingsRefresher interface {
 	Refresh() error
 }
 
-// SettingsTab registers the renderer for the manifest-declared settings
-// tab `key`. The first call installs the SDK's own `render_settings`
+// Page registers the renderer for the page `key` the manifest declares in
+// `implements.pages`: one of the plugin's own pages, shown in its tab
+// strip in BranchKit. The first call installs the SDK's own `render_settings`
 // handler, which on every render:
 //
 //  1. refreshes every settings mirror created on this plugin with
@@ -38,19 +44,24 @@ type settingsRefresher interface {
 // tab: a method changes state, and the re-render that follows draws it.
 //
 // This is the only way to install a render_settings handler:
-// Handle("render_settings", …) panics, so every tab goes through this
+// Handle("render_settings", …) panics, so every page goes through this
 // dispatch.
-func (p *Plugin) SettingsTab(key string, fn SettingsTabFunc) {
+func (p *Plugin) Page(key string, fn PageFunc) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
-	if p.settingsTabs == nil {
-		p.settingsTabs = make(map[string]SettingsTabFunc)
-		p.handlers[HookRenderSettings] = p.renderSettingsTab
+	if p.pages == nil {
+		p.pages = make(map[string]PageFunc)
+		p.handlers[HookRenderSettings] = p.renderPage
 	}
-	p.settingsTabs[key] = fn
+	p.pages[key] = fn
 }
 
-// SettingsCSS registers the stylesheet returned with every tab this
+// SettingsTab is the old name of [Plugin.Page].
+//
+// Deprecated: use Page. Removed once the plugins built here have moved.
+func (p *Plugin) SettingsTab(key string, fn SettingsTabFunc) { p.Page(key, fn) }
+
+// SettingsCSS registers the stylesheet returned with every page this
 // plugin renders. One sheet per plugin: the platform places it in a
 // `<style>` element it owns, outside the morph target, so it is sent
 // once per change rather than inside every fragment.
@@ -60,7 +71,7 @@ func (p *Plugin) SettingsCSS(css string) {
 	p.mu.Unlock()
 }
 
-func (p *Plugin) renderSettingsTab(params json.RawMessage) (any, error) {
+func (p *Plugin) renderPage(params json.RawMessage) (any, error) {
 	var req RenderSettingsRequest
 	if len(params) > 0 {
 		if err := json.Unmarshal(params, &req); err != nil {
@@ -68,15 +79,15 @@ func (p *Plugin) renderSettingsTab(params json.RawMessage) (any, error) {
 		}
 	}
 	p.mu.Lock()
-	fn := p.settingsTabs[req.TabKey]
+	fn := p.pages[req.TabKey]
 	css := p.settingsCSS
 	mirrors := append([]settingsRefresher(nil), p.settingsMirrors...)
 	p.mu.Unlock()
 	if fn == nil {
-		return nil, fmt.Errorf("no renderer registered for settings tab %q", req.TabKey)
+		return nil, fmt.Errorf("no renderer registered for page %q", req.TabKey)
 	}
 	// Read through before drawing. A refresh failure is logged, not
-	// fatal: the mirror keeps its last snapshot and the tab still draws.
+	// fatal: the mirror keeps its last snapshot and the page still draws.
 	for _, m := range mirrors {
 		if err := m.Refresh(); err != nil {
 			Logf(p.pluginID, "settings read-through failed: %v", err)

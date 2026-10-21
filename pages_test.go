@@ -78,11 +78,11 @@ func renderSettingsOnce(t *testing.T, w io.Writer, responses <-chan rpcMessage, 
 	return RenderSettingsResponse{}, nil
 }
 
-// TestSettingsTabDispatch pins the SDK-owned render_settings hook: one
+// TestPageDispatch pins the SDK-owned render_settings hook: one
 // renderer per tab key, the registered stylesheet on every response, an
 // error for a key nobody registered, and — the read-through the plugins
 // used to hand-roll — every settings mirror refreshed before the tab draws.
-func TestSettingsTabDispatch(t *testing.T) {
+func TestPageDispatch(t *testing.T) {
 	store := map[string]any{"editor": "stale"}
 	sawApply := false
 	p, w, r := newTestPluginT(t)
@@ -90,13 +90,13 @@ func TestSettingsTabDispatch(t *testing.T) {
 
 	mirror := Settings[testConfig](p, "plugin.test.config")
 	p.SettingsCSS(".alpha{}")
-	p.SettingsTab("alpha", func(req *RenderSettingsRequest) (string, error) {
+	p.Page("alpha", func(req *RenderSettingsRequest) (string, error) {
 		return "<p id=\"alpha\">" + mirror.Get().Editor + "</p>", nil
 	})
-	p.SettingsTab("beta", func(req *RenderSettingsRequest) (string, error) {
+	p.Page("beta", func(req *RenderSettingsRequest) (string, error) {
 		return "<p id=\"beta\">" + req.TabKey + "</p>", nil
 	})
-	p.SettingsTab("broken", func(req *RenderSettingsRequest) (string, error) {
+	p.Page("broken", func(req *RenderSettingsRequest) (string, error) {
 		return "", errors.New("cannot draw")
 	})
 	go p.Run()
@@ -154,8 +154,8 @@ func TestHandleRejectsRenderSettings(t *testing.T) {
 	})
 
 	q, _, _ := newTestPluginT(t)
-	q.SettingsTab("a", func(*RenderSettingsRequest) (string, error) { return "", nil })
-	mustPanic("Handle after SettingsTab", func() {
+	q.Page("a", func(*RenderSettingsRequest) (string, error) { return "", nil })
+	mustPanic("Handle after Page", func() {
 		q.Handle(HookRenderSettings, func(json.RawMessage) (any, error) { return nil, nil })
 	})
 }

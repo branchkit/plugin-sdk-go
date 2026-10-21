@@ -5,6 +5,11 @@ git history.
 
 ## Unreleased
 
+- `Plugin.Page(key, fn)` and `PageFunc` register a renderer for one of the
+  plugin's own pages. `SettingsTab` and `SettingsTabFunc` are deprecated
+  aliases and will be removed in the next release, when the manifest's
+  `implements.settings_tabs` becomes `implements.pages`.
+
 ## 0.23.0 — 2026-10-20
 
 Re-decodes can target the dictation stages, and a run can record its audio.

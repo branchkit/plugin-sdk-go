@@ -15,14 +15,14 @@ type HTMLComponent interface {
 }
 
 // RenderComponent renders c to a string. Its signature matches
-// [SettingsTabFunc], so a tab renderer can be one line:
+// [PageFunc], so a page renderer can be one line:
 //
-//	plugin.SettingsTab("apps", func(req *branchkit.RenderSettingsRequest) (string, error) {
+//	plugin.Page("apps", func(req *branchkit.RenderSettingsRequest) (string, error) {
 //	    return branchkit.RenderComponent(views.Apps(rows))
 //	})
 //
 // A render error propagates instead of becoming an empty tab: the platform
-// draws it as the tab's error state.
+// draws it as the page's error state.
 func RenderComponent(c HTMLComponent) (string, error) {
 	var b strings.Builder
 	if err := c.Render(context.Background(), &b); err != nil {

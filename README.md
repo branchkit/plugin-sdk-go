@@ -166,7 +166,7 @@ does not start.
 | Keep a live copy | `MirrorCollection(name)`, `Settings[T](plugin, name)` |
 | Contribute commands | `Command(Word("open"), Capture("app", "apps")).Action(…).Build()`, `PushCommandSpecs`, `PushCommandGroup` |
 | Bind keys and device buttons | manifest `collection_data["_platform.bindings"]`; a device plugin lists its triggers with `BindingsSetTriggers`, reports presses with `BindingsReport` and proposes settings from its own screen with `BindingsPropose` (guides: *Triggers and authority*, *Make a device a binding source*) |
-| A settings tab | `SettingsTab(key, fn)` + `implements.settings_tabs` in the manifest; buttons in package `ui` |
+| A page of your own | `Page(key, fn)` + `implements.settings_tabs` in the manifest (`implements.pages` from the next release); buttons in package `ui` |
 | Show something | `OutputState(OutputStateRequest{…})` with `SayAction` / `DispatchAction`, `HUDPush` |
 | Hold a system effect | `AssertEffect`, `RetractEffect`, `IsEffectActive`, `OnEffectDisplaced` |
 | Trace a request | `plugin.CurrentCorrelation()`, `RunWithCorrelation(id, fn)` |

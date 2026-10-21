@@ -214,10 +214,10 @@ type Plugin struct {
 	handlers  map[string]HandlerFunc
 	listeners map[string][]ListenerFunc
 
-	// settingsTabs is non-nil once SettingsTab has installed the SDK's own
+	// pages is non-nil once Page has installed the SDK's own
 	// render_settings handler; settingsMirrors are refreshed by that
-	// handler before every render (settings_tabs.go).
-	settingsTabs    map[string]SettingsTabFunc
+	// handler before every render (pages.go).
+	pages           map[string]PageFunc
 	settingsCSS     string
 	settingsMirrors []settingsRefresher
 
@@ -409,8 +409,8 @@ func (p *Plugin) notifyWorker() {
 // has been registered panics, regardless of order.
 //
 // "render_settings" is not registrable here at all: the SDK owns that hook
-// and installs it through [Plugin.SettingsTab], one renderer per manifest
-// tab. Handle panics on it so a plugin cannot bypass the tab dispatch.
+// and installs it through [Plugin.Page], one renderer per manifest
+// page. Handle panics on it so a plugin cannot bypass the page dispatch.
 func (p *Plugin) Handle(
 	method string, fn HandlerFunc) {
 	p.mu.Lock()
@@ -419,7 +419,7 @@ func (p *Plugin) Handle(
 		panic("plugin-sdk-go: cannot mix Handle(\"on_action\", ...) and HandleAction(...) — pick one")
 	}
 	if method == HookRenderSettings {
-		panic("plugin-sdk-go: render_settings is the SDK's hook — register each tab with SettingsTab(key, fn)")
+		panic("plugin-sdk-go: render_settings is the SDK's hook — register each page with Page(key, fn)")
 	}
 	p.handlers[method] = fn
 
@@ -429,7 +429,7 @@ func (p *Plugin) Handle(
 // a typed request struct before calling fn. Empty params produces a zero-valued
 // Req. This is the standard helper for a plugin's own RPC methods (the ones
 // its settings buttons post to, calibrate, etc.) — for dispatched actions use
-// HandleAction, and for settings tabs SettingsTab.
+// HandleAction, and for pages Page.
 //
 //	type SetVolumeRequest struct {
 //	    Volume int `json:"volume"`
