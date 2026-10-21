@@ -43,7 +43,7 @@ func Settings[T any](p *Plugin, name string) *SettingsMirror[T] {
 	s := &SettingsMirror[T]{p: p, name: name}
 	s.mirror = p.MirrorCollection(name)
 	// The SDK's render_settings hook refreshes every settings mirror before
-	// a tab draws (settings_tabs.go) — the read-through that render paths
+	// a tab draws (pages.go) — the read-through that render paths
 	// used to hand-roll.
 	p.mu.Lock()
 	p.settingsMirrors = append(p.settingsMirrors, s)

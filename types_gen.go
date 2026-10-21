@@ -8991,7 +8991,7 @@ type RenderSettingsRequest struct {
 	ListSchemas map[string]SettingsListSchemaInfo `json:"list_schemas,omitempty"`
 	// Search query for filtering content (empty string when no search active).
 	Search string `json:"search"`
-	// Which settings tab to render (from manifest implements.settings_tabs[].key).
+	// Which page to render (from manifest implements.pages[].key).
 	TabKey string `json:"tab_key"`
 	// Tag schemas from plugin manifests (tag_name → schema info).
 	TagSchemas map[string]SettingsTagSchemaInfo `json:"tag_schemas,omitempty"`

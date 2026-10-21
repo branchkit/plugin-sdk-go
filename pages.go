@@ -13,11 +13,6 @@ import (
 // return an empty string.
 type PageFunc func(req *RenderSettingsRequest) (string, error)
 
-// SettingsTabFunc is the old name of [PageFunc].
-//
-// Deprecated: use PageFunc. Removed once the plugins built here have moved.
-type SettingsTabFunc = PageFunc
-
 // settingsRefresher is what the render hook needs from a settings mirror:
 // a synchronous read-through. Kept as an interface so the hook does not
 // care about T.
@@ -26,8 +21,7 @@ type settingsRefresher interface {
 }
 
 // Page registers the renderer for the page `key` the manifest declares in
-// `implements.settings_tabs` (renamed `implements.pages` in the next
-// release): one of the plugin's own pages, shown in its tab
+// `implements.pages`: one of the plugin's own pages, shown in its tab
 // strip in BranchKit. The first call installs the SDK's own `render_settings`
 // handler, which on every render:
 //
@@ -56,11 +50,6 @@ func (p *Plugin) Page(key string, fn PageFunc) {
 	}
 	p.pages[key] = fn
 }
-
-// SettingsTab is the old name of [Plugin.Page].
-//
-// Deprecated: use Page. Removed once the plugins built here have moved.
-func (p *Plugin) SettingsTab(key string, fn SettingsTabFunc) { p.Page(key, fn) }
 
 // SettingsCSS registers the stylesheet returned with every page this
 // plugin renders. One sheet per plugin: the platform places it in a
