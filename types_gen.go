@@ -8375,6 +8375,11 @@ type RecognitionBiasSetResponse struct {
 // RecognitionRedecodeRequest is the request type for recognition.redecode.
 type RecognitionRedecodeRequest struct {
 	Items []RedecodeItem `json:"items"`
+	// The language a dictation stage's probe decodes in, e.g. `"en"`, as the
+	// live stage's `--language`. Absent = the stage's default. A command
+	// stage's probe ignores it.
+	// default null
+	Language *string `json:"language,omitempty"`
 	// wire uint32 · default null · min 0
 	MaxActive *int `json:"max_active,omitempty"`
 	// Model dir name under app-support `models/` (single component, no
