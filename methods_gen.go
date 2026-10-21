@@ -3629,7 +3629,7 @@ func (m Methods) NativeOpenSystemSettings(req NativeOpenSystemSettingsRequest) e
 	return m.c.Call(MethodNativeOpenSystemSettings, &req, nil)
 }
 
-// NativeOpenTarget open a URL or file path with the default handler. A plugin may open a web address only for a host it declares in requires.network that the user has switched on.
+// NativeOpenTarget open a URL or file path with the default handler.
 func (m Methods) NativeOpenTarget(req NativeOpenTargetRequest) error {
 	return m.c.Call(MethodNativeOpenTarget, &req, nil)
 }
