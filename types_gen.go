@@ -8133,6 +8133,15 @@ type PipelinesRunRequest struct {
 	Name string `json:"name"`
 	// default {}
 	ParamOverrides map[string]json.RawMessage `json:"param_overrides,omitempty"`
+	// Record this run's input audio: a folder, relative to the caller's own
+	// data dir, that receives one 16 kHz mono 16-bit WAV per span of audio
+	// (audio start to audio stop) the run's first consumer stage is given,
+	// and a line per WAV in its `manifest.jsonl`: `{file, started_utc,
+	// duration_ms, pipeline}`. Keeping, labelling and deleting the
+	// recordings is the caller's. Plugins only (it writes the caller's data
+	// dir). Absent = nothing is recorded.
+	// default null
+	RecordTo *string `json:"record_to,omitempty"`
 }
 
 // PipelinesRunResponse is the response type for pipelines.run.
