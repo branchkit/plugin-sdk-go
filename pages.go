@@ -26,7 +26,8 @@ type settingsRefresher interface {
 }
 
 // Page registers the renderer for the page `key` the manifest declares in
-// `implements.pages`: one of the plugin's own pages, shown in its tab
+// `implements.settings_tabs` (renamed `implements.pages` in the next
+// release): one of the plugin's own pages, shown in its tab
 // strip in BranchKit. The first call installs the SDK's own `render_settings`
 // handler, which on every render:
 //
