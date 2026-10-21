@@ -5,6 +5,24 @@ git history.
 
 ## Unreleased
 
+## 0.22.0 — 2026-10-20
+
+Re-decodes can match the live recognizer, and report time, confidence and
+grammar.
+
+- `RedecodeItem.Structured`: decode the item through the live structured
+  grammar (the pattern DAG and union a recognition pipeline is seeded with)
+  instead of the flat word list. The grammar is the platform's; set the
+  flag to opt in.
+- `RedecodeLine.DecodeMs` and `RedecodeLine.WordMargins`: the recognizer's
+  time on the item and each decoded word's confidence margin. Both are
+  absent on a failed line.
+- `RecognitionRedecodeResponse.GrammarVersion` and
+  `PipelinesGrammarResponse.GrammarVersion`: a content version of the
+  structured grammar. They are equal for the same grammar, so a plugin
+  caching re-decode results can key them by the grammar they were decoded
+  under.
+
 ## 0.21.0 — 2026-10-19
 
 Breaking: plugins no longer send raw messages to the host.
