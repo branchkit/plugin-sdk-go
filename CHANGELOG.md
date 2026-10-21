@@ -5,6 +5,10 @@ git history.
 
 ## Unreleased
 
+## 0.24.0 — 2026-10-21
+
+Pages: a plugin's own screens are registered as pages.
+
 - `Plugin.Page(key, fn)` and `PageFunc` register a renderer for one of the
   plugin's own pages. `SettingsTab` and `SettingsTabFunc` are deprecated
   aliases and will be removed in the next release, when the manifest's
