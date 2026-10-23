@@ -1734,7 +1734,7 @@ type PlatformProfileResponse struct {
 	// `macos`, `linux` or `windows`.
 	OS string `json:"os"`
 	// On Linux, the desktop session the window tools drive: `x11`, `sway`,
-	// `gnome` or `other_wayland`. Absent on other systems.
+	// `hyprland`, `gnome` or `other_wayland`. Absent on other systems.
 	Session *string `json:"session,omitempty"`
 	// Every operation a plugin can call that would be refused here, with
 	// the reason and detail the refusal itself carries. An operation not

@@ -1457,7 +1457,7 @@ func (m Methods) NativeCaretContext() (*NativeCaretContextResponse, error) {
 	return &result, nil
 }
 
-// NativeCascadeWindows cascade all windows for an app. On Linux, not available on sway (sway tiles windows; there is no cascade); nor on GNOME (GNOME exposes no window list; only the focused window is visible).
+// NativeCascadeWindows cascade all windows for an app. On Linux, not available on sway (sway tiles windows; there is no cascade); nor on GNOME (GNOME exposes no window list; only the focused window is visible); nor on Hyprland (Hyprland tiles windows; there is no cascade).
 func (m Methods) NativeCascadeWindows(req NativeCascadeWindowsRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
@@ -2752,7 +2752,7 @@ func (m Methods) NativeHidSendReport(req NativeHidSendReportRequest) (*NativeHid
 	return &result, nil
 }
 
-// NativeHideApp hide an app by bundle ID. On Linux, not available on sway (this compositor has no minimize; sway uses the scratchpad); nor on GNOME (GNOME exposes no window IPC to minimize through).
+// NativeHideApp hide an app by bundle ID. On Linux, not available on sway (this compositor has no minimize; sway uses the scratchpad); nor on GNOME (GNOME exposes no window IPC to minimize through); nor on Hyprland (Hyprland has no minimize; it hides windows on special workspaces instead).
 func (m Methods) NativeHideApp(req NativeHideAppRequest) error {
 	return m.c.Call(MethodNativeHideApp, &req, nil)
 }
@@ -2903,7 +2903,7 @@ func (m Methods) NativeIpv6Address() (*NativeIpv6AddressResponse, error) {
 	return &result, nil
 }
 
-// NativeIsAppHidden check if an application is hidden. On Linux, not available on sway (this compositor has no minimize; sway uses the scratchpad); nor on GNOME (GNOME exposes no window IPC to minimize through).
+// NativeIsAppHidden check if an application is hidden. On Linux, not available on sway (this compositor has no minimize; sway uses the scratchpad); nor on GNOME (GNOME exposes no window IPC to minimize through); nor on Hyprland (Hyprland has no minimize; it hides windows on special workspaces instead).
 func (m Methods) NativeIsAppHidden(req NativeIsAppHiddenRequest) (bool, error) {
 	var result struct {
 		Result bool `json:"result"`
@@ -3313,7 +3313,7 @@ func (m Methods) NativeMicrophonePermission() (*NativeMicrophonePermissionRespon
 	return &result, nil
 }
 
-// NativeMinimizeWindow minimize a window by ID. On Linux, not available on sway (this compositor has no minimize; sway uses the scratchpad); nor on GNOME (GNOME exposes no window IPC to minimize through).
+// NativeMinimizeWindow minimize a window by ID. On Linux, not available on sway (this compositor has no minimize; sway uses the scratchpad); nor on GNOME (GNOME exposes no window IPC to minimize through); nor on Hyprland (Hyprland has no minimize; it hides windows on special workspaces instead).
 func (m Methods) NativeMinimizeWindow(req NativeMinimizeWindowRequest) error {
 	return m.c.Call(MethodNativeMinimizeWindow, &req, nil)
 }
@@ -4399,7 +4399,7 @@ func (m Methods) NativeSetAirportPower(req NativeSetAirportPowerRequest) (bool, 
 	return result.Ok, err
 }
 
-// NativeSetAppHidden hide or unhide an app. On Linux, not available on sway (this compositor has no minimize; sway uses the scratchpad); nor on GNOME (GNOME exposes no window IPC to minimize through).
+// NativeSetAppHidden hide or unhide an app. On Linux, not available on sway (this compositor has no minimize; sway uses the scratchpad); nor on GNOME (GNOME exposes no window IPC to minimize through); nor on Hyprland (Hyprland has no minimize; it hides windows on special workspaces instead).
 func (m Methods) NativeSetAppHidden(req NativeSetAppHiddenRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
@@ -5424,12 +5424,12 @@ func (m Methods) NativeTwentyFourHourClock() (*NativeTwentyFourHourClockResponse
 	return &result, nil
 }
 
-// NativeUnhideApp unhide a hidden application. On Linux, not available on sway (this compositor has no minimize; sway uses the scratchpad); nor on GNOME (GNOME exposes no window IPC to minimize through).
+// NativeUnhideApp unhide a hidden application. On Linux, not available on sway (this compositor has no minimize; sway uses the scratchpad); nor on GNOME (GNOME exposes no window IPC to minimize through); nor on Hyprland (Hyprland has no minimize; it hides windows on special workspaces instead).
 func (m Methods) NativeUnhideApp(req NativeUnhideAppRequest) error {
 	return m.c.Call(MethodNativeUnhideApp, &req, nil)
 }
 
-// NativeUnminimizeWindow restore a minimized window by ID. On Linux, not available on sway (this compositor has no minimize; sway uses the scratchpad); nor on GNOME (GNOME exposes no window IPC to minimize through).
+// NativeUnminimizeWindow restore a minimized window by ID. On Linux, not available on sway (this compositor has no minimize; sway uses the scratchpad); nor on GNOME (GNOME exposes no window IPC to minimize through); nor on Hyprland (Hyprland has no minimize; it hides windows on special workspaces instead).
 func (m Methods) NativeUnminimizeWindow(req NativeUnminimizeWindowRequest) error {
 	return m.c.Call(MethodNativeUnminimizeWindow, &req, nil)
 }
