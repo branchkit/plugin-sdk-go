@@ -21,7 +21,12 @@ const helloworldDir = "../../plugins/helloworld"
 func startHelloworld(t *testing.T) *harness.Harness {
 	t.Helper()
 	bin := filepath.Join(helloworldDir, "helloworld-plugin")
-	if _, err := os.Stat(bin); err != nil {
+	// On Windows go build writes helloworld-plugin.exe.
+	_, err := os.Stat(bin)
+	if err != nil {
+		_, err = os.Stat(bin + ".exe")
+	}
+	if err != nil {
 		msg := "helloworld plugin not built (" + bin + "); build it with " +
 			"`cd plugins/helloworld/src && go build -o ../helloworld-plugin .`"
 		if harness.Required() {
