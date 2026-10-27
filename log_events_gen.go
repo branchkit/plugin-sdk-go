@@ -15,6 +15,9 @@ const (
 	LogEventCommandMatchDecision         = "command.match_decision"
 	LogEventCommandMatched               = "command.matched"
 	LogEventCommandNoMatch               = "command.no_match"
+	LogEventCommandUserCreated           = "command.user_created"
+	LogEventCommandUserDeleted           = "command.user_deleted"
+	LogEventCommandUserModified          = "command.user_modified"
 	LogEventConsentDecision              = "consent.decision"
 	LogEventConsentPrivilegedOp          = "consent.privileged_op"
 	LogEventDiagnosticMessage            = "diagnostic.message"
@@ -66,6 +69,8 @@ const (
 	LogEventStageDiagnostic              = "stage.diagnostic"
 	LogEventStageRequestCompleted        = "stage.request_completed"
 	LogEventStageRespawned               = "stage.respawned"
+	LogEventStateCollectionCreated       = "state.collection_created"
+	LogEventStateCollectionDeleted       = "state.collection_deleted"
 	LogEventStateRetentionSwept          = "state.retention_swept"
 	LogEventStateTagCleared              = "state.tag_cleared"
 	LogEventStateTagLifecycleClear       = "state.tag_lifecycle_clear"
@@ -98,6 +103,9 @@ var LogEventRegistry = map[string]LogEventMeta{
 	"command.match_decision":          {Name: "command.match_decision", Summary: "Diagnostic snapshot of the matcher's tiebreaker choice — which category won, which gates were active, whether a gated Partial was suppressed.", Since: "0.1.0", Source: "dispatch", Severity: "debug", Redaction: "full"},
 	"command.matched":                 {Name: "command.matched", Summary: "Speech recognition produced a match against a registered command.", Since: "0.1.0", Source: "dispatch", Severity: "info", Redaction: "full"},
 	"command.no_match":                {Name: "command.no_match", Summary: "Speech input did not match any registered command.", Since: "0.1.0", Source: "dispatch", Severity: "debug", Redaction: "full"},
+	"command.user_created":            {Name: "command.user_created", Summary: "The person made a command.", Since: "0.1.0", Source: "dispatch", Severity: "info", Redaction: "full"},
+	"command.user_deleted":            {Name: "command.user_deleted", Summary: "The person removed one of their commands, or undid their change to a plugin's.", Since: "0.1.0", Source: "dispatch", Severity: "info", Redaction: "full"},
+	"command.user_modified":           {Name: "command.user_modified", Summary: "The person changed one of their commands.", Since: "0.1.0", Source: "dispatch", Severity: "info", Redaction: "full"},
 	"consent.decision":                {Name: "consent.decision", Summary: "A consent decision on any axis (privilege, dispatch, event subscription, collection read/write, effect, trusted author): granted (always/once), denied, dismissed, revoked, or reconciled by an update — with the surface that produced it. Audit-eligible.", Since: "0.1.0", Source: "plugins", Severity: "info", Redaction: "none"},
 	"consent.privileged_op":           {Name: "consent.privileged_op", Summary: "A plugin invoked (or was refused) an operation gated on a dangerous privilege. Audit-eligible.", Since: "0.1.0", Source: "plugins", Severity: "info", Redaction: "none"},
 	"diagnostic.message":              {Name: "diagnostic.message", Summary: "Catch-all for ad-hoc operational text that doesn't fit a typed variant.", Since: "0.1.0", Source: "generic", Severity: "debug", Redaction: "none"},
@@ -149,6 +157,8 @@ var LogEventRegistry = map[string]LogEventMeta{
 	"stage.diagnostic":                {Name: "stage.diagnostic", Summary: "A pipeline stage emitted a diagnostic line (e.g. a [PERF] latency measurement); correlated to the command via tr_ derived from the stage's session id.", Since: "0.2.0", Source: "generic", Severity: "info", Redaction: "full"},
 	"stage.request_completed":         {Name: "stage.request_completed", Summary: "A `stages.request` round trip completed: which stage, how long, whether it failed or timed out. Correlated to the caller's chain.", Since: "0.2.0", Source: "dispatch", Severity: "info", Redaction: "none"},
 	"stage.respawned":                 {Name: "stage.respawned", Summary: "The stage pool started a fresh copy of a stage instead of reusing the running one, and why.", Since: "0.2.0", Source: "lifecycle", Severity: "warn", Redaction: "none"},
+	"state.collection_created":        {Name: "state.collection_created", Summary: "The person made a list (a user collection).", Since: "0.1.0", Source: "state", Severity: "info", Redaction: "full"},
+	"state.collection_deleted":        {Name: "state.collection_deleted", Summary: "The person deleted a list (a user collection).", Since: "0.1.0", Source: "state", Severity: "info", Redaction: "full"},
 	"state.retention_swept":           {Name: "state.retention_swept", Summary: "Retention sweep removed expired records from a collection.", Since: "0.1.0", Source: "state", Severity: "info", Redaction: "none"},
 	"state.tag_cleared":               {Name: "state.tag_cleared", Summary: "One or more tags were cleared via a gate-shape collection mutation.", Since: "0.1.0", Source: "state", Severity: "info", Redaction: "none"},
 	"state.tag_lifecycle_clear":       {Name: "state.tag_lifecycle_clear", Summary: "Lifecycle policy cleared transient tags after a triggering event.", Since: "0.1.0", Source: "state", Severity: "debug", Redaction: "none"},
