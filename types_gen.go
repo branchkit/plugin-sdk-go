@@ -8399,7 +8399,7 @@ type RecognitionRedecodeRequest struct {
 	// non-empty
 	Model string `json:"model"`
 	// Registered stage id whose binary's `probe` subcommand runs the re-decode,
-	// e.g. `"voice.sherpa_commands"`. Validated against the stage registry.
+	// e.g. `"voice.sherpa_commands"`. Must be one of the caller's own stages.
 	// non-empty
 	Stage string `json:"stage"`
 }

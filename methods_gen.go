@@ -5987,7 +5987,7 @@ func (m Methods) RecognitionBiasSet(req RecognitionBiasSetRequest) (*Recognition
 	return &result, nil
 }
 
-// RecognitionRedecode re-decode the caller's own captured audio through a registered recognizer stage against the LIVE grammar (the fragility ladder) — the platform runs it because the grammar is platform state and plugins cannot exec.
+// RecognitionRedecode re-decode the caller's own captured audio through one of its own recognizer stages against the LIVE grammar (the fragility ladder) — the platform runs it because the grammar is platform state and plugins cannot exec.
 func (m Methods) RecognitionRedecode(req RecognitionRedecodeRequest) (*RecognitionRedecodeResponse, error) {
 	var result RecognitionRedecodeResponse
 	err := m.c.Call(MethodRecognitionRedecode, &req, &result)
