@@ -8951,6 +8951,14 @@ type OnTranscriptRequest struct {
 	IsFinal *bool `json:"is_final,omitempty"`
 	// Pipeline that produced this transcript. A plugin may own several.
 	Pipeline string `json:"pipeline"`
+	// The run of that pipeline that produced it: the same opaque id as the
+	// `run_id` on that run's `_platform.pipeline.started` and
+	// `_platform.pipeline.stopped`, never reused for another run. A plugin
+	// that runs one pipeline more than once at a time (a held run and a
+	// persistent one, say) tells their transcripts apart by it. Empty when
+	// no run produced the transcript (`pipelines.ingest_transcript`).
+	// default ""
+	RunID *string `json:"run_id,omitempty"`
 	// Recognized text.
 	Text string `json:"text"`
 	// Shared-clock onset of each word, aligned 1:1 with `text`'s words.
@@ -9420,6 +9428,11 @@ type PipelineStartedEventParams struct {
 	// default false
 	Ephemeral *bool  `json:"ephemeral,omitempty"`
 	Pipeline  string `json:"pipeline"`
+	// This run's id: opaque, never reused for another run. The run's
+	// `_platform.pipeline.stopped` and every `on_transcript` it causes carry
+	// the same one.
+	// default ""
+	RunID *string `json:"run_id,omitempty"`
 }
 
 // PipelineStoppedEventParams is the payload of the _platform.pipeline.stopped event.
@@ -9429,6 +9442,9 @@ type PipelineStoppedEventParams struct {
 	Error    *string            `json:"error,omitempty"`
 	Pipeline string             `json:"pipeline"`
 	Reason   PipelineStopReason `json:"reason"`
+	// The run that stopped, as its `_platform.pipeline.started` named it.
+	// default ""
+	RunID *string `json:"run_id,omitempty"`
 	// `keybind` when the pipeline's own keybind trigger stopped it.
 	Trigger *string `json:"trigger,omitempty"`
 }
