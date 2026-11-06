@@ -3,8 +3,10 @@
 Versions before this file predate it; their contents are in the repo's
 git history.
 
-## Unreleased
+## 0.28.0 — 2026-11-06
 
+- `Methods.HUDFocus(HUDFocusRequest{Channel})` (`hud.focus`): give the keyboard to one of the plugin's own HUD cards or windows.
+- `RunID` on the pipeline run's events (`PipelineStartedEventParams`, `PipelineStoppedEventParams`, `PipelineTranscriptEventParams`, `PipelineErrorEventParams`) and on `OnTranscriptRequest`, so a plugin can tell one run of a pipeline from the next.
 - `OnStop(func(ctx context.Context) error)`: the plugin's cleanup before
   the platform stops it (switched off, removed, restarted for a new build
   or a lost capability, the app quitting). It runs with the connection
