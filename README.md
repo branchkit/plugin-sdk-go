@@ -169,6 +169,7 @@ does not start.
 | A page of your own | `Page(key, fn)` + `implements.pages` in the manifest; buttons in package `ui` |
 | Show something | `OutputState(OutputStateRequest{…})` with `SayAction` / `DispatchAction`, `HUDPush` |
 | Hold a system effect | `AssertEffect`, `RetractEffect`, `IsEffectActive`, `OnEffectDisplaced` |
+| Clean up before you are stopped | `OnStop(func(ctx context.Context) error)`: runs with the connection open (switched off, removed, restarted, the app quitting), for up to 5 s; not on a crash, so check again at start |
 | Trace a request | `plugin.CurrentCorrelation()`, `RunWithCorrelation(id, fn)` |
 | Label calls made for something you host (a script, an extension) | `defer branchkit.ActOnBehalfOf(actor)()` |
 | Find your files | `PluginDir()`, `PluginDataDir()`, `GetAPIVersion()` |

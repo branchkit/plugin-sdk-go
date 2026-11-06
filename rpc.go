@@ -3,6 +3,7 @@ package branchkit
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -518,6 +519,40 @@ func (p *Plugin) OnPattern(pattern string, fn PatternListenerFunc) {
 func (p *Plugin) OnReady(fn func()) {
 	p.On(HookOnReady, func(_ json.RawMessage) {
 		fn()
+	})
+}
+
+// OnStop registers the plugin's cleanup for when the platform stops it:
+// switched off or removed, restarted to load a new build, a required
+// capability lost, or the app quitting. Registering it is what asks the
+// platform to send on_stop (it reads list_methods); a plugin that does not
+// register it is stopped as before, with no request first.
+//
+// fn runs while the connection is still open, so it may call the platform
+// (put windows back, flush a record). Its return answers on_stop, and the
+// platform then closes stdin and stops the process as it always does. The
+// platform waits at most 5 s for the answer (2 s when the app is quitting);
+// ctx is cancelled when the connection closes, which is the platform no
+// longer waiting. An error is logged by the platform and changes nothing
+// else: the plugin is stopped either way. A crash or a hang is not asked,
+// so state that must survive those still needs a check at the next start.
+//
+// Must be called before Run().
+func (p *Plugin) OnStop(fn func(ctx context.Context) error) {
+	p.Handle(HookOnStop, func(_ json.RawMessage) (any, error) {
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+		go func() {
+			select {
+			case <-p.closed:
+				cancel()
+			case <-ctx.Done():
+			}
+		}()
+		if err := fn(ctx); err != nil {
+			return nil, err
+		}
+		return map[string]any{}, nil
 	})
 }
 

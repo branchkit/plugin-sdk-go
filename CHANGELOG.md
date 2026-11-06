@@ -5,6 +5,14 @@ git history.
 
 ## Unreleased
 
+- `OnStop(func(ctx context.Context) error)`: the plugin's cleanup before
+  the platform stops it (switched off, removed, restarted for a new build
+  or a lost capability, the app quitting). It runs with the connection
+  still open, so it may call the platform, and its return answers the new
+  `on_stop` request (`HookOnStop`). The platform waits at most 5 s (2 s at
+  quit); ctx is cancelled when the connection closes. A plugin that does
+  not register it is stopped as before.
+
 ## 0.27.0 — 2026-10-28
 
 - New log-event constants for changes a person (or a plugin acting for
