@@ -448,6 +448,11 @@ func (m Methods) HUDCreateChannel(req HUDCreateChannelRequest) error {
 	return m.c.Call(MethodHudCreateChannel, &req, nil)
 }
 
+// HUDFocus give the keyboard to one of the calling plugin's HUD cards or windows.
+func (m Methods) HUDFocus(req HUDFocusRequest) error {
+	return m.c.Call(MethodHudFocus, &req, nil)
+}
+
 // HUDHide hide a HUD channel's window.
 func (m Methods) HUDHide(req HUDHideRequest) error {
 	return m.c.Call(MethodHudHide, &req, nil)

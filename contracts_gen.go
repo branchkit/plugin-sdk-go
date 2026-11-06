@@ -55,6 +55,7 @@ const (
 	MethodEventsEmit                          = "events.emit"                              // since 0.1.0
 	MethodHttpRequest                         = "http.request"                             // since 0.2.0
 	MethodHudCreateChannel                    = "hud.create_channel"                       // since 0.1.0
+	MethodHudFocus                            = "hud.focus"                                // since 0.2.0
 	MethodHudHide                             = "hud.hide"                                 // since 0.1.0
 	MethodHudPush                             = "hud.push"                                 // since 0.1.0
 	MethodHudRemoveChannel                    = "hud.remove_channel"                       // since 0.1.0

@@ -3533,6 +3533,17 @@ type HUDCreateChannelRequest struct {
 	Width *int `json:"width,omitempty"`
 }
 
+// HUDFocusRequest is the request type for hud.focus.
+type HUDFocusRequest struct {
+	// The channel to give the keyboard: a card channel of the caller's
+	// (its typing box, or its first choice, takes the keyboard while the
+	// card is on screen), or a window channel of the caller's (needs the
+	// `dispatch` privilege). A plugin's channel only; empty is accepted
+	// from the host alone, and lets it pick the window most needing an
+	// answer.
+	Channel string `json:"channel"`
+}
+
 // HUDHideRequest is the request type for hud.hide.
 type HUDHideRequest struct {
 	// Channel name to hide. Sends a `close <channel>` (or
