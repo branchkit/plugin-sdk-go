@@ -9399,6 +9399,11 @@ type PermissionChangedEventParams struct {
 type PipelineErrorEventParams struct {
 	Error    string `json:"error"`
 	Pipeline string `json:"pipeline"`
+	// The run that failed, as its `_platform.pipeline.started` named it.
+	// Empty when no run failed (a `pipelines.warm` that could not start the
+	// pipeline's stages).
+	// default ""
+	RunID *string `json:"run_id,omitempty"`
 }
 
 // PipelineExecutedEventParams is the payload of the _platform.pipeline.executed event.
@@ -9429,7 +9434,8 @@ type PipelineStartedEventParams struct {
 	Ephemeral *bool  `json:"ephemeral,omitempty"`
 	Pipeline  string `json:"pipeline"`
 	// This run's id: opaque, never reused for another run. The run's
-	// `_platform.pipeline.stopped` and every `on_transcript` it causes carry
+	// `_platform.pipeline.stopped`, its `_platform.pipeline.error`, and each
+	// `_platform.pipeline.transcript` and `on_transcript` it causes carry
 	// the same one.
 	// default ""
 	RunID *string `json:"run_id,omitempty"`
@@ -9476,7 +9482,12 @@ type PipelineTranscriptEventParams struct {
 	// default false
 	Partial  *bool  `json:"partial,omitempty"`
 	Pipeline string `json:"pipeline"`
-	Text     string `json:"text"`
+	// The run that produced this transcript, as its
+	// `_platform.pipeline.started` named it. Empty when no run produced it
+	// (`pipelines.ingest_transcript`).
+	// default ""
+	RunID *string `json:"run_id,omitempty"`
+	Text  string  `json:"text"`
 	// Shared-clock onset (ms, the audio chunk timebase) of each word of
 	// `text`, aligned 1:1 with its whitespace-split words. Emitted by
 	// engines with time alignment (sherpa's CTC path); converts a word
