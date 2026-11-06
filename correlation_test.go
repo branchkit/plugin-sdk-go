@@ -25,6 +25,14 @@ func scanForMethod(t *testing.T, r *bufio.Scanner, method string) rpcMessage {
 	return rpcMessage{}
 }
 
+// drainRest reads and drops whatever the plugin still writes, so a test
+// that stops reading after the message it wanted never leaves the plugin
+// blocked on a full pipe.
+func drainRest(r *bufio.Scanner) {
+	for r.Scan() {
+	}
+}
+
 func TestGoroutineIDDistinctAndStable(t *testing.T) {
 	first := goroutineID()
 	if first != goroutineID() {
@@ -124,6 +132,10 @@ func TestHandlerReadsInboundCorrelationAndStampsOutbound(t *testing.T) {
 		t.Fatalf("outbound notify correlation = %q, want tr_inbound99", notify.CorrelationID)
 	}
 
+	// Keep reading: the handler's response comes after the notify, and an
+	// unread io.Pipe blocks that write while it holds writeMu, so Run's exit
+	// could wait on the lock forever (a 10-minute hang under -race).
+	go drainRest(platformR)
 	platformW.(io.Closer).Close()
 	wg.Wait()
 }
@@ -155,6 +167,10 @@ func TestNoInboundCorrelationLeavesOutboundUnstamped(t *testing.T) {
 		t.Fatalf("outbound notify correlation = %q, want empty", notify.CorrelationID)
 	}
 
+	// Keep reading: the handler's response comes after the notify, and an
+	// unread io.Pipe blocks that write while it holds writeMu, so Run's exit
+	// could wait on the lock forever (a 10-minute hang under -race).
+	go drainRest(platformR)
 	platformW.(io.Closer).Close()
 	wg.Wait()
 }
