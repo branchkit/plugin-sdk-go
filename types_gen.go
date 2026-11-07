@@ -1515,6 +1515,21 @@ type OutputAction struct {
 	Say *string `json:"say,omitempty"`
 }
 
+// OutputAttention is auto-generated from the OpenRPC spec.
+// What a document may do to the person's attention, as the platform
+// allows it. The platform computes it once, where `output.state`
+// publishes, from the document's request (`urgency: interrupt`, or a
+// `problem`) and the plugin's `requires.interrupts`; it is held beside the
+// document and carried in the `_platform.output.state` event, and every
+// consumer (the card stack's order, the person's hold, the screen-reader
+// role, speech) reads it instead of the producer's `urgency` or `kind`.
+type OutputAttention string
+
+const (
+	OutputAttentionPolite    OutputAttention = "polite"
+	OutputAttentionInterrupt OutputAttention = "interrupt"
+)
+
 // OutputItem is auto-generated from the OpenRPC spec.
 // One thing the person can know about or act on.
 //
@@ -9373,6 +9388,13 @@ type OutputClearedEventParams struct {
 
 // OutputStateEventParams is the payload of the _platform.output.state event.
 type OutputStateEventParams struct {
+	// What the state may do to the person's attention, as the platform
+	// allows it: `interrupt` (shown past the person's hold, announced at
+	// once, may cut into other speech) only when the document asks to
+	// (`urgency: interrupt`, or a `problem`) and its plugin declares
+	// `requires.interrupts`; otherwise `polite`. A renderer reads this,
+	// not `state.urgency` or `state.kind`, to decide whether to interrupt.
+	Attention OutputAttention `json:"attention"`
 	// The channel whose state changed.
 	Channel string `json:"channel"`
 	// Monotonic across the app process. A renderer mid-utterance
