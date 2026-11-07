@@ -6052,7 +6052,17 @@ func (m Methods) SecretsSet(req SecretsSetRequest) (*SecretsSetResponse, error) 
 	return &result, nil
 }
 
-// SelectionPick resolve a selection pick by index — clears selection state, emits event, closes HUD.
+// SelectionClear end a selection without a pick and close its window: a plugin ends its own, the host any.
+func (m Methods) SelectionClear(req SelectionClearRequest) (*SelectionClearResponse, error) {
+	var result SelectionClearResponse
+	err := m.c.Call(MethodSelectionClear, &req, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// SelectionPick answer a selection by index: the caller's own, or another plugin's (`owner`) with the dispatch privilege and grant to it — ends the selection, emits _platform.selection.picked, closes its window.
 func (m Methods) SelectionPick(req SelectionPickRequest) (*SelectionPickResponse, error) {
 	var result SelectionPickResponse
 	err := m.c.Call(MethodSelectionPick, &req, &result)
@@ -6062,7 +6072,7 @@ func (m Methods) SelectionPick(req SelectionPickRequest) (*SelectionPickResponse
 	return &result, nil
 }
 
-// SelectionSet show the selection HUD with items for the user to pick from.
+// SelectionSet offer the person a list to pick one item from, shown in a window the calling plugin owns (or none); replaces only the caller's own list.
 func (m Methods) SelectionSet(req SelectionSetRequest) error {
 	return m.c.Call(MethodSelectionSet, &req, nil)
 }

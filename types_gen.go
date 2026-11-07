@@ -8543,11 +8543,33 @@ type SecretsSetResponse struct {
 	Created bool `json:"created"`
 }
 
+// SelectionClearRequest is the request type for selection.clear.
+type SelectionClearRequest struct {
+	// Whose selection to end. Omitted, the caller's own. A plugin may end
+	// only its own; the host may end any.
+	// default null
+	Owner *string `json:"owner,omitempty"`
+}
+
+// SelectionClearResponse is the response type for selection.clear.
+type SelectionClearResponse struct {
+	// Whether there was a selection to end. `false` is not an error: the
+	// list was already picked, cleared, or never set.
+	Cleared bool `json:"cleared"`
+	Ok      bool `json:"ok"`
+}
+
 // SelectionPickRequest is the request type for selection.pick.
 type SelectionPickRequest struct {
 	// Zero-based index into the previously-set selection items array.
 	// wire uint64 (64-bit) · min 0
 	Index int `json:"index"`
+	// Whose selection to answer: the plugin id that set it. Omitted, the
+	// caller's own. A plugin answering another plugin's list needs the
+	// `dispatch` privilege and the person's dispatch grant to that plugin,
+	// the same record that lets it run that plugin's actions.
+	// default null
+	Owner *string `json:"owner,omitempty"`
 }
 
 // SelectionPickResponse is the response type for selection.pick.
@@ -8562,7 +8584,10 @@ type SelectionPickResponse struct {
 
 // SelectionSetRequest is the request type for selection.set.
 type SelectionSetRequest struct {
-	// HUD channel to show the selection in. Defaults to `"main"`.
+	// The window to show the selection in: a HUD channel the calling
+	// plugin created. Another plugin's channel, a platform window or a
+	// name that is not a channel id is refused. Omitted, no window opens:
+	// the list can still be picked, by voice or by another plugin.
 	// default null
 	Channel *string `json:"channel,omitempty"`
 	// The selectable items, in display order.
@@ -9603,6 +9628,14 @@ type PrivilegeGrantedEventParams struct {
 type SelectionPickedEventParams struct {
 	// ID of the selected item.
 	ItemID string `json:"item_id"`
+	// Who answered it: the owner itself, another plugin holding the
+	// `dispatch` privilege and a dispatch grant to the owner, or
+	// `_platform` for the host. A list's owner tells its own pick from
+	// another plugin's by comparing this with `plugin_id`.
+	PickedBy string `json:"picked_by"`
+	// The plugin whose list was answered: the one that set it with
+	// `selection.set`, or `_platform` for the host's own list.
+	PluginID string `json:"plugin_id"`
 	// Phonetic tag used to select the item.
 	Tag string `json:"tag"`
 }

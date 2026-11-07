@@ -645,6 +645,7 @@ const (
 	MethodSecretsList                         = "secrets.list"                             // since 0.2.0
 	MethodSecretsRequestSlot                  = "secrets.request_slot"                     // since 0.2.0
 	MethodSecretsSet                          = "secrets.set"                              // since 0.2.0
+	MethodSelectionClear                      = "selection.clear"                          // since 0.2.0
 	MethodSelectionPick                       = "selection.pick"                           // since 0.1.0
 	MethodSelectionSet                        = "selection.set"                            // since 0.1.0
 	MethodSessionBoundary                     = "session.boundary"                         // since 0.1.0
