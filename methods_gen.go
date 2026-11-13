@@ -3212,7 +3212,7 @@ func (m Methods) NativeMagnifierEnabled() (*NativeMagnifierEnabledResponse, erro
 	return &result, nil
 }
 
-// NativeMaximizeWindow maximize window to fill screen. On Linux, not available on sway (sway tiles rather than maximizing; there is no such window state); nor on GNOME (GNOME exposes no window IPC; use its own tiling keybinds).
+// NativeMaximizeWindow maximize window to fill screen. On Linux, not available on sway (sway tiles rather than maximizing; there is no such window state).
 func (m Methods) NativeMaximizeWindow(req NativeMaximizeWindowRequest) (bool, error) {
 	var result struct {
 		Ok bool `json:"ok"`
