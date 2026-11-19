@@ -188,7 +188,7 @@ func (p *Plugin) OnPrivilegeGranted(fn func(PrivilegeGrantedEventParams)) {
 	onEvent(p, EventPrivilegeGranted, fn)
 }
 
-// OnSelectionPicked registers fn for the _platform.selection.picked event: An item of a selection was picked: names whose list (plugin_id) and who answered it (picked_by).
+// OnSelectionPicked registers fn for the _platform.selection.picked event: An item of the receiving plugin's selection was picked: names the list's owner (plugin_id) and who answered it (picked_by). Addressed to the owner alone.
 func (p *Plugin) OnSelectionPicked(fn func(SelectionPickedEventParams)) {
 	onEvent(p, EventSelectionPicked, fn)
 }
